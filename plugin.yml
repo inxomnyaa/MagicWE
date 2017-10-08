@@ -1,0 +1,8 @@
+name: MagicWE2
+main: xenialdan\MagicWE2\Loader
+version: 2.0.0.0
+api: ['3.0.0-ALPHA7']
+load: STARTUP
+authors: [XenialDan]
+description: MagicWE generation 2. Harder, Better, Faster, Stronger
+prefix: "§6§l[MagicWE]§r "
