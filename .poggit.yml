@@ -1,7 +1,8 @@
 --- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2
-branches:
-- master
 projects:
   MagicWE2:
     path: ""
+    libs:
+      - src: xenialdan\customui
+        version: "^2.0.0"
 ...
