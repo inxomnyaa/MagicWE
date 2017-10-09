@@ -74,15 +74,15 @@ class Loader extends PluginBase{
 		UIAPI::resetUIs($this);
 		$lang = $this->getLanguage();
 		$ui = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'));
-		$dropdown = new Dropdown($lang->translateString('ui.brush.options.type.tile'));
+		$dropdown = new Dropdown($lang->translateString('ui.brush.options.type.title'));
 		$dropdown->addOption($lang->translateString('ui.brush.options.type.sphere'), true);
 		$dropdown->addOption($lang->translateString('ui.brush.options.type.cylinder'));
-		$dropdown->addOption($lang->translateString('ui.brush.options.type.square'));
+		$dropdown->addOption($lang->translateString('ui.brush.options.type.square'));//TODO rectangle, custom shapes etc
 		$ui->addElement($dropdown);
-		$ui->addElement(new Slider('Diameter/Width', 1, 255, 1.0));
-		$ui->addElement(new Slider('Height', 1, 255, 1.0));
-		$ui->addElement(new Input('Blocks', 'Blocks separated by semicolons'));
-		$ui->addElement(new Label('Click the "Submit" button to apply'));
+		$ui->addElement(new Slider($lang->translateString('ui.brush.options.diameter'), 1, 100, 1.0));
+		$ui->addElement(new Slider($lang->translateString('ui.brush.options.height'), 1, 255, 1.0));
+		$ui->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
+		$ui->addElement(new Label($lang->translateString('ui.brush.options.label.infoapply')));
 		self::$uis['brushUI'] = UIAPI::addUI($this, $ui);
 		/* ********* */
 	}
