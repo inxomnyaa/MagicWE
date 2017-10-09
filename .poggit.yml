@@ -3,6 +3,6 @@ projects:
   MagicWE2:
     path: ""
     libs:
-      - src: xenialdan\customui
+      - src: thebigsmilexd/customui/customui
         version: "^2.0.0"
 ...
