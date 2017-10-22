@@ -25,7 +25,6 @@ use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Selection;
 
 abstract class Shape extends Selection{//TODO test

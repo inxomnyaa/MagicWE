@@ -203,9 +203,9 @@ class API{
 	public static function blockParser(string $fullstring){
 		$blocks = [];
 		foreach (explode(",", $fullstring) as $blockstring){
-			$block = ItemBlock::fromString($blockstring)->getBlock();
-			if ($block instanceof Block && !$block instanceof Air) $blocks[] = $block;
-			else{
+			$block = ItemBlock::fromString($blockstring)->getBlock();//returns Air if not found - which we do not actually want
+			if ($block instanceof Block && (!$block instanceof Air || ($block instanceof Air && explode(':', $blockstring)[0] === Block::AIR))) $blocks[] = $block;//Air-only fix
+			elseif (is_int(explode(':', $blockstring)[0]) && is_int(explode(':', $blockstring)[1])){
 				$block = BlockFactory::get(...explode(':', $blockstring));
 			}
 			if ($block instanceof Block) $blocks[] = $block;
