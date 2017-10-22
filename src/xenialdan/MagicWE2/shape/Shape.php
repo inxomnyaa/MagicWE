@@ -36,7 +36,7 @@ abstract class Shape extends Selection{//TODO test
 
 	public function __construct(Level $level, array $options){
 		$this->options = $options;
-		$this->flags = API::flagParser($options['flags']);
+		$this->flags = $options['flags'];
 		$this->blocks = $options['blocks'];
 		parent::__construct($level);
 	}
