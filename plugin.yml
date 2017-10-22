@@ -1,7 +1,7 @@
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 2.0.1
-api: ['3.0.0-ALPHA7','3.0.0-ALPHA8','3.0.0-ALPHA9']
+version: 2.2.0
+api: ['3.0.0-ALPHA9']
 load: STARTUP
 authors: [XenialDan]
 description: MagicWEv2. Harder, Better, Faster, Stronger

@@ -4,15 +4,20 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use pocketmine\block\Air;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
-use pocketmine\item\Item;
+use pocketmine\item\ItemBlock;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\NBT;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\shape\ShapeGenerator;
 
 
 class API{
@@ -27,41 +32,40 @@ class API{
 	 * "  -r also destroys armor stands.\n" */
 
 	/**
-	 * Default
-	 * Replaces the air normally
+	 * Only replaces the air
 	 */
-	const FLAG_REPLACE_AIR = 0x00; // default. -r
+	const FLAG_KEEP_BLOCKS = 0x01; // -r
 	/**
 	 * Only change non-air blocks
 	 */
-	const FLAG_KEEP_AIR = 0x01; // -k
+	const FLAG_KEEP_AIR = 0x02; // -k
 	/**
 	 * The -a flag makes it not paste air.
 	 */
-	const FLAG_PASTE_WITHOUT_AIR = 0x02; // -a
+	const FLAG_PASTE_WITHOUT_AIR = 0x03; // -a
 	/**
 	 * Pastes or sets hollow
 	 */
-	const FLAG_HOLLOW = 0x03; // -h
+	const FLAG_HOLLOW = 0x04; // -h
 	/**
 	 * The -n flag makes it only consider naturally occurring blocks.
 	 */
-	const FLAG_NATURAL = 0x04; // -n
+	const FLAG_NATURAL = 0x05; // -n
 	/**
 	 * Without the -p flag, the paste will appear centered at the target location.
-	 * With the flag, then the paste will appear relative to where you had
-	 * stood relative to the copied area when you copied it.
+	 * With the flag, the paste will appear relative to where you had
+	 * stood, relative by the copied area when you copied it.
 	 */
-	const FLAG_UNCENTERED = 0x05; // -p
+	const FLAG_UNCENTERED = 0x06; // -p
 
 	public static function flagParser(array $flags){
 		$flagmeta = 1;
 		foreach ($flags as $flag){
 			switch ($flag){
-				case "-r":
-					$flagmeta ^= 1 << self::FLAG_REPLACE_AIR;
+				case "-keepblocks":
+					$flagmeta ^= 1 << self::FLAG_KEEP_BLOCKS;
 					break;
-				case  "-k":
+				case  "-keepair":
 					$flagmeta ^= 1 << self::FLAG_KEEP_AIR;
 					break;
 				case  "-a":
@@ -89,7 +93,7 @@ class API{
 	 * @param int $check The flag to check
 	 * @return bool
 	 */
-	private static function hasFlag(int $flags, int $check){
+	public static function hasFlag(int $flags, int $check){
 		return ($flags & (1 << $check)) > 0;
 	}
 
@@ -101,6 +105,7 @@ class API{
 	 * @return string
 	 */
 	public static function fill(Selection $selection, Level $level, $blocks = [], ...$flagarray){
+		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
@@ -108,7 +113,14 @@ class API{
 				foreach ($x as $y){
 					foreach ($y as $block){
 						if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+						if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
 						$newblock = $blocks[array_rand($blocks, 1)];
+						if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
+							if ($level->getBlock($block)->getId() !== Block::AIR) continue;
+						}
+						if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
+							if ($level->getBlock($block)->getId() === Block::AIR) continue;
+						}
 						if ($level->setBlock($block, $newblock, false, false)) $changed++;
 					}
 				}
@@ -155,7 +167,8 @@ class API{
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else
-				$clipboard->setOffset($player->getPosition()->subtract($selection->/*getMinVec3()*/getMaxVec3()));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
+				$clipboard->setOffset($player->getPosition()->subtract($selection->/*getMinVec3()*/
+				getMaxVec3()));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
 			Loader::$clipboards[$player->getLowerCaseName()] = $clipboard;
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -176,7 +189,7 @@ class API{
 						//flag test
 						$blockvec3 = $vec3->add($x, $y, $z);
 						if (!self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
-							$blockvec3 = $blockvec3->subtract($clipboard->getOffset())->subtract(count($clipboard->getData()) - 1,count($xaxis) - 1,count($yaxis) - 1);//todo fix offset
+							$blockvec3 = $blockvec3->subtract($clipboard->getOffset())->subtract(count($clipboard->getData()) - 1, count($xaxis) - 1, count($yaxis) - 1);//todo fix offset
 						if ($level->setBlock($blockvec3, $block, false, false)) $changed++;
 					}
 				}
@@ -190,8 +203,8 @@ class API{
 	public static function blockParser(string $fullstring){
 		$blocks = [];
 		foreach (explode(",", $fullstring) as $blockstring){
-			$block = Item::fromString($blockstring)->getBlock();
-			if ($block instanceof Block) $blocks[] = $block;
+			$block = ItemBlock::fromString($blockstring)->getBlock();
+			if ($block instanceof Block && !$block instanceof Air) $blocks[] = $block;
 			else{
 				$block = BlockFactory::get(...explode(':', $blockstring));
 			}
@@ -204,5 +217,32 @@ class API{
 			}
 		}
 		return $blocks;
+	}
+
+	public static function createBrush(Block $target, CompoundTag $settings){
+		$shape = null;
+		switch ($settings->getTag("type", StringTag::class)){
+			case "Square": {
+				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SQUARE, self::compoundToArray($settings));
+				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+				break;
+			}
+
+			case null:
+			default:
+				;
+		}
+		if (is_null($shape)){
+			Server::getInstance()->broadcastMessage("Unknown shape");
+			return false;
+		}
+		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'])));
+		return true;
+	}
+
+	public static function compoundToArray(CompoundTag $compoundTag){
+		$nbt = new NBT();
+		$nbt->setData($compoundTag);
+		return $nbt->getArray();
 	}
 }

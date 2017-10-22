@@ -29,7 +29,7 @@ class Selection{
 		$minY = min(floor($this->getPos1()->getY()), floor($this->getPos2()->getY()));
 		$minZ = min(floor($this->getPos1()->getZ()), floor($this->getPos2()->getZ()));
 		$maxX = max(floor($this->getPos1()->getX()), floor($this->getPos2()->getX()));
-		$maxY = max(floor($this->getPos1()->getY()), floor($this->getPos2()->getY())) + 1;//TODO check.
+		$maxY = max(floor($this->getPos1()->getY()), floor($this->getPos2()->getY()));
 		$maxZ = max(floor($this->getPos1()->getZ()), floor($this->getPos2()->getZ()));
 		return new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ);
 	}
@@ -87,7 +87,7 @@ class Selection{
 	}
 
 	public function getTotalCount(){
-		return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();
+		return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom election shapes
 	}
 
 	/**

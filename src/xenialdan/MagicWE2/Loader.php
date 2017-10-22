@@ -6,13 +6,6 @@ namespace xenialdan\MagicWE2;
 
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\TextFormat;
-use xenialdan\customui\API as UIAPI;
-use xenialdan\customui\elements\Dropdown;
-use xenialdan\customui\elements\Input;
-use xenialdan\customui\elements\Label;
-use xenialdan\customui\elements\Slider;
-use xenialdan\customui\windows\CustomForm;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\FillCommand;
@@ -20,6 +13,7 @@ use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
+use xenialdan\MagicWE2\commands\WandCommand;
 
 class Loader extends PluginBase{
 	/** @var Selection[] */
@@ -29,7 +23,6 @@ class Loader extends PluginBase{
 	public static $prefix = '[MagicWE by XenialDan] ';
 	/** @var Loader */
 	private static $instance = null;
-	public static $uis;
 	private $baseLang;
 
 	/**
@@ -50,7 +43,6 @@ class Loader extends PluginBase{
 	}
 
 	public function onEnable(){
-		$this->getServer()->getScheduler()->scheduleDelayedRepeatingTask(new SendTask($this), 20 * 5, 20 * 5);
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 		$this->getServer()->getCommandMap()->register(Pos1Command::class, new Pos1Command($this));
 		$this->getServer()->getCommandMap()->register(Pos2Command::class, new Pos2Command($this));
@@ -59,7 +51,7 @@ class Loader extends PluginBase{
 		$this->getServer()->getCommandMap()->register(CopyCommand::class, new CopyCommand($this));
 		$this->getServer()->getCommandMap()->register(PasteCommand::class, new PasteCommand($this));
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new BrushCommand($this));
-		$this->reloadUIs();
+		$this->getServer()->getCommandMap()->register(BrushCommand::class, new WandCommand($this));
 	}
 
 	/**
@@ -68,22 +60,5 @@ class Loader extends PluginBase{
 	 */
 	public function getLanguage(): BaseLang{
 		return $this->baseLang;
-	}
-
-	public function reloadUIs(){
-		UIAPI::resetUIs($this);
-		$lang = $this->getLanguage();
-		$ui = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'));
-		$dropdown = new Dropdown($lang->translateString('ui.brush.options.type.title'));
-		$dropdown->addOption($lang->translateString('ui.brush.options.type.sphere'), true);
-		$dropdown->addOption($lang->translateString('ui.brush.options.type.cylinder'));
-		$dropdown->addOption($lang->translateString('ui.brush.options.type.square'));//TODO rectangle, custom shapes etc
-		$ui->addElement($dropdown);
-		$ui->addElement(new Slider($lang->translateString('ui.brush.options.diameter'), 1, 100, 1.0));
-		$ui->addElement(new Slider($lang->translateString('ui.brush.options.height'), 1, 255, 1.0));
-		$ui->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
-		$ui->addElement(new Label($lang->translateString('ui.brush.options.label.infoapply')));
-		self::$uis['brushUI'] = UIAPI::addUI($this, $ui);
-		/* ********* */
 	}
 }
