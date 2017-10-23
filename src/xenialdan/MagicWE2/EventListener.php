@@ -50,7 +50,7 @@ class EventListener implements Listener{
 		if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))){
 			$event->setCancelled();
 			switch ($event->getItem()->getId()){
-				/*case ItemIds::WOODEN_SHOVEL: { //TODO Open issue on pmmp, RIGHT_CLICK_BLOCK + RIGHT_CLICK_AIR are BOTH called when right clicking a block
+				/*case ItemIds::WOODEN_SHOVEL: { //TODO Open issue on pmmp, RIGHT_CLICK_BLOCK + RIGHT_CLICK_AIR are BOTH called when right clicking a block - Turns out to be a client bug
 					$target = $event->getBlock();
 					if (!is_null($target)){// && has perms
 						API::createBrush($target, $event->getItem()->getNamedTagEntry("MagicWE"));

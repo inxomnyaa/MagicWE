@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
-use pocketmine\block\Air;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
+use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
+use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
@@ -200,23 +200,74 @@ class API{
 		return Loader::$prefix . TextFormat::GREEN . "Pasted selection " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.";
 	}
 
-	public static function blockParser(string $fullstring){
+	public static function blockParser(string $fullstring, array &$messages, bool &$error){
 		$blocks = [];
-		foreach (explode(",", $fullstring) as $blockstring){
-			$block = ItemBlock::fromString($blockstring)->getBlock();//returns Air if not found - which we do not actually want
-			if ($block instanceof Block && (!$block instanceof Air || ($block instanceof Air && explode(':', $blockstring)[0] === Block::AIR))) $blocks[] = $block;//Air-only fix
-			elseif (is_int(explode(':', $blockstring)[0]) && is_int(explode(':', $blockstring)[1])){
-				$block = BlockFactory::get(...explode(':', $blockstring));
-			}
-			if ($block instanceof Block) $blocks[] = $block;
-			else{
-				throw new WEException(Loader::$prefix . TextFormat::RED . $block . " is not a block!");
+		foreach (self::fromString($fullstring, true) as [$name, $item]){
+			if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)){
+				$block = $item->getBlock();
+				$blocks[] = $block;
+			} else{
+				$error = true;
+				$messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id: " : "name") . ": " . $name;
+				continue;
 			}
 			if ($block instanceof UnknownBlock){
-				Loader::getInstance()->getLogger()->notice(Loader::$prefix . TextFormat::RED . $block . " is unknown to " . Loader::getInstance()->getServer()->getName());
+				$messages[] = Loader::$prefix . TextFormat::GOLD . $block . " is an unknown block";
 			}
 		}
+
 		return $blocks;
+	}
+
+	/**
+	 * /////////////////////////////////////////////////////////////////////
+	 * This fixes ItemFactory::fromString until pmmp get's its shit together
+	 * /////////////////////////////////////////////////////////////////////
+	 *
+	 * Tries to parse the specified string into Item ID/meta identifiers, and returns Item instances it created.
+	 *
+	 * Example accepted formats:
+	 * - `diamond_pickaxe:5`
+	 * - `minecraft:string`
+	 * - `351:4 (lapis lazuli ID:meta)`
+	 *
+	 * If multiple item instances are to be created, their identifiers must be comma-separated, for example:
+	 * `diamond_pickaxe,wooden_shovel:18,iron_ingot`
+	 *
+	 * @param string $str
+	 * @param bool $multiple
+	 *
+	 * @return array
+	 */
+	public static function fromString(string $str, bool $multiple = false){
+		if ($multiple === true){
+			$blocks = [];
+			foreach (explode(",", $str) as $b){
+				$blocks[] = self::fromString($b, false);
+			}
+
+			return $blocks;
+		} else{
+			$b = explode(":", str_replace([" ", "minecraft:"], ["_", ""], trim($str)));
+			if (!isset($b[1])){
+				$meta = 0;
+			} else{
+				$meta = $b[1] & 0xFFFF;
+			}
+
+			if (is_numeric($b[0])){
+				$item = ItemFactory::get(((int)$b[0]) & 0xFFFF, $meta);
+			} elseif (defined(Item::class . "::" . strtoupper($b[0]))){
+				$item = ItemFactory::get(constant(Item::class . "::" . strtoupper($b[0])), $meta);
+				if ($item->getId() === Item::AIR and strtoupper($b[0]) !== "AIR"){
+					$item = null;
+				}
+			} else{
+				$item = null;
+			}
+
+			return [$b[0], $item];
+		}
 	}
 
 	public static function createBrush(Block $target, CompoundTag $settings){

@@ -27,7 +27,19 @@ class ReplaceCommand extends PluginCommand{
 		/** @var Player $sender */
 		$return = true;
 		try{
-			$sender->sendMessage(API::replace(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), API::blockParser(array_shift($args)), API::blockParser(array_shift($args)), ...$args));
+			$messages = [];
+			$error = false;
+			$blocks1 = API::blockParser(array_shift($args), $messages, $error);
+			$blocks2 = API::blockParser(array_shift($args), $messages, $error);
+			foreach ($messages as $message){
+				$sender->sendMessage($message);
+			}
+			$return = !$error;
+			if ($return){
+				$sender->sendMessage(API::replace(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $blocks1, $blocks2, ...$args));
+			} else{
+				throw new \TypeError("Could not replace with the selected blocks");
+			}
 		} catch (\TypeError $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());

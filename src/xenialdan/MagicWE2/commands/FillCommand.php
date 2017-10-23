@@ -28,7 +28,18 @@ class FillCommand extends PluginCommand{
 		/** @var Player $sender */
 		$return = true;
 		try{
-			$sender->sendMessage(API::fill(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), API::blockParser(array_shift($args)), ...$args));
+			$messages = [];
+			$error = false;
+			$blocks = API::blockParser(array_shift($args), $messages, $error);
+			foreach ($messages as $message){
+				$sender->sendMessage($message);
+			}
+			$return = !$error;
+			if ($return){
+				$sender->sendMessage(API::fill(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $blocks, ...$args));
+			} else{
+				throw new \TypeError("Could not fill with the selected blocks");
+			}
 		} catch (\TypeError $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
