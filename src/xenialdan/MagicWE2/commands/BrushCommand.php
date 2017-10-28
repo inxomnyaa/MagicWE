@@ -13,6 +13,7 @@ use pocketmine\form\element\Input;
 use pocketmine\form\element\Label;
 use pocketmine\form\element\Slider;
 use pocketmine\form\element\Toggle;
+use pocketmine\form\Form;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -62,7 +63,7 @@ class BrushCommand extends PluginCommand{
 						new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
 						new Label($lang->translateString('ui.brush.options.label.infoapply'))
 					) extends CustomForm{
-						public function onSubmit(Player $player): void{
+						public function onSubmit(Player $player): ?Form{
 							$lang = Loader::getInstance()->getLanguage();
 							$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
 							$item->addEnchantment(Enchantment::getEnchantment(Enchantment::PROTECTION));
