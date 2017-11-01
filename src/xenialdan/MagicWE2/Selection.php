@@ -97,22 +97,25 @@ class Selection{
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @return array
 	 */
-	public function getBlocksXYZ(Block ...$filterblocks){
+	public function getBlocks(Block ...$filterblocks){
 		$blocks = [];
 		for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++){
 			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
 					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
-					if (empty($filterblocks)) $blocks[(int)$x][(int)$y][(int)$z] = $block;
+					#$block->setComponents((int)$x,(int)$y,(int)$z);
+					$block->position(new Position((int)$x,(int)$y,(int)$z));
+					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId() && $block->getDamage() === $filterblock->getDamage())
-								$blocks[(int)$x][(int)$y][(int)$z] = $block;
+							if ($block->getId() === $filterblock->getId() && ($block->getDamage() === $filterblock->getDamage() || $filterblock->getDamage() === -1))
+								$blocks[] = $block;
 						}
 					}
 				}
 			}
 		}
+		var_dump($blocks);
 		return $blocks;
 	}
 
@@ -121,22 +124,7 @@ class Selection{
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @return array
 	 */
-	public function getAsyncBlocksXYZ(Block ...$filterblocks){
-		$blocks = [];
-		/*for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++){
-			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
-				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
-					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
-					if (empty($filterblocks)) $blocks[(int)$x][(int)$y][(int)$z] = $block;
-					else{
-						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId() && $block->getDamage() === $filterblock->getDamage())
-								$blocks[(int)$x][(int)$y][(int)$z] = $block;
-						}
-					}
-				}
-			}
-		}*/
+	public function getAsyncBlocks(Block ...$filterblocks){
 		Server::getInstance()->getScheduler()->scheduleAsyncTask($asynctask = new AsyncGetBlocksXYZTask($this, $filterblocks));
 		return $asynctask->getResult();
 	}
@@ -146,22 +134,25 @@ class Selection{
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @return array
 	 */
-	public function getBlocksRelativeXYZ(Block ...$filterblocks){
+	public function getBlocksRelative(Block ...$filterblocks){
 		$blocks = [];
 		for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++){
 			for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++){
 					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
-					if (empty($filterblocks)) $blocks[(int)$rx][(int)$ry][(int)$rz] = $block;
+					#$block->setComponents((int)$rx,(int)$ry,(int)$rz);
+					$block->position(new Position((int)$rx,(int)$ry,(int)$rz));
+					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId() && $block->getDamage() === $filterblock->getDamage())
-								$blocks[(int)$rx][(int)$ry][(int)$rz] = $block;
+							if ($block->getId() === $filterblock->getId() && ($filterblock->getDamage() === -1 XOR $block->getDamage() === $filterblock->getDamage()))
+								$blocks[] = $block;
 						}
 					}
 				}
 			}
 		}
+		var_dump($blocks);
 		return $blocks;
 	}
 
@@ -183,7 +174,6 @@ class Selection{
 				$touchedChunks[Level::chunkHash($x >> 4, $z >> 4)] = $chunk->fastSerialize();
 			}
 		}
-		var_dump(count($touchedChunks));
 		return $touchedChunks;
 	}
 }

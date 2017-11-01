@@ -39,7 +39,7 @@ class AsyncFillTask extends AsyncTask{
 		var_dump(__LINE__);
 		$this->sender = serialize($sender->getName());
 		var_dump(__LINE__);
-		$this->xyz = serialize($selection->getBlocksXYZ());
+		$this->xyz = serialize($selection->getBlocks());
 		var_dump(__LINE__);
 		$this->chunks = serialize($chunks);
 		var_dump(__LINE__);

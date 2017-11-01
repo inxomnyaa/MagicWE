@@ -111,21 +111,17 @@ class API{
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocksXYZ() as $x){
-				foreach ($x as $y){
-					foreach ($y as $block){
-						if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-						if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
-						$newblock = $blocks[array_rand($blocks, 1)];
-						if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
-							if ($level->getBlock($block)->getId() !== Block::AIR) continue;
-						}
-						if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
-							if ($level->getBlock($block)->getId() === Block::AIR) continue;
-						}
-						if ($level->setBlock($block, $newblock, false, false)) $changed++;
-					}
+			foreach ($selection->getBlocks() as $block){
+				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
+				$newblock = $blocks[array_rand($blocks, 1)];
+				if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
+					if ($level->getBlock($block)->getId() !== Block::AIR) continue;
 				}
+				if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
+					if ($level->getBlock($block)->getId() === Block::AIR) continue;
+				}
+				if ($level->setBlock($block, $newblock, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -134,6 +130,7 @@ class API{
 	}
 
 	/**
+	 * @param CommandSender $sender
 	 * @param Selection $selection
 	 * @param Level $level
 	 * @param Block[] $blocks
@@ -156,14 +153,10 @@ class API{
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocksXYZ(...$blocks1) as $x){
-				foreach ($x as $y){
-					foreach ($y as $block){
-						if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-						$newblock = $blocks2[array_rand($blocks2, 1)];
-						if ($level->setBlock($block, $newblock, false, false)) $changed++;
-					}
-				}
+			foreach ($selection->getBlocks(...$blocks1) as $block){
+				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+				$newblock = $blocks2[array_rand($blocks2, 1)];
+				if ($level->setBlock($block, $newblock, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -176,12 +169,11 @@ class API{
 		$flags = self::flagParser($flagarray);
 		try{
 			$clipboard = new Clipboard();
-			$clipboard->setData($selection->getBlocksRelativeXYZ());
+			$clipboard->setData($selection->getBlocksRelative());
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else
-				$clipboard->setOffset($player->getPosition()->subtract($selection->/*getMinVec3()*/
-				getMaxVec3()));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
+				$clipboard->setOffset($selection->getMinVec3()->subtract($player));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
 			Loader::$clipboards[$player->getLowerCaseName()] = $clipboard;
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -193,19 +185,14 @@ class API{
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
-		$vec3 = $player->getPosition();//proper stating pos
 		try{
-			foreach ($clipboard->getData() as $x => $xaxis){
-				foreach ($xaxis as $y => $yaxis){
-					foreach ($yaxis as $z => $block){
-						/** @var Block $block */
-						//flag test
-						$blockvec3 = $vec3->add($x, $y, $z);
-						if (!self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
-							$blockvec3 = $blockvec3->subtract($clipboard->getOffset())->subtract(count($clipboard->getData()) - 1, count($xaxis) - 1, count($yaxis) - 1);//todo fix offset
-						if ($level->setBlock($blockvec3, $block, false, false)) $changed++;
-					}
-				}
+			foreach ($clipboard->getData() as $block1){
+				$block = clone $block1;
+				/** @var Block $block */
+				$blockvec3 = $player->add($block)->floor();
+				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
+					$blockvec3 = $blockvec3->add($clipboard->getOffset());
+				if ($level->setBlock($blockvec3, $block, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -221,7 +208,7 @@ class API{
 				$blocks[] = $block;
 			} else{
 				$error = true;
-				$messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id: " : "name") . ": " . $name;
+				$messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
 				continue;
 			}
 			if ($block instanceof UnknownBlock){
