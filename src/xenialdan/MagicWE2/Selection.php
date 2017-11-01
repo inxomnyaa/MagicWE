@@ -9,7 +9,9 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\task\AsyncGetBlocksXYZTask;
 
 class Selection{
 
@@ -100,7 +102,7 @@ class Selection{
 		for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++){
 			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
-					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel(), true, false));
+					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
 					if (empty($filterblocks)) $blocks[(int)$x][(int)$y][(int)$z] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
@@ -115,6 +117,31 @@ class Selection{
 	}
 
 	/**
+	 * Returns the blocks by their actual position
+	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @return array
+	 */
+	public function getAsyncBlocksXYZ(Block ...$filterblocks){
+		$blocks = [];
+		/*for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++){
+			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
+				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
+					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
+					if (empty($filterblocks)) $blocks[(int)$x][(int)$y][(int)$z] = $block;
+					else{
+						foreach ($filterblocks as $filterblock){
+							if ($block->getId() === $filterblock->getId() && $block->getDamage() === $filterblock->getDamage())
+								$blocks[(int)$x][(int)$y][(int)$z] = $block;
+						}
+					}
+				}
+			}
+		}*/
+		Server::getInstance()->getScheduler()->scheduleAsyncTask($asynctask = new AsyncGetBlocksXYZTask($this, $filterblocks));
+		return $asynctask->getResult();
+	}
+
+	/**
 	 * Returns the blocks by their relative position to the minX;minY;minZ position
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @return array
@@ -124,7 +151,7 @@ class Selection{
 		for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++){
 			for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++){
-					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel(), true, false));
+					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
 					if (empty($filterblocks)) $blocks[(int)$rx][(int)$ry][(int)$rz] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
@@ -136,5 +163,27 @@ class Selection{
 			}
 		}
 		return $blocks;
+	}
+
+	/**
+	 * TODO optimize
+	 * e.g. do not use + 16 but % 16 or sth like that
+	 *
+	 * @return array
+	 */
+	public function getTouchedChunks(): array {
+		$maxX = floor($this->getAxisAlignedBB()->maxX);
+		$minX = floor($this->getAxisAlignedBB()->minX);
+		$maxZ = floor($this->getAxisAlignedBB()->maxZ);
+		$minZ = floor($this->getAxisAlignedBB()->minZ);
+		$touchedChunks = [];
+		for($x = $minX; $x <= $maxX + 16; $x += 16) {
+			for($z = $minZ; $z <= $maxZ + 16; $z += 16) {
+				$chunk = $this->getLevel()->getChunk($x >> 4, $z >> 4, true);
+				$touchedChunks[Level::chunkHash($x >> 4, $z >> 4)] = $chunk->fastSerialize();
+			}
+		}
+		var_dump(count($touchedChunks));
+		return $touchedChunks;
 	}
 }

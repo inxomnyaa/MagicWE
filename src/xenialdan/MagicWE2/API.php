@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
 use pocketmine\block\UnknownBlock;
+use pocketmine\command\CommandSender;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
@@ -18,6 +19,7 @@ use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
+use xenialdan\MagicWE2\task\AsyncFillTask;
 
 
 class API{
@@ -129,6 +131,17 @@ class API{
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
 		}
 		return Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.";
+	}
+
+	/**
+	 * @param Selection $selection
+	 * @param Level $level
+	 * @param Block[] $blocks
+	 * @param array ...$flagarray
+	 */
+	public static function fillAsync(CommandSender $sender, Selection $selection, Level $level, $blocks = [], ...$flagarray){
+		$flags = self::flagParser($flagarray);
+		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($sender, $selection, $selection->getTouchedChunks(), $blocks, $flags));
 	}
 
 	/**

@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2;
 
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
+use xenialdan\MagicWE2\commands\AsyncFillCommand;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\FillCommand;
@@ -52,6 +53,7 @@ class Loader extends PluginBase{
 		$this->getServer()->getCommandMap()->register(PasteCommand::class, new PasteCommand($this));
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new BrushCommand($this));
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new WandCommand($this));
+		$this->getServer()->getCommandMap()->register(FillCommand::class, new AsyncFillCommand($this));
 	}
 
 	/**
