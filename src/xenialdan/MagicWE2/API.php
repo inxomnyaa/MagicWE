@@ -59,6 +59,12 @@ class API{
 	 * stood, relative by the copied area when you copied it.
 	 */
 	const FLAG_UNCENTERED = 0x06; // -p
+	/**
+	 * Without the -v flag, block checks, selections and replacing will use and check the exact meta
+	 * of the blocks, with the flag it will check for similar variants
+	 * For example: Oak Logs with any rotation instead of a specific rotation
+	 */
+	const FLAG_VARIANT = 0x07; // -v
 
 	public static function flagParser(array $flags){
 		$flagmeta = 1;
@@ -81,6 +87,9 @@ class API{
 					break;
 				case  "-p":
 					$flagmeta ^= 1 << self::FLAG_UNCENTERED;
+					break;
+				case  "-v":
+					$flagmeta ^= 1 << self::FLAG_VARIANT;
 					break;
 				default:
 					Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
@@ -111,7 +120,7 @@ class API{
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocks() as $block){
+			foreach ($selection->getBlocks($flags) as $block){
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
 				$newblock = $blocks[array_rand($blocks, 1)];
@@ -150,10 +159,11 @@ class API{
 	 * @return string
 	 */
 	public static function replace(Selection $selection, Level $level, $blocks1 = [], $blocks2 = [], ...$flagarray){
+		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocks(...$blocks1) as $block){
+			foreach ($selection->getBlocks($flags, ...$blocks1) as $block){
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				$newblock = $blocks2[array_rand($blocks2, 1)];
 				if ($level->setBlock($block, $newblock, false, false)) $changed++;
@@ -169,7 +179,7 @@ class API{
 		$flags = self::flagParser($flagarray);
 		try{
 			$clipboard = new Clipboard();
-			$clipboard->setData($selection->getBlocksRelative());
+			$clipboard->setData($selection->getBlocksRelative($flags));
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else

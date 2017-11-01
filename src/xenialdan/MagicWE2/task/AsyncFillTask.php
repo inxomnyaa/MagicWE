@@ -24,26 +24,27 @@ class AsyncFillTask extends AsyncTask{
 	private $changed = 0;
 	private $time;
 	private $xyz;
+	private $filterblocks;
 
 	/**
 	 * AsyncGetBlocksXYZTask constructor.
 	 * @param CommandSender $sender
 	 * @param Selection $selection
 	 * @param array $chunks
-	 * @param array $blocks
+	 * @param array $filterblocks
 	 * @param $flags
 	 */
-	public function __construct($sender, $selection, $chunks, $blocks = [], $flags){
+	public function __construct($sender, $selection, $chunks, $filterblocks = [], $flags){
 		var_dump(__LINE__);
 		$this->time = microtime(TRUE);
 		var_dump(__LINE__);
 		$this->sender = serialize($sender->getName());
 		var_dump(__LINE__);
-		$this->xyz = serialize($selection->getBlocks());
+		$this->selection = serialize($selection);
 		var_dump(__LINE__);
 		$this->chunks = serialize($chunks);
 		var_dump(__LINE__);
-		$this->blocks = serialize($blocks);
+		$this->filterblocks = serialize($filterblocks);
 		var_dump(__LINE__);
 		$this->flags = $flags;
 		var_dump(__LINE__);
@@ -56,29 +57,26 @@ class AsyncFillTask extends AsyncTask{
 			$chunks[$hash] = Chunk::fastDeserialize($data);
 		}
 		/** @var Chunk[] $chunks */
-		#$selection = unserialize($this->selection);
-		$xyz = unserialize($this->xyz);
+		$selection = unserialize($this->selection);
 		/** @var Block[] $blocks */
 		$blocks = unserialize($this->blocks);
+		/** @var Block[] $blocks */
+		$filterblocks = unserialize($this->filterblocks);
 		try{
-			foreach ($xyz as $x){
-				foreach ($x as $y){
-					foreach ($y as $block){
-						if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-						if (API::hasFlag($this->flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
-						$newblock = $blocks[array_rand($blocks, 1)];
-						/** @var Chunk $chunk */
-						$chunk = $chunks[Level::chunkHash($block->x >> 4, $block->z >> 4)];
-						if (API::hasFlag($this->flags, API::FLAG_KEEP_BLOCKS)){
-							if ($chunk->getBlockId($block->x & 0x0f, $block->y, $block->z & 0x0f) !== Block::AIR) continue;
-						}
-						if (API::hasFlag($this->flags, API::FLAG_KEEP_AIR)){
-							if ($chunk->getBlockId($block->x & 0x0f, $block->y, $block->z & 0x0f) === Block::AIR) continue;
-						}
-						var_dump(__LINE__);
-						if ($chunk->setBlock($block->x & 0x0f, $block->y, $block->z & 0x0f, $newblock->getId(), $newblock->getDamage())) $this->changed++;
-					}
+			foreach ($filterblocks as $block){
+				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+				if (API::hasFlag($this->flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
+				$newblock = $blocks[array_rand($blocks, 1)];
+				/** @var Chunk $chunk */
+				$chunk = $chunks[Level::chunkHash($block->x >> 4, $block->z >> 4)];
+				if (API::hasFlag($this->flags, API::FLAG_KEEP_BLOCKS)){
+					if ($chunk->getBlockId($block->x & 0x0f, $block->y, $block->z & 0x0f) !== Block::AIR) continue;
 				}
+				if (API::hasFlag($this->flags, API::FLAG_KEEP_AIR)){
+					if ($chunk->getBlockId($block->x & 0x0f, $block->y, $block->z & 0x0f) === Block::AIR) continue;
+				}
+				var_dump(__LINE__);
+				if ($chunk->setBlock($block->x & 0x0f, $block->y, $block->z & 0x0f, $newblock->getId(), $newblock->getDamage())) $this->changed++;
 			}
 		} catch (WEException $exception){
 			var_dump(__LINE__);

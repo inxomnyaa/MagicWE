@@ -94,10 +94,11 @@ class Selection{
 
 	/**
 	 * Returns the blocks by their actual position
+	 * @param int $flags
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @return array
 	 */
-	public function getBlocks(Block ...$filterblocks){
+	public function getBlocks(int $flags, Block ...$filterblocks){
 		$blocks = [];
 		for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++){
 			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
@@ -108,7 +109,7 @@ class Selection{
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId() && ($block->getDamage() === $filterblock->getDamage() || $filterblock->getDamage() === -1))
+							if((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
 								$blocks[] = $block;
 						}
 					}
@@ -121,20 +122,22 @@ class Selection{
 
 	/**
 	 * Returns the blocks by their actual position
+	 * @param int $flags
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @return array
 	 */
-	public function getAsyncBlocks(Block ...$filterblocks){
+	public function getAsyncBlocks(int $flags, Block ...$filterblocks){
 		Server::getInstance()->getScheduler()->scheduleAsyncTask($asynctask = new AsyncGetBlocksXYZTask($this, $filterblocks));
 		return $asynctask->getResult();
 	}
 
 	/**
 	 * Returns the blocks by their relative position to the minX;minY;minZ position
+	 * @param int $flags
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @return array
 	 */
-	public function getBlocksRelative(Block ...$filterblocks){
+	public function getBlocksRelative(int $flags, Block ...$filterblocks){
 		$blocks = [];
 		for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++){
 			for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++){
@@ -145,7 +148,8 @@ class Selection{
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId() && ($filterblock->getDamage() === -1 XOR $block->getDamage() === $filterblock->getDamage()))
+							if ($block->getId() === $filterblock->getId())
+								if((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
 								$blocks[] = $block;
 						}
 					}
