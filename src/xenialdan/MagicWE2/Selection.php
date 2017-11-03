@@ -187,14 +187,14 @@ class Selection{
 		]);
 	}
 
-	private function setUUID($uuid){
+	private function setUUID(UUID $uuid){
 		$this->uuid = $uuid;
 	}
 
 	/**
-	 * @return mixed
+	 * @return UUID
 	 */
-	public function getUuid(){
+	public function getUUID(){
 		return $this->uuid;
 	}
 }
