@@ -325,8 +325,8 @@ class API{
 	 * @return Session|null
 	 */
 	public static function &getSession(Player $player): ?Session{
-		$session = self::$sessions[$player->getId()] ?? null;
-		var_dump($session);//TODO REMOVE - JUST FOR DEBUG
+		var_dump(array_keys(API::getSessions())); //TODO remove debug
+		$session = self::$sessions[$player->getLowerCaseName()] ?? null;
 		return $session;
 	}
 
