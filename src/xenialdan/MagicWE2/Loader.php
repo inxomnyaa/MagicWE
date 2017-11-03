@@ -60,12 +60,12 @@ class Loader extends PluginBase{
 	}
 
 	public function onDisable(){
-		$this->getServer()->getLogger()->log("Destroying Sessions");
+		$this->getServer()->getLogger()->debug("Destroying Sessions");
 		foreach (API::getSessions() as $session){
 			//TODO store sessions
 			API::destroySession($session);
 		}
-		$this->getServer()->getLogger()->log("Sessions successfully destroyed");
+		$this->getServer()->getLogger()->debug("Sessions successfully destroyed");
 	}
 
 	/**

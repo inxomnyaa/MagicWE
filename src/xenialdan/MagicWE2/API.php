@@ -310,8 +310,9 @@ class API{
 		return $nbt->getArray();
 	}
 
-	public static function addSession(Session $session){
+	public static function &addSession(Session $session){
 		self::$sessions[$session->getPlayer()->getId()] = $session;
+		return self::$sessions[$session->getPlayer()->getId()];
 	}
 
 	public static function destroySession(Session $session){
@@ -323,8 +324,9 @@ class API{
 	 * @param Player $player
 	 * @return Session|null
 	 */
-	public static function getSession(Player $player): ?Session{
-		return self::$sessions[$player->getId()] ?? null;
+	public static function &getSession(Player $player): ?Session{
+		$session = self::$sessions[$player->getId()] ?? null;
+		return $session;
 	}
 
 	/**

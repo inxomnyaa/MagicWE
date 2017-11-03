@@ -21,7 +21,7 @@ class EventListener implements Listener{
 	public function onLogin(PlayerLoginEvent $event){
 		if ($event->getPlayer()->hasPermission("we.session")){
 			if (is_null(($session = API::getSession($event->getPlayer())))){
-				API::addSession(new Session($event->getPlayer()));
+				$session = API::addSession(new Session($event->getPlayer()));
 				Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
 			} else{
 				$session->setPlayer($event->getPlayer());

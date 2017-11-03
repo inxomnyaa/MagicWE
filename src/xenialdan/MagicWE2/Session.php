@@ -32,9 +32,7 @@ class Session{
 		$this->setUUID($player->getUniqueId());
 	}
 
-	public function __destruct(){ // TODO clean up objects
-		unset($this);
-	}
+	public function __destruct(){ } // TODO clean up objects
 
 	/**
 	 * @param null|Player $player
@@ -172,7 +170,7 @@ class Session{
 	 * optimise destroySession/__destruct of sessions
 	 * undo/redo clipboards
 	 * clipboard selection (renaming?)
-	 * 
+	 *
 	 * ask users what else they want
 	 */
 }
