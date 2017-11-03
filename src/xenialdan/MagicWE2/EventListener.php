@@ -53,7 +53,7 @@ class EventListener implements Listener{
 			switch ($event->getItem()->getId()){
 				case ItemIds::WOODEN_AXE: {
 					/** @var Session $session */
-					if(!($session = API::getSession($event->getPlayer())->isWandEnabled())){
+					if (!($session = API::getSession($event->getPlayer())->isWandEnabled())){
 						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
 						break;
 					}
@@ -78,7 +78,7 @@ class EventListener implements Listener{
 				}*/
 				case ItemIds::WOODEN_AXE: {
 					/** @var Session $session */
-					if(!($session = API::getSession($event->getPlayer())->isWandEnabled())){
+					if (!($session = API::getSession($event->getPlayer())->isWandEnabled())){
 						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
 						break;
 					}

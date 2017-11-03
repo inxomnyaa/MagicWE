@@ -8,8 +8,11 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
+use xenialdan\MagicWE2\Session;
 
 class Pos1Command extends PluginCommand{
 	public function __construct(Plugin $plugin){
@@ -21,8 +24,13 @@ class Pos1Command extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		if (!isset(Loader::$selections[$sender->getLowerCaseName()])) Loader::$selections[$sender->getLowerCaseName()] = new Selection($sender->getLevel());
-		$sender->sendMessage(Loader::$selections[$sender->getLowerCaseName()]->setPos1($sender->getPosition()));
+		/** @var Session $session */
+		if (!($session = API::getSession($sender)->isWandEnabled())){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+			return true; //TODO false?
+		}
+		$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($sender->getLevel())); // TODO check if the selection inside of the session updates
+		$sender->sendMessage($selection->setPos1($sender->getPosition()));
 		return true;
 	}
 }

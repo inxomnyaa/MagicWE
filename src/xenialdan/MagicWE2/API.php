@@ -323,7 +323,7 @@ class API{
 	 * @param Player $player
 	 * @return Session|null
 	 */
-	public static function getSession(Player $player) : ?Session{
+	public static function getSession(Player $player): ?Session{
 		return self::$sessions[$player->getId()] ?? null;
 	}
 

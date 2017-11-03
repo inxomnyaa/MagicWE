@@ -95,7 +95,7 @@ class Session{
 	 */
 	public function &getLatestSelection(){
 		$latestSelectionUUID = $this->getLatestSelectionUUID();
-		if(is_null($latestSelectionUUID)) return null;
+		if (is_null($latestSelectionUUID)) return null;
 		return $this->selections[$latestSelectionUUID->toString()] ?? null;
 	}
 

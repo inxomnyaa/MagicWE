@@ -9,8 +9,6 @@ use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Selection;
 
 class TogglewandCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
