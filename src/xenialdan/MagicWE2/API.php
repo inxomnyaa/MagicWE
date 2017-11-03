@@ -67,7 +67,7 @@ class API{
 	const FLAG_VARIANT = 0x07; // -v
 
 	/** @var Session[] */
-	private static $sessions;
+	private static $sessions = [];
 
 	public static function flagParser(array $flags){
 		$flagmeta = 1;
@@ -311,12 +311,12 @@ class API{
 	}
 
 	public static function &addSession(Session $session){
-		self::$sessions[$session->getPlayer()->getId()] = $session;
-		return self::$sessions[$session->getPlayer()->getId()];
+		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
+		return self::$sessions[$session->getPlayer()->getLowerCaseName()];
 	}
 
 	public static function destroySession(Session $session){
-		unset(self::$sessions[$session->getPlayer()->getId()]);
+		unset(self::$sessions[$session->getPlayer()->getLowerCaseName()]);
 		$session->__destruct(); // TODO clean up objects
 	}
 
@@ -325,8 +325,8 @@ class API{
 	 * @return Session|null
 	 */
 	public static function &getSession(Player $player): ?Session{
-		$session = self::$sessions[$player->getId()] ?? null;
-		var_dump($session);//TODO REMOVE - JUST FOR DEBUG
+		var_dump(array_keys(API::getSessions())); //TODO remove debug
+		$session = self::$sessions[$player->getLowerCaseName()] ?? null;
 		return $session;
 	}
 
