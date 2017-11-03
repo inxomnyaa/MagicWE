@@ -13,7 +13,6 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WECommands;
 
 class WandCommand extends WECommands{//TODO //togglewand
 	public function __construct(Plugin $plugin){

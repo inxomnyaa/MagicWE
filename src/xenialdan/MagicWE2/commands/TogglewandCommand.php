@@ -8,7 +8,6 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\WECommands;
 
 class TogglewandCommand extends WECommands{
 	public function __construct(Plugin $plugin){

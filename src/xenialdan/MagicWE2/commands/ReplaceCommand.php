@@ -10,7 +10,6 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WECommands;
 
 class ReplaceCommand extends WECommands{
 	public function __construct(Plugin $plugin){

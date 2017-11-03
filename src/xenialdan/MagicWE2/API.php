@@ -14,7 +14,7 @@ use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -283,9 +283,16 @@ class API{
 		}
 	}
 
-	public static function createBrush(Block $target, CompoundTag $settings){
+	/**
+	 * Creates a brush at a specific location with the passed settings
+	 * @param Block $target
+	 * @param NamedTag $settings
+	 * @return bool
+	 */
+	public static function createBrush(Block $target, NamedTag $settings){//TODO messages
 		$shape = null;
-		switch ($settings->getTag("type", StringTag::class)){
+		if (!$settings instanceof CompoundTag) return false;
+		switch ($settings->getString("type", "Square")){//TODO use/parse int as type
 			case "Square": {
 				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SQUARE, self::compoundToArray($settings));
 				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
@@ -300,8 +307,10 @@ class API{
 			Server::getInstance()->broadcastMessage("Unknown shape");
 			return false;
 		}
-		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'])));
-		return true;
+		$messages = [];
+		$error = false;
+		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'], $messages, $error)));
+		return !$error;
 	}
 
 	public static function compoundToArray(CompoundTag $compoundTag){

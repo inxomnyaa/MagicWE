@@ -12,7 +12,6 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\Session;
-use xenialdan\MagicWE2\WECommands;
 
 class Pos2Command extends WECommands{
 	public function __construct(Plugin $plugin){

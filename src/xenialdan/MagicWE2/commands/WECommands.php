@@ -1,6 +1,6 @@
 <?php
 
-namespace xenialdan\MagicWE2;
+namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
@@ -16,7 +16,7 @@ class WECommands extends PluginCommand{
 		}*/
 		$canUse = $this->canUse($sender);
 		if ($canUse){
-			if (!$this->execute($sender, $args)){
+			if (!$this->execute($sender, $commandLabel, $args)){
 				$sender->sendMessage(TextFormat::YELLOW . "Usage: " . $this->getUsage());
 			}
 		} elseif (!($sender instanceof Player)){
