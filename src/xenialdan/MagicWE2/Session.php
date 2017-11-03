@@ -158,4 +158,21 @@ class Session{
 		$this->wandEnabled = $wandEnabled;
 		return Loader::$prefix . "The wand tool is now " . $wandEnabled ? TextFormat::GREEN . " enabled" : TextFormat::RED . " disabled" . TextFormat::RESET . "!";//TODO #translation
 	}
+
+	/*
+	 * TODO list:
+	 * session storing/recovering from file/cleanup if too old
+	 * session items
+	 * session brushes
+	 * recover session items + commands to get back already created/configured items/tools/brushes
+	 * proper multi-selection-usage
+	 * setState/getState on big actions, status bar/boss bar/texts/titles/popups
+	 * inspect other player's sessions
+	 * destroy session if owning player lost permission/gets banned
+	 * optimise destroySession/__destruct of sessions
+	 * undo/redo clipboards
+	 * clipboard selection (renaming?)
+	 * 
+	 * ask users what else they want
+	 */
 }
