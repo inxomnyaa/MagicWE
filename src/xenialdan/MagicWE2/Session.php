@@ -69,7 +69,8 @@ class Session{
 	public function &addSelection(Selection $selection){
 		$this->selections[$selection->getUUID()->toString()] = $selection;
 		$this->setLatestSelectionUUID($selection->getUUID());
-		return $this->getLatestSelection();
+		$selection = $this->getLatestSelection();
+		return $selection;
 	}
 
 	/**
@@ -77,7 +78,8 @@ class Session{
 	 * @return null|Selection
 	 */
 	public function &getSelectionByUUID(UUID $uuid){
-		return $this->selections[$uuid->toString()] ?? null;
+		$selection = $this->selections[$uuid->toString()] ?? null;
+		return $selection;
 	}
 
 	/**
@@ -85,7 +87,8 @@ class Session{
 	 * @return null|Selection
 	 */
 	public function &getSelectionByString(string $uuid){
-		return $this->selections[$uuid] ?? null;
+		$selection = $this->selections[$uuid] ?? null;
+		return $selection;
 	}
 
 	/**
@@ -93,8 +96,12 @@ class Session{
 	 */
 	public function &getLatestSelection(){
 		$latestSelectionUUID = $this->getLatestSelectionUUID();
-		if (is_null($latestSelectionUUID)) return null;
-		return $this->selections[$latestSelectionUUID->toString()] ?? null;
+		if (is_null($latestSelectionUUID)) {
+			$selection = null;
+			return $selection;
+		}
+		$selection = $this->selections[$latestSelectionUUID->toString()] ?? null;
+		return $selection;
 	}
 
 	/**
