@@ -9,6 +9,8 @@ use pocketmine\utils\UUID;
 
 class Session{
 
+	/** @var UUID */
+	private $uuid;
 	/** @var Player|null */
 	private $player = null;
 	/** @var Selection[] */
@@ -24,6 +26,7 @@ class Session{
 
 	public function __construct(Player $player){
 		$this->setPlayer($player);
+		$this->setUUID($player->getUniqueId());
 	}
 
 	/**
@@ -38,6 +41,20 @@ class Session{
 	 */
 	public function getPlayer(){
 		return $this->player;
+	}
+
+	/**
+	 * @return UUID
+	 */
+	public function getUUID(): UUID{
+		return $this->uuid;
+	}
+
+	/**
+	 * @param UUID $uuid
+	 */
+	public function setUUID(UUID $uuid){
+		$this->uuid = $uuid;
 	}
 
 	/**
