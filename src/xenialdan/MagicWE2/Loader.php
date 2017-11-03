@@ -14,6 +14,7 @@ use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
+use xenialdan\MagicWE2\commands\TogglewandCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
 
 class Loader extends PluginBase{
@@ -55,6 +56,7 @@ class Loader extends PluginBase{
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new BrushCommand($this));
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new WandCommand($this));
 		$this->getServer()->getCommandMap()->register(FillCommand::class, new AsyncFillCommand($this));
+		$this->getServer()->getCommandMap()->register(TogglewandCommand::class, new TogglewandCommand($this));
 	}
 
 	public function onDisable(){

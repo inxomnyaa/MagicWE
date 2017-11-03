@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use pocketmine\Player;
+use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
 
 class Session{
@@ -23,6 +24,8 @@ class Session{
 	private $undo;
 	/** @var Clipboard[] */
 	private $redo;
+	/** @var bool */
+	private $wandEnabled = true;
 
 	public function __construct(Player $player){
 		$this->setPlayer($player);
@@ -124,5 +127,21 @@ class Session{
 	 */
 	public function setLatestselection(UUID $latestselection){
 		$this->latestselection = $latestselection;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isWandEnabled(): bool{
+		return $this->wandEnabled;
+	}
+
+	/**
+	 * @param bool $wandEnabled
+	 * @return string
+	 */
+	public function setWandEnabled(bool $wandEnabled){
+		$this->wandEnabled = $wandEnabled;
+		return Loader::$prefix . "The wand tool is now " . $wandEnabled ? TextFormat::GREEN . " enabled" : TextFormat::RED . " disabled" . TextFormat::RESET . "!";//TODO #translation
 	}
 }

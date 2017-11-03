@@ -9,6 +9,7 @@ use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\plugin\Plugin;
+use pocketmine\utils\TextFormat;
 
 class EventListener implements Listener{
 	public $owner;
@@ -51,6 +52,11 @@ class EventListener implements Listener{
 			$event->setCancelled();
 			switch ($event->getItem()->getId()){
 				case ItemIds::WOODEN_AXE: {
+					if(!($session = API::getSession($event->getPlayer())->isWandEnabled())){
+						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+						break;
+					}
+					//TODO use session
 					if (!isset(Loader::$selections[$event->getPlayer()->getLowerCaseName()])) Loader::$selections[$event->getPlayer()->getLowerCaseName()] = new Selection($event->getBlock()->getLevel());
 					$event->getPlayer()->sendMessage(Loader::$selections[$event->getPlayer()->getLowerCaseName()]->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
