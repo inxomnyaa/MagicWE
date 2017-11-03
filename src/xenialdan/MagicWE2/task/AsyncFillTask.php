@@ -11,7 +11,6 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\WEException;
 
 class AsyncFillTask extends AsyncTask{
@@ -28,13 +27,13 @@ class AsyncFillTask extends AsyncTask{
 	/**
 	 * AsyncFillTask constructor.
 	 * @param CommandSender $sender
-	 * @param Selection $selection
+	 * @param array $selection
 	 * @param array $chunks
 	 * @param array $blocks
 	 * @param array $newblocks
 	 * @param $flags
 	 */
-	public function __construct($sender, $selection, $chunks, $blocks = [], $newblocks = [], $flags){
+	public function __construct($sender, $selection = [], $chunks, $blocks = [], $newblocks = [], $flags){
 		$this->time = microtime(TRUE);
 		$this->sender = serialize($sender->getName());
 		$this->chunks = serialize($chunks);

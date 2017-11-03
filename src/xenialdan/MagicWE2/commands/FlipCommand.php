@@ -11,7 +11,6 @@ use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WECommands;
 
 class FlipCommand extends WECommands{
 	public function __construct(Plugin $plugin){
