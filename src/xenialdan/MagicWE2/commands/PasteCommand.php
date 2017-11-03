@@ -27,7 +27,7 @@ class PasteCommand extends WECommands{
 		$return = true;
 		try{
 			$sender->sendMessage(API::paste(API::getSession($sender)->getClipboards()[0], $sender->getLevel(), $sender, ...$args));// TODO Multiple clipboards
-		} catch (\TypeError $error){
+		} catch (\Error $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
