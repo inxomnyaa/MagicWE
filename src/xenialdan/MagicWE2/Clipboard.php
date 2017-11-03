@@ -63,29 +63,23 @@ class Clipboard{
 		/** @var Block $block */
 		foreach ($this->getData() as $block){
 			$newblock = clone $block;
-			$newpos = $newblock->add($this->getOffset());
-			var_dump($newpos->asVector3());
+			$newpos = $newblock->add($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
 			$newpos = $newpos->setComponents($newpos->getX() * $multiplier["x"], $newpos->getY() * $multiplier["y"], $newpos->getZ() * $multiplier["z"]);
-			$newpos = $newpos->subtract($this->getOffset());
+			$newpos = $newpos->subtract($this->getOffset())->ceil();//TEST IF FLOOR OR CEIL
 			$newblock->position(new Position($newpos->getFloorX(), $newpos->getFloorY(), $newpos->getFloorZ()));
 			switch ($newblock){
 				case $newblock instanceof Stair: {
 					$meta = $newblock->getDamage();
-					$faces = [
-						0 => 0,
-						1 => 2,
-						2 => 1,
-						3 => 3
-					];
 					if (API::hasFlag($directions, self::FLIP_X)){
-						$meta |= 0x01;
+						$meta |= 0x03;
 					}
 					if (API::hasFlag($directions, self::FLIP_Y)){
-						$meta |= 0x01;
-					}
-					if (API::hasFlag($directions, self::FLIP_Z)){
 						$meta |= 0x04; //correct
 					}
+					if (API::hasFlag($directions, self::FLIP_Z)){
+						$meta |= 0x03;
+					}
+					$newblock->setDamage($meta);
 				}
 				//TODO check + flip up, flip down etc
 			}
