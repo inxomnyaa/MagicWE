@@ -16,8 +16,8 @@ class Session{
 	private $player = null;
 	/** @var Selection[] */
 	private $selections;
-	/** @var UUID */
-	private $latestselection;
+	/** @var UUID|null */
+	private $latestselection = null;
 	/** @var Clipboard[] */
 	private $clipboards;
 	/** @var Clipboard[] */
@@ -69,6 +69,7 @@ class Session{
 	 */
 	public function addSelection(Selection $selection){
 		$this->selections[$selection->getUUID()->toString()] = $selection;
+		$this->setLatestSelectionUUID($selection->getUUID());
 	}
 
 	/**
@@ -88,6 +89,15 @@ class Session{
 	}
 
 	/**
+	 * @return null|Selection
+	 */
+	public function getLatestSelection(){
+		$latestSelectionUUID = $this->getLatestSelectionUUID();
+		if(is_null($latestSelectionUUID)) return null;
+		return $this->selections[$latestSelectionUUID->toString()] ?? null;
+	}
+
+	/**
 	 * @return Selection[]
 	 */
 	public function getSelections(){
@@ -102,6 +112,20 @@ class Session{
 	}
 
 	/**
+	 * @return UUID|null
+	 */
+	public function getLatestSelectionUUID(): ?UUID{
+		return $this->latestselection;
+	}
+
+	/**
+	 * @param UUID $latestselection
+	 */
+	public function setLatestSelectionUUID(UUID $latestselection){
+		$this->latestselection = $latestselection;
+	}
+
+	/**
 	 * @return Clipboard[]
 	 */
 	public function getClipboards(): array{
@@ -113,20 +137,6 @@ class Session{
 	 */
 	public function setClipboards(array $clipboards){
 		$this->clipboards = $clipboards;
-	}
-
-	/**
-	 * @return UUID
-	 */
-	public function getLatestselection(): UUID{
-		return $this->latestselection;
-	}
-
-	/**
-	 * @param UUID $latestselection
-	 */
-	public function setLatestselection(UUID $latestselection){
-		$this->latestselection = $latestselection;
 	}
 
 	/**
