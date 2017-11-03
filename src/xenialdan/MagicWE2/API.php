@@ -187,7 +187,7 @@ class API{
 				$clipboard->setOffset(new Vector3());
 			else
 				$clipboard->setOffset($selection->getMinVec3()->subtract($player));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
-			Loader::$clipboards[$player->getLowerCaseName()] = $clipboard;
+			API::getSession($player)->setClipboards([$clipboard]);// TODO Multiple clipboards
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
 		}
@@ -326,6 +326,7 @@ class API{
 	 */
 	public static function &getSession(Player $player): ?Session{
 		$session = self::$sessions[$player->getId()] ?? null;
+		var_dump($session);//TODO REMOVE - JUST FOR DEBUG
 		return $session;
 	}
 
