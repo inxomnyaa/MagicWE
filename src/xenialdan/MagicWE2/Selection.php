@@ -10,6 +10,7 @@ use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\UUID;
 
 class Selection{
 
@@ -19,9 +20,12 @@ class Selection{
 	private $pos1;
 	/** @var Position */
 	private $pos2;
+	/** @var UUID */
+	private $uuid;
 
 	public function __construct(Level $level, $minX = 0, $minY = 0, $minZ = 0, $maxX = 0, $maxY = 0, $maxZ = 0){
 		$this->setLevel($level);
+		$this->setUUID(UUID::fromRandom());
 	}
 
 	public function getAxisAlignedBB(): AxisAlignedBB{
@@ -181,5 +185,16 @@ class Selection{
 			"levelname" => $this->getLevel()->getName(),
 			"totalcount" => $this->getTotalCount()
 		]);
+	}
+
+	private function setUUID($uuid){
+		$this->uuid = $uuid;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getUuid(){
+		return $this->uuid;
 	}
 }
