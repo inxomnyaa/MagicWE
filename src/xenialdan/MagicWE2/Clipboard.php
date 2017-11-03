@@ -65,7 +65,7 @@ class Clipboard{
 			$newblock = clone $block;
 			$newpos = $newblock->add($this->getOffset());
 			var_dump($newpos->asVector3());
-			$newpos = $newpos->setComponents($newpos->getX() * $multiplier["x"], $newpos->getX() * $multiplier["x"], $newpos->getX() * $multiplier["x"]);
+			$newpos = $newpos->setComponents($newpos->getX() * $multiplier["x"], $newpos->getY() * $multiplier["y"], $newpos->getZ() * $multiplier["z"]);
 			$newpos = $newpos->subtract($this->getOffset());
 			$newblock->position(new Position($newpos->getFloorX(), $newpos->getFloorY(), $newpos->getFloorZ()));
 			switch ($newblock){
@@ -89,6 +89,7 @@ class Clipboard{
 				}
 				//TODO check + flip up, flip down etc
 			}
+			$newdata[] = $newblock;
 		}
 		$this->setData($newdata);
 	}
