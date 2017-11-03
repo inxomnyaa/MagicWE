@@ -39,7 +39,7 @@ class FillCommand extends WECommands{
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}
-		} catch (\TypeError $error){
+		} catch (\Error $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
