@@ -14,7 +14,7 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\WEException;
 
-class AsyncFillTask extends AsyncTask{
+class AsyncGetBlocksTask extends AsyncTask{
 
 	private $sender;
 	private $selection;
@@ -26,7 +26,7 @@ class AsyncFillTask extends AsyncTask{
 	private $newblocks;
 
 	/**
-	 * AsyncFillTask constructor.
+	 * AsyncGetBlocksXYZTask constructor.
 	 * @param CommandSender $sender
 	 * @param Selection $selection
 	 * @param array $chunks
@@ -35,11 +35,8 @@ class AsyncFillTask extends AsyncTask{
 	 * @param $flags
 	 */
 	public function __construct($sender, $selection, $chunks, $blocks = [], $newblocks = [], $flags){
-		$this->time = microtime(TRUE);
-		$this->sender = serialize($sender->getName());
 		$this->chunks = serialize($chunks);
 		$this->blocks = serialize($blocks);
-		$this->newblocks = serialize($newblocks);
 		$this->flags = $flags;
 		$this->selection = serialize($selection);
 	}

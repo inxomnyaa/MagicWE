@@ -45,7 +45,7 @@ abstract class Shape extends Selection{//TODO test
 	}
 
 	public function getCenter(){
-		return $this->center??new Vector3();
+		return $this->center ?? new Vector3();
 	}
 
 	public function setCenter(Vector3 $center){

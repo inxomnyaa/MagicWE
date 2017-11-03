@@ -14,9 +14,9 @@ use xenialdan\MagicWE2\Loader;
 
 class AsyncFillCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
-		parent::__construct("/afill", $plugin);
-		$this->setAliases([]);
-		$this->setPermission("we.command.afill");
+		parent::__construct("/aset", $plugin);
+		$this->setAliases(["/afill"]);
+		$this->setPermission("we.command.aset");
 		$this->setDescription("Fill an area asynchronously");
 	}
 
@@ -30,13 +30,13 @@ class AsyncFillCommand extends PluginCommand{
 		try{
 			$messages = [];
 			$error = false;
-			$blocks = API::blockParser(array_shift($args), $messages, $error);
+			$newblocks = API::blockParser(array_shift($args), $messages, $error);
 			foreach ($messages as $message){
 				$sender->sendMessage($message);
 			}
 			$return = !$error;
 			if ($return){
-				API::fillAsync($sender, Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $blocks, ...$args);
+				API::fillAsync($sender, Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $newblocks, ...$args);
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}

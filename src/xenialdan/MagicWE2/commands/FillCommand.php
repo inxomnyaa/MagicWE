@@ -30,13 +30,13 @@ class FillCommand extends PluginCommand{
 		try{
 			$messages = [];
 			$error = false;
-			$blocks = API::blockParser(array_shift($args), $messages, $error);
+			$newblocks = API::blockParser(array_shift($args), $messages, $error);
 			foreach ($messages as $message){
 				$sender->sendMessage($message);
 			}
 			$return = !$error;
 			if ($return){
-				$sender->sendMessage(API::fill(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $blocks, ...$args));
+				$sender->sendMessage(API::fill(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $newblocks, ...$args));
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}

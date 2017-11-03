@@ -111,6 +111,7 @@ class BrushCommand extends PluginCommand{
 								new IntTag("flags", API::flagParser($flags)),
 							]));
 							$player->getInventory()->addItem($item);
+							return $this;
 						}
 					}
 				);

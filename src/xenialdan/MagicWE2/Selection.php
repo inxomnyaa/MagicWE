@@ -9,9 +9,7 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use xenialdan\MagicWE2\task\AsyncGetBlocksXYZTask;
 
 class Selection{
 
@@ -105,30 +103,18 @@ class Selection{
 				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
 					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
 					#$block->setComponents((int)$x,(int)$y,(int)$z);
-					$block->position(new Position((int)$x,(int)$y,(int)$z));
+					$block->position(new Position((int)$x, (int)$y, (int)$z));
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
+							if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
 								$blocks[] = $block;
 						}
 					}
 				}
 			}
 		}
-		var_dump($blocks);
 		return $blocks;
-	}
-
-	/**
-	 * Returns the blocks by their actual position
-	 * @param int $flags
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
-	 * @return array
-	 */
-	public function getAsyncBlocks(int $flags, Block ...$filterblocks){
-		Server::getInstance()->getScheduler()->scheduleAsyncTask($asynctask = new AsyncGetBlocksXYZTask($this, $filterblocks));
-		return $asynctask->getResult();
 	}
 
 	/**
@@ -144,19 +130,18 @@ class Selection{
 				for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++){
 					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
 					#$block->setComponents((int)$rx,(int)$ry,(int)$rz);
-					$block->position(new Position((int)$rx,(int)$ry,(int)$rz));
+					$block->position(new Position((int)$rx, (int)$ry, (int)$rz));
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
 							if ($block->getId() === $filterblock->getId())
-								if((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
-								$blocks[] = $block;
+								if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
+									$blocks[] = $block;
 						}
 					}
 				}
 			}
 		}
-		var_dump($blocks);
 		return $blocks;
 	}
 
@@ -166,18 +151,35 @@ class Selection{
 	 *
 	 * @return array
 	 */
-	public function getTouchedChunks(): array {
+	public function getTouchedChunks(): array{
 		$maxX = floor($this->getAxisAlignedBB()->maxX);
 		$minX = floor($this->getAxisAlignedBB()->minX);
 		$maxZ = floor($this->getAxisAlignedBB()->maxZ);
 		$minZ = floor($this->getAxisAlignedBB()->minZ);
 		$touchedChunks = [];
-		for($x = $minX; $x <= $maxX + 16; $x += 16) {
-			for($z = $minZ; $z <= $maxZ + 16; $z += 16) {
+		for ($x = $minX; $x <= $maxX + 16; $x += 16){
+			for ($z = $minZ; $z <= $maxZ + 16; $z += 16){
 				$chunk = $this->getLevel()->getChunk($x >> 4, $z >> 4, true);
 				$touchedChunks[Level::chunkHash($x >> 4, $z >> 4)] = $chunk->fastSerialize();
 			}
 		}
 		return $touchedChunks;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function __serialize(){
+		$array = [];
+		return array_merge($array, (array)$this->getAxisAlignedBB(), [
+			"minx" => $this->getMinVec3()->getX(),
+			"miny" => $this->getMinVec3()->getY(),
+			"minz" => $this->getMinVec3()->getZ(),
+			"maxx" => $this->getMaxVec3()->getX(),
+			"maxy" => $this->getMaxVec3()->getY(),
+			"maxz" => $this->getMaxVec3()->getZ(),
+			"levelname" => $this->getLevel()->getName(),
+			"totalcount" => $this->getTotalCount()
+		]);
 	}
 }

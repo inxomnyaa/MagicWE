@@ -111,11 +111,11 @@ class API{
 	/**
 	 * @param Selection $selection
 	 * @param Level $level
-	 * @param Block[] $blocks
+	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
 	 * @return string
 	 */
-	public static function fill(Selection $selection, Level $level, $blocks = [], ...$flagarray){
+	public static function fill(Selection $selection, Level $level, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
@@ -123,7 +123,7 @@ class API{
 			foreach ($selection->getBlocks($flags) as $block){
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
-				$newblock = $blocks[array_rand($blocks, 1)];
+				$newblock = $newblocks[array_rand($newblocks, 1)];
 				if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
 					if ($level->getBlock($block)->getId() !== Block::AIR) continue;
 				}
@@ -142,12 +142,12 @@ class API{
 	 * @param CommandSender $sender
 	 * @param Selection $selection
 	 * @param Level $level
-	 * @param Block[] $blocks
+	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
 	 */
-	public static function fillAsync(CommandSender $sender, Selection $selection, Level $level, $blocks = [], ...$flagarray){
+	public static function fillAsync(CommandSender $sender, Selection $selection, Level $level, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
-		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($sender, $selection, $selection->getTouchedChunks(), $blocks, $flags));
+		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($sender, $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
 	}
 
 	/**
