@@ -66,17 +66,19 @@ class Session{
 
 	/**
 	 * @param Selection $selection
+	 * @return null|Selection
 	 */
-	public function addSelection(Selection $selection){
+	public function &addSelection(Selection $selection){
 		$this->selections[$selection->getUUID()->toString()] = $selection;
 		$this->setLatestSelectionUUID($selection->getUUID());
+		return $this->getLatestSelection();
 	}
 
 	/**
 	 * @param UUID $uuid
 	 * @return null|Selection
 	 */
-	public function getSelectionByUUID(UUID $uuid){
+	public function &getSelectionByUUID(UUID $uuid){
 		return $this->selections[$uuid->toString()] ?? null;
 	}
 
@@ -84,14 +86,14 @@ class Session{
 	 * @param string $uuid
 	 * @return null|Selection
 	 */
-	public function getSelectionByString(string $uuid){
+	public function &getSelectionByString(string $uuid){
 		return $this->selections[$uuid] ?? null;
 	}
 
 	/**
 	 * @return null|Selection
 	 */
-	public function getLatestSelection(){
+	public function &getLatestSelection(){
 		$latestSelectionUUID = $this->getLatestSelectionUUID();
 		if(is_null($latestSelectionUUID)) return null;
 		return $this->selections[$latestSelectionUUID->toString()] ?? null;
@@ -126,6 +128,7 @@ class Session{
 	}
 
 	/**
+	 * TODO
 	 * @return Clipboard[]
 	 */
 	public function getClipboards(): array{
@@ -133,6 +136,7 @@ class Session{
 	}
 
 	/**
+	 * TODO
 	 * @param Clipboard[] $clipboards
 	 */
 	public function setClipboards(array $clipboards){
