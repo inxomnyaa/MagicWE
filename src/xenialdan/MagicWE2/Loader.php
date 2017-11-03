@@ -10,6 +10,7 @@ use xenialdan\MagicWE2\commands\AsyncFillCommand;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\FillCommand;
+use xenialdan\MagicWE2\commands\FlipCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
@@ -39,6 +40,9 @@ class Loader extends PluginBase{
 		$lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
 		$this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
 		// TODO restore sessions
+		$this->getLogger()->info("Restoring Sessions");
+		$this->getLogger()->info("TODO: Restoring");
+		$this->getLogger()->info("Sessions successfully restored");
 	}
 
 	public function onEnable(){
@@ -53,6 +57,7 @@ class Loader extends PluginBase{
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new WandCommand($this));
 		$this->getServer()->getCommandMap()->register(FillCommand::class, new AsyncFillCommand($this));
 		$this->getServer()->getCommandMap()->register(TogglewandCommand::class, new TogglewandCommand($this));
+		$this->getServer()->getCommandMap()->register(FlipCommand::class, new FlipCommand($this));
 	}
 
 	public function onDisable(){

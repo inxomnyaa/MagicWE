@@ -202,10 +202,10 @@ class API{
 			foreach ($clipboard->getData() as $block1){
 				$block = clone $block1;
 				/** @var Block $block */
-				$blockvec3 = $player->add($block)->floor();
+				$blockvec3 = $player->add($block);
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
-				if ($level->setBlock($blockvec3, $block, false, false)) $changed++;
+				if ($level->setBlock($blockvec3->floor(), $block, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -325,7 +325,6 @@ class API{
 	 * @return Session|null
 	 */
 	public static function &getSession(Player $player): ?Session{
-		var_dump(array_keys(API::getSessions())); //TODO remove debug
 		$session = self::$sessions[$player->getLowerCaseName()] ?? null;
 		return $session;
 	}
