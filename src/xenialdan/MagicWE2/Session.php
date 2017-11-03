@@ -15,15 +15,15 @@ class Session{
 	/** @var Player|null */
 	private $player = null;
 	/** @var Selection[] */
-	private $selections;
+	private $selections = [];
 	/** @var UUID|null */
 	private $latestselection = null;
 	/** @var Clipboard[] */
-	private $clipboards;
+	private $clipboards = [];
 	/** @var Clipboard[] */
-	private $undo;
+	private $undo = [];
 	/** @var Clipboard[] */
-	private $redo;
+	private $redo = [];
 	/** @var bool */
 	private $wandEnabled = true;
 
