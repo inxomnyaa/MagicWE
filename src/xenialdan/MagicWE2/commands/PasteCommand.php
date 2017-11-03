@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\WECommands;
 
-class PasteCommand extends PluginCommand{
+class PasteCommand extends WECommands{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/paste", $plugin);
 		$this->setPermission("we.command.paste");

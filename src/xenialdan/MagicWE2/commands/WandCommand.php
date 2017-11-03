@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -14,8 +13,9 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\WECommands;
 
-class WandCommand extends PluginCommand{//TODO //togglewand
+class WandCommand extends WECommands{//TODO //togglewand
 	public function __construct(Plugin $plugin){
 		parent::__construct("/wand", $plugin);
 		$this->setPermission("we.command.wand");

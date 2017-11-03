@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
 use pocketmine\form\CustomForm;
 use pocketmine\form\element\CustomFormElement;
 use pocketmine\form\element\Dropdown;
@@ -27,7 +26,7 @@ use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class BrushCommand extends PluginCommand{
+class BrushCommand extends WECommands{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/brush", $plugin);
 		$this->setPermission("we.command.brush");
