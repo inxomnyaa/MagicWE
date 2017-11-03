@@ -66,6 +66,9 @@ class API{
 	 */
 	const FLAG_VARIANT = 0x07; // -v
 
+	/** @var Session[] */
+	private static $sessions;
+
 	public static function flagParser(array $flags){
 		$flagmeta = 1;
 		foreach ($flags as $flag){
@@ -305,5 +308,29 @@ class API{
 		$nbt = new NBT();
 		$nbt->setData($compoundTag);
 		return $nbt->getArray();
+	}
+
+	public static function addSession(Session $session){
+		self::$sessions[$session->getPlayer()->getId()] = $session;
+	}
+
+	public static function destroySession(Session $session){
+		unset(self::$sessions[$session->getPlayer()->getId()]);
+		$session->__destruct(); // TODO clean up objects
+	}
+
+	/**
+	 * @param Player $player
+	 * @return Session|null
+	 */
+	public static function getSession(Player $player) : ?Session{
+		return self::$sessions[$player->getId()] ?? null;
+	}
+
+	/**
+	 * @return Session[]
+	 */
+	public static function getSessions(): array{
+		return self::$sessions;
 	}
 }

@@ -29,6 +29,10 @@ class Session{
 		$this->setUUID($player->getUniqueId());
 	}
 
+	public function __destruct(){ // TODO clean up objects
+		unset($this);
+	}
+
 	/**
 	 * @param null|Player $player
 	 */

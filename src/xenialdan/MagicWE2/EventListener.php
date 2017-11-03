@@ -5,6 +5,7 @@ namespace xenialdan\MagicWE2;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\plugin\Plugin;
@@ -14,6 +15,18 @@ class EventListener implements Listener{
 
 	public function __construct(Plugin $plugin){
 		$this->owner = $plugin;
+	}
+
+	public function onLogin(PlayerLoginEvent $event){
+		if ($event->getPlayer()->hasPermission("we.session")){
+			if (is_null(($session = API::getSession($event->getPlayer())))){
+				API::addSession(new Session($event->getPlayer()));
+				Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+			} else{
+				$session->setPlayer($event->getPlayer());
+				Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+			}
+		}
 	}
 
 	public function onInteract(PlayerInteractEvent $event){

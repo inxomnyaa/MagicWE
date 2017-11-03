@@ -41,6 +41,7 @@ class Loader extends PluginBase{
 		$this->reloadConfig();
 		$lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
 		$this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
+		// TODO restore sessions
 	}
 
 	public function onEnable(){
@@ -54,6 +55,15 @@ class Loader extends PluginBase{
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new BrushCommand($this));
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new WandCommand($this));
 		$this->getServer()->getCommandMap()->register(FillCommand::class, new AsyncFillCommand($this));
+	}
+
+	public function onDisable(){
+		$this->getServer()->getLogger()->log("Destroying Sessions");
+		foreach (API::getSessions() as $session){
+			//TODO store sessions
+			API::destroySession($session);
+		}
+		$this->getServer()->getLogger()->log("Sessions successfully destroyed");
 	}
 
 	/**
