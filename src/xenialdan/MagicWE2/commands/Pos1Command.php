@@ -25,7 +25,7 @@ class Pos1Command extends PluginCommand{
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
 		/** @var Session $session */
-		if (!($session = API::getSession($sender)->isWandEnabled())){
+		if (!($session = API::getSession($sender))->isWandEnabled()){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
 			return true; //TODO false?
 		}
