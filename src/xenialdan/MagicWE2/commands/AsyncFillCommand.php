@@ -36,7 +36,7 @@ class AsyncFillCommand extends PluginCommand{
 			}
 			$return = !$error;
 			if ($return){
-				API::fillAsync($sender, Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $newblocks, ...$args);
+				API::fillAsync($sender, ($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args);
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}

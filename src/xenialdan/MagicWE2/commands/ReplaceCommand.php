@@ -36,7 +36,7 @@ class ReplaceCommand extends PluginCommand{
 			}
 			$return = !$error;
 			if ($return){
-				$sender->sendMessage(API::replace(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $blocks1, $blocks2, ...$args));
+				$sender->sendMessage(API::replace(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $blocks1, $blocks2, ...$args));
 			} else{
 				throw new \TypeError("Could not replace with the selected blocks");
 			}

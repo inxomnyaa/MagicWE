@@ -36,7 +36,7 @@ class FillCommand extends PluginCommand{
 			}
 			$return = !$error;
 			if ($return){
-				$sender->sendMessage(API::fill(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $newblocks, ...$args));
+				$sender->sendMessage(API::fill(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args));
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}

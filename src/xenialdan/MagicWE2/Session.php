@@ -96,7 +96,7 @@ class Session{
 	 */
 	public function &getLatestSelection(){
 		$latestSelectionUUID = $this->getLatestSelectionUUID();
-		if (is_null($latestSelectionUUID)) {
+		if (is_null($latestSelectionUUID)){
 			$selection = null;
 			return $selection;
 		}
@@ -161,7 +161,7 @@ class Session{
 	 */
 	public function setWandEnabled(bool $wandEnabled){
 		$this->wandEnabled = $wandEnabled;
-		return Loader::$prefix . "The wand tool is now " . $wandEnabled ? TextFormat::GREEN . " enabled" : TextFormat::RED . " disabled" . TextFormat::RESET . "!";//TODO #translation
+		return Loader::$prefix . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
 	}
 
 	/*

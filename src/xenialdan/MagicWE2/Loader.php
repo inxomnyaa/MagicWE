@@ -18,10 +18,6 @@ use xenialdan\MagicWE2\commands\TogglewandCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
 
 class Loader extends PluginBase{
-	/** @var Selection[] */
-	public static $selections = [];
-	/** @var Clipboard[] */
-	public static $clipboards = [];
 	public static $prefix = '[MagicWE by XenialDan] ';
 	/** @var Loader */
 	private static $instance = null;

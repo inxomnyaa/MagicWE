@@ -27,7 +27,7 @@ class CopyCommand extends PluginCommand{
 		/** @var Player $sender */
 		$return = true;
 		try{
-			$sender->sendMessage(API::copy(Loader::$selections[$sender->getLowerCaseName()], $sender->getLevel(), $sender, ...$args));
+			$sender->sendMessage(API::copy(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $sender, ...$args));
 		} catch (\TypeError $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
