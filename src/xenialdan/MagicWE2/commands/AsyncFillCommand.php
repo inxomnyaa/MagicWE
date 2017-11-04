@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class AsyncFillCommand extends WECommands{
+class AsyncFillCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/aset", $plugin);
 		$this->setAliases(["/afill"]);
@@ -27,6 +28,7 @@ class AsyncFillCommand extends WECommands{
 		/** @var Player $sender */
 		$return = true;
 		try{
+			parent::execute($sender, $commandLabel, $args);
 			$messages = [];
 			$error = false;
 			$newblocks = API::blockParser(array_shift($args), $messages, $error);
@@ -44,7 +46,7 @@ class AsyncFillCommand extends WECommands{
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
-			return $return;
+			return parent::execute($sender, $commandLabel, $args) && $return;
 		}
 	}
 }

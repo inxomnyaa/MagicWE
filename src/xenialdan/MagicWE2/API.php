@@ -186,7 +186,7 @@ class API{
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else
-				$clipboard->setOffset($selection->getMinVec3()->subtract($player));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
+				$clipboard->setOffset($selection->getMinVec3()->subtract($player)->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
 			API::getSession($player)->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
