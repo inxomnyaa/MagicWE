@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class CopyCommand extends WECommands{
+class CopyCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/copy", $plugin);
 		$this->setPermission("we.command.copy");
@@ -23,6 +24,7 @@ class CopyCommand extends WECommands{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
+		parent::execute($sender, $commandLabel, $args);
 		/** @var Player $sender */
 		$return = true;
 		try{
@@ -32,7 +34,7 @@ class CopyCommand extends WECommands{
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
-			return $return;
+			return parent::execute($sender, $commandLabel, $args) && $return;
 		}
 	}
 }

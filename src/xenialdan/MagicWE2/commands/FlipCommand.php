@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
@@ -12,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
 
-class FlipCommand extends WECommands{
+class FlipCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/flip", $plugin);
 		$this->setPermission("we.command.flip");
@@ -38,14 +39,15 @@ class FlipCommand extends WECommands{
 					$flags ^= 1 << $constants["FLIP_" . $arg];
 				} else throw new \TypeError('"' . $arg . '" is not a valid input');
 			}
+			$sender->sendMessage(Loader::$prefix . "Trying to flip clipboard by " . implode("|", $args));
 			($session = API::getSession($sender))->getClipboards()[0]->flip($flags);//TODO multi-clipboard support
-			$sender->sendMessage(Loader::$prefix . "Successfully tried to flip clipboard");
+			$sender->sendMessage(Loader::$prefix . "Successfully flipped clipboard");
 		} catch (\Error $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
-			return $return;
+			return parent::execute($sender, $commandLabel, $args) && $return;
 		}
 	}
 }

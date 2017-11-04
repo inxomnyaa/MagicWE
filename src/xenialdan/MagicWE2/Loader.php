@@ -41,7 +41,18 @@ class Loader extends PluginBase{
 		$this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
 		// TODO restore sessions
 		$this->getLogger()->info("Restoring Sessions");
-		$this->getLogger()->info("TODO: Restoring");
+
+		foreach ($this->getServer()->getOnlinePlayers() as $player){ // Restores on /reload for now
+			if ($player->hasPermission("we.session")){
+				if (is_null(($session = API::getSession($player)))){
+					$session = API::addSession(new Session($player));
+					Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+				} else{
+					$session->setPlayer($player);
+					Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+				}
+			}
+		}
 		$this->getLogger()->info("Sessions successfully restored");
 	}
 
