@@ -164,6 +164,34 @@ class Session{
 		return Loader::$prefix . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
 	}
 
+	/**
+	 * @return Clipboard[]
+	 */
+	public function getUndos(): array{
+		return $this->undo;
+	}
+
+	/**
+	 * @param Clipboard[] $undo
+	 */
+	public function setUndos(array $undo){
+		$this->undo = $undo;
+	}
+
+	/**
+	 * @return Clipboard[]
+	 */
+	public function getRedos(): array{
+		return $this->redo;
+	}
+
+	/**
+	 * @param Clipboard[] $redo
+	 */
+	public function setRedos(array $redo){
+		$this->redo = $redo;
+	}
+
 	/*
 	 * TODO list:
 	 * session storing/recovering from file/cleanup if too old
