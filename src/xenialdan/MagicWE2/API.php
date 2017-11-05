@@ -14,7 +14,7 @@ use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -186,8 +186,8 @@ class API{
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else
-				$clipboard->setOffset($selection->getMinVec3()->subtract($player));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
-			API::getSession($player)->setClipboards([$clipboard]);// TODO Multiple clipboards
+				$clipboard->setOffset($selection->getMinVec3()->subtract($player)->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
+			API::getSession($player)->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
 		}
@@ -202,10 +202,10 @@ class API{
 			foreach ($clipboard->getData() as $block1){
 				$block = clone $block1;
 				/** @var Block $block */
-				$blockvec3 = $player->add($block)->floor();
+				$blockvec3 = $player->add($block);
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
-				if ($level->setBlock($blockvec3, $block, false, false)) $changed++;
+				if ($level->setBlock($blockvec3->floor(), $block, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -283,9 +283,16 @@ class API{
 		}
 	}
 
-	public static function createBrush(Block $target, CompoundTag $settings){
+	/**
+	 * Creates a brush at a specific location with the passed settings
+	 * @param Block $target
+	 * @param NamedTag $settings
+	 * @return bool
+	 */
+	public static function createBrush(Block $target, NamedTag $settings){//TODO messages
 		$shape = null;
-		switch ($settings->getTag("type", StringTag::class)){
+		if (!$settings instanceof CompoundTag) return false;
+		switch ($settings->getString("type", "Square")){//TODO use/parse int as type
 			case "Square": {
 				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SQUARE, self::compoundToArray($settings));
 				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
@@ -300,8 +307,10 @@ class API{
 			Server::getInstance()->broadcastMessage("Unknown shape");
 			return false;
 		}
-		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'])));
-		return true;
+		$messages = [];
+		$error = false;
+		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'], $messages, $error)));
+		return !$error;
 	}
 
 	public static function compoundToArray(CompoundTag $compoundTag){
@@ -325,7 +334,6 @@ class API{
 	 * @return Session|null
 	 */
 	public static function &getSession(Player $player): ?Session{
-		var_dump(array_keys(API::getSessions())); //TODO remove debug
 		$session = self::$sessions[$player->getLowerCaseName()] ?? null;
 		return $session;
 	}

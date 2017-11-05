@@ -20,6 +20,6 @@ class TogglewandCommand extends PluginCommand{
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
 		$sender->sendMessage(($session = API::getSession($sender))->setWandEnabled(!$session->isWandEnabled()));
-		return true;
+		return parent::execute($sender, $commandLabel, $args);
 	}
 }

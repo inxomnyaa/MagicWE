@@ -28,6 +28,7 @@ class AsyncFillCommand extends PluginCommand{
 		/** @var Player $sender */
 		$return = true;
 		try{
+			parent::execute($sender, $commandLabel, $args);
 			$messages = [];
 			$error = false;
 			$newblocks = API::blockParser(array_shift($args), $messages, $error);
@@ -40,12 +41,12 @@ class AsyncFillCommand extends PluginCommand{
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}
-		} catch (\TypeError $error){
+		} catch (\Error $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
-			return $return;
+			return parent::execute($sender, $commandLabel, $args) && $return;
 		}
 	}
 }

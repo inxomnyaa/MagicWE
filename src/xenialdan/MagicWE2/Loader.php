@@ -10,6 +10,7 @@ use xenialdan\MagicWE2\commands\AsyncFillCommand;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\FillCommand;
+use xenialdan\MagicWE2\commands\FlipCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
@@ -39,6 +40,20 @@ class Loader extends PluginBase{
 		$lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
 		$this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
 		// TODO restore sessions
+		$this->getLogger()->info("Restoring Sessions");
+
+		foreach ($this->getServer()->getOnlinePlayers() as $player){ // Restores on /reload for now
+			if ($player->hasPermission("we.session")){
+				if (is_null(($session = API::getSession($player)))){
+					$session = API::addSession(new Session($player));
+					Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+				} else{
+					$session->setPlayer($player);
+					Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+				}
+			}
+		}
+		$this->getLogger()->info("Sessions successfully restored");
 	}
 
 	public function onEnable(){
@@ -53,6 +68,7 @@ class Loader extends PluginBase{
 		$this->getServer()->getCommandMap()->register(BrushCommand::class, new WandCommand($this));
 		$this->getServer()->getCommandMap()->register(FillCommand::class, new AsyncFillCommand($this));
 		$this->getServer()->getCommandMap()->register(TogglewandCommand::class, new TogglewandCommand($this));
+		$this->getServer()->getCommandMap()->register(FlipCommand::class, new FlipCommand($this));
 	}
 
 	public function onDisable(){

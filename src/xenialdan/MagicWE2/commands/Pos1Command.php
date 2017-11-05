@@ -31,6 +31,6 @@ class Pos1Command extends PluginCommand{
 		}
 		$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($sender->getLevel())); // TODO check if the selection inside of the session updates
 		$sender->sendMessage($selection->setPos1($sender->getPosition()));
-		return true;
+		return parent::execute($sender, $commandLabel, $args);
 	}
 }
