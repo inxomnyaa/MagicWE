@@ -11,6 +11,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\WEException;
 
 class FillCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
@@ -28,6 +29,7 @@ class FillCommand extends PluginCommand{
 		/** @var Player $sender */
 		$return = true;
 		try{
+			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
 			$messages = [];
 			$error = false;
 			$newblocks = API::blockParser(array_shift($args), $messages, $error);
@@ -38,11 +40,14 @@ class FillCommand extends PluginCommand{
 			if ($return){
 				$sender->sendMessage(API::fill(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args));
 			} else{
-				throw new \TypeError("Could not fill with the selected blocks");
+				throw new \InvalidArgumentException("Could not fill with the selected blocks");
 			}
-		} catch (\Error $error){
+		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
+		} catch (\Error $error){
+			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
 			return parent::execute($sender, $commandLabel, $args) && $return;

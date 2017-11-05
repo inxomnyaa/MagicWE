@@ -11,6 +11,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\WEException;
 
 class CopyCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
@@ -24,14 +25,16 @@ class CopyCommand extends PluginCommand{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		parent::execute($sender, $commandLabel, $args);
 		/** @var Player $sender */
 		$return = true;
 		try{
 			$sender->sendMessage(API::copy(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $sender, ...$args));
-		} catch (\Error $error){
+		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
+		} catch (\Error $error){
+			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
 			return parent::execute($sender, $commandLabel, $args) && $return;

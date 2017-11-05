@@ -68,6 +68,8 @@ class API{
 
 	/** @var Session[] */
 	private static $sessions = [];
+	/** @var Clipboard[] */
+	private static $schematics = [];
 
 	public static function flagParser(array $flags){
 		$flagmeta = 1;
@@ -319,6 +321,7 @@ class API{
 		return $nbt->getArray();
 	}
 
+
 	public static function &addSession(Session $session){
 		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
 		return self::$sessions[$session->getPlayer()->getLowerCaseName()];
@@ -343,5 +346,19 @@ class API{
 	 */
 	public static function getSessions(): array{
 		return self::$sessions;
+	}
+
+	/**
+	 * @return Clipboard[]
+	 */
+	public static function getSchematics(): array{
+		return self::$schematics;
+	}
+
+	/**
+	 * @param Clipboard[] $schematics
+	 */
+	public static function setSchematics(array $schematics){
+		self::$schematics = $schematics;
 	}
 }

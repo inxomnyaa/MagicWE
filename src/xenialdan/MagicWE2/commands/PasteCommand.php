@@ -11,6 +11,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\WEException;
 
 class PasteCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
@@ -28,9 +29,12 @@ class PasteCommand extends PluginCommand{
 		$return = true;
 		try{
 			$sender->sendMessage(API::paste(API::getSession($sender)->getClipboards()[0], $sender->getLevel(), $sender, ...$args));// TODO Multiple clipboards
-		} catch (\Error $error){
+		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
+		} catch (\Error $error){
+			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
 			return parent::execute($sender, $commandLabel, $args) && $return;
