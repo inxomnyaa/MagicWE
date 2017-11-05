@@ -8,7 +8,10 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\WEException;
 
 class TogglewandCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
@@ -19,7 +22,18 @@ class TogglewandCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$sender->sendMessage(($session = API::getSession($sender))->setWandEnabled(!$session->isWandEnabled()));
-		return parent::execute($sender, $commandLabel, $args);
+		$return = true;
+		try{
+			$sender->sendMessage(($session = API::getSession($sender))->setWandEnabled(!$session->isWandEnabled()));
+		} catch (WEException $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
+		} catch (\Error $error){
+			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$return = false;
+		} finally{
+			return parent::execute($sender, $commandLabel, $args) && $return;
+		}
 	}
 }

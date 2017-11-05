@@ -11,6 +11,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\WEException;
 
 class ReplaceCommand extends PluginCommand{
 	public function __construct(Plugin $plugin){
@@ -27,6 +28,7 @@ class ReplaceCommand extends PluginCommand{
 		/** @var Player $sender */
 		$return = true;
 		try{
+			if (empty($args) && count($args) < 2) throw new \InvalidArgumentCountException("No arguments supplied");
 			$messages = [];
 			$error = false;
 			$blocks1 = API::blockParser(array_shift($args), $messages, $error);
@@ -38,11 +40,14 @@ class ReplaceCommand extends PluginCommand{
 			if ($return){
 				$sender->sendMessage(API::replace(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $blocks1, $blocks2, ...$args));
 			} else{
-				throw new \TypeError("Could not replace with the selected blocks");
+				throw new \InvalidArgumentException("Could not replace with the selected blocks");
 			}
-		} catch (\Error $error){
+		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
+		} catch (\Error $error){
+			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
 			return parent::execute($sender, $commandLabel, $args) && $return;
