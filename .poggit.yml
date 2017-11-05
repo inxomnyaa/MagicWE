@@ -2,4 +2,7 @@
 projects:
   MagicWE2:
     path: ""
+    libs:
+      - src: libschematic/libschematic
+        version: ^0.0.6
 ...
