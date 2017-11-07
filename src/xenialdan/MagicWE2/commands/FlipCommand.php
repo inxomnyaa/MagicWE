@@ -14,7 +14,7 @@ use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class FlipCommand extends PluginCommand{
+class FlipCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/flip", $plugin);
 		$this->setPermission("we.command.flip");
@@ -27,7 +27,8 @@ class FlipCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
 
@@ -51,7 +52,7 @@ class FlipCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

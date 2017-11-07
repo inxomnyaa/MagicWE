@@ -28,7 +28,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class BrushCommand extends PluginCommand{
+class BrushCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/brush", $plugin);
 		$this->setPermission("we.command.brush");
@@ -42,7 +42,8 @@ class BrushCommand extends PluginCommand{
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		$lang = Loader::getInstance()->getLanguage();
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			if ($sender instanceof Player){
 				$sender->sendForm(
@@ -127,7 +128,7 @@ class BrushCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class TogglewandCommand extends PluginCommand{
+class TogglewandCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/togglewand", $plugin);
 		$this->setPermission("we.command.togglewand");
@@ -22,7 +22,8 @@ class TogglewandCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			$sender->sendMessage(($session = API::getSession($sender))->setWandEnabled(!$session->isWandEnabled()));
 		} catch (WEException $error){
@@ -33,7 +34,7 @@ class TogglewandCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

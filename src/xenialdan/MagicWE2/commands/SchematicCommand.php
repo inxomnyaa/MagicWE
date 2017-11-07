@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class SchematicCommand extends PluginCommand{
+class SchematicCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/schematic", $plugin);
 		$this->setAliases(["/schem"]);
@@ -27,7 +27,8 @@ class SchematicCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
 			switch ($type = strtolower(array_shift($args[0]))){
@@ -61,7 +62,7 @@ class SchematicCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

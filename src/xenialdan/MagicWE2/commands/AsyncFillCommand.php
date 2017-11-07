@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class AsyncFillCommand extends PluginCommand{
+class AsyncFillCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/aset", $plugin);
 		$this->setAliases(["/afill"]);
@@ -27,9 +27,9 @@ class AsyncFillCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
-			parent::execute($sender, $commandLabel, $args);
 			$messages = [];
 			$error = false;
 			$newblocks = API::blockParser(array_shift($args), $messages, $error);
@@ -50,7 +50,7 @@ class AsyncFillCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

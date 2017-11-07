@@ -15,7 +15,7 @@ use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\Session;
 use xenialdan\MagicWE2\WEException;
 
-class Pos2Command extends PluginCommand{
+class Pos2Command extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/pos2", $plugin);
 		$this->setAliases(["/2"]);
@@ -25,7 +25,8 @@ class Pos2Command extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			/** @var Session $session */
 			$session = API::getSession($sender);
@@ -39,7 +40,7 @@ class Pos2Command extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

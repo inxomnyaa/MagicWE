@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class CopyCommand extends PluginCommand{
+class CopyCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/copy", $plugin);
 		$this->setPermission("we.command.copy");
@@ -26,7 +26,8 @@ class CopyCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			$sender->sendMessage(API::copy(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $sender, ...$args));
 		} catch (WEException $error){
@@ -37,7 +38,7 @@ class CopyCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }
