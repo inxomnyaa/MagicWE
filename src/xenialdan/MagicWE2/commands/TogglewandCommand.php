@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class TogglewandCommand extends PluginCommand{
+class TogglewandCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/togglewand", $plugin);
 		$this->setPermission("we.command.togglewand");

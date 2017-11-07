@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class ReplaceCommand extends PluginCommand{
+class ReplaceCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/replace", $plugin);
 		$this->setPermission("we.command.replace");
