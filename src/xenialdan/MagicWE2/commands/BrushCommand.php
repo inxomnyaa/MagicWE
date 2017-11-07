@@ -28,7 +28,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class BrushCommand extends PluginCommand{
+class BrushCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/brush", $plugin);
 		$this->setPermission("we.command.brush");

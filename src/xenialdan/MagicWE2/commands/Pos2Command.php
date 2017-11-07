@@ -15,7 +15,7 @@ use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\Session;
 use xenialdan\MagicWE2\WEException;
 
-class Pos2Command extends PluginCommand{
+class Pos2Command extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/pos2", $plugin);
 		$this->setAliases(["/2"]);

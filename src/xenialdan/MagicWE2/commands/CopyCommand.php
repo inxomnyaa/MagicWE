@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class CopyCommand extends PluginCommand{
+class CopyCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/copy", $plugin);
 		$this->setPermission("we.command.copy");

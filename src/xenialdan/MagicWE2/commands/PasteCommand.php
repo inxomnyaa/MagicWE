@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class PasteCommand extends PluginCommand{
+class PasteCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/paste", $plugin);
 		$this->setPermission("we.command.paste");

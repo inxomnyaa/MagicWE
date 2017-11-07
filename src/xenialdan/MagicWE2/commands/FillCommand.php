@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class FillCommand extends PluginCommand{
+class FillCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/set", $plugin);
 		$this->setAliases(["/fill"]);

@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class SchematicCommand extends PluginCommand{
+class SchematicCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/schematic", $plugin);
 		$this->setAliases(["/schem"]);

@@ -14,7 +14,7 @@ use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class FlipCommand extends PluginCommand{
+class FlipCommand extends WECommand{
 	public function __construct(Plugin $plugin){
 		parent::__construct("/flip", $plugin);
 		$this->setPermission("we.command.flip");
