@@ -26,7 +26,8 @@ class ReplaceCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			if (empty($args) && count($args) < 2) throw new \InvalidArgumentCountException("No arguments supplied");
 			$messages = [];
@@ -50,7 +51,7 @@ class ReplaceCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

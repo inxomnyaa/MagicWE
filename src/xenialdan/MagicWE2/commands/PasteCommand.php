@@ -26,7 +26,8 @@ class PasteCommand extends PluginCommand{
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
 			$sender->sendMessage(API::paste(API::getSession($sender)->getClipboards()[0], $sender->getLevel(), $sender, ...$args));// TODO Multiple clipboards
 		} catch (WEException $error){
@@ -37,7 +38,7 @@ class PasteCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }

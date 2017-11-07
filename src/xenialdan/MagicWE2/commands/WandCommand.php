@@ -28,10 +28,11 @@ class WandCommand extends PluginCommand{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
+		$lang = Loader::getInstance()->getLanguage();
 		/** @var Player $sender */
-		$return = true;
+		$return = parent::execute($sender, $commandLabel, $args);
+		if(!$return) return $return;
 		try{
-			$lang = Loader::getInstance()->getLanguage();
 			$item = ItemFactory::get(ItemIds::WOODEN_AXE);
 			$item->addEnchantment(Enchantment::getEnchantment(Enchantment::PROTECTION));
 			$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Wand');
@@ -50,7 +51,7 @@ class WandCommand extends PluginCommand{
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$return = false;
 		} finally{
-			return parent::execute($sender, $commandLabel, $args) && $return;
+			return $return;
 		}
 	}
 }
