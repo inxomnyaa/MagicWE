@@ -17,6 +17,10 @@ class ShapeGenerator{
 				return new Square($level, $options);
 				break;
 			}
+			case self::TYPE_SPHERE: {
+				return new Sphere($level, $options);
+				break;
+			}
 			default:
 				Server::getInstance()->broadcastMessage("Not implemented yet");
 		}
