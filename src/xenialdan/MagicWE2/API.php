@@ -300,6 +300,11 @@ class API{
 				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
 				break;
 			}
+			case "Sphere": {
+				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
+				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+				break;
+			}
 
 			case null:
 			default:
