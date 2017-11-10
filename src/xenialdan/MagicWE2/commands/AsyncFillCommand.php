@@ -13,13 +13,13 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class FillCommand extends WECommand{
+class AsyncFillCommand extends WECommand{
 	public function __construct(Plugin $plugin){
-		parent::__construct("/set", $plugin);
-		$this->setAliases(["/fill"]);
-		$this->setPermission("we.command.set");
-		$this->setDescription("Fill an area");
-		$this->setUsage("//set <blocks> [flags]");
+		parent::__construct("/aset", $plugin);
+		$this->setAliases(["/afill"]);
+		$this->setPermission("we.command.aset");
+		$this->setDescription("Fill an area asynchronously");
+		$this->setUsage("//afill <blocks> [flags...]");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -31,7 +31,6 @@ class FillCommand extends WECommand{
 		}
 		$lang = Loader::getInstance()->getLanguage();
 		try{
-			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
 			$messages = [];
 			$error = false;
 			$newblocks = API::blockParser(array_shift($args), $messages, $error);
@@ -40,9 +39,9 @@ class FillCommand extends WECommand{
 			}
 			$return = !$error;
 			if ($return){
-				$sender->sendMessage(API::fill(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args));
+				API::fillAsync($sender, ($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args);
 			} else{
-				throw new \InvalidArgumentException("Could not fill with the selected blocks");
+				throw new \TypeError("Could not fill with the selected blocks");
 			}
 		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");

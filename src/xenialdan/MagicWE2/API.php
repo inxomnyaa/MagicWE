@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
 use pocketmine\block\UnknownBlock;
+use pocketmine\command\CommandSender;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
@@ -13,11 +14,12 @@ use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
+use xenialdan\MagicWE2\task\AsyncFillTask;
 
 
 class API{
@@ -57,6 +59,17 @@ class API{
 	 * stood, relative by the copied area when you copied it.
 	 */
 	const FLAG_UNCENTERED = 0x06; // -p
+	/**
+	 * Without the -v flag, block checks, selections and replacing will use and check the exact meta
+	 * of the blocks, with the flag it will check for similar variants
+	 * For example: Oak Logs with any rotation instead of a specific rotation
+	 */
+	const FLAG_VARIANT = 0x07; // -v
+
+	/** @var Session[] */
+	private static $sessions = [];
+	/** @var Clipboard[] */
+	private static $schematics = [];
 
 	public static function flagParser(array $flags){
 		$flagmeta = 1;
@@ -80,6 +93,9 @@ class API{
 				case  "-p":
 					$flagmeta ^= 1 << self::FLAG_UNCENTERED;
 					break;
+				case  "-v":
+					$flagmeta ^= 1 << self::FLAG_VARIANT;
+					break;
 				default:
 					Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
 			}
@@ -100,35 +116,43 @@ class API{
 	/**
 	 * @param Selection $selection
 	 * @param Level $level
-	 * @param Block[] $blocks
+	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
 	 * @return string
 	 */
-	public static function fill(Selection $selection, Level $level, $blocks = [], ...$flagarray){
+	public static function fill(Selection $selection, Level $level, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocksXYZ() as $x){
-				foreach ($x as $y){
-					foreach ($y as $block){
-						if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-						if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
-						$newblock = $blocks[array_rand($blocks, 1)];
-						if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
-							if ($level->getBlock($block)->getId() !== Block::AIR) continue;
-						}
-						if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
-							if ($level->getBlock($block)->getId() === Block::AIR) continue;
-						}
-						if ($level->setBlock($block, $newblock, false, false)) $changed++;
-					}
+			foreach ($selection->getBlocks($flags) as $block){
+				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
+				$newblock = $newblocks[array_rand($newblocks, 1)];
+				if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
+					if ($level->getBlock($block)->getId() !== Block::AIR) continue;
 				}
+				if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
+					if ($level->getBlock($block)->getId() === Block::AIR) continue;
+				}
+				if ($level->setBlock($block, $newblock, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
 		}
 		return Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.";
+	}
+
+	/**
+	 * @param CommandSender $sender
+	 * @param Selection $selection
+	 * @param Level $level
+	 * @param Block[] $newblocks
+	 * @param array ...$flagarray
+	 */
+	public static function fillAsync(CommandSender $sender, Selection $selection, Level $level, $newblocks = [], ...$flagarray){
+		$flags = self::flagParser($flagarray);
+		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($sender, $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
 	}
 
 	/**
@@ -140,17 +164,14 @@ class API{
 	 * @return string
 	 */
 	public static function replace(Selection $selection, Level $level, $blocks1 = [], $blocks2 = [], ...$flagarray){
+		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocksXYZ(...$blocks1) as $x){
-				foreach ($x as $y){
-					foreach ($y as $block){
-						if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-						$newblock = $blocks2[array_rand($blocks2, 1)];
-						if ($level->setBlock($block, $newblock, false, false)) $changed++;
-					}
-				}
+			foreach ($selection->getBlocks($flags, ...$blocks1) as $block){
+				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+				$newblock = $blocks2[array_rand($blocks2, 1)];
+				if ($level->setBlock($block, $newblock, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -163,13 +184,12 @@ class API{
 		$flags = self::flagParser($flagarray);
 		try{
 			$clipboard = new Clipboard();
-			$clipboard->setData($selection->getBlocksRelativeXYZ());
+			$clipboard->setData($selection->getBlocksRelative($flags));
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else
-				$clipboard->setOffset($player->getPosition()->subtract($selection->/*getMinVec3()*/
-				getMaxVec3()));//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
-			Loader::$clipboards[$player->getLowerCaseName()] = $clipboard;
+				$clipboard->setOffset($selection->getMinVec3()->subtract($player)->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
+			API::getSession($player)->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
 		}
@@ -180,19 +200,14 @@ class API{
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
-		$vec3 = $player->getPosition();//proper stating pos
 		try{
-			foreach ($clipboard->getData() as $x => $xaxis){
-				foreach ($xaxis as $y => $yaxis){
-					foreach ($yaxis as $z => $block){
-						/** @var Block $block */
-						//flag test
-						$blockvec3 = $vec3->add($x, $y, $z);
-						if (!self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
-							$blockvec3 = $blockvec3->subtract($clipboard->getOffset())->subtract(count($clipboard->getData()) - 1, count($xaxis) - 1, count($yaxis) - 1);//todo fix offset
-						if ($level->setBlock($blockvec3, $block, false, false)) $changed++;
-					}
-				}
+			foreach ($clipboard->getData() as $block1){
+				$block = clone $block1;
+				/** @var Block $block */
+				$blockvec3 = $player->add($block);
+				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
+					$blockvec3 = $blockvec3->add($clipboard->getOffset());
+				if ($level->setBlock($blockvec3->floor(), $block, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
 			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
@@ -208,7 +223,7 @@ class API{
 				$blocks[] = $block;
 			} else{
 				$error = true;
-				$messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id: " : "name") . ": " . $name;
+				$messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
 				continue;
 			}
 			if ($block instanceof UnknownBlock){
@@ -270,11 +285,23 @@ class API{
 		}
 	}
 
-	public static function createBrush(Block $target, CompoundTag $settings){
+	/**
+	 * Creates a brush at a specific location with the passed settings
+	 * @param Block $target
+	 * @param NamedTag $settings
+	 * @return bool
+	 */
+	public static function createBrush(Block $target, NamedTag $settings){//TODO messages
 		$shape = null;
-		switch ($settings->getTag("type", StringTag::class)){
+		if (!$settings instanceof CompoundTag) return false;
+		switch ($settings->getString("type", "Square")){//TODO use/parse int as type
 			case "Square": {
 				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SQUARE, self::compoundToArray($settings));
+				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+				break;
+			}
+			case "Sphere": {
+				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
 				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
 				break;
 			}
@@ -287,13 +314,56 @@ class API{
 			Server::getInstance()->broadcastMessage("Unknown shape");
 			return false;
 		}
-		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'])));
-		return true;
+		$messages = [];
+		$error = false;
+		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'], $messages, $error)));
+		return !$error;
 	}
 
 	public static function compoundToArray(CompoundTag $compoundTag){
 		$nbt = new NBT();
 		$nbt->setData($compoundTag);
 		return $nbt->getArray();
+	}
+
+
+	public static function &addSession(Session $session){
+		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
+		return self::$sessions[$session->getPlayer()->getLowerCaseName()];
+	}
+
+	public static function destroySession(Session $session){
+		unset(self::$sessions[$session->getPlayer()->getLowerCaseName()]);
+		$session->__destruct(); // TODO clean up objects
+	}
+
+	/**
+	 * @param Player $player
+	 * @return Session|null
+	 */
+	public static function &getSession(Player $player): ?Session{
+		$session = self::$sessions[$player->getLowerCaseName()] ?? null;
+		return $session;
+	}
+
+	/**
+	 * @return Session[]
+	 */
+	public static function getSessions(): array{
+		return self::$sessions;
+	}
+
+	/**
+	 * @return Clipboard[]
+	 */
+	public static function getSchematics(): array{
+		return self::$schematics;
+	}
+
+	/**
+	 * @param Clipboard[] $schematics
+	 */
+	public static function setSchematics(array $schematics){
+		self::$schematics = $schematics;
 	}
 }

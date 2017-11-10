@@ -1,26 +1,6 @@
 <?php
 
-/*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- *
- *
-*/
-
 namespace xenialdan\MagicWE2\shape;
-
 
 use pocketmine\block\Block;
 use pocketmine\level\Level;
@@ -39,14 +19,19 @@ class Sphere extends Shape{
 		parent::__construct($level, $options);
 	}
 
-	public function getBlocksXYZ(Block ...$filterblocks){
+	/**
+	 * @param int $flags
+	 * @param Block[] ...$filterblocks
+	 * @return array
+	 */
+	public function getBlocks(int $flags, Block ...$filterblocks){
 		$blocks = [];
 		for ($x = $this->getMinVec3()->getX(); $x < $this->getMaxVec3()->getX(); $x++){
 			for ($z = $this->getMinVec3()->getZ(); $z < $this->getMaxVec3()->getZ(); $z++){
 				for ($y = $this->getMinVec3()->getY(); $y < $this->getMaxVec3()->getY(); $y++){
 					$vector3 = new Vector3((int)floor($x), (int)floor($y), (int)floor($z));
 					if ($vector3->distanceSquared($this->getCenter()) <= (($this->options['diameter'] / 2) ** 2) && (!API::hasFlag($this->flags, API::FLAG_HOLLOW) || $vector3->distanceSquared($this->getCenter()) >= ((($this->options['diameter'] / 2) - 1) ** 2)))
-						$blocks[(int)floor($x)][(int)floor($y)][(int)floor($z)] = $vector3;
+						$blocks[] = $vector3;
 				}
 			}
 		}

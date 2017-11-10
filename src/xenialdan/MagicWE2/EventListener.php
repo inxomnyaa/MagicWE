@@ -5,15 +5,29 @@ namespace xenialdan\MagicWE2;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\plugin\Plugin;
+use pocketmine\utils\TextFormat;
 
 class EventListener implements Listener{
 	public $owner;
 
 	public function __construct(Plugin $plugin){
 		$this->owner = $plugin;
+	}
+
+	public function onLogin(PlayerLoginEvent $event){
+		if ($event->getPlayer()->hasPermission("we.session")){
+			if (is_null(($session = API::getSession($event->getPlayer())))){
+				$session = API::addSession(new Session($event->getPlayer()));
+				Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+			} else{
+				$session->setPlayer($event->getPlayer());
+				Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+			}
+		}
 	}
 
 	public function onInteract(PlayerInteractEvent $event){
@@ -38,8 +52,13 @@ class EventListener implements Listener{
 			$event->setCancelled();
 			switch ($event->getItem()->getId()){
 				case ItemIds::WOODEN_AXE: {
-					if (!isset(Loader::$selections[$event->getPlayer()->getLowerCaseName()])) Loader::$selections[$event->getPlayer()->getLowerCaseName()] = new Selection($event->getBlock()->getLevel());
-					$event->getPlayer()->sendMessage(Loader::$selections[$event->getPlayer()->getLowerCaseName()]->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
+					/** @var Session $session */
+					if (!($session = API::getSession($event->getPlayer()))->isWandEnabled()){
+						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+						break;
+					}
+					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+					$event->getPlayer()->sendMessage($selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
 				}
 			}
@@ -58,8 +77,13 @@ class EventListener implements Listener{
 					break;
 				}*/
 				case ItemIds::WOODEN_AXE: {
-					if (!isset(Loader::$selections[$event->getPlayer()->getLowerCaseName()])) Loader::$selections[$event->getPlayer()->getLowerCaseName()] = new Selection($event->getBlock()->getLevel());
-					$event->getPlayer()->sendMessage(Loader::$selections[$event->getPlayer()->getLowerCaseName()]->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
+					/** @var Session $session */
+					if (!($session = API::getSession($event->getPlayer()))->isWandEnabled()){
+						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+						break;
+					}
+					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+					$event->getPlayer()->sendMessage($selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
 				}
 			}

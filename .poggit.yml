@@ -3,4 +3,7 @@ projects:
   MagicWE2:
     path: ""
     icon: "resources/magicwe_icon_square_small.png"
+    libs:
+      - src: BlockHorizons/libschematic/libschematic
+        version: ^0.0.6
 ...
