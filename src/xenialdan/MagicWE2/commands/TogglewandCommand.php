@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
+use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
@@ -18,12 +18,17 @@ class TogglewandCommand extends WECommand{
 		parent::__construct("/togglewand", $plugin);
 		$this->setPermission("we.command.togglewand");
 		$this->setDescription("Toggle the wand tool on/off");
+		$this->setUsage("//togglewand");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = parent::execute($sender, $commandLabel, $args);
-		if(!$return) return $return;
+		$return = $sender->hasPermission($this->getPermission());
+		if (!$return){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+			return true;
+		}
+		$lang = Loader::getInstance()->getLanguage();
 		try{
 			$sender->sendMessage(($session = API::getSession($sender))->setWandEnabled(!$session->isWandEnabled()));
 		} catch (WEException $error){
