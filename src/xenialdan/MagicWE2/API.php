@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use BlockHorizons\libschematic\Schematic;
 use pocketmine\block\Block;
 use pocketmine\block\UnknownBlock;
 use pocketmine\command\CommandSender;
@@ -326,7 +327,6 @@ class API{
 		return $nbt->getArray();
 	}
 
-
 	public static function &addSession(Session $session){
 		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
 		return self::$sessions[$session->getPlayer()->getLowerCaseName()];
@@ -365,5 +365,15 @@ class API{
 	 */
 	public static function setSchematics(array $schematics){
 		self::$schematics = $schematics;
+	}
+
+	/**
+	 * @param Schematic $schematic
+	 * @param string $filename
+	 * @return Clipboard|null
+	 */
+	public static function &addSchematic(Schematic $schematic, string $filename) : ?Clipboard{
+		self::$schematics[$filename] = new Clipboard($schematic->getBlocks());
+		return self::$schematics[$filename];
 	}
 }
