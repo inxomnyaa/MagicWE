@@ -2,14 +2,13 @@
 
 namespace xenialdan\MagicWE2\shape;
 
-
 use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 
-class Square extends Shape{
+class Sphere extends Shape{
 
 	/**
 	 * Square constructor.
@@ -30,8 +29,9 @@ class Square extends Shape{
 		for ($x = $this->getMinVec3()->getX(); $x < $this->getMaxVec3()->getX(); $x++){
 			for ($z = $this->getMinVec3()->getZ(); $z < $this->getMaxVec3()->getZ(); $z++){
 				for ($y = $this->getMinVec3()->getY(); $y < $this->getMaxVec3()->getY(); $y++){
-					if (API::hasFlag($this->flags, API::FLAG_HOLLOW) && ($x > $this->getMinVec3()->getX() && $x < $this->getMaxVec3()->getX() - 1) && ($y > $this->getMinVec3()->getY() && $y < $this->getMaxVec3()->getY() - 1) && ($z > $this->getMinVec3()->getZ() && $z < $this->getMaxVec3()->getZ() - 1)) continue;
-					$blocks[] = new Vector3((int)floor($x), (int)floor($y), (int)floor($z));
+					$vector3 = new Vector3((int)floor($x), (int)floor($y), (int)floor($z));
+					if ($vector3->distanceSquared($this->getCenter()) <= (($this->options['diameter'] / 2) ** 2) && (!API::hasFlag($this->flags, API::FLAG_HOLLOW) || $vector3->distanceSquared($this->getCenter()) >= ((($this->options['diameter'] / 2) - 1) ** 2)))
+						$blocks[] = $vector3;
 				}
 			}
 		}

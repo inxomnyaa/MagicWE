@@ -1,8 +1,36 @@
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 4.1.3
+version: 4.2.1
 api: ['3.0.0-ALPHA9']
 load: STARTUP
 authors: [XenialDan]
 description: MagicWEv2. Harder, Better, Faster, Stronger
 prefix: "§6§l[MagicWE]§r "
+permissions:
+    we.command:
+        default: op
+        children:
+            we.command.brush:
+                default: op
+                we.command.aset:
+                  default: op
+                we.command.brush:
+                  default: op
+                we.command.copy:
+                  default: op
+                we.command.set:
+                  default: op
+                we.command.flip:
+                  default: op
+                we.command.paste:
+                  default: op
+                we.command.pos:
+                  default: op
+                we.command.replace:
+                  default: op
+                we.command.schematic:
+                  default: op
+                we.command.togglewand:
+                  default: op
+                we.command.wand:
+                  default: op

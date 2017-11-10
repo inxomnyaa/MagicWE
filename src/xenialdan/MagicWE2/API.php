@@ -68,6 +68,8 @@ class API{
 
 	/** @var Session[] */
 	private static $sessions = [];
+	/** @var Clipboard[] */
+	private static $schematics = [];
 
 	public static function flagParser(array $flags){
 		$flagmeta = 1;
@@ -298,6 +300,11 @@ class API{
 				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
 				break;
 			}
+			case "Sphere": {
+				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
+				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+				break;
+			}
 
 			case null:
 			default:
@@ -318,6 +325,7 @@ class API{
 		$nbt->setData($compoundTag);
 		return $nbt->getArray();
 	}
+
 
 	public static function &addSession(Session $session){
 		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
@@ -343,5 +351,19 @@ class API{
 	 */
 	public static function getSessions(): array{
 		return self::$sessions;
+	}
+
+	/**
+	 * @return Clipboard[]
+	 */
+	public static function getSchematics(): array{
+		return self::$schematics;
+	}
+
+	/**
+	 * @param Clipboard[] $schematics
+	 */
+	public static function setSchematics(array $schematics){
+		self::$schematics = $schematics;
 	}
 }
