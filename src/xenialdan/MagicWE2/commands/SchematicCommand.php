@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
+use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
@@ -19,16 +19,17 @@ class SchematicCommand extends WECommand{
 		$this->setAliases(["/schem"]);
 		$this->setPermission("we.command.schematic");
 		$this->setDescription("Schematic handling");
-	}
-
-	public function getUsage(): string{
-		return "//schem <load|reload|cache>";//TODO rethink
+		$this->setUsage("//schem <load|reload|cache>");//TODO rethink
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = parent::execute($sender, $commandLabel, $args);
-		if(!$return) return $return;
+		$return = $sender->hasPermission($this->getPermission());
+		if (!$return){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+			return true;
+		}
+		$lang = Loader::getInstance()->getLanguage();
 		try{
 			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
 			switch ($type = strtolower(array_shift($args[0]))){

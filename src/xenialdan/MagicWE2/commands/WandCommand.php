@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
+use pocketmine\event\TranslationContainer;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -21,17 +21,17 @@ class WandCommand extends WECommand{
 		parent::__construct("/wand", $plugin);
 		$this->setPermission("we.command.wand");
 		$this->setDescription("Gives you the wand");
-	}
-
-	public function getUsage(): string{
-		return "//wand";
+		$this->setUsage("//wand");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		$lang = Loader::getInstance()->getLanguage();
 		/** @var Player $sender */
-		$return = parent::execute($sender, $commandLabel, $args);
-		if(!$return) return $return;
+		$return = $sender->hasPermission($this->getPermission());
+		if (!$return){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+			return true;
+		}
+		$lang = Loader::getInstance()->getLanguage();
 		try{
 			$item = ItemFactory::get(ItemIds::WOODEN_AXE);
 			$item->addEnchantment(Enchantment::getEnchantment(Enchantment::PROTECTION));

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
+use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
@@ -19,16 +19,17 @@ class FlipCommand extends WECommand{
 		parent::__construct("/flip", $plugin);
 		$this->setPermission("we.command.flip");
 		$this->setDescription("Flip a clipboard");
-	}
-
-	public function getUsage(): string{
-		return "//flip <X|Y|Z|UP|DOWN|WEST|EAST|NORTH|SOUTH> [...]";
+		$this->setUsage("//flip <X|Y|Z|UP|DOWN|WEST|EAST|NORTH|SOUTH...>");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		/** @var Player $sender */
-		$return = parent::execute($sender, $commandLabel, $args);
-		if(!$return) return $return;
+		$return = $sender->hasPermission($this->getPermission());
+		if (!$return){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+			return true;
+		}
+		$lang = Loader::getInstance()->getLanguage();
 		try{
 			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
 

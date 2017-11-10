@@ -59,18 +59,20 @@ class Loader extends PluginBase{
 
 	public function onEnable(){
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
-		$this->getServer()->getCommandMap()->register(Pos1Command::class, new Pos1Command($this));
-		$this->getServer()->getCommandMap()->register(Pos2Command::class, new Pos2Command($this));
-		$this->getServer()->getCommandMap()->register(FillCommand::class, new FillCommand($this));
-		$this->getServer()->getCommandMap()->register(ReplaceCommand::class, new ReplaceCommand($this));
-		$this->getServer()->getCommandMap()->register(CopyCommand::class, new CopyCommand($this));
-		$this->getServer()->getCommandMap()->register(PasteCommand::class, new PasteCommand($this));
-		$this->getServer()->getCommandMap()->register(BrushCommand::class, new BrushCommand($this));
-		$this->getServer()->getCommandMap()->register(BrushCommand::class, new WandCommand($this));
-		$this->getServer()->getCommandMap()->register(FillCommand::class, new AsyncFillCommand($this));
-		$this->getServer()->getCommandMap()->register(TogglewandCommand::class, new TogglewandCommand($this));
-		$this->getServer()->getCommandMap()->register(FlipCommand::class, new FlipCommand($this));
-		$this->getServer()->getCommandMap()->register(SchematicCommand::class, new SchematicCommand($this));
+		$this->getServer()->getCommandMap()->registerAll("we", [
+			new Pos1Command($this),
+			new Pos2Command($this),
+			new FillCommand($this),
+			new ReplaceCommand($this),
+			new CopyCommand($this),
+			new PasteCommand($this),
+			new BrushCommand($this),
+			new WandCommand($this),
+			new AsyncFillCommand($this),
+			new TogglewandCommand($this),
+			new FlipCommand($this),
+			new SchematicCommand($this)
+		]);
 	}
 
 	public function onDisable(){
