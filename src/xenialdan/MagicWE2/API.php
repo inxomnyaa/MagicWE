@@ -389,7 +389,9 @@ class API{
 		$changed = 0;
 		$undos = $session->getUndos();
 		/** @var Clipboard $clipboard */
-		$clipboard = array_pop($undos);
+		if (empty($undos) || is_null(($clipboard = array_pop($undos)))){
+			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to undo");
+		}
 		/** @var Block $block */
 		foreach ($clipboard->getData() as $block){
 			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
@@ -401,7 +403,9 @@ class API{
 		$changed = 0;
 		$redos = $session->getRedos();
 		/** @var Clipboard $clipboard */
-		$clipboard = array_pop($redos);
+		if (empty($undos) || is_null(($clipboard = array_pop($redos)))){
+			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to redo");
+		}
 		/** @var Block $block */
 		foreach ($clipboard->getData() as $block){
 			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
