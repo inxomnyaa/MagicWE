@@ -387,29 +387,37 @@ class API{
 
 	public static function undo(Session $session){
 		$changed = 0;
+		$time = microtime(true);
 		$undos = $session->getUndos();
 		/** @var Clipboard $clipboard */
 		if (empty($undos) || is_null(($clipboard = array_pop($undos)))){
 			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to undo");
+			return false;
 		}
 		/** @var Block $block */
 		foreach ($clipboard->getData() as $block){
 			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
 		}
 		$session->addRedo($clipboard);
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Undo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		return true;
 	}
 
 	public static function redo(Session $session){
 		$changed = 0;
+		$time = microtime(true);
 		$redos = $session->getRedos();
 		/** @var Clipboard $clipboard */
 		if (empty($undos) || is_null(($clipboard = array_pop($redos)))){
 			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to redo");
+			return false;
 		}
 		/** @var Block $block */
 		foreach ($clipboard->getData() as $block){
 			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
 		}
 		$session->addUndo($clipboard);
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		return true;
 	}
 }
