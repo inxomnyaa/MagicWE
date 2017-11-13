@@ -40,7 +40,7 @@ class ReplaceCommand extends WECommand{
 			}
 			$return = !$error;
 			if ($return){
-				$sender->sendMessage(API::replace(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $blocks1, $blocks2, ...$args));
+				$return = API::replace(($session = API::getSession($sender))->getLatestSelection(), $session, $blocks1, $blocks2, ...$args);
 			} else{
 				throw new \InvalidArgumentException("Could not replace with the selected blocks");
 			}
