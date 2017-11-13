@@ -11,7 +11,6 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\Session;
 use xenialdan\MagicWE2\WEException;
 
