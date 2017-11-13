@@ -309,7 +309,7 @@ class API{
 	 * @param NamedTag $settings
 	 * @return bool
 	 */
-	public static function createBrush(Block $target, NamedTag $settings){//TODO messages
+	public static function createBrush(Block $target, NamedTag $settings, Session $session, array ...$flagarray){//TODO messages
 		$shape = null;
 		$lang = Loader::getInstance()->getLanguage();
 		if (!$settings instanceof CompoundTag) return false;
@@ -329,13 +329,12 @@ class API{
 				;
 		}
 		if (is_null($shape)){
-			Server::getInstance()->broadcastMessage("Unknown shape");
+			$session->getPlayer()->sendMessage("Unknown shape");
 			return false;
 		}
 		$messages = [];
 		$error = false;
-		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'], $messages, $error)));
-		return !$error;
+		return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flagarray);
 	}
 
 	public static function compoundToArray(CompoundTag $compoundTag){
@@ -399,7 +398,7 @@ class API{
 			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
 		}
 		$session->addRedo($clipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Undo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Undo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
 		return true;
 	}
 
@@ -417,7 +416,7 @@ class API{
 			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
 		}
 		$session->addUndo($clipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
 		return true;
 	}
 }
