@@ -40,7 +40,7 @@ class FillCommand extends WECommand{
 			}
 			$return = !$error;
 			if ($return){
-				$sender->sendMessage(API::fill(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args));
+				$return = API::fill(($session = API::getSession($sender))->getLatestSelection(), $session, $newblocks, ...$args);
 			} else{
 				throw new \InvalidArgumentException("Could not fill with the selected blocks");
 			}

@@ -30,7 +30,7 @@ class CopyCommand extends WECommand{
 		}
 		$lang = Loader::getInstance()->getLanguage();
 		try{
-			$sender->sendMessage(API::copy(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $sender, ...$args));
+			$return = API::copy(($session = API::getSession($sender))->getLatestSelection(), $session, ...$args);
 		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());

@@ -59,7 +59,7 @@ class BrushCommand extends WECommand{
 						new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0),
 						new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
 						new Label($lang->translateString('ui.brush.options.label.flags')),
-						new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), true),
+						new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),

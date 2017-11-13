@@ -6,7 +6,6 @@ namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
 use pocketmine\block\UnknownBlock;
-use pocketmine\command\CommandSender;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
@@ -115,72 +114,86 @@ class API{
 
 	/**
 	 * @param Selection $selection
-	 * @param Level $level
+	 * @param Session $session
 	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
 	 * @return string
 	 */
-	public static function fill(Selection $selection, Level $level, $newblocks = [], ...$flagarray){
+	public static function fill(Selection $selection, Session $session, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocks($flags) as $block){
+			foreach (($blocks = $selection->getBlocks($flags)) as $block){
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
 				$newblock = $newblocks[array_rand($newblocks, 1)];
 				if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
-					if ($level->getBlock($block)->getId() !== Block::AIR) continue;
+					if ($session->getPlayer()->getLevel()->getBlock($block)->getId() !== Block::AIR) continue;
 				}
 				if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
-					if ($level->getBlock($block)->getId() === Block::AIR) continue;
+					if ($session->getPlayer()->getLevel()->getBlock($block)->getId() === Block::AIR) continue;
 				}
-				if ($level->setBlock($block, $newblock, false, false)) $changed++;
+				if ($session->getPlayer()->getLevel()->setBlock($block, $newblock, false, false)) $changed++;
 			}
+			$clipboard = new Clipboard();
+			$clipboard->setData($blocks);
 		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-		return Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.";
+		$session->addUndo($clipboard);
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		return true;
 	}
 
 	/**
-	 * @param CommandSender $sender
 	 * @param Selection $selection
-	 * @param Level $level
+	 * @param Session $session
 	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
 	 */
-	public static function fillAsync(CommandSender $sender, Selection $selection, Level $level, $newblocks = [], ...$flagarray){
+	public static function fillAsync(Selection $selection, Session $session, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
-		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($sender, $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
+		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($session->getPlayer(), $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
 	}
 
 	/**
 	 * @param Selection $selection
-	 * @param Level $level
+	 * @param Session $session
 	 * @param Block[] $blocks1
 	 * @param Block[] $blocks2
 	 * @param array ...$flagarray
-	 * @return string
+	 * @return bool
 	 */
-	public static function replace(Selection $selection, Level $level, $blocks1 = [], $blocks2 = [], ...$flagarray){
+	public static function replace(Selection $selection, Session $session, $blocks1 = [], $blocks2 = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
-			foreach ($selection->getBlocks($flags, ...$blocks1) as $block){
+			foreach (($blocks = $selection->getBlocks($flags, ...$blocks1)) as $block){
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				$newblock = $blocks2[array_rand($blocks2, 1)];
-				if ($level->setBlock($block, $newblock, false, false)) $changed++;
+				if ($session->getPlayer()->getLevel()->setBlock($block, $newblock, false, false)) $changed++;
 			}
+			$clipboard = new Clipboard();
+			$clipboard->setData($blocks);
 		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-
-		return Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.";
+		$session->addUndo($clipboard);
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		return true;
 	}
 
-	public static function copy(Selection $selection, Level $level, Player $player, ...$flagarray){
+	/**
+	 * @param Selection $selection
+	 * @param Session $session
+	 * @param array ...$flagarray
+	 * @return bool
+	 */
+	public static function copy(Selection $selection, Session $session, ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		try{
 			$clipboard = new Clipboard();
@@ -188,15 +201,17 @@ class API{
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else
-				$clipboard->setOffset($selection->getMinVec3()->subtract($player)->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
-			API::getSession($player)->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
+				$clipboard->setOffset($selection->getMinVec3()->subtract($session->getPlayer())->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
+			$session->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
 		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-		return Loader::$prefix . TextFormat::GREEN . "Copied selection to clipboard";
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Copied selection to clipboard");
+		return true;
 	}
 
-	public static function paste(Clipboard $clipboard, Level $level, Player $player, ...$flagarray){//TODO: maybe clone clipboard
+	public static function paste(Clipboard $clipboard, Session $session, ...$flagarray){//TODO: maybe clone clipboard
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
@@ -204,15 +219,18 @@ class API{
 			foreach ($clipboard->getData() as $block1){
 				$block = clone $block1;
 				/** @var Block $block */
-				$blockvec3 = $player->add($block);
+				$blockvec3 = $session->getPlayer()->add($block);
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
-				if ($level->setBlock($blockvec3->floor(), $block, false, false)) $changed++;
+				if ($session->getPlayer()->getLevel()->setBlock($blockvec3->floor(), $block, false, false)) $changed++;
 			}
 		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-		return Loader::$prefix . TextFormat::GREEN . "Pasted selection " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.";
+		self::getSession($session->getPlayer())->addUndo($clipboard);
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
+		return true;
 	}
 
 	public static function blockParser(string $fullstring, array &$messages, bool &$error){
@@ -293,19 +311,19 @@ class API{
 	 */
 	public static function createBrush(Block $target, NamedTag $settings){//TODO messages
 		$shape = null;
+		$lang = Loader::getInstance()->getLanguage();
 		if (!$settings instanceof CompoundTag) return false;
-		switch ($settings->getString("type", "Square")){//TODO use/parse int as type
-			case "Square": {
+		switch ($settings->getString("type", $lang->translateString('ui.brush.options.type.square'))){//TODO use/parse int as type
+			case $lang->translateString('ui.brush.options.type.square'): {
 				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SQUARE, self::compoundToArray($settings));
 				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
 				break;
 			}
-			case "Sphere": {
+			case $lang->translateString('ui.brush.options.type.sphere'): {
 				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
 				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
 				break;
 			}
-
 			case null:
 			default:
 				;
@@ -365,5 +383,29 @@ class API{
 	 */
 	public static function setSchematics(array $schematics){
 		self::$schematics = $schematics;
+	}
+
+	public static function undo(Session $session){
+		$changed = 0;
+		$undos = $session->getUndos();
+		/** @var Clipboard $clipboard */
+		$clipboard = array_pop($undos);
+		/** @var Block $block */
+		foreach ($clipboard->getData() as $block){
+			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
+		}
+		$session->addRedo($clipboard);
+	}
+
+	public static function redo(Session $session){
+		$changed = 0;
+		$redos = $session->getRedos();
+		/** @var Clipboard $clipboard */
+		$clipboard = array_pop($redos);
+		/** @var Block $block */
+		foreach ($clipboard->getData() as $block){
+			if ($block->getLevel()->setBlock($block, $block, false, false)) $changed++;
+		}
+		$session->addUndo($clipboard);
 	}
 }
