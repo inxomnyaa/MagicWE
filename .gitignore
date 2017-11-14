@@ -1,3 +1,7 @@
 .idea/*
-./config.yml
-resources/libschematic/*
+config.yml
+resources
+resources/libschematic
+!resources/config.yml
+!resources/**.ini
+schematics
