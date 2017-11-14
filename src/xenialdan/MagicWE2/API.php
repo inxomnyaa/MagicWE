@@ -334,7 +334,7 @@ class API{
 		}
 		$messages = [];
 		$error = false;
-		return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flagarray);
+		return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
 	}
 
 	public static function compoundToArray(CompoundTag $compoundTag){
