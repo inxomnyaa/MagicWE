@@ -32,7 +32,13 @@ class Session{
 		$this->setUUID($player->getUniqueId());
 	}
 
-	public function __destruct(){ } // TODO clean up objects
+	public function __destruct(){
+		if (!is_null($this->uuid)) Loader::getInstance()->getLogger()->debug("Destructing session " . $this->getUUID()->__toString());
+		foreach ($this as &$value){
+			$value = null;
+			unset($value);
+		}
+	}
 
 	/**
 	 * @param null|Player $player
@@ -167,61 +173,60 @@ class Session{
 	/**
 	 * @return Clipboard[]
 	 */
-	public function &getUndos(): array{
+	private function &getUndos(): array{
 		return $this->undo;
 	}
 
 	/**
 	 * @param Clipboard[] $undo
 	 */
-	public function setUndos(array $undo){
+	private function setUndos(array $undo){
 		$this->undo = $undo;
 	}
 
 	/**
 	 * @param Clipboard $clipboard
-	 * @return mixed|Clipboard
 	 */
-	public function &addUndo(Clipboard $clipboard){
+	public function addUndo(Clipboard $clipboard){
 		$this->undo[] = $clipboard;
-		return $this->undo[count($this->undo)];
 	}
 
 	/**
-	 * @return Clipboard
+	 * @return null|Clipboard
 	 */
-	public function &getLatestUndo(){//DO NOT USE
-		return $this->undo[count($this->undo)];
+	public function getLatestUndo(): ?Clipboard{
+		$clipboards = $this->getUndos();
+		return array_pop($clipboards);
 	}
 
 	/**
 	 * @return Clipboard[]
 	 */
-	public function &getRedos(): array{
+	private function &getRedos(): array{
 		return $this->redo;
 	}
+
 
 	/**
 	 * @param Clipboard[] $redo
 	 */
-	public function setRedos(array $redo){
+	private function setRedos(array $redo){
 		$this->redo = $redo;
 	}
 
 	/**
 	 * @param Clipboard $clipboard
-	 * @return mixed|Clipboard
 	 */
-	public function &addRedo(Clipboard $clipboard){
+	public function addRedo(Clipboard $clipboard){
 		$this->redo[] = $clipboard;
-		return $this->redo[count($this->redo)];
 	}
 
 	/**
-	 * @return Clipboard
+	 * @return null|Clipboard
 	 */
-	public function &getLatestRedo(){//DO NOT USE
-		return $this->redo[count($this->redo)];
+	public function getLatestRedo(): ?Clipboard{
+		$clipboards = $this->getRedos();
+		return array_pop($clipboards);
 	}
 
 	/*
