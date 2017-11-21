@@ -38,10 +38,6 @@ class Loader extends PluginBase{
 	public function onLoad(){
 		self::$instance = $this;
 		self::$prefix = $this->getDescription()->getPrefix();
-		$this->saveDefaultConfig();
-		$this->reloadConfig();
-		$lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
-		$this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
 		// TODO restore sessions
 		$this->getLogger()->info("Restoring Sessions");
 
@@ -60,6 +56,10 @@ class Loader extends PluginBase{
 	}
 
 	public function onEnable(){
+		$this->saveDefaultConfig();
+		$this->reloadConfig();
+		$lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
+		$this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 		$this->getServer()->getCommandMap()->registerAll("we", [
 			new Pos1Command($this),
