@@ -81,11 +81,16 @@ class SchematicCommand extends WECommand{
 					$clipboard = $session->getClipboards()[0];//TODO latest clipboard
 					$success = true;
 					try{
-						$schematic = new Schematic(Loader::$path["schematics"] . "/" . $file . ".schematic");
-						$schematic->setBlocks($clipboard->getData());
+						$schematic = new Schematic();
+						$schematic->setWidth($clipboard->getWidth());
+						$schematic->setHeight($clipboard->getHeight());
+						$schematic->setLength($clipboard->getLength());
+						$schematic->setBlocks($clipboard->threeDeeArray());
 						$schematic->encode();
-						$schematic->save();
+						$schematic->save(Loader::$path["schematics"] . "/" . $file . ".schematic");
 					} catch (\Throwable $error){
+						$this->getPlugin()->getLogger()->error(TextFormat::RED . $error->getMessage() . ", " . $error->getFile() . ":" . $error->getLine());
+						$this->getPlugin()->getLogger()->error(implode(PHP_EOL . TextFormat::RED , $error->getTrace()));
 						$success = false;
 					}
 					$sender->sendMessage(($success ? TextFormat::GREEN . "Successfully saved schematic from clipboard" : TextFormat::RED . "Could not save schematic from clipboard"));
@@ -106,7 +111,8 @@ class SchematicCommand extends WECommand{
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "An exception occurred");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$this->getPlugin()->getLogger()->error(TextFormat::RED . "An exception occurred");
-			$this->getPlugin()->getLogger()->error(TextFormat::RED . $error->getMessage());
+			$this->getPlugin()->getLogger()->error(TextFormat::RED . $error->getMessage() . ", " . $error->getFile() . ":" . $error->getLine());
+			$this->getPlugin()->getLogger()->error(implode(PHP_EOL . TextFormat::RED , $error->getTrace()));
 			$return = true;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
