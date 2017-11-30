@@ -1,6 +1,6 @@
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 4.4.0
+version: 4.4.1
 api: ['3.0.0-ALPHA9']
 load: STARTUP
 authors: [XenialDan]
