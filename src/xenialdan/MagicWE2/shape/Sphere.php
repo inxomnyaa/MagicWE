@@ -26,12 +26,12 @@ class Sphere extends Shape{
 	 */
 	public function getBlocks(int $flags, Block ...$filterblocks){
 		$blocks = [];
-		for ($x = $this->getMinVec3()->getX(); $x < $this->getMaxVec3()->getX(); $x++){
-			for ($z = $this->getMinVec3()->getZ(); $z < $this->getMaxVec3()->getZ(); $z++){
-				for ($y = $this->getMinVec3()->getY(); $y < $this->getMaxVec3()->getY(); $y++){
-					$vector3 = new Vector3((int)floor($x), (int)floor($y), (int)floor($z));
+		for ($x = $this->getMinVec3()->getX(); $x <= $this->getMaxVec3()->getX(); $x++){
+			for ($z = $this->getMinVec3()->getZ(); $z <= $this->getMaxVec3()->getZ(); $z++){
+				for ($y = $this->getMinVec3()->getY(); $y <= $this->getMaxVec3()->getY(); $y++){
+					$vector3 = new Position((int)floor($x), (int)floor($y), (int)floor($z));
 					if ($vector3->distanceSquared($this->getCenter()) <= (($this->options['diameter'] / 2) ** 2) && (!API::hasFlag($this->flags, API::FLAG_HOLLOW) || $vector3->distanceSquared($this->getCenter()) >= ((($this->options['diameter'] / 2) - 1) ** 2)))
-						$blocks[] = $vector3;
+						$blocks[] = $this->getLevel()->getBlock($vector3);
 				}
 			}
 		}

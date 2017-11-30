@@ -39,7 +39,7 @@ class AsyncFillCommand extends WECommand{
 			}
 			$return = !$error;
 			if ($return){
-				API::fillAsync($sender, ($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args);
+				API::fillAsync(($session = API::getSession($sender))->getLatestSelection(), $session, $newblocks, ...$args);
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}

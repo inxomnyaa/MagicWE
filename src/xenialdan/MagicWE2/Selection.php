@@ -105,13 +105,14 @@ class Selection{
 		for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++){
 			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
-					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
+					$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
+					$block->setLevel($this->getLevel());
 					#$block->setComponents((int)$x,(int)$y,(int)$z);
 					$block->position(new Position((int)$x, (int)$y, (int)$z));
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
 								$blocks[] = $block;
 						}
 					}
@@ -132,15 +133,13 @@ class Selection{
 		for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++){
 			for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++){
-					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
-					#$block->setComponents((int)$rx,(int)$ry,(int)$rz);
-					$block->position(new Position((int)$rx, (int)$ry, (int)$rz));
+					$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
+					$block->position(new Position((int)$rx, (int)$ry, (int)$rz, $this->getLevel()));
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId())
-								if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
-									$blocks[] = $block;
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
+								$blocks[] = $block;
 						}
 					}
 				}
