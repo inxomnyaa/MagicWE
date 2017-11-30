@@ -32,7 +32,7 @@ class Sphere extends Shape{
 				for ($y = $this->getMinVec3()->getY(); $y <= $this->getMaxVec3()->getY(); $y++){
 					$vector3 = new Position((int)floor($x), (int)floor($y), (int)floor($z));
 					if ($vector3->distanceSquared($this->getCenter()) <= (($this->options['diameter'] / 2) ** 2) && (!API::hasFlag($this->flags, API::FLAG_HOLLOW) || $vector3->distanceSquared($this->getCenter()) >= ((($this->options['diameter'] / 2) - 1) ** 2)))
-						$blocks[] = $vector3;
+						$blocks[] = $this->getLevel()->getBlock($vector3);
 				}
 			}
 		}
