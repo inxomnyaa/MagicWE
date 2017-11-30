@@ -47,7 +47,7 @@ class BrushCommand extends WECommand{
 		try{
 			if ($sender instanceof Player){
 				$sender->sendForm(
-					new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'),
+					new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'), [
 						new Dropdown($lang->translateString('ui.brush.options.type.title'), [
 							$lang->translateString('ui.brush.options.type.sphere'),
 							$lang->translateString('ui.brush.options.type.cylinder'),
@@ -63,7 +63,7 @@ class BrushCommand extends WECommand{
 						new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
-						new Label($lang->translateString('ui.brush.options.label.infoapply'))
+						new Label($lang->translateString('ui.brush.options.label.infoapply'))]
 					) extends CustomForm{
 						public function onSubmit(Player $player): ?Form{
 							$lang = Loader::getInstance()->getLanguage();

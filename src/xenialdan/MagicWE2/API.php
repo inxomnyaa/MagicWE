@@ -77,9 +77,9 @@ class API{
 				case "-keepblocks":
 					$flagmeta ^= 1 << self::FLAG_KEEP_BLOCKS;
 					break;
-				case  "-keepair":
-					$flagmeta ^= 1 << self::FLAG_KEEP_AIR;
-					break;
+				#case  "-keepair":
+				#	$flagmeta ^= 1 << self::FLAG_KEEP_AIR;
+				#	break;
 				case  "-a":
 					$flagmeta ^= 1 << self::FLAG_PASTE_WITHOUT_AIR;
 					break;
@@ -124,27 +124,32 @@ class API{
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
+			$blocks = [];
 			/** @var Block $block */
-			foreach (($blocks = $selection->getBlocks($flags)) as $block){
+			foreach ($selection->getBlocks($flags) as $block){
 				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
 				$newblock = $newblocks[array_rand($newblocks, 1)];
+				$newblock->position($block->asPosition());
 				if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
 					if ($level->getBlock($block)->getId() !== Block::AIR) continue;
 				}
-				if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
-					if ($level->getBlock($block)->getId() === Block::AIR) continue;
+				#if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
+				#	if ($level->getBlock($block)->getId() === Block::AIR) continue;
+				#}
+				if ($level->setBlock($block, $newblock, false, false)) {
+					$blocks[] = $block;
+					$changed++;
 				}
-				if ($level->setBlock($block, $newblock, false, false)) $changed++;
 			}
-			$clipboard = new Clipboard();
-			$clipboard->setData($blocks);
+			$undoClipboard = new Clipboard();
+			$undoClipboard->setData($blocks);
 		} catch (WEException $exception){
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
-		$session->addUndo($clipboard);
+		$session->addUndo($undoClipboard);
 		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
 		return true;
 	}
@@ -173,20 +178,25 @@ class API{
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
+			$blocks = [];
 			/** @var Block $block */
-			foreach (($blocks = $selection->getBlocks($flags, ...$blocks1)) as $block){
+			foreach ($selection->getBlocks($flags, ...$blocks1) as $block){
 				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				$newblock = $blocks2[array_rand($blocks2, 1)];
-				if ($level->setBlock($block, $newblock, false, false)) $changed++;
+				$newblock->position($block->asPosition());
+				if ($level->setBlock($block, $newblock, false, false)) {
+					$blocks[] = $block;
+					$changed++;
+				}
 			}
-			$clipboard = new Clipboard();
-			$clipboard->setData($blocks);
+			$undoClipboard = new Clipboard();
+			$undoClipboard->setData($blocks);
 		} catch (WEException $exception){
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
-		$session->addUndo($clipboard);
+		$session->addUndo($undoClipboard);
 		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
 		return true;
 	}
@@ -220,20 +230,27 @@ class API{
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
+			$blocks = [];
 			foreach ($clipboard->getData() as $block1){
 				$block = clone $block1;
 				/** @var Block $block */
 				$blockvec3 = $session->getPlayer()->add($block);
+				$oldblock = $block->getLevel()->getBlock($blockvec3->floor());
 				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
-				if ($level->setBlock($blockvec3->floor(), $block, false, false)) $changed++;
+				if ($level->setBlock($blockvec3->floor(), $block, false, false)) {
+					$blocks[] = $oldblock;
+					$changed++;
+				}
 			}
+			$undoClipboard = new Clipboard();
+			$undoClipboard->setData($blocks);
 		} catch (WEException $exception){
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
-		$session->addUndo($clipboard);
+		$session->addUndo($undoClipboard);
 		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
 		return true;
 	}
