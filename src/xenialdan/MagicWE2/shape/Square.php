@@ -27,11 +27,11 @@ class Square extends Shape{
 	 */
 	public function getBlocks(int $flags, Block ...$filterblocks){
 		$blocks = [];
-		for ($x = $this->getMinVec3()->getX(); $x < $this->getMaxVec3()->getX(); $x++){
-			for ($z = $this->getMinVec3()->getZ(); $z < $this->getMaxVec3()->getZ(); $z++){
-				for ($y = $this->getMinVec3()->getY(); $y < $this->getMaxVec3()->getY(); $y++){
-					if (API::hasFlag($this->flags, API::FLAG_HOLLOW) && ($x > $this->getMinVec3()->getX() && $x < $this->getMaxVec3()->getX() - 1) && ($y > $this->getMinVec3()->getY() && $y < $this->getMaxVec3()->getY() - 1) && ($z > $this->getMinVec3()->getZ() && $z < $this->getMaxVec3()->getZ() - 1)) continue;
-					$blocks[] = new Vector3((int)floor($x), (int)floor($y), (int)floor($z));
+		for ($x = $this->getMinVec3()->getX(); $x <= $this->getMaxVec3()->getX(); $x++){
+			for ($z = $this->getMinVec3()->getZ(); $z <= $this->getMaxVec3()->getZ(); $z++){
+				for ($y = $this->getMinVec3()->getY(); $y <= $this->getMaxVec3()->getY(); $y++){
+					if (API::hasFlag($this->flags, API::FLAG_HOLLOW) && ($x > $this->getMinVec3()->getX() && $x < $this->getMaxVec3()->getX()) && ($y > $this->getMinVec3()->getY() && $y < $this->getMaxVec3()->getY()) && ($z > $this->getMinVec3()->getZ() && $z < $this->getMaxVec3()->getZ())) continue;
+					$blocks[] = $this->getLevel()->getBlock(new Vector3((int)floor($x), (int)floor($y), (int)floor($z)));
 				}
 			}
 		}

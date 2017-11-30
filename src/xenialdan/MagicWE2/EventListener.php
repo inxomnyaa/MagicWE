@@ -97,7 +97,7 @@ class EventListener implements Listener{
 				case ItemIds::WOODEN_SHOVEL: {
 					$target = $event->getPlayer()->getTargetBlock(100);
 					if (!is_null($target)){// && has perms
-						API::createBrush($target, $event->getItem()->getNamedTagEntry("MagicWE"));
+						API::createBrush($target, $event->getItem()->getNamedTagEntry("MagicWE"), API::getSession($event->getPlayer()));
 					}
 					break;
 				}

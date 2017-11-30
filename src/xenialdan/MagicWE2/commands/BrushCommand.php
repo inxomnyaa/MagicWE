@@ -47,7 +47,7 @@ class BrushCommand extends WECommand{
 		try{
 			if ($sender instanceof Player){
 				$sender->sendForm(
-					new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'),
+					new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'), [
 						new Dropdown($lang->translateString('ui.brush.options.type.title'), [
 							$lang->translateString('ui.brush.options.type.sphere'),
 							$lang->translateString('ui.brush.options.type.cylinder'),
@@ -59,11 +59,11 @@ class BrushCommand extends WECommand{
 						new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0),
 						new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
 						new Label($lang->translateString('ui.brush.options.label.flags')),
-						new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), true),
+						new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
 						new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
-						new Label($lang->translateString('ui.brush.options.label.infoapply'))
+						new Label($lang->translateString('ui.brush.options.label.infoapply'))]
 					) extends CustomForm{
 						public function onSubmit(Player $player): ?Form{
 							$lang = Loader::getInstance()->getLanguage();

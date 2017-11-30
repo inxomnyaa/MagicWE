@@ -14,9 +14,11 @@ use xenialdan\MagicWE2\commands\FlipCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
+use xenialdan\MagicWE2\commands\RedoCommand;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
 use xenialdan\MagicWE2\commands\SchematicCommand;
 use xenialdan\MagicWE2\commands\TogglewandCommand;
+use xenialdan\MagicWE2\commands\UndoCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
 
 class Loader extends PluginBase{
@@ -71,7 +73,9 @@ class Loader extends PluginBase{
 			new AsyncFillCommand($this),
 			new TogglewandCommand($this),
 			new FlipCommand($this),
-			new SchematicCommand($this)
+			new SchematicCommand($this),
+			new UndoCommand($this),
+			new RedoCommand($this)
 		]);
 	}
 

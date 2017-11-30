@@ -32,7 +32,13 @@ class Session{
 		$this->setUUID($player->getUniqueId());
 	}
 
-	public function __destruct(){ } // TODO clean up objects
+	public function __destruct(){
+		if (!is_null($this->uuid)) Loader::getInstance()->getLogger()->debug("Destructing session " . $this->getUUID()->__toString());
+		foreach ($this as &$value){
+			$value = null;
+			unset($value);
+		}
+	}
 
 	/**
 	 * @param null|Player $player
@@ -162,6 +168,69 @@ class Session{
 	public function setWandEnabled(bool $wandEnabled){
 		$this->wandEnabled = $wandEnabled;
 		return Loader::$prefix . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
+	}
+
+	/**
+	 * @return Clipboard[]
+	 */
+	public function getUndos(): array{
+		return $this->undo;
+	}
+
+	/**
+	 * @param Clipboard[] $undo
+	 */
+	private function setUndos(array $undo){
+		$this->undo = $undo;
+	}
+
+	/**
+	 * @param Clipboard $clipboard
+	 */
+	public function addUndo(Clipboard $clipboard){
+		array_push($this->undo, $clipboard);
+	}
+
+	/**
+	 * @return null|Clipboard
+	 */
+	public function getLatestUndo(): ?Clipboard{
+		$clipboards = $this->getUndos();
+		$return = array_pop($clipboards);
+		$this->setUndos($clipboards);
+		return $return;
+	}
+
+	/**
+	 * @return Clipboard[]
+	 */
+	public function getRedos(): array{
+		return $this->redo;
+	}
+
+
+	/**
+	 * @param Clipboard[] $redo
+	 */
+	private function setRedos(array $redo){
+		$this->redo = $redo;
+	}
+
+	/**
+	 * @param Clipboard $clipboard
+	 */
+	public function addRedo(Clipboard $clipboard){
+		array_push($this->redo, $clipboard);
+	}
+
+	/**
+	 * @return null|Clipboard
+	 */
+	public function getLatestRedo(): ?Clipboard{
+		$clipboards = $this->getRedos();
+		$return = array_pop($clipboards);
+		$this->setRedos($clipboards);
+		return $return;
 	}
 
 	/*
