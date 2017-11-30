@@ -112,7 +112,7 @@ class Selection{
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
 								$blocks[] = $block;
 						}
 					}
@@ -138,9 +138,8 @@ class Selection{
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId())
-								if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
-									$blocks[] = $block;
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
+								$blocks[] = $block;
 						}
 					}
 				}
