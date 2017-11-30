@@ -173,7 +173,7 @@ class Session{
 	/**
 	 * @return Clipboard[]
 	 */
-	private function &getUndos(): array{
+	public function getUndos(): array{
 		return $this->undo;
 	}
 
@@ -188,7 +188,7 @@ class Session{
 	 * @param Clipboard $clipboard
 	 */
 	public function addUndo(Clipboard $clipboard){
-		$this->undo[] = $clipboard;
+		array_push($this->undo, $clipboard);
 	}
 
 	/**
@@ -196,13 +196,15 @@ class Session{
 	 */
 	public function getLatestUndo(): ?Clipboard{
 		$clipboards = $this->getUndos();
-		return array_pop($clipboards);
+		$return = array_pop($clipboards);
+		$this->setUndos($clipboards);
+		return $return;
 	}
 
 	/**
 	 * @return Clipboard[]
 	 */
-	private function &getRedos(): array{
+	public function getRedos(): array{
 		return $this->redo;
 	}
 
@@ -218,7 +220,7 @@ class Session{
 	 * @param Clipboard $clipboard
 	 */
 	public function addRedo(Clipboard $clipboard){
-		$this->redo[] = $clipboard;
+		array_push($this->redo, $clipboard);
 	}
 
 	/**
@@ -226,7 +228,9 @@ class Session{
 	 */
 	public function getLatestRedo(): ?Clipboard{
 		$clipboards = $this->getRedos();
-		return array_pop($clipboards);
+		$return = array_pop($clipboards);
+		$this->setRedos($clipboards);
+		return $return;
 	}
 
 	/*

@@ -235,10 +235,10 @@ class API{
 				$block = clone $block1;
 				/** @var Block $block */
 				$blockvec3 = $session->getPlayer()->add($block);
-				$oldblock = $block->getLevel()->getBlock($blockvec3->floor());
 				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
+				$oldblock = $block->getLevel()->getBlock($blockvec3->floor());
 				if ($level->setBlock($blockvec3->floor(), $block, false, false)) {
 					$blocks[] = $oldblock;
 					$changed++;
@@ -422,7 +422,7 @@ class API{
 			if ($level->setBlock($block, $block, false, false)) $changed++;
 		}
 		$session->addRedo($clipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Undo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Undo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed, " . count($session->getUndos()) . " undo actions left");
 		return true;
 	}
 
@@ -441,7 +441,7 @@ class API{
 			if ($level->setBlock($block, $block, false, false)) $changed++;
 		}
 		$session->addUndo($clipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed, " . count($session->getRedos()) . " redo actions left");
 		return true;
 	}
 }
