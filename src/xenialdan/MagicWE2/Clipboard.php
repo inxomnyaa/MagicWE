@@ -66,7 +66,7 @@ class Clipboard{
 			$newpos = $newblock->add($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
 			$newpos = $newpos->setComponents($newpos->getX() * $multiplier["x"], $newpos->getY() * $multiplier["y"], $newpos->getZ() * $multiplier["z"]);
 			$newpos = $newpos->subtract($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
-			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ()));
+			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ(), $block->getLevel()));
 			switch ($newblock){
 				case $newblock instanceof Stair: {
 					$meta = $newblock->getDamage();

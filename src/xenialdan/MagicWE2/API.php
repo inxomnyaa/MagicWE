@@ -238,7 +238,7 @@ class API{
 				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
-				$oldblock = $block->getLevel()->getBlock($blockvec3->floor());
+				$oldblock = $level->getBlock($blockvec3->floor());
 				if ($level->setBlock($blockvec3->floor(), $block, false, false)) {
 					$blocks[] = $oldblock;
 					$changed++;
