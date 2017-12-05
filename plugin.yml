@@ -1,7 +1,7 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 4.4.2
+version: 5.0.0
 api:
 - 3.0.0-ALPHA9
 - 3.0.0-ALPHA10

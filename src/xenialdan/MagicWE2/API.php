@@ -114,12 +114,12 @@ class API{
 
 	/**
 	 * @param Selection $selection
-	 * @param Session $session
+	 * @param Session|null $session
 	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
 	 * @return string
 	 */
-	public static function fill(Selection $selection, Session $session, $newblocks = [], ...$flagarray){
+	public static function fill(Selection $selection, ?Session $session, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
@@ -127,7 +127,7 @@ class API{
 			$blocks = [];
 			/** @var Block $block */
 			foreach ($selection->getBlocks($flags) as $block){
-				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
+				$level = $block->getLevel() ?? (!is_null($session) ? $session->getPlayer()->getLevel() : null);
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
 				$newblock = $newblocks[array_rand($newblocks, 1)];
@@ -138,7 +138,7 @@ class API{
 				#if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
 				#	if ($level->getBlock($block)->getId() === Block::AIR) continue;
 				#}
-				if ($level->setBlock($block, $newblock, false, false)) {
+				if ($level->setBlock($block, $newblock, false, false)){
 					$blocks[] = $block;
 					$changed++;
 				}
@@ -146,11 +146,13 @@ class API{
 			$undoClipboard = new Clipboard();
 			$undoClipboard->setData($blocks);
 		} catch (WEException $exception){
-			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
-		$session->addUndo($undoClipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		if (!is_null($session)){
+			$session->addUndo($undoClipboard);
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		}
 		return true;
 	}
 
@@ -167,13 +169,13 @@ class API{
 
 	/**
 	 * @param Selection $selection
-	 * @param Session $session
+	 * @param Session|null $session
 	 * @param Block[] $blocks1
 	 * @param Block[] $blocks2
 	 * @param array ...$flagarray
 	 * @return bool
 	 */
-	public static function replace(Selection $selection, Session $session, $blocks1 = [], $blocks2 = [], ...$flagarray){
+	public static function replace(Selection $selection, ?Session $session, $blocks1 = [], $blocks2 = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
@@ -181,11 +183,11 @@ class API{
 			$blocks = [];
 			/** @var Block $block */
 			foreach ($selection->getBlocks($flags, ...$blocks1) as $block){
-				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
+				$level = $block->getLevel() ?? (!is_null($session) ? $session->getPlayer()->getLevel() : null);
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				$newblock = $blocks2[array_rand($blocks2, 1)];
 				$newblock->position($block->asPosition());
-				if ($level->setBlock($block, $newblock, false, false)) {
+				if ($level->setBlock($block, $newblock, false, false)){
 					$blocks[] = $block;
 					$changed++;
 				}
@@ -193,11 +195,13 @@ class API{
 			$undoClipboard = new Clipboard();
 			$undoClipboard->setData($blocks);
 		} catch (WEException $exception){
-			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
-		$session->addUndo($undoClipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		if (!is_null($session)){
+			$session->addUndo($undoClipboard);
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		}
 		return true;
 	}
 
@@ -239,7 +243,7 @@ class API{
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
 				$oldblock = $level->getBlock($blockvec3->floor());
-				if ($level->setBlock($blockvec3->floor(), $block, false, false)) {
+				if ($level->setBlock($blockvec3->floor(), $block, false, false)){
 					$blocks[] = $oldblock;
 					$changed++;
 				}
