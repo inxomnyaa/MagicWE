@@ -106,9 +106,8 @@ class Selection{
 			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
 					$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
-					$block->setLevel($this->getLevel());
 					#$block->setComponents((int)$x,(int)$y,(int)$z);
-					$block->position(new Position((int)$x, (int)$y, (int)$z));
+					$block->position(new Position((int)$x, (int)$y, (int)$z, $this->getLevel()));
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
