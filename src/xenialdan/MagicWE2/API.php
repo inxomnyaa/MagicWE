@@ -64,6 +64,10 @@ class API{
 	 * For example: Oak Logs with any rotation instead of a specific rotation
 	 */
 	const FLAG_VARIANT = 0x07; // -v
+	/**
+	 * With the -m flag the damage values / meta will be kept
+	 */
+	const FLAG_KEEP_META = 0x08; // -m
 
 	/** @var Session[] */
 	private static $sessions = [];
@@ -94,6 +98,9 @@ class API{
 					break;
 				case  "-v":
 					$flagmeta ^= 1 << self::FLAG_VARIANT;
+					break;
+				case  "-m":
+					$flagmeta ^= 1 << self::FLAG_KEEP_META;
 					break;
 				default:
 					Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
@@ -152,6 +159,8 @@ class API{
 		if (!is_null($session)){
 			$session->addUndo($undoClipboard);
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		} else{
+			Server::getInstance()->getLogger()->info(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
 		}
 		return true;
 	}
@@ -187,6 +196,7 @@ class API{
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				$newblock = $blocks2[array_rand($blocks2, 1)];
 				$newblock->position($block->asPosition());
+				if(self::hasFlag($flags, self::FLAG_KEEP_META)) $newblock->setDamage($block->getDamage());
 				if ($level->setBlock($block, $newblock, false, false)){
 					$blocks[] = $block;
 					$changed++;
@@ -201,6 +211,8 @@ class API{
 		if (!is_null($session)){
 			$session->addUndo($undoClipboard);
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		} else{
+			Server::getInstance()->getLogger()->info(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
 		}
 		return true;
 	}
