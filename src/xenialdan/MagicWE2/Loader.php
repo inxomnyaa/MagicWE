@@ -9,6 +9,7 @@ use pocketmine\plugin\PluginBase;
 use xenialdan\MagicWE2\commands\AsyncFillCommand;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
+use xenialdan\MagicWE2\commands\DebugCommand;
 use xenialdan\MagicWE2\commands\FillCommand;
 use xenialdan\MagicWE2\commands\FlipCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
@@ -17,6 +18,7 @@ use xenialdan\MagicWE2\commands\Pos2Command;
 use xenialdan\MagicWE2\commands\RedoCommand;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
 use xenialdan\MagicWE2\commands\SchematicCommand;
+use xenialdan\MagicWE2\commands\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\TogglewandCommand;
 use xenialdan\MagicWE2\commands\UndoCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
@@ -75,7 +77,9 @@ class Loader extends PluginBase{
 			new FlipCommand($this),
 			new SchematicCommand($this),
 			new UndoCommand($this),
-			new RedoCommand($this)
+			new RedoCommand($this),
+			new DebugCommand($this),
+			new ToggledebugCommand($this)
 		]);
 	}
 

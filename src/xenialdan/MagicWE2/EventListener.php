@@ -61,6 +61,15 @@ class EventListener implements Listener{
 					$event->getPlayer()->sendMessage($selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
 				}
+				case ItemIds::STICK: {
+					/** @var Session $session */
+					if (!($session = API::getSession($event->getPlayer()))->isDebugStickEnabled()){
+						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+						break;
+					}
+					$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+					break;
+				}
 			}
 		}
 	}

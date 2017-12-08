@@ -26,6 +26,8 @@ class Session{
 	private $redo = [];
 	/** @var bool */
 	private $wandEnabled = true;
+	/** @var bool */
+	private $debugStickEnabled = true;
 
 	public function __construct(Player $player){
 		$this->setPlayer($player);
@@ -168,6 +170,22 @@ class Session{
 	public function setWandEnabled(bool $wandEnabled){
 		$this->wandEnabled = $wandEnabled;
 		return Loader::$prefix . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isDebugStickEnabled(): bool{
+		return $this->debugStickEnabled;
+	}
+
+	/**
+	 * @param bool $debugStick
+	 * @return string
+	 */
+	public function setDebugStickEnabled(bool $debugStick){
+		$this->debugStickEnabled = $debugStick;
+		return Loader::$prefix . "The debug stick is now " . ($debugStick ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
 	}
 
 	/**
