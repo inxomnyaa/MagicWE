@@ -10,15 +10,16 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class ReplaceCommand extends WECommand{
+class FlipCommand extends WECommand{
 	public function __construct(Plugin $plugin){
-		parent::__construct("/replace", $plugin);
-		$this->setPermission("we.command.replace");
-		$this->setDescription("Replace blocks in an area");
-		$this->setUsage("//replace [flags...]");
+		parent::__construct("/flip", $plugin);
+		$this->setPermission("we.command.flip");
+		$this->setDescription("Flip a clipboard");
+		$this->setUsage("//flip <X|Y|Z|UP|DOWN|WEST|EAST|NORTH|SOUTH...>");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -31,20 +32,19 @@ class ReplaceCommand extends WECommand{
 		$lang = Loader::getInstance()->getLanguage();
 		try{
 			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
-			if (count($args) < 2) throw new \InvalidArgumentCountException("Too less arguments supplied");
-			$messages = [];
-			$error = false;
-			$blocks1 = API::blockParser(array_shift($args), $messages, $error);
-			$blocks2 = API::blockParser(array_shift($args), $messages, $error);
-			foreach ($messages as $message){
-				$sender->sendMessage($message);
+
+			$reflectionClass = new \ReflectionClass(Clipboard::class);
+			$constants = $reflectionClass->getConstants();
+			$args = array_flip(array_change_key_case(array_flip($args), CASE_UPPER));
+			$flags = Clipboard::DIRECTION_DEFAULT;
+			foreach ($args as $arg){
+				if (array_key_exists("FLIP_" . $arg, $constants)){
+					$flags ^= 1 << $constants["FLIP_" . $arg];
+				} else throw new \InvalidArgumentException('"' . $arg . '" is not a valid input');
 			}
-			$return = !$error;
-			if ($return){
-				$return = API::replace(($session = API::getSession($sender))->getLatestSelection(), $session, $blocks1, $blocks2, ...$args);
-			} else{
-				throw new \InvalidArgumentException("Could not replace with the selected blocks");
-			}
+			$sender->sendMessage(Loader::$prefix . "Trying to flip clipboard by " . implode("|", $args));
+			($session = API::getSession($sender))->getClipboards()[0]->flip($flags);//TODO multi-clipboard support
+			$sender->sendMessage(Loader::$prefix . "Successfully flipped clipboard");
 		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
