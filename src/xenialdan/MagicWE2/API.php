@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockIds;
 use pocketmine\block\UnknownBlock;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
@@ -196,7 +197,7 @@ class API{
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				$newblock = $blocks2[array_rand($blocks2, 1)];
 				$newblock->position($block->asPosition());
-				if(self::hasFlag($flags, self::FLAG_KEEP_META)) $newblock->setDamage($block->getDamage());
+				if (self::hasFlag($flags, self::FLAG_KEEP_META)) $newblock->setDamage($block->getDamage());
 				if ($level->setBlock($block, $newblock, false, false)){
 					$blocks[] = $block;
 					$changed++;
@@ -459,5 +460,146 @@ class API{
 		$session->addUndo($clipboard);
 		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed, " . count($session->getRedos()) . " redo actions left");
 		return true;
+	}
+
+	public static function rotationMetaHelper(Block $block, $timesRotate = 1){
+		$meta = $block->getDamage();
+		$variant = $block->getVariant();
+		$rotation = [0, 0, 0, 0];
+		switch ($block->getId()){
+			case BlockIds::FURNACE:
+			case BlockIds::BURNING_FURNACE:
+			case BlockIds::CHEST:
+			case BlockIds::TRAPPED_CHEST:
+			case BlockIds::ENDER_CHEST:
+			case BlockIds::STONE_BUTTON:
+			case BlockIds::WOODEN_BUTTON:
+			case BlockIds::WALL_BANNER:
+			case BlockIds::PURPLE_GLAZED_TERRACOTTA:
+			case BlockIds::WHITE_GLAZED_TERRACOTTA :
+			case BlockIds::ORANGE_GLAZED_TERRACOTTA :
+			case BlockIds::MAGENTA_GLAZED_TERRACOTTA :
+			case BlockIds::LIGHT_BLUE_GLAZED_TERRACOTTA:
+			case BlockIds::YELLOW_GLAZED_TERRACOTTA:
+			case BlockIds::LIME_GLAZED_TERRACOTTA :
+			case BlockIds::PINK_GLAZED_TERRACOTTA :
+			case BlockIds::GRAY_GLAZED_TERRACOTTA :
+			case BlockIds::SILVER_GLAZED_TERRACOTTA :
+			case BlockIds::CYAN_GLAZED_TERRACOTTA:
+			case BlockIds::BLUE_GLAZED_TERRACOTTA:
+			case BlockIds::BROWN_GLAZED_TERRACOTTA :
+			case BlockIds::GREEN_GLAZED_TERRACOTTA :
+			case BlockIds::RED_GLAZED_TERRACOTTA :
+			case BlockIds::BLACK_GLAZED_TERRACOTTA :
+			case BlockIds::LADDER:
+			case BlockIds::WALL_SIGN: {
+				$rotation = [3, 4, 2, 5];
+				break;
+			}
+			case BlockIds::ITEM_FRAME_BLOCK: {
+				$rotation = [2, 1, 3, 0];
+				//$rotation = [14,12,15,12];//TODO
+				break;
+			}
+			case BlockIds::IRON_TRAPDOOR:
+			case BlockIds::TRAPDOOR: {
+				$rotation = [2, 1, 3, 0];
+				//$rotation = [14,12,15,12];//TODO
+				break;
+			}
+			case BlockIds::UNPOWERED_REPEATER:
+			case BlockIds::UNPOWERED_COMPARATOR:
+			case BlockIds::POWERED_REPEATER:
+			case BlockIds::POWERED_COMPARATOR:
+			case BlockIds::END_PORTAL_FRAME:
+			case BlockIds::LIT_PUMPKIN:
+			case BlockIds::PUMPKIN: {
+				$rotation = [0, 1, 2, 3];
+				break;
+			}
+			case BlockIds::WOODEN_STAIRS:
+			case BlockIds::STONE_STAIRS:
+			case BlockIds::BRICK_STAIRS:
+			case BlockIds::STONE_BRICK_STAIRS:
+			case BlockIds::NETHER_BRICK_STAIRS:
+			case BlockIds::SANDSTONE_STAIRS:
+			case BlockIds::SPRUCE_STAIRS:
+			case BlockIds::BIRCH_STAIRS:
+			case BlockIds::JUNGLE_STAIRS:
+			case BlockIds::QUARTZ_STAIRS:
+			case BlockIds::ACACIA_STAIRS:
+			case BlockIds::DARK_OAK_STAIRS:
+			case BlockIds::RED_SANDSTONE_STAIRS:
+			case BlockIds::PURPUR_STAIRS: {
+				$rotation = [3, 0, 2, 1];
+				break;
+			}
+			case BlockIds::WOODEN_DOOR_BLOCK:
+			case BlockIds::IRON_DOOR_BLOCK:
+			case BlockIds::SPRUCE_DOOR_BLOCK:
+			case BlockIds::BIRCH_DOOR_BLOCK:
+			case BlockIds::JUNGLE_DOOR_BLOCK:
+			case BlockIds::ACACIA_DOOR_BLOCK:
+			case BlockIds::DARK_OAK_DOOR_BLOCK:
+			case BlockIds::ANVIL: {
+				$rotation = [3, 0, 1, 2];
+				break;
+			}
+			case BlockIds::VINE: {
+				$rotation = [4, 8, 1, 2];
+				break;
+			}
+			case BlockIds::BED_BLOCK:
+			case BlockIds::OAK_FENCE_GATE:
+			case BlockIds::SPRUCE_FENCE_GATE:
+			case BlockIds::BIRCH_FENCE_GATE:
+			case BlockIds::JUNGLE_FENCE_GATE:
+			case BlockIds::DARK_OAK_FENCE_GATE:
+			case BlockIds::ACACIA_FENCE_GATE: {
+				$rotation = [2, 3, 0, 1];
+				//TODO [10, 11,8,9]
+				break;
+			}
+			case BlockIds::STANDING_BANNER:
+			case BlockIds::SIGN_POST: {
+				$rotation = [0, 4, 8, 12];
+				//TODO all rotation
+				break;
+			}
+			case BlockIds::QUARTZ_BLOCK:
+			case BlockIds::PURPUR_BLOCK: {
+				$rotation = [10, 6, 10, 6];
+				break;
+			}
+			case BlockIds::HAY_BLOCK:
+			case BlockIds::BONE_BLOCK:
+			case BlockIds::LOG:
+			case BlockIds::LOG2: {
+				$rotation = [10, 6, 10, 6];
+				break;
+			}
+			case BlockIds::END_ROD: {
+				$rotation = [2, 4, 3, 5];
+				break;
+			}
+			case BlockIds::PISTON:
+			case BlockIds::STICKY_PISTON: {
+				$rotation = [2, 5, 3, 4];
+				break;
+			}
+			case BlockIds::TORCH:
+			case BlockIds::REDSTONE_ORE:
+			case BlockIds::UNLIT_REDSTONE_TORCH: {
+				$rotation = [3, 2, 4, 1];
+				break;
+			}
+			//TODO: Heads
+		}
+		$currentrotationindex = array_search($meta % count($rotation), $rotation);
+		if ($currentrotationindex === false) return $block->getDamage();
+		$currentrotationindex += $timesRotate;
+		#return $rotation[($currentrotationindex % count($rotation))];
+		$extra = intval($meta / count($rotation));
+		return $rotation[$currentrotationindex % count($rotation)] + ($extra * count($rotation));
 	}
 }

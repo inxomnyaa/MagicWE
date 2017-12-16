@@ -14,12 +14,12 @@ use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
-class FlipCommand extends WECommand{
+class RotateCommand extends WECommand{
 	public function __construct(Plugin $plugin){
-		parent::__construct("/flip", $plugin);
-		$this->setPermission("we.command.flip");
-		$this->setDescription("Flip a clipboard");
-		$this->setUsage("//flip <X|Y|Z|UP|DOWN|WEST|EAST|NORTH|SOUTH...>");
+		parent::__construct("/rotate", $plugin);
+		$this->setPermission("we.command.rotate");
+		$this->setDescription("rotate a clipboard");
+		$this->setUsage("//rotate <1|2|3|-1|-2|-3>");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -32,19 +32,12 @@ class FlipCommand extends WECommand{
 		$lang = Loader::getInstance()->getLanguage();
 		try{
 			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
+			if(intval($args[0]) != $args[0]) throw new \InvalidArgumentException("You must use a number as argument");
+			$args[0] = intval($args[0]);
 
-			$reflectionClass = new \ReflectionClass(Clipboard::class);
-			$constants = $reflectionClass->getConstants();
-			$args = array_flip(array_change_key_case(array_flip($args), CASE_UPPER));
-			$flags = Clipboard::DIRECTION_DEFAULT;
-			foreach ($args as $arg){
-				if (array_key_exists("FLIP_" . $arg, $constants)){
-					$flags ^= 1 << $constants["FLIP_" . $arg];
-				} else throw new \InvalidArgumentException('"' . $arg . '" is not a valid input');
-			}
-			$sender->sendMessage(Loader::$prefix . "Trying to flip clipboard by " . implode("|", $args));
-			($session = API::getSession($sender))->getClipboards()[0]->flip($flags);//TODO multi-clipboard support
-			$sender->sendMessage(Loader::$prefix . "Successfully flipped clipboard");
+			$sender->sendMessage(Loader::$prefix . "Trying to rotate clipboard by " . 90 * $args[0] . " degrees");
+			($session = API::getSession($sender))->getClipboards()[0]->rotate($args[0]);//TODO multi-clipboard support
+			$sender->sendMessage(Loader::$prefix . "Successfully rotated clipboard");
 		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());

@@ -17,6 +17,7 @@ use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
 use xenialdan\MagicWE2\commands\RedoCommand;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
+use xenialdan\MagicWE2\commands\RotateCommand;
 use xenialdan\MagicWE2\commands\SchematicCommand;
 use xenialdan\MagicWE2\commands\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\TogglewandCommand;
@@ -79,7 +80,8 @@ class Loader extends PluginBase{
 			new UndoCommand($this),
 			new RedoCommand($this),
 			new DebugCommand($this),
-			new ToggledebugCommand($this)
+			new ToggledebugCommand($this),
+			new RotateCommand($this),
 		]);
 	}
 

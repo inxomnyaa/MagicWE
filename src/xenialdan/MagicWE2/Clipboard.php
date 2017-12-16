@@ -88,6 +88,37 @@ class Clipboard{
 		$this->setData($newdata);
 	}
 
+	public function rotate($rotations = 0){//TODO maybe move to API
+		$newdata = [];
+		/** @var Block $block */
+		foreach ($this->getData() as $block){
+			$newblock = clone $block;
+			$newpos = $newblock->add($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
+			switch ($rotations % 4){
+				case 1: {
+					$newpos = $newpos->setComponents(-$newpos->getZ(), $newpos->getY(), $newpos->getX());
+					break;
+				}
+				case 2: {
+					$newpos = $newpos->setComponents(-$newpos->getX(), $newpos->getY(), -$newpos->getZ());
+					break;
+				}
+				case 3: {
+					$newpos = $newpos->setComponents(-$newpos->getZ(), $newpos->getY(), $newpos->getX());
+					break;
+				}
+				default: {
+					//$newpos === $newpos;
+				}
+			}
+			$newpos = $newpos->subtract($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
+			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ(), $block->getLevel()));
+			$newblock->setDamage(API::rotationMetaHelper($newblock, $rotations));
+			$newdata[] = $newblock;
+		}
+		$this->setData($newdata);
+	}
+
 	/** TODO list:
 	 * Serialize, deserialize to/from file
 	 * Flip
