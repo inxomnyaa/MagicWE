@@ -252,7 +252,7 @@ class API{
 				$block = clone $block1;
 				/** @var Block $block */
 				$blockvec3 = $session->getPlayer()->add($block);
-				$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
+				$level = $session->getPlayer()->getLevel() ?? $block->getLevel();
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
 				$oldblock = $level->getBlock($blockvec3->floor());
