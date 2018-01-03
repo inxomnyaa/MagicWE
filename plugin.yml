@@ -1,9 +1,8 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 5.3.3
+version: 5.4.3
 api:
-- 3.0.0-ALPHA9
 - 3.0.0-ALPHA10
 load: STARTUP
 authors:
@@ -45,5 +44,7 @@ permissions:
       we.command.toggledebug:
         default: op
       we.command.rotate:
+        default: op
+      we.command.flood:
         default: op
 ...

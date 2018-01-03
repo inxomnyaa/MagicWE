@@ -15,6 +15,7 @@ use pocketmine\form\element\Slider;
 use pocketmine\form\element\Toggle;
 use pocketmine\form\Form;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
@@ -68,7 +69,7 @@ class BrushCommand extends WECommand{
 						public function onSubmit(Player $player): ?Form{
 							$lang = Loader::getInstance()->getLanguage();
 							$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
-							$item->addEnchantment(Enchantment::getEnchantment(Enchantment::PROTECTION));
+							$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
 							$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Brush');
 							$item->setLore(
 								array_map(function (CustomFormElement $value){

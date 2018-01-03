@@ -12,12 +12,14 @@ use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\NBT;
+use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\shape\Custom;
+use xenialdan\MagicWE2\shape\Shape;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 
@@ -378,8 +380,24 @@ class API{
 		return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
 	}
 
+	/**
+	 * @param Block $target
+	 * @param NamedTag $settings
+	 * @param Session $session
+	 * @param array[] $flagarray
+	 * @return bool
+	 */
+	public static function floodArea(Block $target, NamedTag $settings, Session $session, array ...$flagarray){ //TODO
+		if (!$settings instanceof CompoundTag) return null;
+		$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_FLOOD, self::compoundToArray($settings));
+		$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+		$messages = [];
+		$error = false;
+		return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+	}
+
 	public static function compoundToArray(CompoundTag $compoundTag){
-		$nbt = new NBT();
+		$nbt = new LittleEndianNBTStream();
 		$nbt->setData($compoundTag);
 		return $nbt->getArray();
 	}

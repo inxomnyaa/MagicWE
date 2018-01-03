@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\commands;
 use pocketmine\command\CommandSender;
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
@@ -34,7 +35,7 @@ class WandCommand extends WECommand{
 		$lang = Loader::getInstance()->getLanguage();
 		try{
 			$item = ItemFactory::get(ItemIds::WOODEN_AXE);
-			$item->addEnchantment(Enchantment::getEnchantment(Enchantment::PROTECTION));
+			$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
 			$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Wand');
 			$item->setLore([//TODO translation
 				'Left click a block to set the position 1 of a selection',

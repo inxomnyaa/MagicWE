@@ -10,7 +10,8 @@ use xenialdan\MagicWE2\commands\AsyncFillCommand;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\DebugCommand;
-use xenialdan\MagicWE2\commands\FillCommand;
+use xenialdan\MagicWE2\commands\FloodCommand;
+use xenialdan\MagicWE2\commands\SetCommand;
 use xenialdan\MagicWE2\commands\FlipCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
@@ -67,7 +68,7 @@ class Loader extends PluginBase{
 		$this->getServer()->getCommandMap()->registerAll("we", [
 			new Pos1Command($this),
 			new Pos2Command($this),
-			new FillCommand($this),
+			new SetCommand($this),
 			new ReplaceCommand($this),
 			new CopyCommand($this),
 			new PasteCommand($this),
@@ -82,6 +83,7 @@ class Loader extends PluginBase{
 			new DebugCommand($this),
 			new ToggledebugCommand($this),
 			new RotateCommand($this),
+			new FloodCommand($this),
 		]);
 	}
 
