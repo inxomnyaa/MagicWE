@@ -23,6 +23,8 @@ class AsyncFillCommand extends WECommand{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
+		$sender->sendMessage("The command is currently under TODO and being worked on.");
+		return true;
 		/** @var Player $sender */
 		$return = $sender->hasPermission($this->getPermission());
 		if (!$return){

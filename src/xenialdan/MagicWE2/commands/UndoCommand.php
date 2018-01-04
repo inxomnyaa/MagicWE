@@ -33,13 +33,21 @@ class UndoCommand extends WECommand{
 		try{
 			/** @var Session $session */
 			$session = API::getSession($sender);
+			if (is_null($session)){
+				throw new WEException("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+			}
 			API::undo($session);
 		} catch (WEException $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
+		} catch (\ArgumentCountError $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
 			return $return;

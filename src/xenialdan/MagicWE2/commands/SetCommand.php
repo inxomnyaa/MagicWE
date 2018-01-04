@@ -31,7 +31,7 @@ class SetCommand extends WECommand{
 		}
 		$lang = Loader::getInstance()->getLanguage();
 		try{
-			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
+			if (empty($args)) throw new \ArgumentCountError("No arguments supplied");
 			$messages = [];
 			$error = false;
 			$newblocks = API::blockParser(array_shift($args), $messages, $error);
@@ -40,7 +40,15 @@ class SetCommand extends WECommand{
 			}
 			$return = !$error;
 			if ($return){
-				$return = API::fill(($session = API::getSession($sender))->getLatestSelection(), $session, $newblocks, ...$args);
+				$session = API::getSession($sender);
+				if (is_null($session)){
+					throw new WEException("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+				}
+				$selection = $session->getLatestSelection();
+				if (is_null($selection)){
+					throw new WEException("No selection found - select an area first");
+				}
+				$return = API::fill($selection, $session, $newblocks, ...$args);
 			} else{
 				throw new \InvalidArgumentException("Could not fill with the selected blocks");
 			}
@@ -48,8 +56,13 @@ class SetCommand extends WECommand{
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
+		} catch (\ArgumentCountError $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
 			return $return;

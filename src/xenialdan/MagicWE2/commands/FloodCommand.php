@@ -20,12 +20,10 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\WEException;
 
@@ -49,9 +47,9 @@ class FloodCommand extends WECommand{
 			if ($sender instanceof Player){
 				$sender->sendForm(
 					new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.flood.title'), [
-						new Slider($lang->translateString('ui.flood.options.limit'), 100, 10000, 100.0, 1000.0),
-						new Input($lang->translateString('ui.flood.options.blocks'), $lang->translateString('ui.flood.options.blocks.placeholder')),
-						new Label($lang->translateString('ui.flood.options.label.infoapply'))]
+							new Slider($lang->translateString('ui.flood.options.limit'), 100, 10000, 100.0, 1000.0),
+							new Input($lang->translateString('ui.flood.options.blocks'), $lang->translateString('ui.flood.options.blocks.placeholder')),
+							new Label($lang->translateString('ui.flood.options.label.infoapply'))]
 					) extends CustomForm{
 						public function onSubmit(Player $player): ?Form{
 							$lang = Loader::getInstance()->getLanguage();
@@ -85,8 +83,13 @@ class FloodCommand extends WECommand{
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
+		} catch (\ArgumentCountError $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
 			return $return;

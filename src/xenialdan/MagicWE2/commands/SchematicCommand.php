@@ -31,36 +31,61 @@ class SchematicCommand extends WECommand{
 		}
 		$lang = Loader::getInstance()->getLanguage();
 		try{
-			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
-			switch ($type = strtolower(array_shift($args[0]))){
+			if (empty($args)) throw new \ArgumentCountError("No arguments supplied");
+			$session = API::getSession($sender);
+			if (is_null($session)){
+				throw new WEException("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+			}
+			switch ($type = strtolower(array_shift($args))){
 				case "load": {
+					if (count($args) < 1) throw new \ArgumentCountError("Too less arguments supplied");
 					$path = $this->getPlugin()->getDataFolder() . "schematics/";
 					@mkdir($path);
 					$file = array_shift($args);
-					if (empty(trim($file))) throw new \InvalidArgumentException("No arguments supplied");
-					$sender->sendMessage("Under TODO");
+					if (empty(trim($file))) throw new \InvalidArgumentException("No file name supplied");
+					$sender->sendMessage(Loader::$prefix . TextFormat::YELLOW . "Beta command - not yet properly implemented");
 					break;
 				}
 				case "reload": {
 					$sender->sendMessage(Loader::$prefix . TextFormat::GREEN . "Reloading schematics");
-					$sender->sendMessage(Loader::$prefix . TextFormat::YELLOW . "TODO");
+					$sender->sendMessage(Loader::$prefix . TextFormat::YELLOW . "Beta command - not yet properly implemented");
 					$sender->sendMessage(Loader::$prefix . TextFormat::GREEN . "Schematics reloaded");
 					break;
 				}
 				case "cache": {
-					$sender->sendMessage(Loader::$prefix . TextFormat::YELLOW . "TODO");
+					$sender->sendMessage(Loader::$prefix . TextFormat::YELLOW . "Beta command - not yet properly implemented");
+					break;
+				}
+				case "save": {
+					$sender->sendMessage(Loader::$prefix . TextFormat::YELLOW . "Beta command - not yet properly implemented");
+					if (count($args) < 1) throw new \ArgumentCountError("Too less arguments supplied");
+					$path = $this->getPlugin()->getDataFolder() . "schematics/";
+					@mkdir($path);
+					$file = array_shift($args);
+					if (empty(trim($file))) throw new \InvalidArgumentException("No file name supplied");
+					$selection = $session->getLatestSelection();
+					if (is_null($selection)){
+						throw new WEException("No selection found - select an area first");
+					}
+					#$schematic = new Schematic();
+					#$schematic->setBlocks($selection->getBlocks(...));
+					#$schematic->save($file);
 					break;
 				}
 				default:
 					throw new \InvalidArgumentException("Unknown argument");
 			}
-			$return = API::copy(($session = API::getSession($sender))->getLatestSelection(), $session, ...$args);
 		} catch (WEException $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
+		} catch (\ArgumentCountError $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
 			return $return;

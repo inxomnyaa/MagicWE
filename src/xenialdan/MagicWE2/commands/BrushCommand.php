@@ -49,22 +49,22 @@ class BrushCommand extends WECommand{
 			if ($sender instanceof Player){
 				$sender->sendForm(
 					new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'), [
-						new Dropdown($lang->translateString('ui.brush.options.type.title'), [
-							$lang->translateString('ui.brush.options.type.sphere'),
-							$lang->translateString('ui.brush.options.type.cylinder'),
-							$lang->translateString('ui.brush.options.type.square')]),//TODO rectangle, custom shapes etc
-						//TODO BIG TODO: Move all this into a new UI based on what was selected
-						//TODO BIG TODO: Move all this into a new UI based on what was selected
-						//TODO BIG TODO: Move all this into a new UI based on what was selected
-						new Slider($lang->translateString('ui.brush.options.diameter'), 1, 100, 1.0),
-						new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0),
-						new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
-						new Label($lang->translateString('ui.brush.options.label.flags')),
-						new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), false),
-						new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
-						new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
-						new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
-						new Label($lang->translateString('ui.brush.options.label.infoapply'))]
+							new Dropdown($lang->translateString('ui.brush.options.type.title'), [
+								$lang->translateString('ui.brush.options.type.sphere'),
+								$lang->translateString('ui.brush.options.type.cylinder'),
+								$lang->translateString('ui.brush.options.type.square')]),//TODO rectangle, custom shapes etc
+							//TODO BIG TODO: Move all this into a new UI based on what was selected
+							//TODO BIG TODO: Move all this into a new UI based on what was selected
+							//TODO BIG TODO: Move all this into a new UI based on what was selected
+							new Slider($lang->translateString('ui.brush.options.diameter'), 1, 100, 1.0),
+							new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0),
+							new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
+							new Label($lang->translateString('ui.brush.options.label.flags')),
+							new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), false),
+							new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
+							new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
+							new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
+							new Label($lang->translateString('ui.brush.options.label.infoapply'))]
 					) extends CustomForm{
 						public function onSubmit(Player $player): ?Form{
 							$lang = Loader::getInstance()->getLanguage();
@@ -125,8 +125,13 @@ class BrushCommand extends WECommand{
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
+		} catch (\ArgumentCountError $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
 			return $return;

@@ -31,7 +31,7 @@ class FlipCommand extends WECommand{
 		}
 		$lang = Loader::getInstance()->getLanguage();
 		try{
-			if (empty($args)) throw new \InvalidArgumentCountException("No arguments supplied");
+			if (empty($args)) throw new \ArgumentCountError("No arguments supplied");
 
 			$reflectionClass = new \ReflectionClass(Clipboard::class);
 			$constants = $reflectionClass->getConstants();
@@ -49,8 +49,13 @@ class FlipCommand extends WECommand{
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
+		} catch (\ArgumentCountError $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
 			return $return;
