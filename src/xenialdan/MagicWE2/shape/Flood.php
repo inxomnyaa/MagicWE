@@ -4,11 +4,8 @@ namespace xenialdan\MagicWE2\shape;
 
 use pocketmine\block\Block;
 use pocketmine\level\Level;
-use pocketmine\level\particle\GenericParticle;
-use pocketmine\level\particle\Particle;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
 
 class Flood extends Shape{
 	private $limit = 10000;
@@ -22,7 +19,7 @@ class Flood extends Shape{
 	 */
 	public function __construct(Level $level, array $options){
 		parent::__construct($level, $options);
-		$this->limit = $options["limit"]??$this->limit;
+		$this->limit = $options["limit"] ?? $this->limit;
 	}
 
 	/**
@@ -37,14 +34,14 @@ class Flood extends Shape{
 
 	private function walk(Block $block){//TODO find a better calculation
 		foreach ($block->getHorizontalSides() as $horizontalSide){
-			if(count($this->foundBlocks) >= $this->limit){
+			if (count($this->foundBlocks) >= $this->limit){
 				//Flood limit exceeded
 				return $this->foundBlocks;
 			}
-			if(array_key_exists(($index = $this->calculateIndex($horizontalSide)), $this->walked)) continue;
+			if (array_key_exists(($index = $this->calculateIndex($horizontalSide)), $this->walked)) continue;
 			var_dump($index);
 			$this->walked[$index] = true;
-			if($horizontalSide->getId() === 0){//todo any id selected
+			if ($horizontalSide->getId() === 0){//todo any id selected
 				$this->foundBlocks[] = $horizontalSide;
 				$this->foundBlocks = array_merge($this->foundBlocks, $this->walk($horizontalSide));
 			}

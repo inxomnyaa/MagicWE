@@ -13,7 +13,6 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\Session;
-use xenialdan\MagicWE2\WEException;
 
 class Pos2Command extends WECommand{
 	public function __construct(Plugin $plugin){
@@ -36,14 +35,14 @@ class Pos2Command extends WECommand{
 			/** @var Session $session */
 			$session = API::getSession($sender);
 			if (is_null($session)){
-				throw new WEException("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+				throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 			}
 			$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($sender->getLevel())); // TODO check if the selection inside of the session updates
 			if (is_null($selection)){
 				throw new \Error("No selection created - Check the console for errors");
 			}
 			$sender->sendMessage($selection->setPos2($sender->getPosition()));
-		} catch (WEException $error){
+		} catch (\Exception $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;

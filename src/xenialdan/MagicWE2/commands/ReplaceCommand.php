@@ -11,7 +11,6 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WEException;
 
 class ReplaceCommand extends WECommand{
 	public function __construct(Plugin $plugin){
@@ -43,17 +42,17 @@ class ReplaceCommand extends WECommand{
 			if ($return){
 				$session = API::getSession($sender);
 				if (is_null($session)){
-					throw new WEException("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+					throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 				}
 				$selection = $session->getLatestSelection();
 				if (is_null($selection)){
-					throw new WEException("No selection found - select an area first");
+					throw new \Exception("No selection found - select an area first");
 				}
 				$return = API::replace($selection, $session, $blocks1, $blocks2, ...$args);
 			} else{
 				throw new \InvalidArgumentException("Could not replace with the selected blocks");
 			}
-		} catch (WEException $error){
+		} catch (\Exception $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;

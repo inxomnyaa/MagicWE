@@ -226,7 +226,6 @@ class Session{
 		return $this->redo;
 	}
 
-
 	/**
 	 * @param Clipboard[] $redo
 	 */

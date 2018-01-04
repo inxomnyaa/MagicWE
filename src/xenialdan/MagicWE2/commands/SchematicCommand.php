@@ -11,7 +11,6 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WEException;
 
 class SchematicCommand extends WECommand{
 	public function __construct(Plugin $plugin){
@@ -34,7 +33,7 @@ class SchematicCommand extends WECommand{
 			if (empty($args)) throw new \ArgumentCountError("No arguments supplied");
 			$session = API::getSession($sender);
 			if (is_null($session)){
-				throw new WEException("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+				throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 			}
 			switch ($type = strtolower(array_shift($args))){
 				case "load": {
@@ -65,17 +64,19 @@ class SchematicCommand extends WECommand{
 					if (empty(trim($file))) throw new \InvalidArgumentException("No file name supplied");
 					$selection = $session->getLatestSelection();
 					if (is_null($selection)){
-						throw new WEException("No selection found - select an area first");
+						throw new \Exception("No selection found - select an area first");
 					}
 					#$schematic = new Schematic();
 					#$schematic->setBlocks($selection->getBlocks(...));
 					#$schematic->save($file);
 					break;
 				}
-				default:
+				default: {
+					$return = false;
 					throw new \InvalidArgumentException("Unknown argument");
+				}
 			}
-		} catch (WEException $error){
+		} catch (\Exception $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;

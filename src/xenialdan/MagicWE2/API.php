@@ -18,11 +18,8 @@ use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use xenialdan\MagicWE2\shape\Custom;
-use xenialdan\MagicWE2\shape\Shape;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncFillTask;
-
 
 class API{
 	/**
@@ -155,7 +152,7 @@ class API{
 			}
 			$undoClipboard = new Clipboard();
 			$undoClipboard->setData($blocks);
-		} catch (WEException $exception){
+		} catch (\Exception $exception){
 			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
@@ -207,7 +204,7 @@ class API{
 			}
 			$undoClipboard = new Clipboard();
 			$undoClipboard->setData($blocks);
-		} catch (WEException $exception){
+		} catch (\Exception $exception){
 			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
@@ -236,7 +233,7 @@ class API{
 			else
 				$clipboard->setOffset($selection->getMinVec3()->subtract($session->getPlayer())->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
 			$session->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
-		} catch (WEException $exception){
+		} catch (\Exception $exception){
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
@@ -265,7 +262,7 @@ class API{
 			}
 			$undoClipboard = new Clipboard();
 			$undoClipboard->setData($blocks);
-		} catch (WEException $exception){
+		} catch (\Exception $exception){
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
 			return false;
 		}
@@ -401,7 +398,6 @@ class API{
 		$nbt->setData($compoundTag);
 		return $nbt->getArray();
 	}
-
 
 	public static function &addSession(Session $session){
 		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;

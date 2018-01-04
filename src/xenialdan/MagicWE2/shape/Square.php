@@ -2,7 +2,6 @@
 
 namespace xenialdan\MagicWE2\shape;
 
-
 use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\level\Position;

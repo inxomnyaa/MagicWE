@@ -48,7 +48,7 @@ class Selection{
 
 	public function getPos1(){
 		if (is_null($this->pos1)){
-			throw new WEException("Position 1 is not set!");
+			throw new \Exception("Position 1 is not set!");
 		}
 		return $this->pos1;
 	}
@@ -60,7 +60,7 @@ class Selection{
 
 	public function getPos2(){
 		if (is_null($this->pos2)){
-			throw new WEException("Position 2 is not set!");
+			throw new \Exception("Position 2 is not set!");
 		}
 		return $this->pos2;
 	}

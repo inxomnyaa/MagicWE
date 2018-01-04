@@ -2,7 +2,6 @@
 
 namespace xenialdan\MagicWE2\shape;
 
-
 use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -17,8 +16,8 @@ abstract class Shape extends Selection{//TODO test
 
 	public function __construct(Level $level, array $options){
 		$this->options = $options;
-		$this->flags = $options['flags']??$this->flags;
-		$this->blocks = $options['blocks']??$this->blocks;
+		$this->flags = $options['flags'] ?? $this->flags;
+		$this->blocks = $options['blocks'] ?? $this->blocks;
 		parent::__construct($level);
 	}
 

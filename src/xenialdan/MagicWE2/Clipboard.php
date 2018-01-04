@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
-
 use pocketmine\block\Block;
 use pocketmine\block\Stair;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-
 
 class Clipboard{
 	const DIRECTION_DEFAULT = 1;

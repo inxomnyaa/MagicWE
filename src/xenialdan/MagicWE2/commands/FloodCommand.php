@@ -25,7 +25,6 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WEException;
 
 class FloodCommand extends WECommand{
 	public function __construct(Plugin $plugin){
@@ -79,7 +78,7 @@ class FloodCommand extends WECommand{
 			} else{
 				$sender->sendMessage(TextFormat::RED . "Console can not use this command.");
 			}
-		} catch (WEException $error){
+		} catch (\Exception $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
