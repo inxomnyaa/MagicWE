@@ -48,71 +48,180 @@ class BrushCommand extends WECommand{
 			if ($sender instanceof Player){
 				$sender->sendForm(
 					new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'), [
-							new Dropdown($lang->translateString('ui.brush.options.type.title'), [
-								$lang->translateString('ui.brush.options.type.sphere'),
-								$lang->translateString('ui.brush.options.type.cylinder'),
-								$lang->translateString('ui.brush.options.type.square')]),//TODO rectangle, custom shapes etc
-							//TODO BIG TODO: Move all this into a new UI based on what was selected
-							//TODO BIG TODO: Move all this into a new UI based on what was selected
-							//TODO BIG TODO: Move all this into a new UI based on what was selected
-							new Slider($lang->translateString('ui.brush.options.diameter'), 1, 100, 1.0),
-							new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0),
-							new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
-							new Label($lang->translateString('ui.brush.options.label.flags')),
-							new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), false),
-							new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
-							new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
-							new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
-							new Label($lang->translateString('ui.brush.options.label.infoapply'))]
+							new Dropdown($lang->translateString('ui.brush.select.title'), [
+								$lang->translateString('ui.brush.select.type.sphere'),
+								#$lang->translateString('ui.brush.select.type.cylinder'),
+								$lang->translateString('ui.brush.select.type.cuboid'),
+								$lang->translateString('ui.brush.select.type.clipboard')])]
 					) extends CustomForm{
+						private $options = [];
+
+						public function __construct($title, $elements, $options = []){
+							$this->options = $options;
+							parent::__construct($title, $elements);
+						}
+
 						public function onSubmit(Player $player): ?Form{
 							$lang = Loader::getInstance()->getLanguage();
-							$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
-							$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
-							$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Brush');
-							$item->setLore(
-								array_map(function (CustomFormElement $value){
-									if ($value instanceof Dropdown){
-										return strval($value->getText() . ": " . $value->getSelectedOption());
-									}
-									if ($value instanceof Toggle){
-										return strval($value->getText() . ": " . ($value->getValue() ? "Yes" : "No"));
-									}
-									return strval($value->getText() . ": " . $value->getValue());
-								}, array_filter($this->getAllElements(), function (CustomFormElement $element){ return !$element instanceof Label; }))
-							);
 							/** @var Dropdown $dropdown */
 							$dropdown = $this->getElement(0);
-							$flags = [];
-							/** @var Toggle $value */
-							foreach ([$this->getElement(5), $this->getElement(6), $this->getElement(7), $this->getElement(8), $this->getElement(9)] as $value){
-								switch ($value->getText()){
-									case $lang->translateString('ui.brush.options.flags.keepexistingblocks'): {
-										if ($value->getValue()) $flags[] = "-keepblocks";
-										break;
-									}
-									case $lang->translateString('ui.brush.options.flags.keepair'): {
-										if ($value->getValue()) $flags[] = "-keepair";
-										break;
-									}
-									case $lang->translateString('ui.brush.options.flags.hollow'): {
-										if ($value->getValue()) $flags[] = "-h";
-										break;
-									}
-									case $lang->translateString('ui.brush.options.flags.natural'): {
-										if ($value->getValue()) $flags[] = "-n";
-										break;
-									}
+							$selectedOption = $dropdown->getSelectedOption();
+							switch ($selectedOption){
+								case $lang->translateString('ui.brush.select.type.sphere'): {
+									///
+									$player->sendForm(
+										new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]), [
+											new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
+											new Slider($lang->translateString('ui.brush.options.diameter'), 1, 100, 1.0),
+											new Toggle($lang->translateString('ui.brush.options.flags'), false)],
+											['type' => $selectedOption]
+										) extends CustomForm{
+											private $options = [];
+
+											public function __construct($title, $elements, $options = []){
+												$this->options = $options;
+												parent::__construct($title, $elements);
+											}
+
+											public function onSubmit(Player $player): ?Form{
+												$lang = Loader::getInstance()->getLanguage();
+												$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
+												$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
+												$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($this->options['type']) . ' brush');
+												$item->setLore(BrushCommand::generateLore($this->getAllElements()));
+												//TODO if($this->getElement(2)->getValue() === true) -> show flag window
+												$flags = BrushCommand::translateElementsToFlags([]);
+												$item->setNamedTagEntry(new CompoundTag("MagicWE", [
+													new StringTag("type", $this->options['type']),
+													new StringTag("blocks", $this->getElement(0)->getValue()),
+													new FloatTag("diameter", $this->getElement(1)->getValue()),
+													new IntTag("flags", $flags),
+												]));
+												$player->getInventory()->addItem($item);
+												return null;
+											}
+										});
+									///
+									break;
 								}
+								case $lang->translateString('ui.brush.select.type.cylinder'): {
+									///
+									$player->sendForm(
+										new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]), [
+											new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
+											new Slider($lang->translateString('ui.brush.options.diameter'), 1, 100, 1.0),
+											new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0),
+											new Toggle($lang->translateString('ui.brush.options.flags'), false)],
+											['type' => $selectedOption]
+										) extends CustomForm{
+											private $options = [];
+
+											public function __construct($title, $elements, $options = []){
+												$this->options = $options;
+												parent::__construct($title, $elements);
+											}
+
+											public function onSubmit(Player $player): ?Form{
+												$lang = Loader::getInstance()->getLanguage();
+												$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
+												$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
+												$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($this->options['type']) . ' brush');
+												$item->setLore(BrushCommand::generateLore($this->getAllElements()));
+												//TODO if($this->getElement(3)->getValue() === true) -> show flag window
+												$flags = BrushCommand::translateElementsToFlags([]);
+												$item->setNamedTagEntry(new CompoundTag("MagicWE", [
+													new StringTag("type", $this->options['type']),
+													new StringTag("blocks", $this->getElement(0)->getValue()),
+													new FloatTag("diameter", $this->getElement(1)->getValue()),
+													new FloatTag("height", $this->getElement(2)->getValue()),
+													new IntTag("flags", $flags),
+												]));
+												$player->getInventory()->addItem($item);
+												return null;
+											}
+										});
+									///
+									break;
+								}
+								case $lang->translateString('ui.brush.select.type.cuboid'): {
+									///
+									$player->sendForm(
+										new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]), [
+											new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')),
+											new Slider($lang->translateString('ui.brush.options.width'), 1, 100, 1.0),
+											new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0),
+											new Slider($lang->translateString('ui.brush.options.depth'), 1, 100, 1.0),
+											new Toggle($lang->translateString('ui.brush.options.flags'), false)],
+											['type' => $selectedOption]
+										) extends CustomForm{
+											private $options = [];
+
+											public function __construct($title, $elements, $options = []){
+												$this->options = $options;
+												parent::__construct($title, $elements);
+											}
+
+											public function onSubmit(Player $player): ?Form{
+												$lang = Loader::getInstance()->getLanguage();
+												$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
+												$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
+												$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($this->options['type']) . ' brush');
+												$item->setLore(BrushCommand::generateLore($this->getAllElements()));
+												//TODO if($this->getElement(4)->getValue() === true) -> show flag window
+												$flags = BrushCommand::translateElementsToFlags([]);
+												$item->setNamedTagEntry(new CompoundTag("MagicWE", [
+													new StringTag("type", $this->options['type']),
+													new StringTag("blocks", $this->getElement(0)->getValue()),
+													new FloatTag("width", $this->getElement(1)->getValue()),
+													new FloatTag("height", $this->getElement(2)->getValue()),
+													new FloatTag("depth", $this->getElement(3)->getValue()),
+													new IntTag("flags", $flags),
+												]));
+												$player->getInventory()->addItem($item);
+												return null;
+											}
+										});
+									///
+									break;
+								}
+								case $lang->translateString('ui.brush.select.type.clipboard'): {
+									///
+									$player->sendForm(
+										new class(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]), [
+											new Toggle($lang->translateString('ui.brush.options.flags'), false)],
+											['type' => $selectedOption]
+										) extends CustomForm{
+											private $options = [];
+
+											public function __construct($title, $elements, $options = []){
+												$this->options = $options;
+												parent::__construct($title, $elements);
+											}
+
+											public function onSubmit(Player $player): ?Form{
+												$lang = Loader::getInstance()->getLanguage();
+												$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
+												$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
+												$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($this->options['type']) . ' brush');
+												$item->setLore(BrushCommand::generateLore($this->getAllElements()));
+												//TODO if($this->getElement(0)->getValue() === true) -> show flag window
+												$flags = BrushCommand::translateElementsToFlags([]);
+												$item->setNamedTagEntry(new CompoundTag("MagicWE", [
+													new StringTag("type", $this->options['type']),
+													new IntTag("flags", $flags),
+												]));
+												$player->getInventory()->addItem($item);
+												return null;
+											}
+										});
+									///
+									break;
+								}
+								default: {
+									//unimplemented type
+								}
+
 							}
-							$item->setNamedTagEntry(new CompoundTag("MagicWE", [
-								new StringTag("type", $dropdown->getSelectedOption()),
-								new StringTag("blocks", $this->getElement(3)->getValue()),
-								new FloatTag("diameter", $this->getElement(1)->getValue()),
-								new FloatTag("height", $this->getElement(2)->getValue()),
-								new IntTag("flags", API::flagParser($flags)),
-							]));
-							$player->getInventory()->addItem($item);
 							return null;
 						}
 					}
@@ -135,5 +244,63 @@ class BrushCommand extends WECommand{
 		} finally{
 			return $return;
 		}
+	}
+
+	/**
+	 * @param CustomFormElement[] $elements
+	 * @return int
+	 */
+	public static function translateElementsToFlags($elements = []){
+		$lang = Loader::getInstance()->getLanguage();
+		$flags = [];
+		/** @var Toggle $value */
+		foreach ($elements as $value){
+			switch ($value->getText()){
+				case $lang->translateString('ui.brush.options.flags.keepexistingblocks'): {
+					if ($value->getValue()) $flags[] = "-keepblocks";
+					break;
+				}
+				case $lang->translateString('ui.brush.options.flags.keepair'): {
+					if ($value->getValue()) $flags[] = "-keepair";
+					break;
+				}
+				case $lang->translateString('ui.brush.options.flags.hollow'): {
+					if ($value->getValue()) $flags[] = "-h";
+					break;
+				}
+				case $lang->translateString('ui.brush.options.flags.natural'): {
+					if ($value->getValue()) $flags[] = "-n";
+					break;
+				}
+			}
+		}
+		return API::flagParser($flags);
+	}
+
+	public static function showFlagUI(){
+		/*
+				new Label($lang->translateString('ui.brush.options.label.flags')),
+													new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), false),
+													new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
+													new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
+													new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
+													new Label($lang->translateString('ui.brush.options.label.infoapply'))
+		*/
+	}
+
+	/**
+	 * @param CustomFormElement[] $elements
+	 * @return array
+	 */
+	public static function generateLore($elements = []){
+		return array_map(function (CustomFormElement $value){
+			if ($value instanceof Dropdown){
+				return strval($value->getText() . ": " . $value->getSelectedOption());
+			}
+			if ($value instanceof Toggle){
+				return strval($value->getText() . ": " . ($value->getValue() ? "Yes" : "No"));
+			}
+			return strval($value->getText() . ": " . $value->getValue());
+		}, array_filter($elements, function (CustomFormElement $element){ return !$element instanceof Label; }));
 	}
 }

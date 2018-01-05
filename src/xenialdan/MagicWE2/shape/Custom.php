@@ -8,7 +8,7 @@ use pocketmine\math\Vector3;
 
 class Custom extends Shape{
 
-	private $blocks = [];
+	private $blockarray = [];
 
 	/**
 	 * Square constructor.
@@ -25,14 +25,14 @@ class Custom extends Shape{
 	 * @return array
 	 */
 	public function getBlocks(int $flags, Block ...$filterblocks){//TODO use filterblocks
-		return $this->blocks;
+		return $this->blockarray;
 	}
 
 	/**
-	 * @param Block $block
+	 * @param array $blockarray
 	 */
-	public function addBlock($block){
-		$this->blocks[] = $block;
+	public function setBlockarray(array $blockarray){
+		$this->blockarray = $blockarray;
 	}
 
 	public function setCenter(Vector3 $center){

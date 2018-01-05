@@ -8,7 +8,7 @@ use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 
-class Square extends Shape{
+class Cuboid extends Shape{
 
 	/**
 	 * Square constructor.
@@ -39,7 +39,7 @@ class Square extends Shape{
 
 	public function setCenter(Vector3 $center){//TODO change diameter to width after command rewrite
 		$this->center = $center;
-		$this->setPos1(new Position(floor($this->getCenter()->getX() - $this->options['diameter'] / 2), floor($this->getCenter()->getY() - $this->options['height'] / 2), floor($this->getCenter()->getZ() - $this->options['diameter'] / 2), $this->getLevel()));
-		$this->setPos2(new Position(floor($this->getCenter()->getX() + $this->options['diameter'] / 2), floor($this->getCenter()->getY() + $this->options['height'] / 2), floor($this->getCenter()->getZ() + $this->options['diameter'] / 2), $this->getLevel()));
+		$this->setPos1(new Position(floor($this->getCenter()->getX() - $this->options['width'] / 2), floor($this->getCenter()->getY() - $this->options['height'] / 2), floor($this->getCenter()->getZ() - $this->options['depth'] / 2), $this->getLevel()));
+		$this->setPos2(new Position(floor($this->getCenter()->getX() + $this->options['width'] / 2), floor($this->getCenter()->getY() + $this->options['height'] / 2), floor($this->getCenter()->getZ() + $this->options['depth'] / 2), $this->getLevel()));
 	}
 }

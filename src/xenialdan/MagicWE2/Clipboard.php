@@ -22,7 +22,8 @@ class Clipboard{
 	const FLIP_NORTH = 0x03;
 	const FLIP_SOUTH = 0x03;
 
-	private $data;
+	/** @var Block[] */
+	private $data = [];
 	/** @var Position */
 	private $offset;
 
@@ -46,7 +47,7 @@ class Clipboard{
 		return $this->offset;
 	}
 
-	public function flip($directions = self::DIRECTION_DEFAULT){//TODO maybe move to API //TODO other directions
+	public function flip($directions = self::DIRECTION_DEFAULT){//TODO _ACTUALLY_ move to API //TODO other directions
 		$multiplier = ["x" => 1, "y" => 1, "z" => 1];//TODO maybe vector3
 		if (API::hasFlag($directions, self::FLIP_X)){
 			$multiplier["x"] = -1;
@@ -58,7 +59,6 @@ class Clipboard{
 			$multiplier["z"] = -1;
 		}
 		$newdata = [];
-		/** @var Block $block */
 		foreach ($this->getData() as $block){
 			$newblock = clone $block;
 			$newpos = $newblock->add($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
@@ -88,7 +88,6 @@ class Clipboard{
 
 	public function rotate($rotations = 0){//TODO maybe move to API
 		$newdata = [];
-		/** @var Block $block */
 		foreach ($this->getData() as $block){
 			$newblock = clone $block;
 			$newpos = $newblock->add($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
@@ -119,7 +118,6 @@ class Clipboard{
 
 	/** TODO list:
 	 * Serialize, deserialize to/from file
-	 * Flip
-	 * Rotate
+	 * Fix flip for special blocks
 	 */
 }
