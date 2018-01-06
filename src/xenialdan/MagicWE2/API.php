@@ -257,8 +257,10 @@ class API{
 		try{
 			$blocks = [];
 			foreach ($clipboard->getData() as $block1){
-				$block = clone $block1;
 				/** @var Block $block */
+				$block = clone $block1;
+				if (self::hasFlag($flags, self::FLAG_PASTE_WITHOUT_AIR) && $block->getId() === BlockIds::AIR)
+					continue;
 				$blockvec3 = $target->add($block);
 				$level = $target->getLevel() ?? $block->getLevel();
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
