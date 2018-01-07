@@ -11,7 +11,6 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WEException;
 
 class AsyncFillTask extends AsyncTask{
 
@@ -69,7 +68,7 @@ class AsyncFillTask extends AsyncTask{
 				}
 				if ($chunk->setBlock($block->x & 0x0f, $block->y, $block->z & 0x0f, $newblock->getId(), $newblock->getDamage())) $this->changed++;
 			}
-		} catch (WEException $exception){
+		} catch (\Exception $exception){
 			$message = Loader::$prefix . TextFormat::RED . $exception->getMessage();
 			$this->setResult([
 				"chunks" => [],

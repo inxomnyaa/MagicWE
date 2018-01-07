@@ -6,14 +6,15 @@ namespace xenialdan\MagicWE2;
 
 use BlockHorizons\libschematic\Schematic;
 use pocketmine\block\Block;
+use pocketmine\block\BlockIds;
 use pocketmine\block\UnknownBlock;
-use pocketmine\command\CommandSender;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
+use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\NBT;
+use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
@@ -21,7 +22,6 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncFillTask;
-
 
 class API{
 	/**
@@ -66,6 +66,10 @@ class API{
 	 * For example: Oak Logs with any rotation instead of a specific rotation
 	 */
 	const FLAG_VARIANT = 0x07; // -v
+	/**
+	 * With the -m flag the damage values / meta will be kept
+	 */
+	const FLAG_KEEP_META = 0x08; // -m
 
 	/** @var Session[] */
 	private static $sessions = [];
@@ -79,9 +83,9 @@ class API{
 				case "-keepblocks":
 					$flagmeta ^= 1 << self::FLAG_KEEP_BLOCKS;
 					break;
-				case  "-keepair":
-					$flagmeta ^= 1 << self::FLAG_KEEP_AIR;
-					break;
+				#case  "-keepair":
+				#	$flagmeta ^= 1 << self::FLAG_KEEP_AIR;
+				#	break;
 				case  "-a":
 					$flagmeta ^= 1 << self::FLAG_PASTE_WITHOUT_AIR;
 					break;
@@ -96,6 +100,9 @@ class API{
 					break;
 				case  "-v":
 					$flagmeta ^= 1 << self::FLAG_VARIANT;
+					break;
+				case  "-m":
+					$flagmeta ^= 1 << self::FLAG_KEEP_META;
 					break;
 				default:
 					Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
@@ -116,72 +123,109 @@ class API{
 
 	/**
 	 * @param Selection $selection
-	 * @param Level $level
+	 * @param Session|null $session
 	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
-	 * @return string
+	 * @return bool
 	 */
-	public static function fill(Selection $selection, Level $level, $newblocks = [], ...$flagarray){
+	public static function fill(Selection $selection, ?Session $session, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
+			$blocks = [];
+			/** @var Block $block */
 			foreach ($selection->getBlocks($flags) as $block){
+				$level = $block->getLevel() ?? (!is_null($session) ? $session->getPlayer()->getLevel() : null);
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
 				$newblock = $newblocks[array_rand($newblocks, 1)];
+				$newblock->position($block->asPosition());
 				if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)){
 					if ($level->getBlock($block)->getId() !== Block::AIR) continue;
 				}
-				if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
-					if ($level->getBlock($block)->getId() === Block::AIR) continue;
+				#if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
+				#	if ($level->getBlock($block)->getId() === Block::AIR) continue;
+				#}
+				if ($level->setBlock($block, $newblock, false, false)){
+					$blocks[] = $block;
+					$changed++;
 				}
-				if ($level->setBlock($block, $newblock, false, false)) $changed++;
 			}
-		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+			$undoClipboard = new Clipboard();
+			$undoClipboard->setData($blocks);
+		} catch (\Exception $exception){
+			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-		return Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.";
+		if (!is_null($session)){
+			$session->addUndo($undoClipboard);
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		} else{
+			Server::getInstance()->getLogger()->info(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		}
+		return true;
 	}
 
 	/**
-	 * @param CommandSender $sender
 	 * @param Selection $selection
-	 * @param Level $level
+	 * @param Session $session
 	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
 	 */
-	public static function fillAsync(CommandSender $sender, Selection $selection, Level $level, $newblocks = [], ...$flagarray){
+	public static function fillAsync(Selection $selection, Session $session, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
-		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($sender, $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
+		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($session->getPlayer(), $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
 	}
 
 	/**
 	 * @param Selection $selection
-	 * @param Level $level
+	 * @param Session|null $session
 	 * @param Block[] $blocks1
 	 * @param Block[] $blocks2
 	 * @param array ...$flagarray
-	 * @return string
+	 * @return bool
 	 */
-	public static function replace(Selection $selection, Level $level, $blocks1 = [], $blocks2 = [], ...$flagarray){
+	public static function replace(Selection $selection, ?Session $session, $blocks1 = [], $blocks2 = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
+			$blocks = [];
+			/** @var Block $block */
 			foreach ($selection->getBlocks($flags, ...$blocks1) as $block){
+				$level = $block->getLevel() ?? (!is_null($session) ? $session->getPlayer()->getLevel() : null);
 				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
 				$newblock = $blocks2[array_rand($blocks2, 1)];
-				if ($level->setBlock($block, $newblock, false, false)) $changed++;
+				$newblock->position($block->asPosition());
+				if (self::hasFlag($flags, self::FLAG_KEEP_META)) $newblock->setDamage($block->getDamage());
+				if ($level->setBlock($block, $newblock, false, false)){
+					$blocks[] = $block;
+					$changed++;
+				}
 			}
-		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+			$undoClipboard = new Clipboard();
+			$undoClipboard->setData($blocks);
+		} catch (\Exception $exception){
+			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-
-		return Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.";
+		if (!is_null($session)){
+			$session->addUndo($undoClipboard);
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		} else{
+			Server::getInstance()->getLogger()->info(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
+		}
+		return true;
 	}
 
-	public static function copy(Selection $selection, Level $level, Player $player, ...$flagarray){
+	/**
+	 * @param Selection $selection
+	 * @param Session $session
+	 * @param array ...$flagarray
+	 * @return bool
+	 */
+	public static function copy(Selection $selection, Session $session, ...$flagarray){
 		$flags = self::flagParser($flagarray);
 		try{
 			$clipboard = new Clipboard();
@@ -189,31 +233,57 @@ class API{
 			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
 				$clipboard->setOffset(new Vector3());
 			else
-				$clipboard->setOffset($selection->getMinVec3()->subtract($player)->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
-			API::getSession($player)->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
-		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+				$clipboard->setOffset($selection->getMinVec3()->subtract($session->getPlayer())->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
+			$session->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
+		} catch (\Exception $exception){
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-		return Loader::$prefix . TextFormat::GREEN . "Copied selection to clipboard";
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Copied selection to clipboard");
+		return true;
 	}
 
-	public static function paste(Clipboard $clipboard, Level $level, Player $player, ...$flagarray){//TODO: maybe clone clipboard
+	/**
+	 * @param Clipboard $clipboard
+	 * @param null|Session $session
+	 * @param Position $target
+	 * @param array ...$flagarray
+	 * @return bool
+	 */
+	public static function paste(Clipboard $clipboard, ?Session $session, Position $target, ...$flagarray){//TODO: maybe clone clipboard
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
 		try{
+			$blocks = [];
 			foreach ($clipboard->getData() as $block1){
-				$block = clone $block1;
 				/** @var Block $block */
-				$blockvec3 = $player->add($block);
+				$block = clone $block1;
+				if (self::hasFlag($flags, self::FLAG_PASTE_WITHOUT_AIR) && $block->getId() === BlockIds::AIR)
+					continue;
+				$blockvec3 = $target->add($block);
+				$level = $target->getLevel() ?? $block->getLevel();
 				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
 					$blockvec3 = $blockvec3->add($clipboard->getOffset());
-				if ($level->setBlock($blockvec3->floor(), $block, false, false)) $changed++;
+				$oldblock = $level->getBlock($blockvec3->floor());
+				if ($level->setBlock($blockvec3->floor(), $block, false, false)){
+					$blocks[] = $oldblock;
+					$changed++;
+				}
 			}
-		} catch (WEException $exception){
-			return Loader::$prefix . TextFormat::RED . $exception->getMessage();
+			$undoClipboard = new Clipboard();
+			$undoClipboard->setData($blocks);
+		} catch (\Exception $exception){
+			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
+			return false;
 		}
-		return Loader::$prefix . TextFormat::GREEN . "Pasted selection " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.";
+		if (!is_null($session)){
+			$session->addUndo($undoClipboard);
+			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
+		} else{
+			Server::getInstance()->getLogger()->info(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
+		}
+		return true;
 	}
 
 	public static function blockParser(string $fullstring, array &$messages, bool &$error){
@@ -290,39 +360,70 @@ class API{
 	 * Creates a brush at a specific location with the passed settings
 	 * @param Block $target
 	 * @param NamedTag $settings
+	 * @param Session $session
+	 * @param array[] $flagarray
 	 * @return bool
 	 */
-	public static function createBrush(Block $target, NamedTag $settings){//TODO messages
+	public static function createBrush(Block $target, NamedTag $settings, Session $session, array ...$flagarray){//TODO messages
 		$shape = null;
+		$lang = Loader::getInstance()->getLanguage();
 		if (!$settings instanceof CompoundTag) return false;
-		switch ($settings->getString("type", "Square")){//TODO use/parse int as type
-			case "Square": {
-				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SQUARE, self::compoundToArray($settings));
-				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-				break;
-			}
-			case "Sphere": {
-				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
-				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-				break;
-			}
-
-			case null:
-			default:
-				;
-		}
-		if (is_null($shape)){
-			Server::getInstance()->broadcastMessage("Unknown shape");
-			return false;
-		}
 		$messages = [];
 		$error = false;
-		Server::getInstance()->broadcastMessage(self::fill($shape, $shape->getLevel(), self::blockParser($shape->options['blocks'], $messages, $error)));
-		return !$error;
+		switch ($settings->getString("type", $lang->translateString('ui.brush.options.type.square'))){
+			//TODO use/parse int as type !! IMPORTANT TODO !!
+			//TODO use/parse int as type !! IMPORTANT TODO !!
+			//TODO use/parse int as type !! IMPORTANT TODO !!
+			//TODO use/parse int as type !! IMPORTANT TODO !!
+			//TODO use/parse int as type !! IMPORTANT TODO !!
+			case $lang->translateString('ui.brush.select.type.cuboid'): {
+				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_CUBOID, self::compoundToArray($settings));
+				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+				return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+				break;
+			}
+			case $lang->translateString('ui.brush.select.type.sphere'): {
+				$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
+				$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+				return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+				break;
+			}
+			case $lang->translateString('ui.brush.select.type.clipboard'): {
+				$clipboard = $session->getClipboards()[0] ?? null;
+				if (is_null($clipboard)){
+					$session->getPlayer()->sendMessage(TextFormat::RED . "You have no clipboard - create one first");
+					return false;
+				}
+				return self::paste($clipboard, $session, $target, ...$flagarray);
+				break;
+			}
+			case null:
+			default: {
+				$session->getPlayer()->sendMessage("Unknown shape");
+				return false;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param Block $target
+	 * @param NamedTag $settings
+	 * @param Session $session
+	 * @param array[] $flagarray
+	 * @return bool
+	 */
+	public static function floodArea(Block $target, NamedTag $settings, Session $session, array ...$flagarray){ //TODO
+		if (!$settings instanceof CompoundTag) return null;
+		$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_FLOOD, self::compoundToArray($settings));
+		$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+		$messages = [];
+		$error = false;
+		return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
 	}
 
 	public static function compoundToArray(CompoundTag $compoundTag){
-		$nbt = new NBT();
+		$nbt = new LittleEndianNBTStream();
 		$nbt->setData($compoundTag);
 		return $nbt->getArray();
 	}
@@ -334,7 +435,6 @@ class API{
 
 	public static function destroySession(Session $session){
 		unset(self::$sessions[$session->getPlayer()->getLowerCaseName()]);
-		$session->__destruct(); // TODO clean up objects
 	}
 
 	/**
@@ -372,8 +472,187 @@ class API{
 	 * @param string $filename
 	 * @return Clipboard|null
 	 */
-	public static function &addSchematic(Schematic $schematic, string $filename) : ?Clipboard{
+	public static function &addSchematic(Schematic $schematic, string $filename): ?Clipboard{
 		self::$schematics[$filename] = new Clipboard($schematic->getBlocks());
 		return self::$schematics[$filename];
+	}
+
+	public static function undo(Session $session){
+		$changed = 0;
+		$time = microtime(true);
+		$clipboard = $session->getLatestUndo();
+		/** @var Clipboard $clipboard */
+		if (is_null($clipboard)){
+			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to undo");
+			return false;
+		}
+		/** @var Block $block */
+		foreach ($clipboard->getData() as $block){
+			$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
+			if ($level->setBlock($block, $block, false, false)) $changed++;
+		}
+		$session->addRedo($clipboard);
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Undo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed, " . count($session->getUndos()) . " undo actions left");
+		return true;
+	}
+
+	public static function redo(Session $session){
+		$changed = 0;
+		$time = microtime(true);
+		$clipboard = $session->getLatestRedo();
+		/** @var Clipboard $clipboard */
+		if (is_null($clipboard)){
+			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to redo");
+			return false;
+		}
+		/** @var Block $block */
+		foreach ($clipboard->getData() as $block){
+			$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
+			if ($level->setBlock($block, $block, false, false)) $changed++;
+		}
+		$session->addUndo($clipboard);
+		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed, " . count($session->getRedos()) . " redo actions left");
+		return true;
+	}
+
+	public static function rotationMetaHelper(Block $block, $timesRotate = 1){
+		$meta = $block->getDamage();
+		$variant = $block->getVariant();
+		$rotation = [0, 0, 0, 0];
+		switch ($block->getId()){
+			case BlockIds::FURNACE:
+			case BlockIds::BURNING_FURNACE:
+			case BlockIds::CHEST:
+			case BlockIds::TRAPPED_CHEST:
+			case BlockIds::ENDER_CHEST:
+			case BlockIds::STONE_BUTTON:
+			case BlockIds::WOODEN_BUTTON:
+			case BlockIds::WALL_BANNER:
+			case BlockIds::PURPLE_GLAZED_TERRACOTTA:
+			case BlockIds::WHITE_GLAZED_TERRACOTTA :
+			case BlockIds::ORANGE_GLAZED_TERRACOTTA :
+			case BlockIds::MAGENTA_GLAZED_TERRACOTTA :
+			case BlockIds::LIGHT_BLUE_GLAZED_TERRACOTTA:
+			case BlockIds::YELLOW_GLAZED_TERRACOTTA:
+			case BlockIds::LIME_GLAZED_TERRACOTTA :
+			case BlockIds::PINK_GLAZED_TERRACOTTA :
+			case BlockIds::GRAY_GLAZED_TERRACOTTA :
+			case BlockIds::SILVER_GLAZED_TERRACOTTA :
+			case BlockIds::CYAN_GLAZED_TERRACOTTA:
+			case BlockIds::BLUE_GLAZED_TERRACOTTA:
+			case BlockIds::BROWN_GLAZED_TERRACOTTA :
+			case BlockIds::GREEN_GLAZED_TERRACOTTA :
+			case BlockIds::RED_GLAZED_TERRACOTTA :
+			case BlockIds::BLACK_GLAZED_TERRACOTTA :
+			case BlockIds::LADDER:
+			case BlockIds::WALL_SIGN: {
+				$rotation = [3, 4, 2, 5];
+				break;
+			}
+			case BlockIds::ITEM_FRAME_BLOCK: {
+				$rotation = [2, 1, 3, 0];
+				//$rotation = [14,12,15,12];//TODO
+				break;
+			}
+			case BlockIds::IRON_TRAPDOOR:
+			case BlockIds::TRAPDOOR: {
+				$rotation = [2, 1, 3, 0];
+				//$rotation = [14,12,15,12];//TODO
+				break;
+			}
+			case BlockIds::UNPOWERED_REPEATER:
+			case BlockIds::UNPOWERED_COMPARATOR:
+			case BlockIds::POWERED_REPEATER:
+			case BlockIds::POWERED_COMPARATOR:
+			case BlockIds::END_PORTAL_FRAME:
+			case BlockIds::LIT_PUMPKIN:
+			case BlockIds::PUMPKIN: {
+				$rotation = [0, 1, 2, 3];
+				break;
+			}
+			case BlockIds::WOODEN_STAIRS:
+			case BlockIds::STONE_STAIRS:
+			case BlockIds::BRICK_STAIRS:
+			case BlockIds::STONE_BRICK_STAIRS:
+			case BlockIds::NETHER_BRICK_STAIRS:
+			case BlockIds::SANDSTONE_STAIRS:
+			case BlockIds::SPRUCE_STAIRS:
+			case BlockIds::BIRCH_STAIRS:
+			case BlockIds::JUNGLE_STAIRS:
+			case BlockIds::QUARTZ_STAIRS:
+			case BlockIds::ACACIA_STAIRS:
+			case BlockIds::DARK_OAK_STAIRS:
+			case BlockIds::RED_SANDSTONE_STAIRS:
+			case BlockIds::PURPUR_STAIRS: {
+				$rotation = [3, 0, 2, 1];
+				break;
+			}
+			case BlockIds::WOODEN_DOOR_BLOCK:
+			case BlockIds::IRON_DOOR_BLOCK:
+			case BlockIds::SPRUCE_DOOR_BLOCK:
+			case BlockIds::BIRCH_DOOR_BLOCK:
+			case BlockIds::JUNGLE_DOOR_BLOCK:
+			case BlockIds::ACACIA_DOOR_BLOCK:
+			case BlockIds::DARK_OAK_DOOR_BLOCK:
+			case BlockIds::ANVIL: {
+				$rotation = [3, 0, 1, 2];
+				break;
+			}
+			case BlockIds::VINE: {
+				$rotation = [4, 8, 1, 2];
+				break;
+			}
+			case BlockIds::BED_BLOCK:
+			case BlockIds::OAK_FENCE_GATE:
+			case BlockIds::SPRUCE_FENCE_GATE:
+			case BlockIds::BIRCH_FENCE_GATE:
+			case BlockIds::JUNGLE_FENCE_GATE:
+			case BlockIds::DARK_OAK_FENCE_GATE:
+			case BlockIds::ACACIA_FENCE_GATE: {
+				$rotation = [2, 3, 0, 1];
+				//TODO [10, 11,8,9]
+				break;
+			}
+			case BlockIds::STANDING_BANNER:
+			case BlockIds::SIGN_POST: {
+				$rotation = [0, 4, 8, 12];
+				//TODO all rotation
+				break;
+			}
+			case BlockIds::QUARTZ_BLOCK:
+			case BlockIds::PURPUR_BLOCK: {
+				$rotation = [10, 6, 10, 6];
+				break;
+			}
+			case BlockIds::HAY_BLOCK:
+			case BlockIds::BONE_BLOCK:
+			case BlockIds::LOG:
+			case BlockIds::LOG2: {
+				$rotation = [10, 6, 10, 6];
+				break;
+			}
+			case BlockIds::END_ROD: {
+				$rotation = [2, 4, 3, 5];
+				break;
+			}
+			case BlockIds::PISTON:
+			case BlockIds::STICKY_PISTON: {
+				$rotation = [2, 5, 3, 4];
+				break;
+			}
+			case BlockIds::TORCH:
+			case BlockIds::REDSTONE_ORE:
+			case BlockIds::UNLIT_REDSTONE_TORCH: {
+				$rotation = [3, 2, 4, 1];
+				break;
+			}
+			//TODO: Heads
+		}
+		$currentrotationindex = array_search($meta % count($rotation), $rotation);
+		if ($currentrotationindex === false) return $block->getDamage();
+		$currentrotationindex += $timesRotate;
+		#return $rotation[($currentrotationindex % count($rotation))];
+		$extra = intval($meta / count($rotation));
+		return $rotation[$currentrotationindex % count($rotation)] + ($extra * count($rotation));
 	}
 }

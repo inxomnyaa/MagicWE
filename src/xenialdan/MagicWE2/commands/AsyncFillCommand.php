@@ -11,7 +11,6 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WEException;
 
 class AsyncFillCommand extends WECommand{
 	public function __construct(Plugin $plugin){
@@ -23,6 +22,8 @@ class AsyncFillCommand extends WECommand{
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
+		$sender->sendMessage("The command is currently under TODO and being worked on.");
+		return true;
 		/** @var Player $sender */
 		$return = $sender->hasPermission($this->getPermission());
 		if (!$return){
@@ -39,11 +40,11 @@ class AsyncFillCommand extends WECommand{
 			}
 			$return = !$error;
 			if ($return){
-				API::fillAsync($sender, ($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $newblocks, ...$args);
+				API::fillAsync(($session = API::getSession($sender))->getLatestSelection(), $session, $newblocks, ...$args);
 			} else{
 				throw new \TypeError("Could not fill with the selected blocks");
 			}
-		} catch (WEException $error){
+		} catch (\Exception $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;

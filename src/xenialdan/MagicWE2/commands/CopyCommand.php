@@ -11,7 +11,6 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\WEException;
 
 class CopyCommand extends WECommand{
 	public function __construct(Plugin $plugin){
@@ -30,13 +29,26 @@ class CopyCommand extends WECommand{
 		}
 		$lang = Loader::getInstance()->getLanguage();
 		try{
-			$sender->sendMessage(API::copy(($session = API::getSession($sender))->getLatestSelection(), $sender->getLevel(), $sender, ...$args));
-		} catch (WEException $error){
+			$session = API::getSession($sender);
+			if (is_null($session)){
+				throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+			}
+			$selection = $session->getLatestSelection();
+			if (is_null($selection)){
+				throw new \Exception("No selection found - select an area first");
+			}
+			$return = API::copy($selection, $session, ...$args);
+		} catch (\Exception $error){
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+			$return = false;
+		} catch (\ArgumentCountError $error){
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} catch (\Error $error){
 			$this->getPlugin()->getLogger()->error($error->getMessage());
+			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
 		} finally{
 			return $return;

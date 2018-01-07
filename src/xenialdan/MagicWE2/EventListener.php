@@ -61,6 +61,15 @@ class EventListener implements Listener{
 					$event->getPlayer()->sendMessage($selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
 				}
+				case ItemIds::STICK: {
+					/** @var Session $session */
+					if (!($session = API::getSession($event->getPlayer()))->isDebugStickEnabled()){
+						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+						break;
+					}
+					$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+					break;
+				}
 			}
 		}
 	}
@@ -86,6 +95,21 @@ class EventListener implements Listener{
 					$event->getPlayer()->sendMessage($selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
 				}
+				case ItemIds::STICK: {
+					/** @var Session $session */
+					if (!($session = API::getSession($event->getPlayer()))->isDebugStickEnabled()){
+						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+						break;
+					}
+					$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+					break;
+				}
+				case ItemIds::BUCKET: {
+					#if (){// && has perms
+					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry("MagicWE"), API::getSession($event->getPlayer()));
+					#}
+					break;
+				}
 			}
 		}
 	}
@@ -97,7 +121,7 @@ class EventListener implements Listener{
 				case ItemIds::WOODEN_SHOVEL: {
 					$target = $event->getPlayer()->getTargetBlock(100);
 					if (!is_null($target)){// && has perms
-						API::createBrush($target, $event->getItem()->getNamedTagEntry("MagicWE"));
+						API::createBrush($target, $event->getItem()->getNamedTagEntry("MagicWE"), API::getSession($event->getPlayer()));
 					}
 					break;
 				}

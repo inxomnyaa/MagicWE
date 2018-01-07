@@ -48,7 +48,7 @@ class Selection{
 
 	public function getPos1(){
 		if (is_null($this->pos1)){
-			throw new WEException("Position 1 is not set!");
+			throw new \Exception("Position 1 is not set!");
 		}
 		return $this->pos1;
 	}
@@ -60,7 +60,7 @@ class Selection{
 
 	public function getPos2(){
 		if (is_null($this->pos2)){
-			throw new WEException("Position 2 is not set!");
+			throw new \Exception("Position 2 is not set!");
 		}
 		return $this->pos2;
 	}
@@ -105,13 +105,13 @@ class Selection{
 		for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++){
 			for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++){
-					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
+					$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
 					#$block->setComponents((int)$x,(int)$y,(int)$z);
-					$block->position(new Position((int)$x, (int)$y, (int)$z));
+					$block->position(new Position((int)$x, (int)$y, (int)$z, $this->getLevel()));
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getDamage() === $filterblock->getDamage() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
 								$blocks[] = $block;
 						}
 					}
@@ -132,15 +132,13 @@ class Selection{
 		for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++){
 			for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++){
 				for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++){
-					$block = $this->getLevel()->getBlock(new Position($x, $y, $z, $this->getLevel()));
-					#$block->setComponents((int)$rx,(int)$ry,(int)$rz);
-					$block->position(new Position((int)$rx, (int)$ry, (int)$rz));
+					$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
+					$block->position(new Position((int)$rx, (int)$ry, (int)$rz, $this->getLevel()));
 					if (empty($filterblocks)) $blocks[] = $block;
 					else{
 						foreach ($filterblocks as $filterblock){
-							if ($block->getId() === $filterblock->getId())
-								if ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage()))
-									$blocks[] = $block;
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
+								$blocks[] = $block;
 						}
 					}
 				}

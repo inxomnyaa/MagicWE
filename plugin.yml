@@ -1,36 +1,52 @@
+---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 4.2.1
-api: ['3.0.0-ALPHA9']
+version: 5.7.0
+api:
+- 3.0.0-ALPHA10
 load: STARTUP
-authors: [XenialDan]
+authors:
+- XenialDan
 description: MagicWEv2. Harder, Better, Faster, Stronger
-prefix: "§6§l[MagicWE]§r "
+prefix: '§6§l[MagicWE]§r '
 permissions:
-    we.command:
+  we.session:
+    default: op
+  we.command:
+    default: op
+    children:
+      we.command.brush:
         default: op
-        children:
-            we.command.brush:
-                default: op
-                we.command.aset:
-                  default: op
-                we.command.brush:
-                  default: op
-                we.command.copy:
-                  default: op
-                we.command.set:
-                  default: op
-                we.command.flip:
-                  default: op
-                we.command.paste:
-                  default: op
-                we.command.pos:
-                  default: op
-                we.command.replace:
-                  default: op
-                we.command.schematic:
-                  default: op
-                we.command.togglewand:
-                  default: op
-                we.command.wand:
-                  default: op
+      we.command.aset:
+        default: op
+      we.command.copy:
+        default: op
+      we.command.set:
+        default: op
+      we.command.flip:
+        default: op
+      we.command.paste:
+        default: op
+      we.command.pos:
+        default: op
+      we.command.replace:
+        default: op
+      we.command.schematic:
+        default: op
+      we.command.togglewand:
+        default: op
+      we.command.wand:
+        default: op
+      we.command.undo:
+        default: op
+      we.command.redo:
+        default: op
+      we.command.debug:
+        default: op
+      we.command.toggledebug:
+        default: op
+      we.command.rotate:
+        default: op
+      we.command.flood:
+        default: op
+...

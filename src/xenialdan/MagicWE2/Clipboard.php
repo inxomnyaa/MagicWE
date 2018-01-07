@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
-
 use pocketmine\block\Block;
 use pocketmine\block\Slab;
 use pocketmine\block\Stair;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-
 
 class Clipboard{
 	const DIRECTION_DEFAULT = 1;
@@ -25,7 +23,8 @@ class Clipboard{
 	const FLIP_NORTH = 0x03;
 	const FLIP_SOUTH = 0x03;
 
-	private $data;
+	/** @var Block[] */
+	private $data = [];
 	/** @var Position */
 	private $offset;
 
@@ -49,7 +48,7 @@ class Clipboard{
 		return $this->offset;
 	}
 
-	public function flip($directions = self::DIRECTION_DEFAULT){//TODO maybe move to API //TODO other directions
+	public function flip($directions = self::DIRECTION_DEFAULT){//TODO _ACTUALLY_ move to API //TODO other directions
 		$multiplier = ["x" => 1, "y" => 1, "z" => 1];//TODO maybe vector3
 		if (API::hasFlag($directions, self::FLIP_X)){
 			$multiplier["x"] = -1;
@@ -61,13 +60,12 @@ class Clipboard{
 			$multiplier["z"] = -1;
 		}
 		$newdata = [];
-		/** @var Block $block */
 		foreach ($this->getData() as $block){
 			$newblock = clone $block;
 			$newpos = $newblock->add($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
 			$newpos = $newpos->setComponents($newpos->getX() * $multiplier["x"], $newpos->getY() * $multiplier["y"], $newpos->getZ() * $multiplier["z"]);
 			$newpos = $newpos->subtract($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
-			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ()));
+			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ(), $block->getLevel()));
 			switch ($newblock){
 				case $newblock instanceof Slab: {
 					$meta = $newblock->getDamage();
@@ -128,9 +126,38 @@ class Clipboard{
 		return $this->getSize()["length"];
 	}
 
+	public function rotate($rotations = 0){//TODO maybe move to API
+		$newdata = [];
+		foreach ($this->getData() as $block){
+			$newblock = clone $block;
+			$newpos = $newblock->add($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
+			switch ($rotations % 4){
+				case 1: {
+					$newpos = $newpos->setComponents(-$newpos->getZ(), $newpos->getY(), $newpos->getX());
+					break;
+				}
+				case 2: {
+					$newpos = $newpos->setComponents(-$newpos->getX(), $newpos->getY(), -$newpos->getZ());
+					break;
+				}
+				case 3: {
+					$newpos = $newpos->setComponents(-$newpos->getZ(), $newpos->getY(), $newpos->getX());
+					break;
+				}
+				default: {
+					//$newpos === $newpos;
+				}
+			}
+			$newpos = $newpos->subtract($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
+			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ(), $block->getLevel()));
+			$newblock->setDamage(API::rotationMetaHelper($newblock, $rotations));
+			$newdata[] = $newblock;
+		}
+		$this->setData($newdata);
+	}
+
 	/** TODO list:
 	 * Serialize, deserialize to/from file
-	 * Flip
-	 * Rotate
+	 * Fix flip for special blocks
 	 */
 }
