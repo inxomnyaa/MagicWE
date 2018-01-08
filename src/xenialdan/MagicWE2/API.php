@@ -643,6 +643,6 @@ class API{
 		$currentrotationindex += $timesRotate;
 		#return $rotation[($currentrotationindex % count($rotation))];
 		$extra = intval($meta / count($rotation));
-		return $rotation[$currentrotationindex % count($rotation)] + ($extra * count($rotation));
+		return $rotation[$currentrotationindex % count($rotation)] + ($extra * count($rotation)) % 16;
 	}
 }
