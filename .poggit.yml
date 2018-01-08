@@ -4,6 +4,6 @@ projects:
     path: ""
     icon: "resources/magicwe_icon_square_small.png"
     libs:
-      - src: BlockHorizons/libschematic/Schematic
-        version: ^0.0.0
+      - src: thebigsmilexd/libschematic/libschematic
+        version: ^1.0.0
 ...
