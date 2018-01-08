@@ -46,13 +46,16 @@ class SchematicCommand extends WECommand{
 					$sender->sendMessage(Loader::$prefix . TextFormat::YELLOW . "Beta command - not yet properly implemented");
 					$file = str_replace(".schematic", "", $file);
 					try{
+						if(!file_exists(Loader::$path["schematics"] . "/" . $file . ".schematic")){
+							throw new \InvalidArgumentException(Loader::$path["schematics"] . "/" . $file . ".schematic not found!");
+						}
 						$schematic = new Schematic(Loader::$path["schematics"] . "/" . $file . ".schematic");
 						$schematic = $schematic->decode();
 						$schematic = $schematic->fixBlockIds();
 					} catch (\InvalidArgumentException $exception){
 						$sender->sendMessage(Loader::$prefix . TextFormat::RED . "The schematic " . $file . " contains no or corrupted data");
 						$sender->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
-						throw $exception;//TODO check if the InvalidArgumentException comes out and aborts here
+						break;
 					}
 					$clipboard = API::addSchematic($schematic, $file);
 					if (is_null($clipboard)) throw new \Exception("The schematic file you tried to load could not be turned into a clipboard");

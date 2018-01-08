@@ -50,20 +50,28 @@ class EventListener implements Listener{
 	private function onBreakBlock(BlockBreakEvent $event){
 		if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))){
 			$event->setCancelled();
+			/** @var Session $session */
+			$session = API::getSession($event->getPlayer());
+			if (is_null($session)){
+				throw new \Exception("No session was created - probably no permission to use " . $this->owner->getName());
+			}
 			switch ($event->getItem()->getId()){
 				case ItemIds::WOODEN_AXE: {
 					/** @var Session $session */
-					if (!($session = API::getSession($event->getPlayer()))->isWandEnabled()){
+					if (!$session->isWandEnabled()){
 						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
 						break;
 					}
 					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+					if (is_null($selection)){
+						throw new \Error("No selection created - Check the console for errors");
+					}
 					$event->getPlayer()->sendMessage($selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
 				}
 				case ItemIds::STICK: {
 					/** @var Session $session */
-					if (!($session = API::getSession($event->getPlayer()))->isDebugStickEnabled()){
+					if (!$session->isDebugStickEnabled()){
 						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
 						break;
 					}
@@ -77,6 +85,11 @@ class EventListener implements Listener{
 	private function onRightClickBlock(PlayerInteractEvent $event){
 		if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))){
 			$event->setCancelled();
+			/** @var Session $session */
+			$session = API::getSession($event->getPlayer());
+			if (is_null($session)){
+				throw new \Exception("No session was created - probably no permission to use " . $this->owner->getName());
+			}
 			switch ($event->getItem()->getId()){
 				/*case ItemIds::WOODEN_SHOVEL: { //TODO Open issue on pmmp, RIGHT_CLICK_BLOCK + RIGHT_CLICK_AIR are BOTH called when right clicking a block - Turns out to be a client bug
 					$target = $event->getBlock();
@@ -87,17 +100,20 @@ class EventListener implements Listener{
 				}*/
 				case ItemIds::WOODEN_AXE: {
 					/** @var Session $session */
-					if (!($session = API::getSession($event->getPlayer()))->isWandEnabled()){
+					if (!$session->isWandEnabled()){
 						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
 						break;
 					}
 					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+					if (is_null($selection)){
+						throw new \Error("No selection created - Check the console for errors");
+					}
 					$event->getPlayer()->sendMessage($selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel())));
 					break;
 				}
 				case ItemIds::STICK: {
 					/** @var Session $session */
-					if (!($session = API::getSession($event->getPlayer()))->isDebugStickEnabled()){
+					if (!$session->isDebugStickEnabled()){
 						$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
 						break;
 					}

@@ -55,7 +55,7 @@ class Selection{
 
 	public function setPos1(Position $position){
 		$this->pos1 = $position;
-		return Loader::$prefix . TextFormat::GREEN . "Position 1 set";
+		return Loader::$prefix . TextFormat::GREEN . "Position 1 set to X: " . $position->getX() . " Y: " . $position->getY() . " Z: " . $position->getZ();
 	}
 
 	public function getPos2(){
@@ -67,7 +67,7 @@ class Selection{
 
 	public function setPos2(Position $position){
 		$this->pos2 = $position;
-		return Loader::$prefix . TextFormat::GREEN . "Position 2 set";
+		return Loader::$prefix . TextFormat::GREEN . "Position 2 set to X: " . $position->getX() . " Y: " . $position->getY() . " Z: " . $position->getZ();
 	}
 
 	public function getMinVec3(){
