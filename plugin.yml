@@ -4,6 +4,8 @@ main: xenialdan\MagicWE2\Loader
 version: 5.7.1
 api:
 - 3.0.0-ALPHA10
+- 3.0.0-ALPHA11
+- 3.0.0-ALPHA12
 load: STARTUP
 authors:
 - XenialDan
