@@ -72,7 +72,7 @@ class Loader extends PluginBase{
 			new ReplaceCommand($this),
 			new CopyCommand($this),
 			new PasteCommand($this),
-			new BrushCommand($this),
+			//new BrushCommand($this),
 			new WandCommand($this),
 			new AsyncFillCommand($this),
 			new TogglewandCommand($this),
@@ -83,7 +83,7 @@ class Loader extends PluginBase{
 			new DebugCommand($this),
 			new ToggledebugCommand($this),
 			new RotateCommand($this),
-			new FloodCommand($this),
+			//new FloodCommand($this),
 		]);
 	}
 
