@@ -25,7 +25,7 @@ class SchematicCommand extends WECommand{
 		/** @var Player $sender */
 		$return = $sender->hasPermission($this->getPermission());
 		if (!$return){
-			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "commands.generic.permission"));
 			return true;
 		}
 		$lang = Loader::getInstance()->getLanguage();
