@@ -175,7 +175,7 @@ class API{
 	 */
 	public static function fillAsync(Selection $selection, Session $session, $newblocks = [], ...$flagarray){
 		$flags = self::flagParser($flagarray);
-		Server::getInstance()->getScheduler()->scheduleAsyncTask(new AsyncFillTask($session->getPlayer(), $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getPlayer(), $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
 	}
 
 	/**
