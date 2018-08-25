@@ -19,11 +19,11 @@ class Custom extends Shape{
 		parent::__construct($level, $options);
 	}
 
-	/**
-	 * @param int $flags
-	 * @param Block[] ...$filterblocks
-	 * @return array
-	 */
+    /**
+     * @param int $flags
+     * @param Block ...$filterblocks
+     * @return array
+     */
 	public function getBlocks(int $flags, Block ...$filterblocks){//TODO use filterblocks
 		return $this->blockarray;
 	}

@@ -19,11 +19,11 @@ class Sphere extends Shape{
 		parent::__construct($level, $options);
 	}
 
-	/**
-	 * @param int $flags
-	 * @param Block[] ...$filterblocks
-	 * @return array
-	 */
+    /**
+     * @param int $flags
+     * @param Block ...$filterblocks
+     * @return array
+     */
 	public function getBlocks(int $flags, Block ...$filterblocks){
 		$blocks = [];
 		for ($x = $this->getMinVec3()->getX(); $x <= $this->getMaxVec3()->getX(); $x++){

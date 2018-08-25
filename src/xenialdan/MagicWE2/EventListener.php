@@ -33,8 +33,13 @@ class EventListener implements Listener{
 	public function onInteract(PlayerInteractEvent $event){
 		switch ($event->getAction()){
 			case PlayerInteractEvent::RIGHT_CLICK_BLOCK: {
-				$this->onRightClickBlock($event);
-				break;
+                try {
+                    $this->onRightClickBlock($event);
+                } catch (\Exception $error){
+                    $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Interaction failed!");
+                    $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+                }
+                break;
 			}
 			case PlayerInteractEvent::RIGHT_CLICK_AIR: {
 				$this->onRightClickAir($event);
@@ -44,10 +49,19 @@ class EventListener implements Listener{
 	}
 
 	public function onBreak(BlockBreakEvent $event){
-		$this->onBreakBlock($event);
-	}
+        try {
+            $this->onBreakBlock($event);
+        } catch (\Exception $error){
+            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Interaction failed!");
+            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+        }
+    }
 
-	private function onBreakBlock(BlockBreakEvent $event){
+    /**
+     * @param BlockBreakEvent $event
+     * @throws \Exception
+     */
+    private function onBreakBlock(BlockBreakEvent $event){
 		if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))){
 			$event->setCancelled();
 			/** @var Session $session */
@@ -82,7 +96,11 @@ class EventListener implements Listener{
 		}
 	}
 
-	private function onRightClickBlock(PlayerInteractEvent $event){
+    /**
+     * @param PlayerInteractEvent $event
+     * @throws \Exception
+     */
+    private function onRightClickBlock(PlayerInteractEvent $event){
 		if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))){
 			$event->setCancelled();
 			/** @var Session $session */
@@ -91,13 +109,6 @@ class EventListener implements Listener{
 				throw new \Exception("No session was created - probably no permission to use " . $this->owner->getName());
 			}
 			switch ($event->getItem()->getId()){
-				/*case ItemIds::WOODEN_SHOVEL: { //TODO Open issue on pmmp, RIGHT_CLICK_BLOCK + RIGHT_CLICK_AIR are BOTH called when right clicking a block - Turns out to be a client bug
-					$target = $event->getBlock();
-					if (!is_null($target)){// && has perms
-						API::createBrush($target, $event->getItem()->getNamedTagEntry("MagicWE"));
-					}
-					break;
-				}*/
 				case ItemIds::WOODEN_AXE: {
 					/** @var Session $session */
 					if (!$session->isWandEnabled()){

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
-use pocketmine\form\CustomForm;
+/*use pocketmine\form\CustomForm;
 use pocketmine\form\element\CustomFormElement;
 use pocketmine\form\element\Dropdown;
 use pocketmine\form\element\Input;
 use pocketmine\form\element\Label;
 use pocketmine\form\element\Slider;
-use pocketmine\form\element\Toggle;
+use pocketmine\form\element\Toggle;*/
 use pocketmine\form\Form;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -43,7 +43,8 @@ class BrushCommand extends WECommand{
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
 			return true;
 		}
-        // NOTE: https://github.com/pmmp/PocketMine-MP/pull/1476 was denied, therefore Forms was not implemented in core.
+		$sender->sendMessage("This function is disabled. Reason: https://github.com/pmmp/PocketMine-MP/pull/1476 was denied, therefore Forms was not implemented in core.");
+		return true;
 		$lang = Loader::getInstance()->getLanguage();
 		try{
 			if ($sender instanceof Player){

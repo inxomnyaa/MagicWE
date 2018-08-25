@@ -21,11 +21,11 @@ abstract class Shape extends Selection{//TODO test
 		parent::__construct($level);
 	}
 
-	/**
-	 * @param int $flags
-	 * @param Block[] ...$filterblocks
-	 * @return array
-	 */
+    /**
+     * @param int $flags
+     * @param Block ...$filterblocks
+     * @return array
+     */
 	public function getBlocks(int $flags, Block ...$filterblocks){
 		return [];
 	}

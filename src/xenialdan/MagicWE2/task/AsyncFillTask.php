@@ -31,6 +31,7 @@ class AsyncFillTask extends AsyncTask{
 	 * @param array $blocks
 	 * @param array $newblocks
 	 * @param $flags
+     * //TODO Fix Optional params b4 required!
 	 */
 	public function __construct($sender, $selection = [], $chunks, $blocks = [], $newblocks = [], $flags){
 		$this->time = microtime(TRUE);

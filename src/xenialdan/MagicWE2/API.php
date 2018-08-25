@@ -19,7 +19,6 @@ use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use xenialdan\MagicWE2\shape\Custom;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 
@@ -400,7 +399,6 @@ class API{
 			case null:
 			default:{
 				$session->getPlayer()->sendMessage("Unknown shape");
-				return false;
 			}
 		}
 		return false;
@@ -424,8 +422,9 @@ class API{
 
 	public static function compoundToArray(CompoundTag $compoundTag){
 		$nbt = new LittleEndianNBTStream();
-		$nbt->setData($compoundTag);
-		return $nbt->getArray();
+		$nbt->writeTag($compoundTag);
+		//return $nbt->getArray();//TODO WORKAROUND!
+        return [];
 	}
 
 	public static function &addSession(Session $session){

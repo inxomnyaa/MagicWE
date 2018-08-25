@@ -22,11 +22,11 @@ class Flood extends Shape{
 		$this->limit = $options["limit"] ?? $this->limit;
 	}
 
-	/**
-	 * @param int $flags
-	 * @param Block[] ...$filterblocks
-	 * @return array
-	 */
+    /**
+     * @param int $flags
+     * @param Block ...$filterblocks
+     * @return array
+     */
 	public function getBlocks(int $flags, Block ...$filterblocks){//TODO use filterblocks
 		$current = $this->getLevel()->getBlock($this->getCenter());
 		return $this->walk($current);

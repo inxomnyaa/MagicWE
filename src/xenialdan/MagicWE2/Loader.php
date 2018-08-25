@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
-use pocketmine\lang\BaseLang;
+use pocketmine\lang\Language;
 use pocketmine\plugin\PluginBase;
 use xenialdan\MagicWE2\commands\AsyncFillCommand;
-use xenialdan\MagicWE2\commands\BrushCommand;
+//use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\DebugCommand;
 use xenialdan\MagicWE2\commands\FlipCommand;
-use xenialdan\MagicWE2\commands\FloodCommand;
+//use xenialdan\MagicWE2\commands\FloodCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
@@ -26,7 +26,7 @@ use xenialdan\MagicWE2\commands\UndoCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
 
 class Loader extends PluginBase{
-	public static $prefix = '[MagicWE by XenialDan] ';
+	public static $prefix = "§6§l[MagicWE]§r ";
 	/** @var Loader */
 	private static $instance = null;
 	private $baseLang;
@@ -41,7 +41,6 @@ class Loader extends PluginBase{
 
 	public function onLoad(){
 		self::$instance = $this;
-		self::$prefix = $this->getDescription()->getPrefix();
 		// TODO restore sessions
 		$this->getLogger()->info("Restoring Sessions");
 
@@ -62,8 +61,8 @@ class Loader extends PluginBase{
 	public function onEnable(){
 		$this->saveDefaultConfig();
 		$this->reloadConfig();
-		$lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
-		$this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
+		$lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
+		$this->baseLang = new Language((string)$lang, $this->getFile() . "resources/");
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 		$this->getServer()->getCommandMap()->registerAll("we", [
 			new Pos1Command($this),
@@ -98,9 +97,9 @@ class Loader extends PluginBase{
 
 	/**
 	 * @api
-	 * @return BaseLang
+	 * @return Language
 	 */
-	public function getLanguage(): BaseLang{
+	public function getLanguage(): Language{
 		return $this->baseLang;
 	}
 }

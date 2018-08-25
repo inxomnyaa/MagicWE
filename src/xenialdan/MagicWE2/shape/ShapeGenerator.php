@@ -5,16 +5,48 @@ namespace xenialdan\MagicWE2\shape;
 use pocketmine\level\Level;
 use pocketmine\Server;
 
+/**
+ * Class ShapeGenerator
+ * @package xenialdan\MagicWE2\shape
+ */
 class ShapeGenerator{
-	const TYPE_SPHERE = 0;
-	const TYPE_CONE = 1;
-	const TYPE_CUBOID = 2;
-	const TYPE_CYLINDER = 3;
-	const TYPE_CUSTOM = 4;
-	const TYPE_FLOOD = 5;
-	const TYPE_PYRAMID = 6;
+    /**
+     *
+     */
+    const TYPE_SPHERE = 0;
+    /**
+     *
+     */
+    const TYPE_CONE = 1;
+    /**
+     *
+     */
+    const TYPE_CUBOID = 2;
+    /**
+     *
+     */
+    const TYPE_CYLINDER = 3;
+    /**
+     *
+     */
+    const TYPE_CUSTOM = 4;
+    /**
+     *
+     */
+    const TYPE_FLOOD = 5;
+    /**
+     *
+     */
+    const TYPE_PYRAMID = 6;
 
-	public static function getShape(Level $level, int $shape = self::TYPE_CUBOID, $options):?Shape{
+    /**
+     * @param Level $level
+     * @param int $shape
+     * @param $options
+     * @return null|Shape
+     * //TODO Fix Optional params b4 required!
+     */
+    public static function getShape(Level $level, int $shape = self::TYPE_CUBOID, $options):?Shape{
 		switch ($shape){
 			case self::TYPE_CUBOID: {
 				return new Cuboid($level, $options);
