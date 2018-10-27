@@ -47,6 +47,9 @@ class SetCommand extends WECommand{
 				if (is_null($selection)){
 					throw new \Exception("No selection found - select an area first");
 				}
+                if (!$selection->isValid()) {
+                    throw new \Exception("The selection is not valid! Check if all positions are set!");
+                }
 				$return = API::fill($selection, $session, $newblocks, ...$args);
 			} else{
 				$return = false;

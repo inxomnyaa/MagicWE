@@ -48,6 +48,9 @@ class ReplaceCommand extends WECommand{
 				if (is_null($selection)){
 					throw new \Exception("No selection found - select an area first");
 				}
+                if (!$selection->isValid()) {
+                    throw new \Exception("The selection is not valid! Check if all positions are set!");
+                }
 				$return = API::replace($selection, $session, $blocks1, $blocks2, ...$args);
 			} else{
 				throw new \InvalidArgumentException("Could not replace with the selected blocks");

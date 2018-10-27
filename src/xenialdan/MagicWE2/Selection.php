@@ -31,18 +31,20 @@ class Selection
     /**
      * Selection constructor.
      * @param Level $level
-     * @param int $minX
-     * @param int $minY
-     * @param int $minZ
-     * @param int $maxX
-     * @param int $maxY
-     * @param int $maxZ
+     * @param ?int $minX
+     * @param ?int $minY
+     * @param ?int $minZ
+     * @param ?int $maxX
+     * @param ?int $maxY
+     * @param ?int $maxZ
      */
-    public function __construct(Level $level, $minX = 0, $minY = 0, $minZ = 0, $maxX = 0, $maxY = 0, $maxZ = 0)
+    public function __construct(Level $level, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
     {
         $this->setLevel($level);
-        $this->setPos1(new Position($minX, $minY, $minZ, $level));
-        $this->setPos2(new Position($maxX, $maxY, $maxZ, $level));
+        if (isset($minX) && isset($minY) && isset($minZ))
+            $this->setPos1(new Position($minX, $minY, $minZ, $level));
+        if (isset($maxX) && isset($maxY) && isset($maxZ))
+            $this->setPos2(new Position($maxX, $maxY, $maxZ, $level));
         $this->setUUID(UUID::fromRandom());
     }
 
@@ -68,9 +70,13 @@ class Selection
 
     /**
      * @return Level
+     * @throws \Exception
      */
     public function getLevel()
     {
+        if (is_null($this->level)) {
+            throw new \Exception("Level is not set!");
+        }
         return $this->level;
     }
 
@@ -124,6 +130,27 @@ class Selection
     {
         $this->pos2 = $position;
         return Loader::$prefix . TextFormat::GREEN . "Position 2 set to X: " . $position->getX() . " Y: " . $position->getY() . " Z: " . $position->getZ();
+    }
+
+    /**
+     * Checks if a Selection is valid. It is not valid if:
+     * - The level is not set
+     * - Any of the positions are not set
+     * - If the levels of the positions do not match
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        try {
+            $this->getLevel();
+            $this->getPos1();
+            $this->getPos2();
+            if ($this->getPos1()->getLevel() === $this->getPos2()->getLevel())
+                return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+        return true;
     }
 
     /**
