@@ -147,12 +147,10 @@ class Selection
             $this->getLevel();
             $this->getPos1();
             $this->getPos2();
-            if ($this->getPos1()->getLevel() === $this->getPos2()->getLevel())
-                return true;
+            return ($this->getPos1()->getLevel() === $this->getLevel() && $this->getPos2()->getLevel() === $this->getLevel());
         } catch (\Exception $e) {
             return false;
         }
-        return true;
     }
 
     /**
