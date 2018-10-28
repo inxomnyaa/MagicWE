@@ -107,6 +107,7 @@ class Selection
     public function setPos1(Position $position)
     {
         $this->pos1 = $position;
+        $this->setLevel($position->getLevel());
         return Loader::$prefix . TextFormat::GREEN . "Position 1 set to X: " . $position->getX() . " Y: " . $position->getY() . " Z: " . $position->getZ();
     }
 
@@ -129,6 +130,7 @@ class Selection
     public function setPos2(Position $position)
     {
         $this->pos2 = $position;
+        $this->setLevel($position->getLevel());
         return Loader::$prefix . TextFormat::GREEN . "Position 2 set to X: " . $position->getX() . " Y: " . $position->getY() . " Z: " . $position->getZ();
     }
 

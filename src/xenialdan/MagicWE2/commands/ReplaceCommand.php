@@ -51,6 +51,9 @@ class ReplaceCommand extends WECommand{
                 if (!$selection->isValid()) {
                     throw new \Exception("The selection is not valid! Check if all positions are set!");
                 }
+                if ($selection->getLevel() !== $sender->getLevel()) {
+                    $sender->sendMessage(Loader::$prefix . TextFormat::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
+                }
 				$return = API::replace($selection, $session, $blocks1, $blocks2, ...$args);
 			} else{
 				throw new \InvalidArgumentException("Could not replace with the selected blocks");
