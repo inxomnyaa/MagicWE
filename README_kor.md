@@ -1,6 +1,6 @@
 ![MagicWEv2의 널찍하고 아름다운 현수막!](https://github.com/thebigsmileXD/MagicWE2/blob/master/resources/magicwe_icon_wide.png)
-# MagicWEv2 - 강화되었고, 더 나아졌으며, 더 빠름과 동시에 더 강해짐
-더 많은 지원, 더 많은 명령어, 새로운 도구 등으로 더욱 강력해진 MagicWE가 찾아왔습니다!
+# MagicWEv2 - 강화되었고, 더 나아졌으며, 더 빠름과 동시에 더욱 강해짐
+더 많은 지원, 더 많은 명령어, 새로운 도구 등으로 더욱 강력해진 MagicWE!
 
 # 새로운 점
 말 그대로 모든 것이 새로워졌습니다.
@@ -43,5 +43,5 @@
 <!--
 ## 빠른 업데이트
 서버 충돌, 세계 어지럽힘, 플레이어 테러 등의 이슈가 발생했나요?
-이슈를 생성하거나, ***진짜로*** 급한 경우에는 이슈와 함께 Twitter에서 태그하세요: [@xenialdan](https://twitter.com/xenialdan)
+이슈를 생성하거나, 생명을 살리는 심장 수술 비슷하게 ***진짜로*** 급한 경우에는 이슈와 함께 Twitter에서 태그하세요: [@xenialdan](https://twitter.com/xenialdan)
 -->
