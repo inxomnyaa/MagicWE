@@ -6,6 +6,6 @@ projects:
     libs:
       - src: BlockHorizons/libschematic/libschematic
         version: ^0.0.6
-      - src: xenialdan/customui/customui
+      - src: thebigsmilexd/customui/customui
         version: ^3.0.0
 ...
