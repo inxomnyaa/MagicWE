@@ -198,7 +198,7 @@ class Selection
      */
     public function getTotalCount()
     {
-        return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom election shapes
+        return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom selection shapes
     }
 
     /**

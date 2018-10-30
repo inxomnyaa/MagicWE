@@ -39,4 +39,9 @@ abstract class Shape extends Selection{//TODO test
 		$this->setPos1(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
 		$this->setPos2(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
 	}
+
+	public function getTotalCount()
+    {
+        return parent::getTotalCount();
+    }
 }

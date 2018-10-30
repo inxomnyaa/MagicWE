@@ -380,7 +380,7 @@ class API
         if (!$settings instanceof CompoundTag) return false;
         $messages = [];
         $error = false;
-        switch ($settings->getString("type", $lang->translateString('ui.brush.options.type.square'))) {
+        switch ($settings->getString("type", $lang->translateString('ui.brush.select.type.cuboid'))) {
             //TODO use/parse int as type !! IMPORTANT TODO !!
             //TODO use/parse int as type !! IMPORTANT TODO !!
             //TODO use/parse int as type !! IMPORTANT TODO !!
@@ -389,6 +389,13 @@ class API
             case $lang->translateString('ui.brush.select.type.cuboid'):
                 {
                     $shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_CUBOID, self::compoundToArray($settings));
+                    $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+                    return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+                    break;
+                }
+            case $lang->translateString('ui.brush.select.type.cylinder'):
+                {
+                    $shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_CYLINDER, self::compoundToArray($settings));
                     $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
                     return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
                     break;
@@ -440,8 +447,7 @@ class API
     {
         $nbt = new LittleEndianNBTStream();
         $nbt->writeTag($compoundTag);
-        //return $nbt->getArray();//TODO WORKAROUND!
-        return [];
+        return $nbt::toArray($compoundTag);
     }
 
     public static function &addSession(Session $session)

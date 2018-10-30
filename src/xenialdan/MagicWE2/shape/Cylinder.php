@@ -7,9 +7,10 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 
-class Flood extends Shape
+class Cylinder extends Shape
 {
-    private $limit = 10000;
+    private $diameter = 10;
+    private $height = 1;
     /** @var Block[] */
     private $walked = [];
     /** @var Block[] */
@@ -26,7 +27,8 @@ class Flood extends Shape
     public function __construct(Level $level, array $options)
     {
         parent::__construct($level, $options);
-        $this->limit = $options["limit"] ?? $this->limit;
+        $this->diameter = $options["diameter"] ?? $this->diameter;
+        $this->height = $options["height"] ?? $this->height;
     }
 
     /**
@@ -41,7 +43,23 @@ class Flood extends Shape
         $this->walked[] = $this->getLevel()->getBlock($this->getCenter());
         $this->foundBlocks[] = $this->getLevel()->getBlock($this->getCenter());
         $this->nextToCheck[] = $this->getLevel()->getBlock($this->getCenter());
-        return $this->walk();
+        $walked = $this->walk();
+        if (false) {
+            $circleBlocks = array_filter($walked, function (Block $block) {
+                return $block->floor()->distanceSquared($this->getCenter()) == floor((($this->diameter / 2) ** 2));
+            });
+        } else {
+            $circleBlocks = $walked;
+        }
+        if ($this->height > 1) {
+            $blocks = $circleBlocks;
+            for ($y = $this->getCenter()->getY(); $y < ($this->getCenter()->getY() + $this->height - 1) && $y < Level::Y_MAX; $y++) {
+                $circleBlocks = array_merge($circleBlocks, array_map(function (Block $value) use ($y) {
+                    return (clone $value)->setComponents($value->getX(), $y, $value->getZ());
+                }, $blocks));
+            }
+        }
+        return $circleBlocks;
     }
 
     private function walk()
@@ -51,7 +69,7 @@ class Flood extends Shape
         foreach ($this->nextToCheck as $next) {
             $sides = $next->getHorizontalSides();
             $walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
-                return $side->getId() === 0 && !in_array($side, $walkTo) && !in_array($side, $this->walked) && !in_array($side, $this->nextToCheck) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
+                return !in_array($side, $walkTo) && !in_array($side, $this->walked) && !in_array($side, $this->nextToCheck) && $side->distanceSquared($this->getCenter()) <= ($this->diameter / 2) ** 2;
             }));
         }
         $this->walked = array_merge($this->walked, $walkTo);
@@ -69,6 +87,6 @@ class Flood extends Shape
 
     public function getTotalCount()
     {
-        return $this->limit;
+        return ceil((pi() * ($this->diameter ** 2)) / 4) * $this->height;
     }
 }
