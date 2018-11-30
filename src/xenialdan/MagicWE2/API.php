@@ -19,6 +19,7 @@ use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\event\MWEEditEvent;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 
@@ -136,27 +137,35 @@ class API
         $changed = 0;
         $time = microtime(TRUE);
         try {
-            $blocks = [];
+            $postBlocks = [];
             /** @var Block $block */
-            foreach ($selection->getBlocks($flags) as $block) {
-                $level = $selection->getLevel() ?? (!is_null($session) ? $session->getPlayer()->getLevel() : $block->getLevel());
-                if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-                if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
-                $newblock = $newblocks[array_rand($newblocks, 1)];
-                $newblock->position($block->asPosition());
-                if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
-                    if ($level->getBlock($block)->getId() !== Block::AIR) continue;
+            foreach (($preBlocks = $selection->getBlocks($flags)) as $block) {
+                $new = $newblocks[array_rand($newblocks, 1)];
+                $new->position($block->asPosition());
+                $postBlocks[] = $new;
+            }
+            //Event call
+            $event = new MWEEditEvent(Loader::getInstance(), $preBlocks, $postBlocks, $session);
+            Loader::getInstance()->getServer()->getPluginManager()->callEvent($event);
+            if ($event->isCancelled()) {
+                if (!is_null($session)) {
+                    $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Editing was cancelled by a plugin.");
+                } else {
+                    Server::getInstance()->getLogger()->debug(Loader::$prefix . TextFormat::RED . "Editing was cancelled by a plugin.");
                 }
-                #if (API::hasFlag($flags, API::FLAG_KEEP_AIR)){
-                #	if ($level->getBlock($block)->getId() === Block::AIR) continue;
-                #}
-                if ($level->setBlock($block, $newblock, false, false)) {
-                    $blocks[] = $block;
+            }
+            //TODO move this section to async
+            $preBlocks = [];
+            $level = $event->getPlayer()->getLevel();
+            /** @var Block $block */
+            foreach ($event->getNewBlocks() as $newBlock) {
+                if ($level->setBlock($newBlock, $newBlock, false, false)) {
+                    $preBlocks[] = $newBlock;
                     $changed++;
                 }
             }
             $undoClipboard = new Clipboard();
-            $undoClipboard->setData($blocks);
+            $undoClipboard->setData($preBlocks);
         } catch (\Exception $exception) {
             if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
             return false;

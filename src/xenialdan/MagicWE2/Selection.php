@@ -205,7 +205,7 @@ class Selection
      * Returns the blocks by their actual position
      * @param int $flags
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
-     * @return array
+     * @return Block[]
      * @throws \Exception
      */
     public function getBlocks(int $flags, Block ...$filterblocks)
@@ -215,8 +215,11 @@ class Selection
             for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++) {
                 for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++) {
                     $block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
-                    #$block->setComponents((int)$x,(int)$y,(int)$z);
-                    $block->position(new Position((int)$x, (int)$y, (int)$z, $this->getLevel()));
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
+                        if ($block->getId() !== Block::AIR) continue;
+                    }
+                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
                     if (empty($filterblocks)) $blocks[] = $block;
                     else {
                         foreach ($filterblocks as $filterblock) {
@@ -234,7 +237,7 @@ class Selection
      * Returns the blocks by their relative position to the minX;minY;minZ position
      * @param int $flags
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
-     * @return array
+     * @return Block[]
      * @throws \Exception
      */
     public function getBlocksRelative(int $flags, Block ...$filterblocks)
@@ -244,7 +247,11 @@ class Selection
             for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++) {
                 for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++) {
                     $block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
+                        if ($block->getId() !== Block::AIR) continue;
+                    }
                     $block->position(new Position((int)$rx, (int)$ry, (int)$rz, $this->getLevel()));
+                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
                     if (empty($filterblocks)) $blocks[] = $block;
                     else {
                         foreach ($filterblocks as $filterblock) {
