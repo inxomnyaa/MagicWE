@@ -16,8 +16,8 @@ abstract class Shape extends Selection{//TODO test
 
 	public function __construct(Level $level, array $options){
 		$this->options = $options;
-		if (isset($options['flags'])) $this->flags = $options['flags'];
-		if (isset($options['blocks'])) $this->blocks = $options['blocks'];
+        if (isset($options['flags'])) $this->flags = $options['flags'];
+        if (isset($options['blocks'])) $this->blocks = $options['blocks'];
 		parent::__construct($level);
 	}
 
@@ -36,9 +36,15 @@ abstract class Shape extends Selection{//TODO test
 
 	public function setCenter(Vector3 $center){
 		$this->center = $center;
-		$this->setPos1(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
-		$this->setPos2(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
-	}
+        try {
+            $this->setPos1(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
+        } catch (\Exception $e) {
+        }
+        try {
+            $this->setPos2(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
+        } catch (\Exception $e) {
+        }
+    }
 
 	public function getTotalCount()
     {

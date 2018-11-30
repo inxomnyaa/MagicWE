@@ -151,11 +151,11 @@ class Session{
 	/**
 	 * TODO
 	 * @param Clipboard[] $clipboards
-	 * @return bool
+     * @return bool
 	 */
 	public function setClipboards(array $clipboards){
 		$this->clipboards = $clipboards;
-		return true;
+        return true;
 	}
 
 	/**

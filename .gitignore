@@ -1,8 +1,1 @@
-.idea/*
-config.yml
-resources
 resources/libschematic
-!resources/config.yml
-!resources/**.ini
->>>>>>> master
-schematics

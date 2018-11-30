@@ -81,8 +81,14 @@ class Cylinder extends Shape
     public function setCenter(Vector3 $center)
     {
         $this->center = $center;
-        $this->setPos1(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
-        $this->setPos2(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
+        try {
+            $this->setPos1(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
+        } catch (\Exception $e) {
+        }
+        try {
+            $this->setPos2(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
+        } catch (\Exception $e) {
+        }
     }
 
     public function getTotalCount()

@@ -67,21 +67,22 @@ class Clipboard{
 			$newpos = $newpos->subtract($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
 			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ(), $block->getLevel()));
 			switch ($newblock){
-				case $newblock instanceof Slab: {
-					$meta = $newblock->getDamage();
-					if (API::hasFlag($directions, self::FLIP_Y)){
-						$meta |= 0x08;
-					}
-					$newblock->setDamage($meta);
-					break;
-				}
+                case $newblock instanceof Slab:
+                    {
+                        $meta = $newblock->getDamage();
+                        if (API::hasFlag($directions, self::FLIP_Y)) {
+                            $meta |= 0x08;
+                        }
+                        $newblock->setDamage($meta);
+                        break;
+                    }
 				case $newblock instanceof Stair: {
 					$meta = $newblock->getDamage();
 					if (API::hasFlag($directions, self::FLIP_Y)){
-						$meta |= 0x04;
+                        $meta |= 0x04;
 					}
 					$newblock->setDamage($meta);
-					break;
+                    break;
 				}
 				//TODO check + flip up, flip down etc
 			}
@@ -90,41 +91,46 @@ class Clipboard{
 		$this->setData($newdata);
 	}
 
-	public function getSize(){
-		$minx = $miny = $minz = $maxx = $maxy = $maxz = 0;
-		/** @var Block $block */
-		foreach ($this->getData() as $block){
-			if ($block->getX() > $maxx) $maxx = $block->getX();
-			if ($block->getY() > $maxy) $maxy = $block->getY();
-			if ($block->getZ() > $maxz) $maxz = $block->getZ();
-		}
-		return ["width" => $maxx, "height" => $maxy, "length" => $maxz];
-	}
+    public function getSize()
+    {
+        $maxx = $maxy = $maxz = 0;
+        /** @var Block $block */
+        foreach ($this->getData() as $block) {
+            if ($block->getX() > $maxx) $maxx = $block->getX();
+            if ($block->getY() > $maxy) $maxy = $block->getY();
+            if ($block->getZ() > $maxz) $maxz = $block->getZ();
+        }
+        return ["width" => $maxx, "height" => $maxy, "length" => $maxz];
+    }
 
-	public function threeDeeArray(){
-		$length = $this->getLength();
-		$width = $this->getWidth();
-		$threeDeeArray = [];
-		/** @var Block $block */
-		foreach ($this->getData() as $block){
-			$i = ($block->getFloorY() * $length + $block->getFloorZ()) * $width + $block->getFloorX();
-			var_dump($i);
-			$threeDeeArray[$i] = $block;
-		}
-		return $threeDeeArray;
-	}
+    public function threeDeeArray()
+    {
+        $length = $this->getLength();
+        $width = $this->getWidth();
+        $threeDeeArray = [];
+        /** @var Block $block */
+        foreach ($this->getData() as $block) {
+            $i = ($block->getFloorY() * $length + $block->getFloorZ()) * $width + $block->getFloorX();
+            var_dump($i);
+            $threeDeeArray[$i] = $block;
+        }
+        return $threeDeeArray;
+    }
 
-	public function getWidth(){
-		return $this->getSize()["width"];
-	}
+    public function getWidth()
+    {
+        return $this->getSize()["width"];
+    }
 
-	public function getHeight(){
-		return $this->getSize()["height"];
-	}
+    public function getHeight()
+    {
+        return $this->getSize()["height"];
+    }
 
-	public function getLength(){
-		return $this->getSize()["length"];
-	}
+    public function getLength()
+    {
+        return $this->getSize()["length"];
+    }
 
 	public function rotate($rotations = 0){//TODO maybe move to API
 		$newdata = [];

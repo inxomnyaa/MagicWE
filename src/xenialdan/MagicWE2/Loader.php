@@ -20,15 +20,11 @@ use xenialdan\MagicWE2\commands\Pos2Command;
 use xenialdan\MagicWE2\commands\RedoCommand;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
 use xenialdan\MagicWE2\commands\RotateCommand;
-use xenialdan\MagicWE2\commands\SchematicCommand;
 use xenialdan\MagicWE2\commands\SetCommand;
 use xenialdan\MagicWE2\commands\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\TogglewandCommand;
 use xenialdan\MagicWE2\commands\UndoCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
-
-//use xenialdan\MagicWE2\commands\BrushCommand;
-//use xenialdan\MagicWE2\commands\FloodCommand;
 
 class Loader extends PluginBase
 {
@@ -83,7 +79,6 @@ class Loader extends PluginBase
             new WandCommand($this),
             new TogglewandCommand($this),
             new FlipCommand($this),
-            new SchematicCommand($this),
             new UndoCommand($this),
             new RedoCommand($this),
             new DebugCommand($this),

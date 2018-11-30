@@ -175,11 +175,15 @@ class API
      * @param Session $session
      * @param Block[] $newblocks
      * @param array ...$flagarray
+     * @throws \Exception
      */
     public static function fillAsync(Selection $selection, Session $session, $newblocks = [], ...$flagarray)
     {
         $flags = self::flagParser($flagarray);
-        Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getPlayer(), $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
+        try {
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getPlayer(), $selection->__serialize(), $selection->getTouchedChunks(), $selection->getBlocks($flags), $newblocks, $flags));
+        } catch (\Exception $e) {
+        }
     }
 
     /**
