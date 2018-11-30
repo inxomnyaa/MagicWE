@@ -198,7 +198,7 @@ class Selection
      */
     public function getTotalCount()
     {
-        return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom election shapes
+        return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom selection shapes
     }
 
     /**
@@ -206,6 +206,7 @@ class Selection
      * @param int $flags
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @return array
+     * @throws \Exception
      */
     public function getBlocks(int $flags, Block ...$filterblocks)
     {
@@ -234,6 +235,7 @@ class Selection
      * @param int $flags
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @return array
+     * @throws \Exception
      */
     public function getBlocksRelative(int $flags, Block ...$filterblocks)
     {
@@ -261,6 +263,7 @@ class Selection
      * e.g. do not use + 16 but % 16 or sth like that
      *
      * @return array
+     * @throws \Exception
      */
     public function getTouchedChunks(): array
     {
@@ -280,6 +283,7 @@ class Selection
 
     /**
      * @return array
+     * @throws \Exception
      */
     public function __serialize()
     {

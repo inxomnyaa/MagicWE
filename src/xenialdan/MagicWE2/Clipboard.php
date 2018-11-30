@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
+use pocketmine\block\Slab;
 use pocketmine\block\Stair;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
@@ -66,18 +67,22 @@ class Clipboard{
 			$newpos = $newpos->subtract($this->getOffset())->floor();//TEST IF FLOOR OR CEIL
 			$newblock->position(new Position($newpos->getX(), $newpos->getY(), $newpos->getZ(), $block->getLevel()));
 			switch ($newblock){
+                case $newblock instanceof Slab:
+                    {
+                        $meta = $newblock->getDamage();
+                        if (API::hasFlag($directions, self::FLIP_Y)) {
+                            $meta |= 0x08;
+                        }
+                        $newblock->setDamage($meta);
+                        break;
+                    }
 				case $newblock instanceof Stair: {
 					$meta = $newblock->getDamage();
-					if (API::hasFlag($directions, self::FLIP_X)){
-						$meta ^= 0x03;
-					}
 					if (API::hasFlag($directions, self::FLIP_Y)){
-						$meta |= 0x04; //correct
-					}
-					if (API::hasFlag($directions, self::FLIP_Z)){
-						$meta ^= 0x03;
+                        $meta |= 0x04;
 					}
 					$newblock->setDamage($meta);
+                    break;
 				}
 				//TODO check + flip up, flip down etc
 			}
@@ -85,6 +90,47 @@ class Clipboard{
 		}
 		$this->setData($newdata);
 	}
+
+    public function getSize()
+    {
+        $maxx = $maxy = $maxz = 0;
+        /** @var Block $block */
+        foreach ($this->getData() as $block) {
+            if ($block->getX() > $maxx) $maxx = $block->getX();
+            if ($block->getY() > $maxy) $maxy = $block->getY();
+            if ($block->getZ() > $maxz) $maxz = $block->getZ();
+        }
+        return ["width" => $maxx, "height" => $maxy, "length" => $maxz];
+    }
+
+    public function threeDeeArray()
+    {
+        $length = $this->getLength();
+        $width = $this->getWidth();
+        $threeDeeArray = [];
+        /** @var Block $block */
+        foreach ($this->getData() as $block) {
+            $i = ($block->getFloorY() * $length + $block->getFloorZ()) * $width + $block->getFloorX();
+            var_dump($i);
+            $threeDeeArray[$i] = $block;
+        }
+        return $threeDeeArray;
+    }
+
+    public function getWidth()
+    {
+        return $this->getSize()["width"];
+    }
+
+    public function getHeight()
+    {
+        return $this->getSize()["height"];
+    }
+
+    public function getLength()
+    {
+        return $this->getSize()["length"];
+    }
 
 	public function rotate($rotations = 0){//TODO maybe move to API
 		$newdata = [];

@@ -48,20 +48,24 @@ class ShapeGenerator{
      */
     public static function getShape(Level $level, int $shape = self::TYPE_CUBOID, $options):?Shape{
 		switch ($shape){
+            case self::TYPE_SPHERE: {
+                return new Sphere($level, $options);
+                break;
+            }
 			case self::TYPE_CUBOID: {
 				return new Cuboid($level, $options);
 				break;
 			}
-			case self::TYPE_SPHERE: {
-				return new Sphere($level, $options);
-				break;
-			}
+            case self::TYPE_CYLINDER: {
+                return new Cylinder($level, $options);
+                break;
+            }
+            case self::TYPE_CUSTOM: {
+                return new Custom($level, $options);
+                break;
+            }
 			case self::TYPE_FLOOD: {
 				return new Flood($level, $options);
-				break;
-			}
-			case self::TYPE_CUSTOM: {
-				return new Custom($level, $options);
 				break;
 			}
 			default:

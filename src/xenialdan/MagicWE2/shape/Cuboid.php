@@ -23,6 +23,7 @@ class Cuboid extends Shape{
      * @param int $flags
      * @param Block ...$filterblocks
      * @return array
+     * @throws \Exception
      */
 	public function getBlocks(int $flags, Block ...$filterblocks){
 		$blocks = [];
@@ -39,7 +40,13 @@ class Cuboid extends Shape{
 
 	public function setCenter(Vector3 $center){//TODO change diameter to width after command rewrite
 		$this->center = $center;
-		$this->setPos1(new Position(floor($this->getCenter()->getX() - $this->options['width'] / 2), floor($this->getCenter()->getY() - $this->options['height'] / 2), floor($this->getCenter()->getZ() - $this->options['depth'] / 2), $this->getLevel()));
-		$this->setPos2(new Position(floor($this->getCenter()->getX() + $this->options['width'] / 2), floor($this->getCenter()->getY() + $this->options['height'] / 2), floor($this->getCenter()->getZ() + $this->options['depth'] / 2), $this->getLevel()));
-	}
+        try {
+            $this->setPos1(new Position(floor($this->getCenter()->getX() - $this->options['width'] / 2), floor($this->getCenter()->getY() - $this->options['height'] / 2), floor($this->getCenter()->getZ() - $this->options['depth'] / 2), $this->getLevel()));
+        } catch (\Exception $e) {
+        }
+        try {
+            $this->setPos2(new Position(floor($this->getCenter()->getX() + $this->options['width'] / 2), floor($this->getCenter()->getY() + $this->options['height'] / 2), floor($this->getCenter()->getZ() + $this->options['depth'] / 2), $this->getLevel()));
+        } catch (\Exception $e) {
+        }
+    }
 }
