@@ -1,6 +1,10 @@
 ![MagicWEv2's awesome wide banner!](https://github.com/thebigsmileXD/MagicWE2/blob/master/resources/magicwe_icon_wide.png)
-# MagicWEv2 - Harder, Better, Faster, Stronger
+# MagicWEv2 - Harder, Better, Faster, Stronger [![Poggit-CI](https://poggit.pmmp.io/ci.badge/thebigsmileXD/MagicWE2/MagicWE2/master)](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2) 
 The new MagicWE, now way more powerful, with more support, more commands, new tools and more!
+
+# Incompatible API (needs one of 4.0.0)
+Currently, the `master` branch is at API `v4.0.0` and cannot be split due to @thebigsmileXD's internet restraints.
+If you need a build for `v3.0.0`, you can find it in the [releases section](https://github.com/thebigsmileXD/MagicWE2/releases/tag/5.7.2).
 
 # What's new?
 Literally everything.
