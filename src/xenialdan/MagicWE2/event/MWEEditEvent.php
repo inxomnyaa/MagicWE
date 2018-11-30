@@ -3,11 +3,12 @@
 namespace xenialdan\MagicWE2\event;
 
 use pocketmine\block\Block;
+use pocketmine\event\Cancellable;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use xenialdan\MagicWE2\Session;
 
-class MWEEditEvent extends MWEEvent
+class MWEEditEvent extends MWEEvent implements Cancellable
 {
 
     /** @var Block[] */

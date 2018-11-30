@@ -137,10 +137,11 @@ class API
         $changed = 0;
         $time = microtime(TRUE);
         try {
+            $preBlocks = $selection->getBlocks($flags);
             $postBlocks = [];
             /** @var Block $block */
-            foreach (($preBlocks = $selection->getBlocks($flags)) as $block) {
-                $new = $newblocks[array_rand($newblocks, 1)];
+            foreach ($preBlocks as $block) {
+                $new = clone $newblocks[array_rand($newblocks, 1)];
                 $new->position($block->asPosition());
                 $postBlocks[] = $new;
             }
@@ -155,17 +156,13 @@ class API
                 }
             }
             //TODO move this section to async
-            $preBlocks = [];
             $level = $event->getPlayer()->getLevel();
             /** @var Block $block */
             foreach ($event->getNewBlocks() as $newBlock) {
-                if ($level->setBlock($newBlock, $newBlock, false, false)) {
-                    $preBlocks[] = $newBlock;
-                    $changed++;
-                }
+                if ($level->setBlock($newBlock, $newBlock, false, false)) $changed++;
             }
             $undoClipboard = new Clipboard();
-            $undoClipboard->setData($preBlocks);
+            $undoClipboard->setData($event->getOldBlocks());
         } catch (\Exception $exception) {
             if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
             return false;

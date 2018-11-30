@@ -211,13 +211,11 @@ class Selection
     public function getBlocks(int $flags, Block ...$filterblocks)
     {
         $blocks = [];
-        for ($x = floor($this->getAxisAlignedBB()->minX); $x <= floor($this->getAxisAlignedBB()->maxX); $x++) {
-            for ($y = floor($this->getAxisAlignedBB()->minY); $y <= floor($this->getAxisAlignedBB()->maxY); $y++) {
-                for ($z = floor($this->getAxisAlignedBB()->minZ); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++) {
-                    $block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
-                        if ($block->getId() !== Block::AIR) continue;
-                    }
+        for ($x = intval(floor($this->getAxisAlignedBB()->minX)); $x <= floor($this->getAxisAlignedBB()->maxX); $x++) {
+            for ($y = intval(floor($this->getAxisAlignedBB()->minY)); $y <= floor($this->getAxisAlignedBB()->maxY); $y++) {
+                for ($z = intval(floor($this->getAxisAlignedBB()->minZ)); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++) {
+                    $block = $this->getLevel()->getBlockAt($x, $y, $z);
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
                     if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
                     if (empty($filterblocks)) $blocks[] = $block;
