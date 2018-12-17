@@ -37,7 +37,7 @@ class PasteCommand extends WECommand {
 			if (is_null($clipboard)) {
 				throw new \Exception("No clipboard found - create a clipboard first");
 			}
-			$return = API::paste($clipboard, $session, $sender->asPosition(), ...$args);
+			$return = API::pasteAsync($clipboard, $session, $sender->asPosition(), ...$args);
 		} catch (\Exception $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());

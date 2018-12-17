@@ -35,7 +35,7 @@ class RedoCommand extends WECommand {
 			if (is_null($session)) {
 				throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 			}
-			API::redo($session);
+			$return = API::redoAsync($session);
 		} catch (\Exception $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());

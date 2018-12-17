@@ -21,6 +21,8 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\event\MWEEditEvent;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
+use xenialdan\MagicWE2\task\AsyncClipboardTask;
+use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 
@@ -125,6 +127,7 @@ class API {
 	}
 
 	/**
+	 * @deprecated
 	 * @param Selection $selection
 	 * @param Session|null $session
 	 * @param Block[] $newblocks
@@ -213,6 +216,7 @@ class API {
 	}
 
 	/**
+	 * @deprecated
 	 * @param Selection $selection
 	 * @param Session|null $session
 	 * @param Block[] $blocks1
@@ -254,12 +258,13 @@ class API {
 	}
 
 	/**
+	 * @deprecated
 	 * @param Selection $selection
 	 * @param Session $session
 	 * @param array ...$flagarray
 	 * @return bool
 	 */
-	public static function copy(Selection $selection, Session $session, ...$flagarray) {
+	public static function copy(Selection $selection, ?Session $session, ...$flagarray) {
 		$flags = self::flagParser($flagarray);
 		try {
 			$clipboard = new Clipboard();
@@ -278,6 +283,7 @@ class API {
 	}
 
 	/**
+	 * @deprecated
 	 * @param Clipboard $clipboard
 	 * @param null|Session $session
 	 * @param Position $target
@@ -316,6 +322,43 @@ class API {
 			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
 		} else {
 			Server::getInstance()->getLogger()->info(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
+		}
+		return true;
+	}
+
+	/**
+	 * @param Selection $selection
+	 * @param null|Session $session
+	 * @param array ...$flagarray
+	 * @return bool
+	 */
+	public static function copyAsync(Selection $selection, ?Session $session, ...$flagarray) {
+		$flags = self::flagParser($flagarray);
+		try {
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $flags));
+		} catch (\Exception $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * TODO: flag parsing, Position to paste at
+	 * @param Clipboard $clipboard
+	 * @param null|Session $session
+	 * @param Position $target
+	 * @param array ...$flagarray
+	 * @return bool
+	 */
+	public static function pasteAsync(Clipboard $clipboard, ?Session $session, Position $target, ...$flagarray) {
+		try {
+			$clipboard->setPos1($target);
+			$clipboard->setPos2($target);
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_SET));
+		} catch (\Exception $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
 		}
 		return true;
 	}
@@ -438,7 +481,7 @@ class API {
 						$session->getPlayer()->sendMessage(TextFormat::RED . "You have no clipboard - create one first");
 						return false;
 					}
-					return self::paste($clipboard, $session, $target);//TODO flags & proper brush tool
+					return self::pasteAsync($clipboard, $session, $target);//TODO flags & proper brush tool
 					break;
 				}
 			case null:
@@ -526,6 +569,43 @@ class API {
 		self::$schematics = $schematics;
 	}
 
+	public static function undoAsync(Session $session) {
+		try {
+			$session->getPlayer()->sendMessage("You had " . count($session->getUndos()) . " undo actions left");//TODO remove
+			$clipboard = $session->getLatestUndo();
+			if (is_null($clipboard)) {
+				$session->getPlayer()->sendMessage("Nothing to undo");//TODO prettify
+				return true;
+			}
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_UNDO));
+		} catch (\Exception $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
+	}
+
+	public static function redoAsync(Session $session) {
+		try {
+			$session->getPlayer()->sendMessage("You had " . count($session->getRedos()) . " redo actions left");//TODO remove
+			$clipboard = $session->getLatestRedo();
+			if (is_null($clipboard)) {
+				$session->getPlayer()->sendMessage("Nothing to redo");//TODO prettify
+				return true;
+			}
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_REDO));
+		} catch (\Exception $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * @deprecated
+	 * @param Session $session
+	 * @return bool
+	 */
 	public static function undo(Session $session) {
 		$changed = 0;
 		$time = microtime(true);
@@ -545,6 +625,11 @@ class API {
 		return true;
 	}
 
+	/**
+	 * @deprecated
+	 * @param Session $session
+	 * @return bool
+	 */
 	public static function redo(Session $session) {
 		$changed = 0;
 		$time = microtime(true);

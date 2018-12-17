@@ -18,33 +18,34 @@ use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
 
-class AsyncFillTask extends AsyncTask {
+class AsyncClipboardTask extends AsyncTask {
+
+	const TYPE_UNDO = 0;
+	const TYPE_REDO = 1;
+	const TYPE_SET = 2;
 
 	private $start;
 	private $chunks;
 	private $playerUUID;
-	private $selection;
-	private $flags;
-	private $newBlocks;
+	private $clipboard;
+	private $type;
 	private $undoClipboard;
 
 	/**
 	 * AsyncFillTask constructor.
-	 * @param Selection $selection
+	 * @param Clipboard $clipboard
 	 * @param UUID $playerUUID
 	 * @param Chunk[] $chunks
-	 * @param Block[] $newBlocks
-	 * @param int $flags
+	 * @param int $type The type of clipboard pasting.
 	 * @throws \Exception
 	 */
-	public function __construct(Selection $selection, UUID $playerUUID, array $chunks, array $newBlocks, int $flags) {
+	public function __construct(Clipboard $clipboard, UUID $playerUUID, array $chunks, $type = self::TYPE_SET) {
 		$this->start = microtime(true);
 		$this->chunks = serialize($chunks);
 		$this->playerUUID = serialize($playerUUID);
-		$this->selection = serialize($selection);
-		$this->newBlocks = serialize($newBlocks);
-		$this->flags = $flags;
-		$this->undoClipboard = serialize(new Clipboard($selection->getLevel(), [], $selection->pos1->x, $selection->pos1->y, $selection->pos1->z, $selection->pos2->x, $selection->pos2->y, $selection->pos2->z));
+		$this->clipboard = serialize($clipboard);
+		$this->type = $type;
+		$this->undoClipboard = serialize(new Clipboard($clipboard->getLevel(), [], $clipboard->pos1->x, $clipboard->pos1->y, $clipboard->pos1->z, $clipboard->pos2->x, $clipboard->pos2->y, $clipboard->pos2->z));
 	}
 
 	/**
@@ -59,37 +60,34 @@ class AsyncFillTask extends AsyncTask {
 		foreach ($chunks as $hash => $data) {
 			$chunks[$hash] = Chunk::fastDeserialize($data);
 		}
-		/** @var Selection $selection */
-		$selection = unserialize($this->selection);
+		/** @var Clipboard $clipboard */
+		$clipboard = unserialize($this->clipboard);
 		$manager = Selection::getChunkManager($chunks);
 		unset($chunks);
-		/** @var Block[] $newBlocks */
-		$newBlocks = unserialize($this->newBlocks);
-		$totalCount = $selection->getTotalCount();
+		$totalCount = $clipboard->getTotalCount();
 		/** @var Clipboard $undoClipboard */
 		$undoClipboard = unserialize($this->undoClipboard);
-		$changed = $this->editBlocks($selection, $manager, $newBlocks, $undoClipboard);
+		$changed = $this->editBlocks($clipboard, $manager, $undoClipboard);
 		$chunks = $manager->getChunks();
 		$this->setResult(compact("chunks", "changed", "totalCount", "undoClipboard"));
 	}
 
 	/**
-	 * @param Selection $selection
+	 * @param Clipboard $clipboard
 	 * @param AsyncChunkManager $manager
-	 * @param Block[] $newBlocks
 	 * @param Clipboard &$undoClipboard
 	 * @return int
 	 * @throws \Exception
 	 */
-	private function editBlocks(Selection $selection, AsyncChunkManager $manager, array $newBlocks, Clipboard &$undoClipboard): int {
-		$blockCount = $selection->getTotalCount();
+	private function editBlocks(Clipboard $clipboard, AsyncChunkManager $manager, Clipboard &$undoClipboard): int {
+		$blockCount = $clipboard->getTotalCount();
 		$i = 0;
 		$changed = 0;
 		$this->publishProgress([0, "Running, changed $changed blocks out of $blockCount 0%% done"]);
 		$lastchunkx = -1;
 		$lastchunkz = -1;
 		/** @var Block $block */
-		foreach ($selection->getBlocks($manager, [], $this->flags) as $block) {
+		foreach ($clipboard->getBlocks($manager) as $block) {
 			if ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
 				$lastchunkx = $block->x >> 4;
 				$lastchunkz = $block->z >> 4;
@@ -98,14 +96,8 @@ class AsyncFillTask extends AsyncTask {
 					continue;
 				}
 			}
-			/** @var Block $new */
-			if (count($newBlocks) === 1)
-				$new = clone $newBlocks[0];
-			else
-				$new = clone $newBlocks[array_rand($newBlocks, 1)];
-			if ($new->getId() === $block->getId() && $new->getDamage() === $block->getDamage()) continue;//skip same blocks
-			$manager->setBlockAt($block->x, $block->y, $block->z, $new);
-			if ($manager->getBlockArrayAt($block->x, $block->y, $block->z) !== [$block->getId(), $block->getDamage()]) {
+			$manager->setBlockAt($block->x, $block->y, $block->z, $block);
+			if ($manager->getBlockArrayAt($block->x, $block->y, $block->z) === [$block->getId(), $block->getDamage()]) {
 				$undoClipboard->pushBlock($block);
 				$changed++;
 			}
@@ -140,23 +132,45 @@ class AsyncFillTask extends AsyncTask {
 			$player->dataPacket($bpk);
 			$changed = $result["changed"];//todo use extract()
 			$totalCount = $result["totalCount"];
-			$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Fill succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
-			if ($result["undoClipboard"] instanceof Clipboard)
-				$session->addUndo($result["undoClipboard"]);
-			else $player->sendMessage(TextFormat::RED . "undoClipboard is not a clipboard");//TODO prettify
+			switch ($this->type) {
+				case self::TYPE_SET:
+					{
+						$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Clipboard pasting succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+						if ($result["undoClipboard"] instanceof Clipboard)
+							$session->addUndo($result["undoClipboard"]);
+						else $player->sendMessage(TextFormat::RED . "undoClipboard is not a clipboard");//TODO prettify or fail safe
+						break;
+					}
+				case self::TYPE_UNDO:
+					{
+						$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Undo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+						if ($result["undoClipboard"] instanceof Clipboard)
+							$session->addRedo($result["undoClipboard"]);
+						else $player->sendMessage(TextFormat::RED . "undoClipboard is not a clipboard");//TODO prettify or fail safe
+						break;
+					}
+				case self::TYPE_REDO:
+					{
+						$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Redo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+						if ($result["undoClipboard"] instanceof Clipboard)
+							$session->addUndo($result["undoClipboard"]);
+						else $player->sendMessage(TextFormat::RED . "undoClipboard is not a clipboard");//TODO prettify or fail safe
+						break;
+					}
+			}
 		}
 		/** @var Chunk[] $chunks */
 		$chunks = $result["chunks"];
 		print "onCompletion chunks count: " . count($chunks);
 		var_dump(count($chunks));
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection);
-		if ($selection instanceof Selection) {
+		$clipboard = unserialize($this->clipboard);
+		if ($clipboard instanceof Clipboard) {
 			/** @var Level $level */
-			$level = $selection->getLevel();
+			$level = $clipboard->getLevel();
 			foreach ($chunks as $hash => $chunk) {
 				$level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
 			}
-		} else throw new \Error("Not a selection");
+		} else throw new \Error("Not a clipboard");
 	}
 }

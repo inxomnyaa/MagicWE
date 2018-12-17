@@ -63,14 +63,15 @@ class Selection implements \Serializable {
 	}
 
 	private function recalculateAABB() {
-		$this->aabb = new AxisAlignedBB(
-			min($this->pos1->x, $this->pos2->x),
-			min($this->pos1->y, $this->pos2->y),
-			min($this->pos1->z, $this->pos2->z),
-			max($this->pos1->x, $this->pos2->x),
-			max($this->pos1->y, $this->pos2->y),
-			max($this->pos1->z, $this->pos2->z)
-		);
+		if ($this->isValid())
+			$this->aabb = new AxisAlignedBB(
+				min($this->pos1->x, $this->pos2->x),
+				min($this->pos1->y, $this->pos2->y),
+				min($this->pos1->z, $this->pos2->z),
+				max($this->pos1->x, $this->pos2->x),
+				max($this->pos1->y, $this->pos2->y),
+				max($this->pos1->z, $this->pos2->z)
+			);
 	}
 
 	/**
@@ -193,28 +194,28 @@ class Selection implements \Serializable {
 	}
 
 	/**
-	 * @return float|int
+	 * @return int
 	 */
 	public function getSizeX() {
 		return abs($this->pos1->x - $this->pos2->x) + 1;
 	}
 
 	/**
-	 * @return float|int
+	 * @return int
 	 */
 	public function getSizeY() {
 		return abs($this->pos1->y - $this->pos2->y) + 1;
 	}
 
 	/**
-	 * @return float|int
+	 * @return int
 	 */
 	public function getSizeZ() {
 		return abs($this->pos1->z - $this->pos2->z) + 1;
 	}
 
 	/**
-	 * @return float|int
+	 * @return int
 	 */
 	public function getTotalCount() {
 		return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom selection shapes
@@ -299,7 +300,7 @@ class Selection implements \Serializable {
 	/**
 	 * @param UUID $uuid
 	 */
-	private function setUUID(UUID $uuid) {
+	public function setUUID(UUID $uuid) {
 		$this->uuid = $uuid;
 	}
 

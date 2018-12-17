@@ -14,6 +14,7 @@ use pocketmine\utils\UUID;
 use xenialdan\BossBarAPI\API as BossBarAPI;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\AsyncChunkManager;
+use xenialdan\MagicWE2\Clipboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
 
@@ -26,15 +27,17 @@ class AsyncReplaceTask extends AsyncTask {
 	private $flags;
 	private $oldBlocks;
 	private $newBlocks;
+	private $undoClipboard;
 
 	/**
-	 * AsyncFillTask constructor.
+	 * AsyncReplaceTask constructor.
 	 * @param Selection $selection
 	 * @param UUID $playerUUID
 	 * @param Chunk[] $chunks
 	 * @param Block[] $oldBlocks
 	 * @param Block[] $newBlocks
 	 * @param int $flags
+	 * @throws \Exception
 	 */
 	public function __construct(Selection $selection, UUID $playerUUID, array $chunks, array $oldBlocks, array $newBlocks, int $flags) {
 		$this->start = microtime(true);
@@ -44,6 +47,7 @@ class AsyncReplaceTask extends AsyncTask {
 		$this->oldBlocks = serialize($oldBlocks);
 		$this->newBlocks = serialize($newBlocks);
 		$this->flags = $flags;
+		$this->undoClipboard = serialize(new Clipboard($selection->getLevel(), [], $selection->pos1->x, $selection->pos1->y, $selection->pos1->z, $selection->pos2->x, $selection->pos2->y, $selection->pos2->z));
 	}
 
 	/**
@@ -67,9 +71,11 @@ class AsyncReplaceTask extends AsyncTask {
 		/** @var Block[] $newBlocks */
 		$newBlocks = unserialize($this->newBlocks);
 		$totalCount = $selection->getTotalCount();
-		$changed = $this->editBlocks($selection, $manager, $oldBlocks, $newBlocks);
+		/** @var Clipboard $undoClipboard */
+		$undoClipboard = unserialize($this->undoClipboard);
+		$changed = $this->editBlocks($selection, $manager, $oldBlocks, $newBlocks, $undoClipboard);
 		$chunks = $manager->getChunks();
-		$this->setResult(compact("chunks", "changed", "totalCount"));
+		$this->setResult(compact("chunks", "changed", "totalCount", "undoClipboard"));
 	}
 
 	/**
@@ -77,10 +83,11 @@ class AsyncReplaceTask extends AsyncTask {
 	 * @param AsyncChunkManager $manager
 	 * @param array $oldBlocks
 	 * @param Block[] $newBlocks
+	 * @param Clipboard &$undoClipboard
 	 * @return int
 	 * @throws \Exception
 	 */
-	private function editBlocks(Selection $selection, AsyncChunkManager $manager, array $oldBlocks, array $newBlocks): int {
+	private function editBlocks(Selection $selection, AsyncChunkManager $manager, array $oldBlocks, array $newBlocks, Clipboard &$undoClipboard): int {
 		$blockCount = $selection->getTotalCount();
 		$i = 0;
 		$changed = 0;
@@ -104,11 +111,13 @@ class AsyncReplaceTask extends AsyncTask {
 				$new = clone $newBlocks[array_rand($newBlocks, 1)];
 			if ($new->getId() === $block->getId() && $new->getDamage() === $block->getDamage()) continue;//skip same blocks
 			$manager->setBlockAt($block->x, $block->y, $block->z, $new);
-			if ($manager->getBlockArrayAt($block->x, $block->y, $block->z) !== [$block->getId(), $block->getDamage()])
+			if ($manager->getBlockArrayAt($block->x, $block->y, $block->z) !== [$block->getId(), $block->getDamage()]) {
+				$undoClipboard->pushBlock($block);
 				$changed++;
+			}
 			///
 			$i++;
-			if (round(($i - 1) / $blockCount) < round($i / $blockCount)) {//this prevents spamming packets
+			if (floor(($i - 1) / $blockCount) < floor($i / $blockCount)) {//this prevents spamming packets
 				$this->publishProgress([round($i / $blockCount), "Running, changed $changed blocks out of $blockCount" . round($i / $blockCount) . "%% done"]);
 			}
 		}
@@ -137,7 +146,10 @@ class AsyncReplaceTask extends AsyncTask {
 			$player->dataPacket($bpk);
 			$changed = $result["changed"];//todo use extract()
 			$totalCount = $result["totalCount"];
-			$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start)) . ", $changed blocks out of $totalCount changed.");
+			$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+			if ($result["undoClipboard"] instanceof Clipboard)
+				$session->addUndo($result["undoClipboard"]);
+			else $player->sendMessage(TextFormat::RED . "undoClipboard is not a clipboard");//TODO prettify
 		}
 		/** @var Chunk[] $chunks */
 		$chunks = $result["chunks"];
