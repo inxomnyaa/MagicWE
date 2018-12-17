@@ -22,6 +22,7 @@ use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\event\MWEEditEvent;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncFillTask;
+use xenialdan\MagicWE2\task\AsyncReplaceTask;
 
 class API {
 	/**
@@ -135,7 +136,7 @@ class API {
 		$changed = 0;
 		$time = microtime(TRUE);
 		try {
-			$preBlocks = $selection->getBlocks($flags);
+			$preBlocks = $selection->getBlocksOld($flags);
 			$postBlocks = [];
 			/** @var Block $block */
 			foreach ($preBlocks as $block) {
@@ -179,11 +180,36 @@ class API {
 	 * @param Session $session
 	 * @param Block[] $newblocks
 	 * @param array ...$flagarray
-	 * @throws \Exception
+	 * @return bool
 	 */
 	public static function fillAsync(Selection $selection, Session $session, $newblocks = [], ...$flagarray) {
 		$flags = self::flagParser($flagarray);
-		Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
+		try {
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
+		} catch (\Exception $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * @param Selection $selection
+	 * @param Session|null $session
+	 * @param Block[] $oldBlocks
+	 * @param Block[] $newBlocks
+	 * @param array ...$flagarray
+	 * @return bool
+	 */
+	public static function replaceAsync(Selection $selection, ?Session $session, $oldBlocks = [], $newBlocks = [], ...$flagarray) {
+		$flags = self::flagParser($flagarray);
+		try {
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
+		} catch (\Exception $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -258,7 +284,7 @@ class API {
 	 * @param array ...$flagarray
 	 * @return bool
 	 */
-	public static function paste(Clipboard $clipboard, ?Session $session, Position $target, ...$flagarray) {//TODO: maybe clone clipboard
+	public static function paste(Clipboard $clipboard, ?Session $session, Position $target, ...$flagarray) {
 		$flags = self::flagParser($flagarray);
 		$changed = 0;
 		$time = microtime(TRUE);
@@ -369,10 +395,10 @@ class API {
 	 * @param Block $target
 	 * @param NamedTag $settings
 	 * @param Session $session
-	 * @param array[] $flagarray
 	 * @return bool
+	 * @throws \Exception
 	 */
-	public static function createBrush(Block $target, NamedTag $settings, Session $session, array ...$flagarray) {//TODO messages
+	public static function createBrush(Block $target, NamedTag $settings, Session $session) {//TODO messages
 		$shape = null;
 		$lang = Loader::getInstance()->getLanguage();
 		if (!$settings instanceof CompoundTag) return false;
@@ -388,21 +414,21 @@ class API {
 				{
 					$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_CUBOID, self::compoundToArray($settings));
 					$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-					return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+					return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$shape->options["flags"]);
 					break;
 				}
 			case $lang->translateString('ui.brush.select.type.cylinder'):
 				{
 					$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_CYLINDER, self::compoundToArray($settings));
 					$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-					return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+					return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$shape->options["flags"]);
 					break;
 				}
 			case $lang->translateString('ui.brush.select.type.sphere'):
 				{
 					$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
 					$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-					return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+					return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$shape->options["flags"]);
 					break;
 				}
 			case $lang->translateString('ui.brush.select.type.clipboard'):
@@ -412,7 +438,7 @@ class API {
 						$session->getPlayer()->sendMessage(TextFormat::RED . "You have no clipboard - create one first");
 						return false;
 					}
-					return self::paste($clipboard, $session, $target, ...$flagarray);
+					return self::paste($clipboard, $session, $target);//TODO flags & proper brush tool
 					break;
 				}
 			case null:
@@ -430,6 +456,7 @@ class API {
 	 * @param Session $session
 	 * @param array[] $flagarray
 	 * @return bool
+	 * @throws \Exception
 	 */
 	public static function floodArea(Block $target, NamedTag $settings, Session $session, array ...$flagarray) { //TODO
 		if (!$settings instanceof CompoundTag) return null;
@@ -437,7 +464,7 @@ class API {
 		$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
 		$messages = [];
 		$error = false;
-		return self::fill($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
+		return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
 	}
 
 	public static function compoundToArray(CompoundTag $compoundTag) {

@@ -21,15 +21,15 @@ use pocketmine\utils\UUID;
  */
 class Selection implements \Serializable {
 	/** @var int */
-	private $levelid;
+	public $levelid;
 	/** @var Vector3 */
-	private $pos1;
+	public $pos1;
 	/** @var Vector3 */
-	private $pos2;
+	public $pos2;
 	/** @var UUID */
-	private $uuid;
+	public $uuid;
 	/** @var AxisAlignedBB */
-	private $aabb;
+	public $aabb;
 
 	/**
 	 * Selection constructor.
@@ -222,19 +222,14 @@ class Selection implements \Serializable {
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param ChunkManager $manager The level or AsyncChunkManager
+	 * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
 	 * @return \Generator|Block
 	 * @throws \Exception
 	 */
 	public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator {
-		if ($manager instanceof Level) {
-			$async = false;//TODO cleanup
-		} elseif ($manager instanceof AsyncChunkManager) {
-			$async = true;//TODO cleanup
-		} else
-			throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+		$this->validateChunkManager($manager);
 		for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
 			for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
 				for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
@@ -263,34 +258,16 @@ class Selection implements \Serializable {
 	}
 
 	/**
-	 * Returns the blocks by their relative position to the minX;minY;minZ position
-	 * @param int $flags
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
-	 * @return Block[]
+	 * @param ChunkManager $manager
 	 * @throws \Exception
 	 */
-	public function getBlocksRelativeOld(int $flags, Block ...$filterblocks) {
-		$blocks = [];
-		for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++) {
-			for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++) {
-				for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++) {
-					$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
-					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
-						if ($block->getId() !== Block::AIR) continue;
-					}
-					$block->position(new Position((int)$rx, (int)$ry, (int)$rz, $this->getLevel()));
-					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
-					if (empty($filterblocks)) $blocks[] = $block;
-					else {
-						foreach ($filterblocks as $filterblock) {
-							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
-								$blocks[] = $block;
-						}
-					}
-				}
-			}
-		}
-		return $blocks;
+	public function validateChunkManager(ChunkManager $manager): void {
+		if ($manager instanceof Level) {
+			$async = false;//TODO cleanup
+		} elseif ($manager instanceof AsyncChunkManager) {
+			$async = true;//TODO cleanup
+		} else
+			throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
 	}
 
 	/**

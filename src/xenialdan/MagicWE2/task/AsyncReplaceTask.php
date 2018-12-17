@@ -17,13 +17,14 @@ use xenialdan\MagicWE2\AsyncChunkManager;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
 
-class AsyncFillTask extends AsyncTask {
+class AsyncReplaceTask extends AsyncTask {
 
 	private $start;
 	private $chunks;
 	private $playerUUID;
 	private $selection;
 	private $flags;
+	private $oldBlocks;
 	private $newBlocks;
 
 	/**
@@ -31,14 +32,16 @@ class AsyncFillTask extends AsyncTask {
 	 * @param Selection $selection
 	 * @param UUID $playerUUID
 	 * @param Chunk[] $chunks
+	 * @param Block[] $oldBlocks
 	 * @param Block[] $newBlocks
 	 * @param int $flags
 	 */
-	public function __construct(Selection $selection, UUID $playerUUID, array $chunks, array $newBlocks, int $flags) {
+	public function __construct(Selection $selection, UUID $playerUUID, array $chunks, array $oldBlocks, array $newBlocks, int $flags) {
 		$this->start = microtime(true);
 		$this->chunks = serialize($chunks);
 		$this->playerUUID = serialize($playerUUID);
 		$this->selection = serialize($selection);
+		$this->oldBlocks = serialize($oldBlocks);
 		$this->newBlocks = serialize($newBlocks);
 		$this->flags = $flags;
 	}
@@ -59,10 +62,12 @@ class AsyncFillTask extends AsyncTask {
 		$selection = unserialize($this->selection);
 		$manager = Selection::getChunkManager($chunks);
 		unset($chunks);
+		/** @var Block[] $oldBlocks */
+		$oldBlocks = unserialize($this->oldBlocks);
 		/** @var Block[] $newBlocks */
 		$newBlocks = unserialize($this->newBlocks);
 		$totalCount = $selection->getTotalCount();
-		$changed = $this->editBlocks($selection, $manager, $newBlocks);
+		$changed = $this->editBlocks($selection, $manager, $oldBlocks, $newBlocks);
 		$chunks = $manager->getChunks();
 		$this->setResult(compact("chunks", "changed", "totalCount"));
 	}
@@ -70,11 +75,12 @@ class AsyncFillTask extends AsyncTask {
 	/**
 	 * @param Selection $selection
 	 * @param AsyncChunkManager $manager
+	 * @param array $oldBlocks
 	 * @param Block[] $newBlocks
 	 * @return int
 	 * @throws \Exception
 	 */
-	private function editBlocks(Selection $selection, AsyncChunkManager $manager, array $newBlocks): int {
+	private function editBlocks(Selection $selection, AsyncChunkManager $manager, array $oldBlocks, array $newBlocks): int {
 		$blockCount = $selection->getTotalCount();
 		$i = 0;
 		$changed = 0;
@@ -82,7 +88,7 @@ class AsyncFillTask extends AsyncTask {
 		$lastchunkx = -1;
 		$lastchunkz = -1;
 		/** @var Block $block */
-		foreach ($selection->getBlocks($manager, [], $this->flags) as $block) {
+		foreach ($selection->getBlocks($manager, $oldBlocks, $this->flags) as $block) {
 			if ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
 				$lastchunkx = $block->x >> 4;
 				$lastchunkz = $block->z >> 4;
@@ -131,7 +137,7 @@ class AsyncFillTask extends AsyncTask {
 			$player->dataPacket($bpk);
 			$changed = $result["changed"];//todo use extract()
 			$totalCount = $result["totalCount"];
-			$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Fill succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start)) . ", $changed blocks out of $totalCount changed.");
+			$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start)) . ", $changed blocks out of $totalCount changed.");
 		}
 		/** @var Chunk[] $chunks */
 		$chunks = $result["chunks"];

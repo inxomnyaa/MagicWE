@@ -3,15 +3,17 @@
 namespace xenialdan\MagicWE2\shape;
 
 use pocketmine\block\Block;
+use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\AsyncChunkManager;
 
 class Sphere extends Shape {
 
 	/**
-	 * Square constructor.
+	 * Sphere constructor.
 	 * @param Level $level
 	 * @param array $options
 	 */
@@ -20,24 +22,43 @@ class Sphere extends Shape {
 	}
 
 	/**
-	 * @deprecated TODO rewrite
+	 * Returns the blocks by their actual position
+	 * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @param Block[] $filterblocks
-	 * @return array
+	 * @return \Generator|Block
 	 * @throws \Exception
 	 */
-	public function getBlocksOld(int $flags, Block ...$filterblocks) {
-		$blocks = [];
-		for ($x = $this->getMinVec3()->getX(); $x <= $this->getMaxVec3()->getX(); $x++) {
-			for ($z = $this->getMinVec3()->getZ(); $z <= $this->getMaxVec3()->getZ(); $z++) {
-				for ($y = $this->getMinVec3()->getY(); $y <= $this->getMaxVec3()->getY(); $y++) {
-					$vector3 = new Position((int)floor($x), (int)floor($y), (int)floor($z));
-					if ($vector3->distanceSquared($this->getCenter()) <= (($this->options['diameter'] / 2) ** 2) && (!API::hasFlag($this->flags, API::FLAG_HOLLOW) || $vector3->distanceSquared($this->getCenter()) >= ((($this->options['diameter'] / 2) - 1) ** 2)))
-						$blocks[] = $this->getLevel()->getBlock($vector3);
+	public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator {
+		$this->validateChunkManager($manager);
+		var_dump($this->options);
+		for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
+			for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
+				for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
+					if (API::hasFlag($flags, API::FLAG_UNCENTERED))//TODO check if correct
+						$vec3 = new Vector3($rx, $ry, $rz);
+					else
+						$vec3 = new Vector3($x, $y, $z);
+					if ($vec3->distanceSquared($this->getCenter()) <= (($this->options['diameter'] / 2) ** 2) && (!API::hasFlag($this->flags, API::FLAG_HOLLOW) || $vec3->distanceSquared($this->getCenter()) >= ((($this->options['diameter'] / 2) - 1) ** 2)))
+						$block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
+					else continue;
+					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
+
+					/*$block = */
+					$block->setComponents($vec3->x, $vec3->y, $vec3->z);
+
+					if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
+					if (empty($filterblocks)) yield $block;
+					else {
+						foreach ($filterblocks as $filterblock) {
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getDamage() === $filterblock->getDamage() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+								yield $block;
+						}
+					}
 				}
 			}
 		}
-		return $blocks;
 	}
 
 	public function setCenter(Vector3 $center) {//TODO change diameter to width after command rewrite
