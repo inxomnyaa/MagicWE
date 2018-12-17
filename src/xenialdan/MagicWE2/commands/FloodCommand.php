@@ -22,14 +22,6 @@ use xenialdan\customui\elements\Slider;
 use xenialdan\customui\windows\CustomForm;
 use xenialdan\MagicWE2\Loader;
 
-/*use pocketmine\form\CustomForm;
-use pocketmine\form\element\CustomFormElement;
-use pocketmine\form\element\Dropdown;
-use pocketmine\form\element\Input;
-use pocketmine\form\element\Label;
-use pocketmine\form\element\Slider;
-use pocketmine\form\element\Toggle;*/
-
 class FloodCommand extends WECommand {
 	public function __construct(Plugin $plugin) {
 		parent::__construct("/flood", $plugin);
