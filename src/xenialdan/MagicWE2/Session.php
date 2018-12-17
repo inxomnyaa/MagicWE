@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
+use xenialdan\BossBarAPI\API as BossBarAPI;
 
-class Session{
+class Session {
 
 	/** @var UUID */
 	private $uuid;
@@ -28,15 +30,25 @@ class Session{
 	private $wandEnabled = true;
 	/** @var bool */
 	private $debugStickEnabled = true;
+	/** @var int */
+	private $bossBarId;
 
-	public function __construct(Player $player){
+	public function __construct(Player $player) {
 		$this->setPlayer($player);
 		$this->setUUID($player->getUniqueId());
+		$this->bossBarId = BossBarAPI::addBossBar([$this->getPlayer()], "");
+
+		$bpk = new BossEventPacket(); // This updates the bar
+		$bpk->bossEid = $this->bossBarId;
+		$bpk->eventType = BossEventPacket::TYPE_HIDE;
+		$player->dataPacket($bpk);
+
 	}
 
-	public function __destruct(){
+	public function __destruct() {
 		if (!is_null($this->uuid)) Loader::getInstance()->getLogger()->debug("Destructing session " . $this->getUUID()->__toString());
-		foreach ($this as &$value){
+		BossBarAPI::removeBossBar([$this->getPlayer()], $this->bossBarId);
+		foreach ($this as &$value) {
 			$value = null;
 			unset($value);
 		}
@@ -45,28 +57,28 @@ class Session{
 	/**
 	 * @param null|Player $player
 	 */
-	public function setPlayer($player){
+	public function setPlayer($player) {
 		$this->player = $player;
 	}
 
 	/**
 	 * @return null|Player
 	 */
-	public function getPlayer(){
+	public function getPlayer() {
 		return $this->player;
 	}
 
 	/**
 	 * @return UUID
 	 */
-	public function getUUID(): UUID{
+	public function getUUID(): UUID {
 		return $this->uuid;
 	}
 
 	/**
 	 * @param UUID $uuid
 	 */
-	public function setUUID(UUID $uuid){
+	public function setUUID(UUID $uuid) {
 		$this->uuid = $uuid;
 	}
 
@@ -74,7 +86,7 @@ class Session{
 	 * @param Selection $selection
 	 * @return null|Selection
 	 */
-	public function &addSelection(Selection $selection){
+	public function &addSelection(Selection $selection) {
 		$this->selections[$selection->getUUID()->toString()] = $selection;
 		$this->setLatestSelectionUUID($selection->getUUID());
 		$selection = $this->getLatestSelection();
@@ -85,7 +97,7 @@ class Session{
 	 * @param UUID $uuid
 	 * @return null|Selection
 	 */
-	public function &getSelectionByUUID(UUID $uuid){
+	public function &getSelectionByUUID(UUID $uuid) {
 		$selection = $this->selections[$uuid->toString()] ?? null;
 		return $selection;
 	}
@@ -94,7 +106,7 @@ class Session{
 	 * @param string $uuid
 	 * @return null|Selection
 	 */
-	public function &getSelectionByString(string $uuid){
+	public function &getSelectionByString(string $uuid) {
 		$selection = $this->selections[$uuid] ?? null;
 		return $selection;
 	}
@@ -102,9 +114,9 @@ class Session{
 	/**
 	 * @return null|Selection
 	 */
-	public function &getLatestSelection(){
+	public function &getLatestSelection() {
 		$latestSelectionUUID = $this->getLatestSelectionUUID();
-		if (is_null($latestSelectionUUID)){
+		if (is_null($latestSelectionUUID)) {
 			$selection = null;
 			return $selection;
 		}
@@ -115,28 +127,28 @@ class Session{
 	/**
 	 * @return Selection[]
 	 */
-	public function getSelections(){
+	public function getSelections() {
 		return $this->selections;
 	}
 
 	/**
 	 * @param mixed $selections
 	 */
-	public function setSelections($selections){
+	public function setSelections($selections) {
 		$this->selections = $selections;
 	}
 
 	/**
 	 * @return UUID|null
 	 */
-	public function getLatestSelectionUUID(): ?UUID{
+	public function getLatestSelectionUUID(): ?UUID {
 		return $this->latestselection;
 	}
 
 	/**
 	 * @param UUID $latestselection
 	 */
-	public function setLatestSelectionUUID(UUID $latestselection){
+	public function setLatestSelectionUUID(UUID $latestselection) {
 		$this->latestselection = $latestselection;
 	}
 
@@ -144,24 +156,24 @@ class Session{
 	 * TODO
 	 * @return Clipboard[]
 	 */
-	public function getClipboards(): array{
+	public function getClipboards(): array {
 		return $this->clipboards;
 	}
 
 	/**
 	 * TODO
 	 * @param Clipboard[] $clipboards
-     * @return bool
+	 * @return bool
 	 */
-	public function setClipboards(array $clipboards){
+	public function setClipboards(array $clipboards) {
 		$this->clipboards = $clipboards;
-        return true;
+		return true;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isWandEnabled(): bool{
+	public function isWandEnabled(): bool {
 		return $this->wandEnabled;
 	}
 
@@ -169,7 +181,7 @@ class Session{
 	 * @param bool $wandEnabled
 	 * @return string
 	 */
-	public function setWandEnabled(bool $wandEnabled){
+	public function setWandEnabled(bool $wandEnabled) {
 		$this->wandEnabled = $wandEnabled;
 		return Loader::$prefix . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
 	}
@@ -177,7 +189,7 @@ class Session{
 	/**
 	 * @return bool
 	 */
-	public function isDebugStickEnabled(): bool{
+	public function isDebugStickEnabled(): bool {
 		return $this->debugStickEnabled;
 	}
 
@@ -185,7 +197,7 @@ class Session{
 	 * @param bool $debugStick
 	 * @return string
 	 */
-	public function setDebugStickEnabled(bool $debugStick){
+	public function setDebugStickEnabled(bool $debugStick) {
 		$this->debugStickEnabled = $debugStick;
 		return Loader::$prefix . "The debug stick is now " . ($debugStick ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
 	}
@@ -193,28 +205,28 @@ class Session{
 	/**
 	 * @return Clipboard[]
 	 */
-	public function getUndos(): array{
+	public function getUndos(): array {
 		return $this->undo;
 	}
 
 	/**
 	 * @param Clipboard[] $undo
 	 */
-	private function setUndos(array $undo){
+	private function setUndos(array $undo) {
 		$this->undo = $undo;
 	}
 
 	/**
 	 * @param Clipboard $clipboard
 	 */
-	public function addUndo(Clipboard $clipboard){
+	public function addUndo(Clipboard $clipboard) {
 		array_push($this->undo, $clipboard);
 	}
 
 	/**
 	 * @return null|Clipboard
 	 */
-	public function getLatestUndo(): ?Clipboard{
+	public function getLatestUndo(): ?Clipboard {
 		$clipboards = $this->getUndos();
 		$return = array_pop($clipboards);
 		$this->setUndos($clipboards);
@@ -224,32 +236,39 @@ class Session{
 	/**
 	 * @return Clipboard[]
 	 */
-	public function getRedos(): array{
+	public function getRedos(): array {
 		return $this->redo;
 	}
 
 	/**
 	 * @param Clipboard[] $redo
 	 */
-	private function setRedos(array $redo){
+	private function setRedos(array $redo) {
 		$this->redo = $redo;
 	}
 
 	/**
 	 * @param Clipboard $clipboard
 	 */
-	public function addRedo(Clipboard $clipboard){
+	public function addRedo(Clipboard $clipboard) {
 		array_push($this->redo, $clipboard);
 	}
 
 	/**
 	 * @return null|Clipboard
 	 */
-	public function getLatestRedo(): ?Clipboard{
+	public function getLatestRedo(): ?Clipboard {
 		$clipboards = $this->getRedos();
 		$return = array_pop($clipboards);
 		$this->setRedos($clipboards);
 		return $return;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getBossBarId(): int {
+		return $this->bossBarId;
 	}
 
 	/*

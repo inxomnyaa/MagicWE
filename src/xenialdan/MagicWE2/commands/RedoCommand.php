@@ -13,42 +13,42 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Session;
 
-class RedoCommand extends WECommand{
-	public function __construct(Plugin $plugin){
+class RedoCommand extends WECommand {
+	public function __construct(Plugin $plugin) {
 		parent::__construct("/redo", $plugin);
 		$this->setPermission("we.command.redo");
 		$this->setDescription("Redos the last action");
 		$this->setUsage("//redo");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, string $commandLabel, array $args) {
 		/** @var Player $sender */
 		$return = $sender->hasPermission($this->getPermission());
-		if (!$return){
+		if (!$return) {
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
 			return true;
 		}
 		$lang = Loader::getInstance()->getLanguage();
-		try{
+		try {
 			/** @var Session $session */
 			$session = API::getSession($sender);
-			if (is_null($session)){
+			if (is_null($session)) {
 				throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 			}
 			API::redo($session);
-		} catch (\Exception $error){
+		} catch (\Exception $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
-		} catch (\ArgumentCountError $error){
+		} catch (\ArgumentCountError $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
-		} catch (\Error $error){
+		} catch (\Error $error) {
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
-		} finally{
+		} finally {
 			return $return;
 		}
 	}

@@ -5,21 +5,21 @@ namespace xenialdan\MagicWE2\subcommand;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\Plugin;
 
-abstract class SubCommand{
+abstract class SubCommand {
 	/** @var Plugin */
 	private $plugin;
 
 	/**
 	 * @param Plugin $plugin
 	 */
-	public function __construct(Plugin $plugin){
+	public function __construct(Plugin $plugin) {
 		$this->plugin = $plugin;
 	}
 
 	/**
 	 * @return Plugin
 	 */
-	public final function getPlugin(){
+	public final function getPlugin() {
 		return $this->plugin;
 	}
 

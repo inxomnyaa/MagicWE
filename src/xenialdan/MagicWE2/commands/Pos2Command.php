@@ -14,8 +14,8 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\Selection;
 use xenialdan\MagicWE2\Session;
 
-class Pos2Command extends WECommand{
-	public function __construct(Plugin $plugin){
+class Pos2Command extends WECommand {
+	public function __construct(Plugin $plugin) {
 		parent::__construct("/pos2", $plugin);
 		$this->setAliases(["/2"]);
 		$this->setPermission("we.command.pos");
@@ -23,38 +23,38 @@ class Pos2Command extends WECommand{
 		$this->setUsage("//pos2");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, string $commandLabel, array $args) {
 		/** @var Player $sender */
 		$return = $sender->hasPermission($this->getPermission());
-		if (!$return){
+		if (!$return) {
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
 			return true;
 		}
 		$lang = Loader::getInstance()->getLanguage();
-		try{
+		try {
 			/** @var Session $session */
 			$session = API::getSession($sender);
-			if (is_null($session)){
+			if (is_null($session)) {
 				throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 			}
 			$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($sender->getLevel())); // TODO check if the selection inside of the session updates
-			if (is_null($selection)){
+			if (is_null($selection)) {
 				throw new \Error("No selection created - Check the console for errors");
 			}
 			$sender->sendMessage($selection->setPos2($sender->getPosition()));
-		} catch (\Exception $error){
+		} catch (\Exception $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
-		} catch (\ArgumentCountError $error){
+		} catch (\ArgumentCountError $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
-		} catch (\Error $error){
+		} catch (\Error $error) {
 			$this->getPlugin()->getLogger()->error($error->getMessage());
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
 			$return = false;
-		} finally{
+		} finally {
 			return $return;
 		}
 	}

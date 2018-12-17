@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
+use pocketmine\level\ChunkManager;
+use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
 
@@ -16,308 +19,351 @@ use pocketmine\utils\UUID;
  * Class Selection
  * @package xenialdan\MagicWE2
  */
-class Selection
-{
+class Selection implements \Serializable {
+	/** @var int */
+	private $levelid;
+	/** @var Vector3 */
+	private $pos1;
+	/** @var Vector3 */
+	private $pos2;
+	/** @var UUID */
+	private $uuid;
+	/** @var AxisAlignedBB */
+	private $aabb;
 
-    /** @var Level */
-    private $level;
-    /** @var Position */
-    private $pos1;
-    /** @var Position */
-    private $pos2;
-    /** @var UUID */
-    private $uuid;
+	/**
+	 * Selection constructor.
+	 * @param Level $level
+	 * @param ?int $minX
+	 * @param ?int $minY
+	 * @param ?int $minZ
+	 * @param ?int $maxX
+	 * @param ?int $maxY
+	 * @param ?int $maxZ
+	 */
+	public function __construct(Level $level, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null) {
+		$this->setLevel($level);
+		if (isset($minX) && isset($minY) && isset($minZ)) {
+			$this->pos1 = new Vector3($minX, $minY, $minZ);
+		}
+		if (isset($maxX) && isset($maxY) && isset($maxZ)) {
+			$this->pos2 = new Vector3($maxX, $maxY, $maxZ);
+		}
+		$this->setUUID(UUID::fromRandom());
+	}
 
-    /**
-     * Selection constructor.
-     * @param Level $level
-     * @param ?int $minX
-     * @param ?int $minY
-     * @param ?int $minZ
-     * @param ?int $maxX
-     * @param ?int $maxY
-     * @param ?int $maxZ
-     */
-    public function __construct(Level $level, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
-    {
-        $this->setLevel($level);
-        if (isset($minX) && isset($minY) && isset($minZ))
-            $this->setPos1(new Position($minX, $minY, $minZ, $level));
-        if (isset($maxX) && isset($maxY) && isset($maxZ))
-            $this->setPos2(new Position($maxX, $maxY, $maxZ, $level));
-        $this->setUUID(UUID::fromRandom());
-    }
+	/**
+	 * @return AxisAlignedBB
+	 */
+	public function getAxisAlignedBB(): AxisAlignedBB {
+		if ($this->aabb === null) {
+			$this->recalculateAABB();
+		}
+		return $this->aabb;
+	}
 
-    /**
-     * @return AxisAlignedBB
-     */
-    public function getAxisAlignedBB(): AxisAlignedBB
-    {
-        try {
-            $minX = min(floor($this->getPos1()->getX()), floor($this->getPos2()->getX()));
-            $minY = min(floor($this->getPos1()->getY()), floor($this->getPos2()->getY()));
-            $minZ = min(floor($this->getPos1()->getZ()), floor($this->getPos2()->getZ()));
-            $maxX = max(floor($this->getPos1()->getX()), floor($this->getPos2()->getX()));
-            $maxY = max(floor($this->getPos1()->getY()), floor($this->getPos2()->getY()));
-            $maxZ = max(floor($this->getPos1()->getZ()), floor($this->getPos2()->getZ()));
-            return new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ);
-        } catch (\Exception $error) {
-            //->sendMessage(Loader::$prefix . TextFormat::RED . "Could not find AABB");
-            //->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-        }
-        return null;
-    }
+	private function recalculateAABB() {
+		$this->aabb = new AxisAlignedBB(
+			min($this->pos1->x, $this->pos2->x),
+			min($this->pos1->y, $this->pos2->y),
+			min($this->pos1->z, $this->pos2->z),
+			max($this->pos1->x, $this->pos2->x),
+			max($this->pos1->y, $this->pos2->y),
+			max($this->pos1->z, $this->pos2->z)
+		);
+	}
 
-    /**
-     * @return Level
-     * @throws \Exception
-     */
-    public function getLevel()
-    {
-        if (is_null($this->level)) {
-            throw new \Exception("Level is not set!");
-        }
-        return $this->level;
-    }
+	/**
+	 * @return Level
+	 * @throws \Exception
+	 */
+	public function getLevel() {
+		if (is_null($this->levelid)) {
+			throw new \Exception("Level is not set!");
+		}
+		$level = Server::getInstance()->getLevel($this->levelid);
+		if (is_null($level)) {
+			throw new \Exception("Level is not found!");
+		}
+		return $level;
+	}
 
-    /**
-     * @param Level $level
-     */
-    public function setLevel(Level $level)
-    {
-        $this->level = $level;
-    }
+	/**
+	 * @param Level $level
+	 */
+	public function setLevel(Level $level) {
+		$this->levelid = $level->getId();
+	}
 
-    /**
-     * @return Position
-     * @throws \Exception
-     */
-    public function getPos1()
-    {
-        if (is_null($this->pos1)) {
-            throw new \Exception("Position 1 is not set!");
-        }
-        return $this->pos1;
-    }
+	/**
+	 * Creates a chunk manager used for async editing
+	 * @param Chunk[] $chunks
+	 * @return AsyncChunkManager
+	 */
+	public static function getChunkManager(array $chunks): AsyncChunkManager {
+		$manager = new AsyncChunkManager(0);
+		foreach ($chunks as $chunk) {
+			$manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
+		}
+		return $manager;
+	}
 
-    /**
-     * @param Position $position
-     * @return string
-     */
-    public function setPos1(Position $position)
-    {
-        $this->pos1 = $position;
-        $this->setLevel($position->getLevel());
-        return Loader::$prefix . TextFormat::GREEN . "Position 1 set to X: " . $position->getX() . " Y: " . $position->getY() . " Z: " . $position->getZ();
-    }
+	/**
+	 * @return Position
+	 * @throws \Exception
+	 */
+	public function getPos1() {
+		if (is_null($this->pos1)) {
+			throw new \Exception("Position 1 is not set!");
+		}
+		return Position::fromObject($this->pos1, $this->getLevel());
+	}
 
-    /**
-     * @return Position
-     * @throws \Exception
-     */
-    public function getPos2()
-    {
-        if (is_null($this->pos2)) {
-            throw new \Exception("Position 2 is not set!");
-        }
-        return $this->pos2;
-    }
+	/**
+	 * @param Position $position
+	 * @return string
+	 */
+	public function setPos1(Position $position) {
+		$this->pos1 = $position->asVector3()->floor();
+		if ($this->pos1->y >= Level::Y_MAX) $this->pos1->y = Level::Y_MAX;
+		if ($this->pos1->y < 0) $this->pos1->y = 0;
+		if ($this->levelid !== $position->getLevel()->getId()) {//reset other position if in different level
+			$this->pos2 = null;
+		}
+		$this->setLevel($position->getLevel());
+		return Loader::$prefix . TextFormat::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ();
+	}
 
-    /**
-     * @param Position $position
-     * @return string
-     */
-    public function setPos2(Position $position)
-    {
-        $this->pos2 = $position;
-        $this->setLevel($position->getLevel());
-        return Loader::$prefix . TextFormat::GREEN . "Position 2 set to X: " . $position->getX() . " Y: " . $position->getY() . " Z: " . $position->getZ();
-    }
+	/**
+	 * @return Position
+	 * @throws \Exception
+	 */
+	public function getPos2() {
+		if (is_null($this->pos2)) {
+			throw new \Exception("Position 2 is not set!");
+		}
+		return Position::fromObject($this->pos2, $this->getLevel());
+	}
 
-    /**
-     * Checks if a Selection is valid. It is not valid if:
-     * - The level is not set
-     * - Any of the positions are not set
-     * - If the levels of the positions do not match
-     * @return bool
-     */
-    public function isValid(): bool
-    {
-        try {
-            $this->getLevel();
-            $this->getPos1();
-            $this->getPos2();
-            return ($this->getPos1()->getLevel() === $this->getLevel() && $this->getPos2()->getLevel() === $this->getLevel());
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
+	/**
+	 * @param Position $position
+	 * @return string
+	 */
+	public function setPos2(Position $position) {
+		$this->pos2 = $position->asVector3()->floor();
+		if ($this->pos2->y >= Level::Y_MAX) $this->pos2->y = Level::Y_MAX;
+		if ($this->pos2->y < 0) $this->pos2->y = 0;
+		if ($this->levelid !== $position->getLevel()->getId()) {
+			$this->pos1 = null;
+		}
+		$this->setLevel($position->getLevel());
+		return Loader::$prefix . TextFormat::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ();
+	}
 
-    /**
-     * @return Vector3
-     */
-    public function getMinVec3()
-    {
-        return new Vector3($this->getAxisAlignedBB()->minX, $this->getAxisAlignedBB()->minY, $this->getAxisAlignedBB()->minZ);
-    }
+	/**
+	 * Checks if a Selection is valid. It is not valid if:
+	 * - The level is not set
+	 * - Any of the positions are not set
+	 * @return bool
+	 */
+	public function isValid(): bool {
+		try {
+			$this->getLevel();
+			$this->getPos1();
+			$this->getPos2();
+		} catch (\Exception $e) {
+			return false;
+		} finally {
+			return true;
+		}
+	}
 
-    /**
-     * @return Vector3
-     */
-    public function getMaxVec3()
-    {
-        return new Vector3($this->getAxisAlignedBB()->maxX, $this->getAxisAlignedBB()->maxY, $this->getAxisAlignedBB()->maxZ);
-    }
+	/**
+	 * @return Vector3
+	 */
+	public function getMinVec3() {
+		return new Vector3($this->getAxisAlignedBB()->minX, $this->getAxisAlignedBB()->minY, $this->getAxisAlignedBB()->minZ);
+	}
 
-    /**
-     * @return float|int
-     */
-    public function getSizeX()
-    {
-        return abs($this->getAxisAlignedBB()->maxX - $this->getAxisAlignedBB()->minX) + 1;
-    }
+	/**
+	 * @return Vector3
+	 */
+	public function getMaxVec3() {
+		return new Vector3($this->getAxisAlignedBB()->maxX, $this->getAxisAlignedBB()->maxY, $this->getAxisAlignedBB()->maxZ);
+	}
 
-    /**
-     * @return float|int
-     */
-    public function getSizeY()
-    {
-        return abs($this->getAxisAlignedBB()->maxY - $this->getAxisAlignedBB()->minY) + 1;
-    }
+	/**
+	 * @return float|int
+	 */
+	public function getSizeX() {
+		return abs($this->pos1->x - $this->pos2->x) + 1;
+	}
 
-    /**
-     * @return float|int
-     */
-    public function getSizeZ()
-    {
-        return abs($this->getAxisAlignedBB()->maxZ - $this->getAxisAlignedBB()->minZ) + 1;
-    }
+	/**
+	 * @return float|int
+	 */
+	public function getSizeY() {
+		return abs($this->pos1->y - $this->pos2->y) + 1;
+	}
 
-    /**
-     * @return float|int
-     */
-    public function getTotalCount()
-    {
-        return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom selection shapes
-    }
+	/**
+	 * @return float|int
+	 */
+	public function getSizeZ() {
+		return abs($this->pos1->z - $this->pos2->z) + 1;
+	}
 
-    /**
-     * Returns the blocks by their actual position
-     * @param int $flags
-     * @param Block[] $filterblocks If not empty, applying a filter on the block list
-     * @return Block[]
-     * @throws \Exception
-     */
-    public function getBlocks(int $flags, Block ...$filterblocks)
-    {
-        $blocks = [];
-        for ($x = intval(floor($this->getAxisAlignedBB()->minX)); $x <= floor($this->getAxisAlignedBB()->maxX); $x++) {
-            for ($y = intval(floor($this->getAxisAlignedBB()->minY)); $y <= floor($this->getAxisAlignedBB()->maxY); $y++) {
-                for ($z = intval(floor($this->getAxisAlignedBB()->minZ)); $z <= floor($this->getAxisAlignedBB()->maxZ); $z++) {
-                    $block = $this->getLevel()->getBlockAt($x, $y, $z);
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
-                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
-                    if (empty($filterblocks)) $blocks[] = $block;
-                    else {
-                        foreach ($filterblocks as $filterblock) {
-                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getDamage() === $filterblock->getDamage() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-                                $blocks[] = $block;
-                        }
-                    }
-                }
-            }
-        }
-        return $blocks;
-    }
+	/**
+	 * @return float|int
+	 */
+	public function getTotalCount() {
+		return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();//TODO correct number on custom selection shapes
+	}
 
-    /**
-     * Returns the blocks by their relative position to the minX;minY;minZ position
-     * @param int $flags
-     * @param Block[] $filterblocks If not empty, applying a filter on the block list
-     * @return Block[]
-     * @throws \Exception
-     */
-    public function getBlocksRelative(int $flags, Block ...$filterblocks)
-    {
-        $blocks = [];
-        for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++) {
-            for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++) {
-                for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++) {
-                    $block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
-                        if ($block->getId() !== Block::AIR) continue;
-                    }
-                    $block->position(new Position((int)$rx, (int)$ry, (int)$rz, $this->getLevel()));
-                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
-                    if (empty($filterblocks)) $blocks[] = $block;
-                    else {
-                        foreach ($filterblocks as $filterblock) {
-                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
-                                $blocks[] = $block;
-                        }
-                    }
-                }
-            }
-        }
-        return $blocks;
-    }
+	/**
+	 * Returns the blocks by their actual position
+	 * @param ChunkManager $manager The level or AsyncChunkManager
+	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param int $flags
+	 * @return \Generator|Block
+	 * @throws \Exception
+	 */
+	public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator {
+		if ($manager instanceof Level) {
+			$async = false;//TODO cleanup
+		} elseif ($manager instanceof AsyncChunkManager) {
+			$async = true;//TODO cleanup
+		} else
+			throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+		for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
+			for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
+				for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
+					if (API::hasFlag($flags, API::FLAG_UNCENTERED))//TODO check if correct
+						$vec3 = new Vector3($rx, $ry, $rz);
+					else
+						$vec3 = new Vector3($x, $y, $z);
+					$block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
+					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
 
-    /**
-     * TODO optimize
-     * e.g. do not use + 16 but % 16 or sth like that
-     *
-     * @return array
-     * @throws \Exception
-     */
-    public function getTouchedChunks(): array
-    {
-        $maxX = floor($this->getAxisAlignedBB()->maxX);
-        $minX = floor($this->getAxisAlignedBB()->minX);
-        $maxZ = floor($this->getAxisAlignedBB()->maxZ);
-        $minZ = floor($this->getAxisAlignedBB()->minZ);
-        $touchedChunks = [];
-        for ($x = $minX; $x <= $maxX + 16; $x += 16) {
-            for ($z = $minZ; $z <= $maxZ + 16; $z += 16) {
-                $chunk = $this->getLevel()->getChunk($x >> 4, $z >> 4, true);
-                $touchedChunks[Level::chunkHash($x >> 4, $z >> 4)] = $chunk->fastSerialize();
-            }
-        }
-        return $touchedChunks;
-    }
+					/*$block = */
+					$block->setComponents($vec3->x, $vec3->y, $vec3->z);
 
-    /**
-     * @return array
-     * @throws \Exception
-     */
-    public function __serialize()
-    {
-        $array = [];
-        return array_merge($array, (array)$this->getAxisAlignedBB(), [
-            "minx" => $this->getMinVec3()->getX(),
-            "miny" => $this->getMinVec3()->getY(),
-            "minz" => $this->getMinVec3()->getZ(),
-            "maxx" => $this->getMaxVec3()->getX(),
-            "maxy" => $this->getMaxVec3()->getY(),
-            "maxz" => $this->getMaxVec3()->getZ(),
-            "levelname" => $this->getLevel()->getName(),
-            "totalcount" => $this->getTotalCount()
-        ]);
-    }
+					if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
+					if (empty($filterblocks)) yield $block;
+					else {
+						foreach ($filterblocks as $filterblock) {
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getDamage() === $filterblock->getDamage() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+								yield $block;
+						}
+					}
+				}
+			}
+		}
+	}
 
-    /**
-     * @param UUID $uuid
-     */
-    private function setUUID(UUID $uuid)
-    {
-        $this->uuid = $uuid;
-    }
+	/**
+	 * Returns the blocks by their relative position to the minX;minY;minZ position
+	 * @param int $flags
+	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @return Block[]
+	 * @throws \Exception
+	 */
+	public function getBlocksRelativeOld(int $flags, Block ...$filterblocks) {
+		$blocks = [];
+		for ($x = floor($this->getAxisAlignedBB()->minX), $rx = 0; $x <= floor($this->getAxisAlignedBB()->maxX); $x++, $rx++) {
+			for ($y = floor($this->getAxisAlignedBB()->minY), $ry = 0; $y <= floor($this->getAxisAlignedBB()->maxY); $y++, $ry++) {
+				for ($z = floor($this->getAxisAlignedBB()->minZ), $rz = 0; $z <= floor($this->getAxisAlignedBB()->maxZ); $z++, $rz++) {
+					$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
+					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
+						if ($block->getId() !== Block::AIR) continue;
+					}
+					$block->position(new Position((int)$rx, (int)$ry, (int)$rz, $this->getLevel()));
+					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
+					if (empty($filterblocks)) $blocks[] = $block;
+					else {
+						foreach ($filterblocks as $filterblock) {
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && $block->getDamage() === $filterblock->getDamage())))
+								$blocks[] = $block;
+						}
+					}
+				}
+			}
+		}
+		return $blocks;
+	}
 
-    /**
-     * @return UUID
-     */
-    public function getUUID()
-    {
-        return $this->uuid;
-    }
+	/**
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function getTouchedChunks(): array {
+		$this->recalculateAABB();
+		$maxX = $this->getMaxVec3()->x >> 4;
+		$minX = $this->getMinVec3()->x >> 4;
+		$maxZ = $this->getMaxVec3()->z >> 4;
+		$minZ = $this->getMinVec3()->z >> 4;
+		print "from $minX:$minZ to $maxX:$maxZ" . PHP_EOL;
+		$touchedChunks = [];
+		for ($x = $minX; $x <= $maxX; $x++) {
+			for ($z = $minZ; $z <= $maxZ; $z++) {
+				$chunk = $this->getLevel()->getChunk($x, $z, true);
+				if ($chunk === null) {
+					continue;
+				}
+				print "Touched Chunk at: $x:$z" . PHP_EOL;
+				$touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+			}
+		}
+		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
+		return $touchedChunks;
+	}
+
+	/**
+	 * @param UUID $uuid
+	 */
+	private function setUUID(UUID $uuid) {
+		$this->uuid = $uuid;
+	}
+
+	/**
+	 * @return UUID
+	 */
+	public function getUUID() {
+		return $this->uuid;
+	}
+
+	/**
+	 * String representation of object
+	 * @link http://php.net/manual/en/serializable.serialize.php
+	 * @return string the string representation of the object or null
+	 * @since 5.1.0
+	 */
+	public function serialize() {
+		return serialize([
+			$this->levelid,
+			$this->pos1,
+			$this->pos2,
+			$this->uuid
+		]);
+	}
+
+	/**
+	 * Constructs the object
+	 * @link http://php.net/manual/en/serializable.unserialize.php
+	 * @param string $serialized <p>
+	 * The string representation of the object.
+	 * </p>
+	 * @return void
+	 * @since 5.1.0
+	 */
+	public function unserialize($serialized) {
+		/** @var Vector3 $pos1 , $pos2 */
+		[
+			$this->levelid,
+			$this->pos1,
+			$this->pos2,
+			$this->uuid
+		] = unserialize($serialized);
+	}
 }
