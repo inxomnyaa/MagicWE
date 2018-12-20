@@ -62,7 +62,8 @@ class Selection implements \Serializable {
 		return $this->aabb;
 	}
 
-	private function recalculateAABB() {
+    public function recalculateAABB()
+    {
 		if ($this->isValid())
 			$this->aabb = new AxisAlignedBB(
 				min($this->pos1->x, $this->pos2->x),
@@ -234,12 +235,13 @@ class Selection implements \Serializable {
 		for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
 			for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
 				for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-					if (API::hasFlag($flags, API::FLAG_UNCENTERED))//TODO check if correct
+                    if (API::hasFlag($flags, API::FLAG_POSITION_RELATIVE))//TODO check if correct
 						$vec3 = new Vector3($rx, $ry, $rz);
 					else
 						$vec3 = new Vector3($x, $y, $z);
 					$block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
-					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
+                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
 
 					/*$block = */
 					$block->setComponents($vec3->x, $vec3->y, $vec3->z);

@@ -44,7 +44,7 @@ class AsyncFillTask extends AsyncTask {
 		$this->selection = serialize($selection);
 		$this->newBlocks = serialize($newBlocks);
 		$this->flags = $flags;
-		$this->undoClipboard = serialize(new Clipboard($selection->getLevel(), [], $selection->pos1->x, $selection->pos1->y, $selection->pos1->z, $selection->pos2->x, $selection->pos2->y, $selection->pos2->z));
+        $this->undoClipboard = serialize(new Clipboard($selection->getLevel()));
 	}
 
 	/**
@@ -128,7 +128,12 @@ class AsyncFillTask extends AsyncTask {
 		BossBarAPI::setTitle($title, $session->getBossBarId(), [$player]);
 	}
 
-	public function onCompletion(Server $server) {
+    /**
+     * @param Server $server
+     * @throws \Exception
+     */
+    public function onCompletion(Server $server)
+    {
 		$result = $this->getResult();
 		$player = $server->getPlayerByUUID(unserialize($this->playerUUID));
 		if ($player instanceof Player) {

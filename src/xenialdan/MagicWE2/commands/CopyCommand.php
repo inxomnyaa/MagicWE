@@ -43,7 +43,7 @@ class CopyCommand extends WECommand {
 			if ($selection->getLevel() !== $sender->getLevel()) {
 				$sender->sendMessage(Loader::$prefix . TextFormat::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
 			}
-			$return = API::copyAsync($selection, $session, ...$args);
+            $return = API::copyAsync($selection, $session, API::flagParser($args));
 		} catch (\Exception $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());

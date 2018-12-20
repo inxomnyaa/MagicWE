@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\commands;
 
 use pocketmine\command\CommandSender;
 use pocketmine\lang\TranslationContainer;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
@@ -37,7 +38,10 @@ class PasteCommand extends WECommand {
 			if (is_null($clipboard)) {
 				throw new \Exception("No clipboard found - create a clipboard first");
 			}
-			$return = API::pasteAsync($clipboard, $session, $sender->asPosition(), ...$args);
+            if (!API::hasFlag(API::flagParser($args), API::FLAG_POSITION_RELATIVE)) {
+                $clipboard->setOffset(new Vector3());
+            }
+            $return = API::pasteAsync($clipboard, $session, $sender->asPosition(), API::flagParser($args));
 		} catch (\Exception $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());

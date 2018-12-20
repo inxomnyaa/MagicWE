@@ -53,7 +53,7 @@ class SetCommand extends WECommand {
 				if ($selection->getLevel() !== $sender->getLevel()) {
 					$sender->sendMessage(Loader::$prefix . TextFormat::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
 				}
-				$return = API::fillAsync($selection, $session, $newblocks, ...$args);
+                $return = API::fillAsync($selection, $session, $newblocks, API::flagParser($args));
 			} else {
 				$return = false;
 				throw new \InvalidArgumentException("Could not fill with the selected blocks");

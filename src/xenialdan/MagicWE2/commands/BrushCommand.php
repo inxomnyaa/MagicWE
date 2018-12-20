@@ -26,6 +26,7 @@ use xenialdan\customui\elements\UIElement;
 use xenialdan\customui\windows\CustomForm;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\shape\ShapeGenerator;
 
 class BrushCommand extends WECommand {
 	public function __construct(Plugin $plugin) {
@@ -62,16 +63,19 @@ class BrushCommand extends WECommand {
 								$form = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
 								$form->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
 								$form->addElement(new Slider($lang->translateString('ui.brush.options.diameter'), 1, 50, 1.0));
-								$form->addElement(new Toggle($lang->translateString('ui.brush.options.flags'), false));
+                                $form->addElement(new Label($lang->translateString('ui.brush.options.flags')));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepexistingblocks'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepair'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.hollow'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.natural'), false));
 								$form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
 									$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
 									$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
 									$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
 									$item->setLore(BrushCommand::generateLore($form->getContent(), $data));
-									//TODO if($data(2)->getValue() === true) -> show flag window
-									$flags = BrushCommand::translateElementsToFlags([], []);
+                                    $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
 									$item->setNamedTagEntry(new CompoundTag("MagicWE", [
-										new StringTag("type", $selectedOption),
+                                        new IntTag("type", ShapeGenerator::TYPE_SPHERE),
 										new StringTag("blocks", $data[0]),
 										new FloatTag("diameter", $data[1]),
 										new IntTag("flags", $flags),
@@ -89,16 +93,19 @@ class BrushCommand extends WECommand {
 								$form->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
 								$form->addElement(new Slider($lang->translateString('ui.brush.options.diameter'), 1, 50, 1.0));
 								$form->addElement(new Slider($lang->translateString('ui.brush.options.height'), 1, 50, 1.0));
-								$form->addElement(new Toggle($lang->translateString('ui.brush.options.flags'), false));
+                                $form->addElement(new Label($lang->translateString('ui.brush.options.flags')));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepexistingblocks'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepair'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.hollow'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.natural'), false));
 								$form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
 									$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
 									$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
 									$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
 									$item->setLore(BrushCommand::generateLore($form->getContent(), $data));
-									//TODO if($data(3)->getValue() === true) -> show flag window
-									$flags = BrushCommand::translateElementsToFlags([], []);
+                                    $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
 									$item->setNamedTagEntry(new CompoundTag("MagicWE", [
-										new StringTag("type", $selectedOption),
+                                        new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
 										new StringTag("blocks", $data[0]),
 										new FloatTag("diameter", $data[1]),
 										new FloatTag("height", $data[2]),
@@ -119,16 +126,19 @@ class BrushCommand extends WECommand {
 								$form->addElement(new Slider($lang->translateString('ui.brush.options.width'), 1, 100, 1.0));
 								$form->addElement(new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0));
 								$form->addElement(new Slider($lang->translateString('ui.brush.options.depth'), 1, 100, 1.0));
-								$form->addElement(new Toggle($lang->translateString('ui.brush.options.flags'), false));
+                                $form->addElement(new Label($lang->translateString('ui.brush.options.flags')));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepexistingblocks'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepair'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.hollow'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.natural'), false));
 								$form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
 									$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
 									$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
 									$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
 									$item->setLore(BrushCommand::generateLore($form->getContent(), $data));
-									//TODO if($data(4)->getValue() === true) -> show flag window
-									$flags = BrushCommand::translateElementsToFlags([], []);
+                                    $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
 									$item->setNamedTagEntry(new CompoundTag("MagicWE", [
-										new StringTag("type", $selectedOption),
+                                        new IntTag("type", ShapeGenerator::TYPE_CUBOID),
 										new StringTag("blocks", $data[0]),
 										new FloatTag("width", $data[1]),
 										new FloatTag("height", $data[2]),
@@ -146,16 +156,19 @@ class BrushCommand extends WECommand {
 							{
 								///
 								$form = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
-								$form->addElement(new Toggle($lang->translateString('ui.brush.options.flags'), false));
+                                $form->addElement(new Label($lang->translateString('ui.brush.options.flags')));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepexistingblocks'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.keepair'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.hollow'), false));
+                                $form->addElement(new Toggle($lang->translateString('ui.flags.natural'), false));
 								$form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
 									$item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
 									$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
 									$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
 									$item->setLore(BrushCommand::generateLore($form->getContent(), $data));
-									//TODO if($data(0)->getValue() === true) -> show flag window
-									$flags = BrushCommand::translateElementsToFlags([], []);
+                                    $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
 									$item->setNamedTagEntry(new CompoundTag("MagicWE", [
-										new StringTag("type", $selectedOption),
+                                        new IntTag("type", ShapeGenerator::TYPE_CUSTOM),
 										new IntTag("flags", $flags),
 									]));
 									$player->getInventory()->addItem($item);
@@ -205,22 +218,22 @@ class BrushCommand extends WECommand {
 		foreach ($elements as $i => $value) {
 			if (!$value instanceof Toggle) continue;
 			switch ($value->getText()) {
-				case $lang->translateString('ui.brush.options.flags.keepexistingblocks'):
+                case $lang->translateString('ui.flags.keepexistingblocks'):
 					{
 						if ($data[$i]) $flags[] = "-keepblocks";
 						break;
 					}
-				case $lang->translateString('ui.brush.options.flags.keepair'):
+                case $lang->translateString('ui.flags.keepair'):
 					{
 						if ($data[$i]) $flags[] = "-keepair";
 						break;
 					}
-				case $lang->translateString('ui.brush.options.flags.hollow'):
+                case $lang->translateString('ui.flags.hollow'):
 					{
 						if ($data[$i]) $flags[] = "-h";
 						break;
 					}
-				case $lang->translateString('ui.brush.options.flags.natural'):
+                case $lang->translateString('ui.flags.natural'):
 					{
 						if ($data[$i]) $flags[] = "-n";
 						break;
@@ -228,17 +241,6 @@ class BrushCommand extends WECommand {
 			}
 		}
 		return API::flagParser($flags);
-	}
-
-	public static function showFlagUI() {
-		/*
-		  new Label($lang->translateString('ui.brush.options.label.flags')),
-		  new Toggle($lang->translateString('ui.brush.options.flags.keepexistingblocks'), false),
-		  new Toggle($lang->translateString('ui.brush.options.flags.keepair'), false),
-		  new Toggle($lang->translateString('ui.brush.options.flags.hollow'), false),
-		  new Toggle($lang->translateString('ui.brush.options.flags.natural'), false),
-		  new Label($lang->translateString('ui.brush.options.label.infoapply'))
-		*/
 	}
 
 	/**

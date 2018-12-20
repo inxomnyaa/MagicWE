@@ -30,22 +30,26 @@ class AsyncClipboardTask extends AsyncTask {
 	private $clipboard;
 	private $type;
 	private $undoClipboard;
+    private $flags;
 
 	/**
 	 * AsyncFillTask constructor.
 	 * @param Clipboard $clipboard
 	 * @param UUID $playerUUID
 	 * @param Chunk[] $chunks
-	 * @param int $type The type of clipboard pasting.
+     * @param int $type The type of clipboard pasting.
+     * @param int $flags
 	 * @throws \Exception
 	 */
-	public function __construct(Clipboard $clipboard, UUID $playerUUID, array $chunks, $type = self::TYPE_SET) {
+    public function __construct(Clipboard $clipboard, UUID $playerUUID, array $chunks, $type = self::TYPE_SET, int $flags = API::FLAG_BASE)
+    {
 		$this->start = microtime(true);
 		$this->chunks = serialize($chunks);
 		$this->playerUUID = serialize($playerUUID);
 		$this->clipboard = serialize($clipboard);
+        $this->flags = $flags;
 		$this->type = $type;
-		$this->undoClipboard = serialize(new Clipboard($clipboard->getLevel(), [], $clipboard->pos1->x, $clipboard->pos1->y, $clipboard->pos1->z, $clipboard->pos2->x, $clipboard->pos2->y, $clipboard->pos2->z));
+        $this->undoClipboard = serialize(new Clipboard($clipboard->getLevel()));
 	}
 
 	/**
@@ -87,8 +91,9 @@ class AsyncClipboardTask extends AsyncTask {
 		$lastchunkx = -1;
 		$lastchunkz = -1;
 		/** @var Block $block */
-		foreach ($clipboard->getBlocks($manager) as $block) {
+        foreach ($clipboard->getBlocks($manager, [], $this->flags) as $block) {
 			if ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
+                var_dump($block);
 				$lastchunkx = $block->x >> 4;
 				$lastchunkz = $block->z >> 4;
 				if (is_null(($c = $manager->getChunk($block->x >> 4, $block->z >> 4)))) {
@@ -120,7 +125,12 @@ class AsyncClipboardTask extends AsyncTask {
 		BossBarAPI::setTitle($title, $session->getBossBarId(), [$player]);
 	}
 
-	public function onCompletion(Server $server) {
+    /**
+     * @param Server $server
+     * @throws \Exception
+     */
+    public function onCompletion(Server $server)
+    {
 		$result = $this->getResult();
 		$player = $server->getPlayerByUUID(unserialize($this->playerUUID));
 		if ($player instanceof Player) {

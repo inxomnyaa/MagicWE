@@ -4,6 +4,7 @@ namespace xenialdan\MagicWE2\task;
 
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\AsyncTask;
@@ -29,18 +30,22 @@ class AsyncCopyTask extends AsyncTask {
 	/**
 	 * AsyncCopyTask constructor.
 	 * @param Selection $selection
+     * @param Vector3 $offset
 	 * @param UUID $playerUUID
 	 * @param Chunk[] $chunks
 	 * @param int $flags
 	 * @throws \Exception
 	 */
-	public function __construct(Selection $selection, UUID $playerUUID, array $chunks, int $flags) {
+    public function __construct(Selection $selection, Vector3 $offset, UUID $playerUUID, array $chunks, int $flags)
+    {
 		$this->start = microtime(true);
 		$this->chunks = serialize($chunks);
 		$this->playerUUID = serialize($playerUUID);
 		$this->selection = serialize($selection);
 		$this->flags = $flags;
-		$this->clipboard = serialize(new Clipboard($selection->getLevel(), [], $selection->pos1->x, $selection->pos1->y, $selection->pos1->z, $selection->pos2->x, $selection->pos2->y, $selection->pos2->z));
+        $newClipboard = new Clipboard($selection->getLevel());
+        $newClipboard->setOffset($offset);
+        $this->clipboard = serialize($newClipboard);
 	}
 
 	/**
@@ -109,6 +114,7 @@ class AsyncCopyTask extends AsyncTask {
 			$bpk->eventType = BossEventPacket::TYPE_HIDE;
 			$player->dataPacket($bpk);
 			$copied = $result["copied"];//todo use extract()
+            /** @var Clipboard $clipboard */
 			$clipboard = $result["clipboard"];
 			$totalCount = $result["totalCount"];
 			$player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");

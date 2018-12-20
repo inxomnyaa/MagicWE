@@ -10,7 +10,6 @@ use pocketmine\block\UnknownBlock;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\LittleEndianNBTStream;
@@ -19,7 +18,6 @@ use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
-use xenialdan\MagicWE2\event\MWEEditEvent;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
@@ -27,166 +25,48 @@ use xenialdan\MagicWE2\task\AsyncFillTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 
 class API {
-	/**
-	 * "  -p also kills pets.\n" +
-	 * "  -n also kills NPCs.\n" +
-	 * "  -g also kills Golems.\n" +
-	 * "  -a also kills animals.\n" +
-	 * "  -b also kills ambient mobs.\n" +
-	 * "  -t also kills mobs with name tags.\n" +
-	 * "  -f compounds all previous flags.\n" +
-	 * "  -r also destroys armor stands.\n" */
-
-	/** @var int Base flag to modify on */
+    // Base flag to modify on
 	const FLAG_BASE = 1;
-	/**
-	 * Only replaces the air
-	 */
+    // Only replaces the air
 	const FLAG_KEEP_BLOCKS = 0x01; // -r
-	/**
-	 * Only change non-air blocks
-	 */
+    // Only change non-air blocks
 	const FLAG_KEEP_AIR = 0x02; // -k
-	/**
-	 * The -a flag makes it not paste air.
-	 */
+    // The -a flag makes it not paste air.
 	const FLAG_PASTE_WITHOUT_AIR = 0x03; // -a
-	/**
-	 * Pastes or sets hollow
-	 */
-	const FLAG_HOLLOW = 0x04; // -h
-	/**
-	 * The -n flag makes it only consider naturally occurring blocks.
-	 */
+    // Pastes or sets hollow
+    const FLAG_HOLLOW = 0x04; // -h
+    // The -n flag makes it only consider naturally occurring blocks.
 	const FLAG_NATURAL = 0x05; // -n
-	/**
-	 * Without the -p flag, the paste will appear centered at the target location.
-	 * With the flag, the paste will appear relative to where you had
-	 * stood, relative by the copied area when you copied it.
-	 */
-	const FLAG_UNCENTERED = 0x06; // -p
-	/**
-	 * Without the -v flag, block checks, selections and replacing will use and check the exact meta
-	 * of the blocks, with the flag it will check for similar variants
-	 * For example: Oak Logs with any rotation instead of a specific rotation
-	 */
+    // Without the -p flag, the paste will appear centered at the target location.
+    // With the flag, the paste will appear relative to where you had
+    // stood, relative by the copied area when you copied it.
+    const FLAG_POSITION_RELATIVE = 0x06; // -p
+    // Without the -v flag, block checks, selections and replacing will use and check the exact meta
+    // of the blocks, with the flag it will check for similar variants
+    // For example: Oak Logs with any rotation instead of a specific rotation
 	const FLAG_VARIANT = 0x07; // -v
-	/**
-	 * With the -m flag the damage values / meta will be kept
-	 */
+    // With the -m flag the damage values / meta will be kept
+    // For example: Replacing all wool blocks with concrete of the same color
 	const FLAG_KEEP_META = 0x08; // -m
+    // Pastes or sets hollow but closes off the ends
+    const FLAG_HOLLOW_CLOSED = 0x09; // -hc//TODO
 
+    //TODO Split into seperate Class (SessionStorage?)
 	/** @var Session[] */
 	private static $sessions = [];
+    //TODO Split into seperate Class (SchematicStorage?)
 	/** @var Clipboard[] */
 	private static $schematics = [];
-
-	public static function flagParser(array $flags) {
-		$flagmeta = 1;
-		foreach ($flags as $flag) {
-			switch ($flag) {
-				case "-keepblocks":
-					$flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_BLOCKS;
-					break;
-				#case  "-keepair":
-				#	$flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_AIR;
-				#	break;
-				case  "-a":
-					$flagmeta ^= self::FLAG_BASE << self::FLAG_PASTE_WITHOUT_AIR;
-					break;
-				case  "-h":
-					$flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW;
-					break;
-				case  "-n":
-					$flagmeta ^= self::FLAG_BASE << self::FLAG_NATURAL;
-					break;
-				case  "-p":
-					$flagmeta ^= self::FLAG_BASE << self::FLAG_UNCENTERED;
-					break;
-				case  "-v":
-					$flagmeta ^= self::FLAG_BASE << self::FLAG_VARIANT;
-					break;
-				case  "-m":
-					$flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_META;
-					break;
-				default:
-					Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
-			}
-		}
-		return $flagmeta;
-	}
-
-	/**
-	 * Checks if a flag is used
-	 * @param int $flags The return value of flagParser
-	 * @param int $check The flag to check
-	 * @return bool
-	 */
-	public static function hasFlag(int $flags, int $check) {
-		return ($flags & (self::FLAG_BASE << $check)) > 0;
-	}
-
-	/**
-	 * @deprecated
-	 * @param Selection $selection
-	 * @param Session|null $session
-	 * @param Block[] $newblocks
-	 * @param array ...$flagarray
-	 * @return bool
-	 */
-	public static function fill(Selection $selection, ?Session $session, $newblocks = [], ...$flagarray) {
-		$flags = self::flagParser($flagarray);
-		$changed = 0;
-		$time = microtime(TRUE);
-		try {
-			$preBlocks = $selection->getBlocksOld($flags);
-			$postBlocks = [];
-			/** @var Block $block */
-			foreach ($preBlocks as $block) {
-				$new = clone $newblocks[array_rand($newblocks, 1)];
-				$new->position($block->asPosition());
-				$postBlocks[] = $new;
-			}
-			//Event call
-			$event = new MWEEditEvent(Loader::getInstance(), $preBlocks, $postBlocks, $session);
-			$event->call();
-			if ($event->isCancelled()) {
-				if (!is_null($session)) {
-					$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Editing was cancelled by a plugin.");
-				} else {
-					Server::getInstance()->getLogger()->debug(Loader::$prefix . TextFormat::RED . "Editing was cancelled by a plugin.");
-				}
-			}
-			//TODO move this section to async
-			$level = $event->getPlayer()->getLevel();
-			/** @var Block $block */
-			foreach ($event->getNewBlocks() as $newBlock) {
-				if ($level->setBlock($newBlock, $newBlock, false, false)) $changed++;
-			}
-			$undoClipboard = new Clipboard();
-			$undoClipboard->setData($event->getOldBlocks());
-		} catch (\Exception $exception) {
-			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
-			return false;
-		}
-		if (!is_null($session)) {
-			$session->addUndo($undoClipboard);
-			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
-		} else {
-			Server::getInstance()->getLogger()->debug(Loader::$prefix . TextFormat::GREEN . "Fill succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
-		}
-		return true;
-	}
 
 	/**
 	 * @param Selection $selection
 	 * @param Session $session
 	 * @param Block[] $newblocks
-	 * @param array ...$flagarray
+     * @param int $flags
 	 * @return bool
 	 */
-	public static function fillAsync(Selection $selection, Session $session, $newblocks = [], ...$flagarray) {
-		$flags = self::flagParser($flagarray);
+    public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
+    {
 		try {
 			Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
 		} catch (\Exception $e) {
@@ -196,16 +76,16 @@ class API {
 		return true;
 	}
 
-	/**
-	 * @param Selection $selection
-	 * @param Session|null $session
-	 * @param Block[] $oldBlocks
-	 * @param Block[] $newBlocks
-	 * @param array ...$flagarray
-	 * @return bool
-	 */
-	public static function replaceAsync(Selection $selection, ?Session $session, $oldBlocks = [], $newBlocks = [], ...$flagarray) {
-		$flags = self::flagParser($flagarray);
+    /**
+     * @param Selection $selection
+     * @param Session|null $session
+     * @param Block[] $oldBlocks
+     * @param Block[] $newBlocks
+     * @param int $flags
+     * @return bool
+     */
+    public static function replaceAsync(Selection $selection, ?Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
+    {
 		try {
 			Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
 		} catch (\Exception $e) {
@@ -215,306 +95,159 @@ class API {
 		return true;
 	}
 
-	/**
-	 * @deprecated
-	 * @param Selection $selection
-	 * @param Session|null $session
-	 * @param Block[] $blocks1
-	 * @param Block[] $blocks2
-	 * @param array ...$flagarray
-	 * @return bool
-	 */
-	public static function replace(Selection $selection, ?Session $session, $blocks1 = [], $blocks2 = [], ...$flagarray) {
-		$flags = self::flagParser($flagarray);
-		$changed = 0;
-		$time = microtime(TRUE);
-		try {
-			$blocks = [];
-			/** @var Block $block */
-			foreach ($selection->getBlocks($flags, ...$blocks1) as $block) {
-				$level = $selection->getLevel() ?? (!is_null($session) ? $session->getPlayer()->getLevel() : $block->getLevel());
-				if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-				$newblock = $blocks2[array_rand($blocks2, 1)];
-				$newblock->position($block->asPosition());
-				if (self::hasFlag($flags, self::FLAG_KEEP_META)) $newblock->setDamage($block->getDamage());
-				if ($level->setBlock($block, $newblock, false, false)) {
-					$blocks[] = $block;
-					$changed++;
-				}
-			}
-			$undoClipboard = new Clipboard();
-			$undoClipboard->setData($blocks);
-		} catch (\Exception $exception) {
-			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
-			return false;
-		}
-		if (!is_null($session)) {
-			$session->addUndo($undoClipboard);
-			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
-		} else {
-			Server::getInstance()->getLogger()->debug(Loader::$prefix . TextFormat::GREEN . "Replace succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks out of " . $selection->getTotalCount() . " changed.");
-		}
-		return true;
-	}
+    /**
+     * @param Selection $selection
+     * @param null|Session $session
+     * @param int $flags
+     * @return bool
+     */
+    public static function copyAsync(Selection $selection, ?Session $session, int $flags = self::FLAG_BASE)
+    {
+        return false;
+        try {
+            if (self::hasFlag($flags, self::FLAG_POSITION_RELATIVE))//TODO relative or not by flags
+                $offset = new Vector3();
+            else
+                $offset = $selection->getMinVec3()->subtract($session->getPlayer())->floor();
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($selection, $offset, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $flags));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
 
-	/**
-	 * @deprecated
-	 * @param Selection $selection
-	 * @param Session $session
-	 * @param array ...$flagarray
-	 * @return bool
-	 */
-	public static function copy(Selection $selection, ?Session $session, ...$flagarray) {
-		$flags = self::flagParser($flagarray);
-		try {
-			$clipboard = new Clipboard();
-			$clipboard->setData($selection->getBlocksRelative($flags));
-			if (self::hasFlag($flags, self::FLAG_UNCENTERED))//TODO relative or not by flags
-				$clipboard->setOffset(new Vector3());
-			else
-				$clipboard->setOffset($selection->getMinVec3()->subtract($session->getPlayer())->floor());//SUBTRACT THE LEAST X Y Z OF SELECTION //TODO check if player less than minvec
-			$session->setClipboards([0 => $clipboard]);// TODO Multiple clipboards
-		} catch (\Exception $exception) {
-			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
-			return false;
-		}
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Copied selection to clipboard");
-		return true;
-	}
+    /**
+     * TODO: flag parsing, Position to paste at
+     * @param Clipboard $clipboard
+     * @param null|Session $session
+     * @param Position $target
+     * @param int $flags
+     * @return bool
+     */
+    public static function pasteAsync(Clipboard $clipboard, ?Session $session, Position $target, int $flags = self::FLAG_BASE)
+    {
+        return false;
+        try {
+            $clipboard = clone $clipboard;
+            if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE))
+                $clipboard->setOffset(new Vector3());
+            var_dump($clipboard->getOffset());
+            #$v3 = $target->add($clipboard->getOffset());
+            #$clipboard->setPos1($target->setComponents($v3->x,$v3->y,$v3->z));
+            #$clipboard->setPos2($target->setComponents($v3->x,$v3->y,$v3->z));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_SET, $flags));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
 
-	/**
-	 * @deprecated
-	 * @param Clipboard $clipboard
-	 * @param null|Session $session
-	 * @param Position $target
-	 * @param array ...$flagarray
-	 * @return bool
-	 */
-	public static function paste(Clipboard $clipboard, ?Session $session, Position $target, ...$flagarray) {
-		$flags = self::flagParser($flagarray);
-		$changed = 0;
-		$time = microtime(TRUE);
-		try {
-			$blocks = [];
-			foreach ($clipboard->getData() as $block1) {
-				/** @var Block $block */
-				$block = clone $block1;
-				if (self::hasFlag($flags, self::FLAG_PASTE_WITHOUT_AIR) && $block->getId() === BlockIds::AIR)
-					continue;
-				$blockvec3 = $target->add($block);
-				$level = $target->getLevel() ?? $block->getLevel();
-				if (!self::hasFlag($flags, self::FLAG_UNCENTERED))
-					$blockvec3 = $blockvec3->add($clipboard->getOffset());
-				$oldblock = $level->getBlock($blockvec3->floor());
-				if ($level->setBlock($blockvec3->floor(), $block, false, false)) {
-					$blocks[] = $oldblock;
-					$changed++;
-				}
-			}
-			$undoClipboard = new Clipboard();
-			$undoClipboard->setData($blocks);
-		} catch (\Exception $exception) {
-			if (!is_null($session)) $session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $exception->getMessage());
-			return false;
-		}
-		if (!is_null($session)) {
-			$session->addUndo($undoClipboard);
-			$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
-		} else {
-			Server::getInstance()->getLogger()->info(Loader::$prefix . TextFormat::GREEN . "Pasted clipboard " . (self::hasFlag($flags, self::FLAG_UNCENTERED) ? "absolute" : "relative") . " to your position, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed.");
-		}
-		return true;
-	}
+    /**
+     * TODO
+     * @param Session $session
+     * @return bool
+     */
+    public static function undoAsync(Session $session)
+    {
+        try {
+            $session->getPlayer()->sendMessage("You had " . count($session->getUndos()) . " undo actions left");//TODO remove
+            $clipboard = $session->getLatestUndo();
+            if (is_null($clipboard)) {
+                $session->getPlayer()->sendMessage("Nothing to undo");//TODO prettify
+                return true;
+            }
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_UNDO));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
 
-	/**
-	 * @param Selection $selection
-	 * @param null|Session $session
-	 * @param array ...$flagarray
-	 * @return bool
-	 */
-	public static function copyAsync(Selection $selection, ?Session $session, ...$flagarray) {
-		$flags = self::flagParser($flagarray);
-		try {
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $flags));
-		} catch (\Exception $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-			return false;
-		}
-		return true;
-	}
+    /**
+     * TODO
+     * @param Session $session
+     * @return bool
+     */
+    public static function redoAsync(Session $session)
+    {
+        try {
+            $session->getPlayer()->sendMessage("You had " . count($session->getRedos()) . " redo actions left");//TODO remove
+            $clipboard = $session->getLatestRedo();
+            if (is_null($clipboard)) {
+                $session->getPlayer()->sendMessage("Nothing to redo");//TODO prettify
+                return true;
+            }
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_REDO));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
 
-	/**
-	 * TODO: flag parsing, Position to paste at
-	 * @param Clipboard $clipboard
-	 * @param null|Session $session
-	 * @param Position $target
-	 * @param array ...$flagarray
-	 * @return bool
-	 */
-	public static function pasteAsync(Clipboard $clipboard, ?Session $session, Position $target, ...$flagarray) {
-		try {
-			$clipboard->setPos1($target);
-			$clipboard->setPos2($target);
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_SET));
-		} catch (\Exception $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-			return false;
-		}
-		return true;
-	}
+    /**
+     * Creates a brush at a specific location with the passed settings
+     * @param Block $target
+     * @param NamedTag $settings
+     * @param Session $session
+     * @return bool
+     * @throws \Exception
+     */
+    public static function createBrush(Block $target, NamedTag $settings, Session $session)
+    {//TODO messages
+        $shape = null;
+        if (!$settings instanceof CompoundTag) return false;
+        $messages = [];
+        $error = false;
+        switch ($type = $settings->getInt("type", -1)) {
+            case ShapeGenerator::TYPE_CUBOID:
+            case ShapeGenerator::TYPE_CYLINDER:
+            case ShapeGenerator::TYPE_SPHERE:
+                {
+                    $shape = ShapeGenerator::getShape($target->getLevel(), $type, self::compoundToArray($settings));
+                    $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+                    return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $shape->options["flags"]);
+                    break;
+                }
+            case ShapeGenerator::TYPE_CUSTOM://TODO fix/Change to actual shape, flags
+                {
+                    $clipboard = $session->getClipboards()[0] ?? null;
+                    if (is_null($clipboard)) {
+                        $session->getPlayer()->sendMessage(TextFormat::RED . "You have no clipboard - create one first");
+                        return false;
+                    }
+                    return self::pasteAsync($clipboard, $session, $target);//TODO flags & proper brush tool
+                    break;
+                }
+            default:
+                {
+                    $session->getPlayer()->sendMessage("Unknown shape");
+                }
+        }
+        return false;
+    }
 
-	public static function blockParser(string $fullstring, array &$messages, bool &$error) {
-		$blocks = [];
-		foreach (self::fromString($fullstring, true) as [$name, $item]) {
-			if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)) {
-				$block = $item->getBlock();
-				$blocks[] = $block;
-			} else {
-				$error = true;
-				$messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
-				continue;
-			}
-			if ($block instanceof UnknownBlock) {
-				$messages[] = Loader::$prefix . TextFormat::GOLD . $block . " is an unknown block";
-			}
-		}
+    /**
+     * @param Block $target
+     * @param NamedTag $settings
+     * @param Session $session
+     * @param int $flags
+     * @return bool
+     */
+    public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE)
+    { //TODO
+        if (!$settings instanceof CompoundTag) return null;
+        $shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_FLOOD, self::compoundToArray($settings));
+        $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
+        $messages = [];
+        $error = false;
+        return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flags);
+    }
 
-		return $blocks;
-	}
-
-	/**
-	 * /////////////////////////////////////////////////////////////////////
-	 * This fixes ItemFactory::fromString until pmmp get's its shit together
-	 * /////////////////////////////////////////////////////////////////////
-	 *
-	 * Tries to parse the specified string into Item ID/meta identifiers, and returns Item instances it created.
-	 *
-	 * Example accepted formats:
-	 * - `diamond_pickaxe:5`
-	 * - `minecraft:string`
-	 * - `351:4 (lapis lazuli ID:meta)`
-	 *
-	 * If multiple item instances are to be created, their identifiers must be comma-separated, for example:
-	 * `diamond_pickaxe,wooden_shovel:18,iron_ingot`
-	 *
-	 * @param string $str
-	 * @param bool $multiple
-	 *
-	 * @return array
-	 */
-	public static function fromString(string $str, bool $multiple = false) {
-		if ($multiple === true) {
-			$blocks = [];
-			foreach (explode(",", $str) as $b) {
-				$blocks[] = self::fromString($b, false);
-			}
-
-			return $blocks;
-		} else {
-			$b = explode(":", str_replace([" ", "minecraft:"], ["_", ""], trim($str)));
-			if (!isset($b[1])) {
-				$meta = 0;
-			} else {
-				$meta = $b[1] & 0xFFFF;
-			}
-
-			if (is_numeric($b[0])) {
-				$item = ItemFactory::get(((int)$b[0]) & 0xFFFF, $meta);
-			} elseif (defined(Item::class . "::" . strtoupper($b[0]))) {
-				$item = ItemFactory::get(constant(Item::class . "::" . strtoupper($b[0])), $meta);
-				if ($item->getId() === Item::AIR and strtoupper($b[0]) !== "AIR") {
-					$item = null;
-				}
-			} else {
-				$item = null;
-			}
-
-			return [$b[0], $item];
-		}
-	}
-
-	/**
-	 * Creates a brush at a specific location with the passed settings
-	 * @param Block $target
-	 * @param NamedTag $settings
-	 * @param Session $session
-	 * @return bool
-	 * @throws \Exception
-	 */
-	public static function createBrush(Block $target, NamedTag $settings, Session $session) {//TODO messages
-		$shape = null;
-		$lang = Loader::getInstance()->getLanguage();
-		if (!$settings instanceof CompoundTag) return false;
-		$messages = [];
-		$error = false;
-		switch ($settings->getString("type", $lang->translateString('ui.brush.select.type.cuboid'))) {
-			//TODO use/parse int as type !! IMPORTANT TODO !!
-			//TODO use/parse int as type !! IMPORTANT TODO !!
-			//TODO use/parse int as type !! IMPORTANT TODO !!
-			//TODO use/parse int as type !! IMPORTANT TODO !!
-			//TODO use/parse int as type !! IMPORTANT TODO !!
-			case $lang->translateString('ui.brush.select.type.cuboid'):
-				{
-					$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_CUBOID, self::compoundToArray($settings));
-					$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-					return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$shape->options["flags"]);
-					break;
-				}
-			case $lang->translateString('ui.brush.select.type.cylinder'):
-				{
-					$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_CYLINDER, self::compoundToArray($settings));
-					$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-					return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$shape->options["flags"]);
-					break;
-				}
-			case $lang->translateString('ui.brush.select.type.sphere'):
-				{
-					$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_SPHERE, self::compoundToArray($settings));
-					$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-					return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$shape->options["flags"]);
-					break;
-				}
-			case $lang->translateString('ui.brush.select.type.clipboard'):
-				{
-					$clipboard = $session->getClipboards()[0] ?? null;
-					if (is_null($clipboard)) {
-						$session->getPlayer()->sendMessage(TextFormat::RED . "You have no clipboard - create one first");
-						return false;
-					}
-					return self::pasteAsync($clipboard, $session, $target);//TODO flags & proper brush tool
-					break;
-				}
-			case null:
-			default:
-				{
-					$session->getPlayer()->sendMessage("Unknown shape");
-				}
-		}
-		return false;
-	}
-
-	/**
-	 * @param Block $target
-	 * @param NamedTag $settings
-	 * @param Session $session
-	 * @param array[] $flagarray
-	 * @return bool
-	 * @throws \Exception
-	 */
-	public static function floodArea(Block $target, NamedTag $settings, Session $session, array ...$flagarray) { //TODO
-		if (!$settings instanceof CompoundTag) return null;
-		$shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_FLOOD, self::compoundToArray($settings));
-		$shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-		$messages = [];
-		$error = false;
-		return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), ...$flagarray);
-	}
-
-	public static function compoundToArray(CompoundTag $compoundTag) {
-		$nbt = new LittleEndianNBTStream();
-		$nbt->writeTag($compoundTag);
-		return $nbt::toArray($compoundTag);
-	}
+    /// SESSION RELATED API PART
 
 	public static function &addSession(Session $session) {
 		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
@@ -555,6 +288,8 @@ class API {
 		return self::$sessions;
 	}
 
+    /// SCHEMATIC RELATED API PART
+
 	/**
 	 * @return Clipboard[]
 	 */
@@ -569,238 +304,309 @@ class API {
 		self::$schematics = $schematics;
 	}
 
-	public static function undoAsync(Session $session) {
-		try {
-			$session->getPlayer()->sendMessage("You had " . count($session->getUndos()) . " undo actions left");//TODO remove
-			$clipboard = $session->getLatestUndo();
-			if (is_null($clipboard)) {
-				$session->getPlayer()->sendMessage("Nothing to undo");//TODO prettify
-				return true;
-			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_UNDO));
-		} catch (\Exception $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-			return false;
-		}
-		return true;
-	}
+    /* HELPER FUNCTIONS API PART */
 
-	public static function redoAsync(Session $session) {
-		try {
-			$session->getPlayer()->sendMessage("You had " . count($session->getRedos()) . " redo actions left");//TODO remove
-			$clipboard = $session->getLatestRedo();
-			if (is_null($clipboard)) {
-				$session->getPlayer()->sendMessage("Nothing to redo");//TODO prettify
-				return true;
-			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_REDO));
-		} catch (\Exception $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-			return false;
-		}
-		return true;
-	}
+    /**
+     * Parses String representations of flags into an integer with flags applied
+     * @param string[] $flags An array containing string representations of the flags
+     * @return int
+     */
+    public static function flagParser(array $flags)
+    {
+        $flagmeta = self::FLAG_BASE;
+        foreach ($flags as $flag) {
+            switch ($flag) {
+                case "-keepblocks":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_BLOCKS;
+                    break;
+                case  "-keepair":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_AIR;
+                    break;
+                case  "-a":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_PASTE_WITHOUT_AIR;
+                    break;
+                case  "-h":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW;
+                    break;
+                case  "-n":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_NATURAL;
+                    break;
+                case  "-p":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_POSITION_RELATIVE;
+                    break;
+                case  "-v":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_VARIANT;
+                    break;
+                case  "-m":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_META;
+                    break;
+                default:
+                    Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
+            }
+        }
+        return $flagmeta;
+    }
 
-	/**
-	 * @deprecated
-	 * @param Session $session
-	 * @return bool
-	 */
-	public static function undo(Session $session) {
-		$changed = 0;
-		$time = microtime(true);
-		$clipboard = $session->getLatestUndo();
-		/** @var Clipboard $clipboard */
-		if (is_null($clipboard)) {
-			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to undo");
-			return false;
-		}
-		/** @var Block $block */
-		foreach ($clipboard->getData() as $block) {
-			$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
-			if ($level->setBlock($block, $block, false, false)) $changed++;
-		}
-		$session->addRedo($clipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Undo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed, " . count($session->getUndos()) . " undo actions left");
-		return true;
-	}
+    /**
+     * Checks if $flags has the specified flag $check
+     * @param int $flags The return value of flagParser
+     * @param int $check The flag to check
+     * @return bool
+     */
+    public static function hasFlag(int $flags, int $check)
+    {
+        return ($flags & (self::FLAG_BASE << $check)) > 0;
+    }
 
-	/**
-	 * @deprecated
-	 * @param Session $session
-	 * @return bool
-	 */
-	public static function redo(Session $session) {
-		$changed = 0;
-		$time = microtime(true);
-		$clipboard = $session->getLatestRedo();
-		/** @var Clipboard $clipboard */
-		if (is_null($clipboard)) {
-			$session->getPlayer()->sendMessage(TextFormat::RED . "Nothing to redo");
-			return false;
-		}
-		/** @var Block $block */
-		foreach ($clipboard->getData() as $block) {
-			$level = $block->getLevel() ?? $session->getPlayer()->getLevel();
-			if ($level->setBlock($block, $block, false, false)) $changed++;
-		}
-		$session->addUndo($clipboard);
-		$session->getPlayer()->sendMessage(Loader::$prefix . TextFormat::GREEN . "Redo succeed, took " . round((microtime(TRUE) - $time), 2) . "s, " . $changed . " blocks changed, " . count($session->getRedos()) . " redo actions left");
-		return true;
-	}
+    /**
+     * More fail proof method of parsing a string to a Block
+     * @param string $fullstring
+     * @param array $messages
+     * @param bool $error
+     * @return Block[]
+     */
+    public static function blockParser(string $fullstring, array &$messages, bool &$error)
+    {
+        $blocks = [];
+        foreach (self::fromString($fullstring, true) as [$name, $item]) {
+            if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)) {
+                $block = $item->getBlock();
+                $blocks[] = $block;
+            } else {
+                $error = true;
+                $messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
+                continue;
+            }
+            if ($block instanceof UnknownBlock) {
+                $messages[] = Loader::$prefix . TextFormat::GOLD . $block . " is an unknown block";
+            }
+        }
 
-	public static function rotationMetaHelper(Block $block, $timesRotate = 1) {
-		$meta = $block->getDamage();
-		$variant = $block->getVariant();
-		$rotation = [0, 0, 0, 0];
-		switch ($block->getId()) {
-			case BlockIds::FURNACE:
-			case BlockIds::BURNING_FURNACE:
-			case BlockIds::CHEST:
-			case BlockIds::TRAPPED_CHEST:
-			case BlockIds::ENDER_CHEST:
-			case BlockIds::STONE_BUTTON:
-			case BlockIds::WOODEN_BUTTON:
-			case BlockIds::WALL_BANNER:
-			case BlockIds::PURPLE_GLAZED_TERRACOTTA:
-			case BlockIds::WHITE_GLAZED_TERRACOTTA :
-			case BlockIds::ORANGE_GLAZED_TERRACOTTA :
-			case BlockIds::MAGENTA_GLAZED_TERRACOTTA :
-			case BlockIds::LIGHT_BLUE_GLAZED_TERRACOTTA:
-			case BlockIds::YELLOW_GLAZED_TERRACOTTA:
-			case BlockIds::LIME_GLAZED_TERRACOTTA :
-			case BlockIds::PINK_GLAZED_TERRACOTTA :
-			case BlockIds::GRAY_GLAZED_TERRACOTTA :
-			case BlockIds::SILVER_GLAZED_TERRACOTTA :
-			case BlockIds::CYAN_GLAZED_TERRACOTTA:
-			case BlockIds::BLUE_GLAZED_TERRACOTTA:
-			case BlockIds::BROWN_GLAZED_TERRACOTTA :
-			case BlockIds::GREEN_GLAZED_TERRACOTTA :
-			case BlockIds::RED_GLAZED_TERRACOTTA :
-			case BlockIds::BLACK_GLAZED_TERRACOTTA :
-			case BlockIds::LADDER:
-			case BlockIds::WALL_SIGN:
-				{
-					$rotation = [3, 4, 2, 5];
-					break;
-				}
-			case BlockIds::ITEM_FRAME_BLOCK:
-				{
-					$rotation = [2, 1, 3, 0];
-					//$rotation = [14,12,15,12];//TODO
-					break;
-				}
-			case BlockIds::IRON_TRAPDOOR:
-			case BlockIds::TRAPDOOR:
-				{
-					$rotation = [2, 1, 3, 0];
-					//$rotation = [14,12,15,12];//TODO
-					break;
-				}
-			case BlockIds::UNPOWERED_REPEATER:
-			case BlockIds::UNPOWERED_COMPARATOR:
-			case BlockIds::POWERED_REPEATER:
-			case BlockIds::POWERED_COMPARATOR:
-			case BlockIds::END_PORTAL_FRAME:
-			case BlockIds::LIT_PUMPKIN:
-			case BlockIds::PUMPKIN:
-				{
-					$rotation = [0, 1, 2, 3];
-					break;
-				}
-			case BlockIds::WOODEN_STAIRS:
-			case BlockIds::STONE_STAIRS:
-			case BlockIds::BRICK_STAIRS:
-			case BlockIds::STONE_BRICK_STAIRS:
-			case BlockIds::NETHER_BRICK_STAIRS:
-			case BlockIds::SANDSTONE_STAIRS:
-			case BlockIds::SPRUCE_STAIRS:
-			case BlockIds::BIRCH_STAIRS:
-			case BlockIds::JUNGLE_STAIRS:
-			case BlockIds::QUARTZ_STAIRS:
-			case BlockIds::ACACIA_STAIRS:
-			case BlockIds::DARK_OAK_STAIRS:
-			case BlockIds::RED_SANDSTONE_STAIRS:
-			case BlockIds::PURPUR_STAIRS:
-				{
-					$rotation = [3, 0, 2, 1];
-					break;
-				}
-			case BlockIds::WOODEN_DOOR_BLOCK:
-			case BlockIds::IRON_DOOR_BLOCK:
-			case BlockIds::SPRUCE_DOOR_BLOCK:
-			case BlockIds::BIRCH_DOOR_BLOCK:
-			case BlockIds::JUNGLE_DOOR_BLOCK:
-			case BlockIds::ACACIA_DOOR_BLOCK:
-			case BlockIds::DARK_OAK_DOOR_BLOCK:
-			case BlockIds::ANVIL:
-				{
-					$rotation = [3, 0, 1, 2];
-					break;
-				}
-			case BlockIds::VINE:
-				{
-					$rotation = [4, 8, 1, 2];
-					break;
-				}
-			case BlockIds::BED_BLOCK:
-			case BlockIds::OAK_FENCE_GATE:
-			case BlockIds::SPRUCE_FENCE_GATE:
-			case BlockIds::BIRCH_FENCE_GATE:
-			case BlockIds::JUNGLE_FENCE_GATE:
-			case BlockIds::DARK_OAK_FENCE_GATE:
-			case BlockIds::ACACIA_FENCE_GATE:
-				{
-					$rotation = [2, 3, 0, 1];
-					//TODO [10, 11,8,9]
-					break;
-				}
-			case BlockIds::STANDING_BANNER:
-			case BlockIds::SIGN_POST:
-				{
-					$rotation = [0, 4, 8, 12];
-					//TODO all rotation
-					break;
-				}
-			case BlockIds::QUARTZ_BLOCK:
-			case BlockIds::PURPUR_BLOCK:
-				{
-					$rotation = [10, 6, 10, 6];
-					break;
-				}
-			case BlockIds::HAY_BLOCK:
-			case BlockIds::BONE_BLOCK:
-			case BlockIds::LOG:
-			case BlockIds::LOG2:
-				{
-					$rotation = [10, 6, 10, 6];
-					break;
-				}
-			case BlockIds::END_ROD:
-				{
-					$rotation = [2, 4, 3, 5];
-					break;
-				}
-			case BlockIds::PISTON:
-			case BlockIds::STICKY_PISTON:
-				{
-					$rotation = [2, 5, 3, 4];
-					break;
-				}
-			case BlockIds::TORCH:
-			case BlockIds::REDSTONE_ORE:
-			case BlockIds::UNLIT_REDSTONE_TORCH:
-				{
-					$rotation = [3, 2, 4, 1];
-					break;
-				}
-			//TODO: Heads
-		}
-		$currentrotationindex = array_search($meta % count($rotation), $rotation);
-		if ($currentrotationindex === false) return $block->getDamage();
-		$currentrotationindex += $timesRotate;
-		#return $rotation[($currentrotationindex % count($rotation))];
-		$extra = intval($meta / count($rotation));
-		return $rotation[$currentrotationindex % count($rotation)] + ($extra * count($rotation)) % 16;
-	}
+        return $blocks;
+    }
+
+    /**
+     * TODO: remove when ItemFactory::fromString() is fully supporting air aka "air","0","0:0","minecraft:air"
+     * Replacement function for ItemFactory::fromString() with more fail-proof AIR support
+     *
+     * Tries to parse the specified string into Item ID/meta identifiers, and returns Item instances it created.
+     *
+     * Example accepted formats:
+     * - `diamond_pickaxe:5`
+     * - `minecraft:string`
+     * - `351:4 (lapis lazuli ID:meta)`
+     *
+     * If multiple item instances are to be created, their identifiers must be comma-separated, for example:
+     * `diamond_pickaxe,wooden_shovel:18,iron_ingot`
+     *
+     * @param string $str
+     * @param bool $multiple
+     *
+     * @return array
+     */
+    public static function fromString(string $str, bool $multiple = false)
+    {
+        if ($multiple === true) {
+            $blocks = [];
+            foreach (explode(",", $str) as $b) {
+                $blocks[] = self::fromString($b, false);
+            }
+
+            return $blocks;
+        } else {
+            $b = explode(":", str_replace([" ", "minecraft:"], ["_", ""], trim($str)));
+            if (!isset($b[1])) {
+                $meta = 0;
+            } else {
+                $meta = $b[1] & 0xFFFF;
+            }
+
+            if (is_numeric($b[0])) {
+                $item = ItemFactory::get(((int)$b[0]) & 0xFFFF, $meta);
+            } elseif (defined(Item::class . "::" . strtoupper($b[0]))) {
+                $item = ItemFactory::get(constant(Item::class . "::" . strtoupper($b[0])), $meta);
+                if ($item->getId() === Item::AIR and strtoupper($b[0]) !== "AIR") {
+                    $item = null;
+                }
+            } else {
+                $item = null;
+            }
+
+            return [$b[0], $item];
+        }
+    }
+
+    /**
+     * Parses a CompoundTag into an array
+     * @param CompoundTag $compoundTag
+     * @return array
+     */
+    public static function compoundToArray(CompoundTag $compoundTag)
+    {
+        $nbt = new LittleEndianNBTStream();
+        $nbt->writeTag($compoundTag);
+        return $nbt::toArray($compoundTag);
+    }
+
+    /**
+     * TODO needs updates/fixes
+     * @param Block $block
+     * @param int $timesRotate
+     * @return int|mixed
+     */
+    public static function rotationMetaHelper(Block $block, $timesRotate = 1)
+    {
+        $meta = $block->getDamage();
+        $variant = $block->getVariant();
+        $rotation = [0, 0, 0, 0];
+        switch ($block->getId()) {
+            case BlockIds::FURNACE:
+            case BlockIds::BURNING_FURNACE:
+            case BlockIds::CHEST:
+            case BlockIds::TRAPPED_CHEST:
+            case BlockIds::ENDER_CHEST:
+            case BlockIds::STONE_BUTTON:
+            case BlockIds::WOODEN_BUTTON:
+            case BlockIds::WALL_BANNER:
+            case BlockIds::PURPLE_GLAZED_TERRACOTTA:
+            case BlockIds::WHITE_GLAZED_TERRACOTTA :
+            case BlockIds::ORANGE_GLAZED_TERRACOTTA :
+            case BlockIds::MAGENTA_GLAZED_TERRACOTTA :
+            case BlockIds::LIGHT_BLUE_GLAZED_TERRACOTTA:
+            case BlockIds::YELLOW_GLAZED_TERRACOTTA:
+            case BlockIds::LIME_GLAZED_TERRACOTTA :
+            case BlockIds::PINK_GLAZED_TERRACOTTA :
+            case BlockIds::GRAY_GLAZED_TERRACOTTA :
+            case BlockIds::SILVER_GLAZED_TERRACOTTA :
+            case BlockIds::CYAN_GLAZED_TERRACOTTA:
+            case BlockIds::BLUE_GLAZED_TERRACOTTA:
+            case BlockIds::BROWN_GLAZED_TERRACOTTA :
+            case BlockIds::GREEN_GLAZED_TERRACOTTA :
+            case BlockIds::RED_GLAZED_TERRACOTTA :
+            case BlockIds::BLACK_GLAZED_TERRACOTTA :
+            case BlockIds::LADDER:
+            case BlockIds::WALL_SIGN:
+                {
+                    $rotation = [3, 4, 2, 5];
+                    break;
+                }
+            case BlockIds::ITEM_FRAME_BLOCK:
+                {
+                    $rotation = [2, 1, 3, 0];
+                    //$rotation = [14,12,15,12];//TODO
+                    break;
+                }
+            case BlockIds::IRON_TRAPDOOR:
+            case BlockIds::TRAPDOOR:
+                {
+                    $rotation = [2, 1, 3, 0];
+                    //$rotation = [14,12,15,12];//TODO
+                    break;
+                }
+            case BlockIds::UNPOWERED_REPEATER:
+            case BlockIds::UNPOWERED_COMPARATOR:
+            case BlockIds::POWERED_REPEATER:
+            case BlockIds::POWERED_COMPARATOR:
+            case BlockIds::END_PORTAL_FRAME:
+            case BlockIds::LIT_PUMPKIN:
+            case BlockIds::PUMPKIN:
+                {
+                    $rotation = [0, 1, 2, 3];
+                    break;
+                }
+            case BlockIds::WOODEN_STAIRS:
+            case BlockIds::STONE_STAIRS:
+            case BlockIds::BRICK_STAIRS:
+            case BlockIds::STONE_BRICK_STAIRS:
+            case BlockIds::NETHER_BRICK_STAIRS:
+            case BlockIds::SANDSTONE_STAIRS:
+            case BlockIds::SPRUCE_STAIRS:
+            case BlockIds::BIRCH_STAIRS:
+            case BlockIds::JUNGLE_STAIRS:
+            case BlockIds::QUARTZ_STAIRS:
+            case BlockIds::ACACIA_STAIRS:
+            case BlockIds::DARK_OAK_STAIRS:
+            case BlockIds::RED_SANDSTONE_STAIRS:
+            case BlockIds::PURPUR_STAIRS:
+                {
+                    $rotation = [3, 0, 2, 1];
+                    break;
+                }
+            case BlockIds::WOODEN_DOOR_BLOCK:
+            case BlockIds::IRON_DOOR_BLOCK:
+            case BlockIds::SPRUCE_DOOR_BLOCK:
+            case BlockIds::BIRCH_DOOR_BLOCK:
+            case BlockIds::JUNGLE_DOOR_BLOCK:
+            case BlockIds::ACACIA_DOOR_BLOCK:
+            case BlockIds::DARK_OAK_DOOR_BLOCK:
+            case BlockIds::ANVIL:
+                {
+                    $rotation = [3, 0, 1, 2];
+                    break;
+                }
+            case BlockIds::VINE:
+                {
+                    $rotation = [4, 8, 1, 2];
+                    break;
+                }
+            case BlockIds::BED_BLOCK:
+            case BlockIds::OAK_FENCE_GATE:
+            case BlockIds::SPRUCE_FENCE_GATE:
+            case BlockIds::BIRCH_FENCE_GATE:
+            case BlockIds::JUNGLE_FENCE_GATE:
+            case BlockIds::DARK_OAK_FENCE_GATE:
+            case BlockIds::ACACIA_FENCE_GATE:
+                {
+                    $rotation = [2, 3, 0, 1];
+                    //TODO [10, 11,8,9]
+                    break;
+                }
+            case BlockIds::STANDING_BANNER:
+            case BlockIds::SIGN_POST:
+                {
+                    $rotation = [0, 4, 8, 12];
+                    //TODO all rotation
+                    break;
+                }
+            case BlockIds::QUARTZ_BLOCK:
+            case BlockIds::PURPUR_BLOCK:
+                {
+                    $rotation = [10, 6, 10, 6];
+                    break;
+                }
+            case BlockIds::HAY_BLOCK:
+            case BlockIds::BONE_BLOCK:
+            case BlockIds::LOG:
+            case BlockIds::LOG2:
+                {
+                    $rotation = [10, 6, 10, 6];
+                    break;
+                }
+            case BlockIds::END_ROD:
+                {
+                    $rotation = [2, 4, 3, 5];
+                    break;
+                }
+            case BlockIds::PISTON:
+            case BlockIds::STICKY_PISTON:
+                {
+                    $rotation = [2, 5, 3, 4];
+                    break;
+                }
+            case BlockIds::TORCH:
+            case BlockIds::REDSTONE_ORE:
+            case BlockIds::UNLIT_REDSTONE_TORCH:
+                {
+                    $rotation = [3, 2, 4, 1];
+                    break;
+                }
+            //TODO: Heads
+        }
+        $currentrotationindex = array_search($meta % count($rotation), $rotation);
+        if ($currentrotationindex === false) return $block->getDamage();
+        $currentrotationindex += $timesRotate;
+        #return $rotation[($currentrotationindex % count($rotation))];
+        $extra = intval($meta / count($rotation));
+        return $rotation[$currentrotationindex % count($rotation)] + ($extra * count($rotation)) % 16;
+    }
 }

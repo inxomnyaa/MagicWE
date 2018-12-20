@@ -37,8 +37,9 @@ class WandCommand extends WECommand {
 			$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
 			$item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Wand');
 			$item->setLore([//TODO translation
-				'Left click a block to set the position 1 of a selection',
-				'Right click a block to set the position 2 of a selection',
+                'Left click air or a block to set the position 1 of a selection',
+                'Right click air or a block to set the position 2 of a selection',
+                'If you click in air its set to the block you are looking at',
 				'Use //togglewand to toggle it\'s functionality'
 			]);
 			$item->setNamedTagEntry(new CompoundTag("MagicWE", []));

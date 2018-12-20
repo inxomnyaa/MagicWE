@@ -31,24 +31,23 @@ class Sphere extends Shape {
 	 */
 	public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator {
 		$this->validateChunkManager($manager);
-		var_dump($this->options);
 		for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
 			for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
 				for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-					if (API::hasFlag($flags, API::FLAG_UNCENTERED))//TODO check if correct
+                    if (API::hasFlag($flags, API::FLAG_POSITION_RELATIVE))//TODO check if correct
 						$vec3 = new Vector3($rx, $ry, $rz);
 					else
 						$vec3 = new Vector3($x, $y, $z);
-					if ($vec3->distanceSquared($this->getCenter()) <= (($this->options['diameter'] / 2) ** 2) && (!API::hasFlag($this->flags, API::FLAG_HOLLOW) || $vec3->distanceSquared($this->getCenter()) >= ((($this->options['diameter'] / 2) - 1) ** 2)))
-						$block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
-					else continue;
-					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
+                    if ($vec3->distanceSquared($this->getCenter()) > (($this->options['diameter'] / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW) && $vec3->distanceSquared($this->getCenter()) <= ((($this->options['diameter'] / 2) - 1) ** 2)))
+                        continue;
+                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
+                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
 
 					/*$block = */
 					$block->setComponents($vec3->x, $vec3->y, $vec3->z);
 
 					if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
 					if (empty($filterblocks)) yield $block;
 					else {
 						foreach ($filterblocks as $filterblock) {
