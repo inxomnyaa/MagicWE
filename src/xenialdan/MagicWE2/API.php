@@ -204,6 +204,7 @@ class API {
         $error = false;
         switch ($type = $settings->getInt("type", -1)) {
             case ShapeGenerator::TYPE_CUBOID:
+            case ShapeGenerator::TYPE_CUBE:
             case ShapeGenerator::TYPE_CYLINDER:
             case ShapeGenerator::TYPE_SPHERE:
                 {

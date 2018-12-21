@@ -50,7 +50,7 @@ class CylinderCommand extends WECommand {
 				if (is_null($session)) {
 					throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 				}
-				$return = API::createBrush($sender->getLevel()->getBlock($sender), new CompoundTag("MagicWE", [
+                $return = API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag("MagicWE", [
                     new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
 					new StringTag("blocks", $blocks),
 					new FloatTag("diameter", $diameter),

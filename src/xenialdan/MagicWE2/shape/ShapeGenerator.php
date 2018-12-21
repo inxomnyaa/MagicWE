@@ -17,6 +17,7 @@ class ShapeGenerator {
 	const TYPE_CUSTOM = 4;
 	const TYPE_FLOOD = 5;
 	const TYPE_PYRAMID = 6;
+    const TYPE_CUBE = 7;
 
 	/**
 	 * @param Level $level
@@ -31,11 +32,16 @@ class ShapeGenerator {
 					return new Sphere($level, $options);
 					break;
 				}
-			case self::TYPE_CUBOID:
-				{
-					return new Cuboid($level, $options);
-					break;
-				}
+            case self::TYPE_CUBOID:
+                {
+                    return new Cuboid($level, $options);
+                    break;
+                }
+            case self::TYPE_CUBE:
+                {
+                    return new Cube($level, $options);
+                    break;
+                }
 			case self::TYPE_CYLINDER:
 				{
 					return new Cylinder($level, $options);
