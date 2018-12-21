@@ -11,22 +11,38 @@ use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\AsyncChunkManager;
 
-class Cylinder extends Shape {
-	private $diameter = 10;
-	private $height = 1;
-	/** @var int */
-	private $y;
+class Cylinder extends Shape
+{
 
-	/**
+    /**
      * Cylinder constructor.
-	 * @param Level $level
-	 * @param array $options
-	 */
-	public function __construct(Level $level, array $options) {
-		parent::__construct($level, $options);
-		$this->diameter = $options["diameter"] ?? $this->diameter;
-		$this->height = $options["height"] ?? $this->height;
-	}
+     * @param Level $level
+     * @param array $options
+     */
+    public function __construct(Level $level, array $options)
+    {
+        parent::__construct($level, $options);
+    }
+
+    public function getPos1()//TODO check if loop
+    {
+        try {
+            return parent::getPos1();
+        } catch (\Exception $e) {
+            $this->setCenter($this->getCenter());
+            return $this->pos1;
+        }
+    }
+
+    public function getPos2()//TODO check if loop
+    {
+        try {
+            return parent::getPos2();
+        } catch (\Exception $e) {
+            $this->setCenter($this->getCenter());
+            return $this->pos2;
+        }
+    }
 
     /**
      * Returns the blocks by their actual position
@@ -39,7 +55,7 @@ class Cylinder extends Shape {
     public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        $this->y = $this->getCenter()->getY();
+        $centerVec2 = new Vector2($this->getCenter()->getX(), $this->getCenter()->getZ());
         for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
             for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
                 for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
@@ -50,7 +66,7 @@ class Cylinder extends Shape {
                         $vec2 = new Vector2($x, $z);
                         $vec3 = new Vector3($x, $y, $z);
                     }
-                    if ($vec2->distanceSquared($this->getCenter()) > (($this->options['diameter'] / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($this->getCenter()) <= ((($this->options['diameter'] / 2) - 1) ** 2)))
+                    if ($vec2->distanceSquared($centerVec2) > (($this->options['diameter'] / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->getSizeY() - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2))))
                         continue;
                     $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
@@ -71,16 +87,19 @@ class Cylinder extends Shape {
         }
     }
 
-	public function setCenter(Vector3 $center) {
-		$this->center = $center;
-		try {
-			$this->setPos1(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
-			$this->setPos2(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
-		} catch (\Exception $e) {
-		}
-	}
+    /**
+     * @param Vector3 $center
+     * @throws \Exception
+     */
+    public function setCenter(Vector3 $center)
+    {
+        $this->center = $center;
+        $this->setPos1(new Position($center->getX() - $this->options["diameter"] / 2, $center->getY() - $this->options["height"] / 2, $center->getZ() - $this->options["diameter"] / 2, $this->getLevel()));
+        $this->setPos2(new Position($center->getX() + $this->options["diameter"] / 2, $center->getY() + $this->options["height"] / 2, $center->getZ() + $this->options["diameter"] / 2, $this->getLevel()));
+    }
 
-	public function getTotalCount() {
-		return ceil((pi() * ($this->diameter ** 2)) / 4) * $this->height;
-	}
+    public function getTotalCount()
+    {
+        return ceil((pi() * ($this->options["diameter"] ** 2)) / 4) * $this->options["height"];
+    }
 }

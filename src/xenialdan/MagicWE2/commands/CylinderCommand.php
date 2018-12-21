@@ -15,6 +15,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\shape\ShapeGenerator;
 
 class CylinderCommand extends WECommand {
 	public function __construct(Plugin $plugin) {
@@ -34,7 +35,7 @@ class CylinderCommand extends WECommand {
 		}
 		$lang = Loader::getInstance()->getLanguage();
 		try {
-			if (count($args) < 2) throw new \ArgumentCountError("No or too less arguments supplied");
+            if (count($args) < 3) throw new \ArgumentCountError("No or too less arguments supplied");
 			$messages = [];
 			$error = false;
 			$blocks = array_shift($args);
@@ -50,7 +51,7 @@ class CylinderCommand extends WECommand {
 					throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
 				}
 				$return = API::createBrush($sender->getLevel()->getBlock($sender), new CompoundTag("MagicWE", [
-					new StringTag("type", $lang->translateString('ui.brush.select.type.cylinder')),
+                    new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
 					new StringTag("blocks", $blocks),
 					new FloatTag("diameter", $diameter),
 					new FloatTag("height", $height),
@@ -63,10 +64,12 @@ class CylinderCommand extends WECommand {
 		} catch (\Exception $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
 			$return = false;
 		} catch (\ArgumentCountError $error) {
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
 			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
 			$return = false;
 		} catch (\Error $error) {
 			$this->getPlugin()->getLogger()->error($error->getMessage());

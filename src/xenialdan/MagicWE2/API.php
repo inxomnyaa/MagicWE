@@ -328,6 +328,9 @@ class API {
                 case  "-h":
                     $flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW;
                     break;
+                case  "-hc":
+                    $flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW_CLOSED;
+                    break;
                 case  "-n":
                     $flagmeta ^= self::FLAG_BASE << self::FLAG_NATURAL;
                     break;
