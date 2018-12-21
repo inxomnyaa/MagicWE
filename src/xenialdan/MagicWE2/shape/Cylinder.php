@@ -94,7 +94,7 @@ class Cylinder extends Shape
     public function setCenter(Vector3 $center)
     {
         $this->center = $center;
-        $this->setPos1(new Position($center->getX() - $this->options["diameter"] / 2, $center->getY() - $this->options["height"] / 2, $center->getZ() - $this->options["diameter"] / 2, $this->getLevel()));
+        $this->setPos1(new Position($center->getX() - $this->options["diameter"] / 2, floor($center->getY() - $this->options["height"] / 2), $center->getZ() - $this->options["diameter"] / 2, $this->getLevel()));
         $this->setPos2(new Position($center->getX() + $this->options["diameter"] / 2, floor($center->getY() + $this->options["height"] / 2) - 1, $center->getZ() + $this->options["diameter"] / 2, $this->getLevel()));
     }
 
