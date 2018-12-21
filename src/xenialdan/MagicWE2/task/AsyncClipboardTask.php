@@ -73,6 +73,9 @@ class AsyncClipboardTask extends AsyncTask {
 		$undoClipboard = unserialize($this->undoClipboard);
 		$changed = $this->editBlocks($clipboard, $manager, $undoClipboard);
 		$chunks = $manager->getChunks();
+        $chunks = array_filter($chunks, function (Chunk $chunk) {
+            return $chunk->hasChanged();
+        });
 		$this->setResult(compact("chunks", "changed", "totalCount", "undoClipboard"));
 	}
 

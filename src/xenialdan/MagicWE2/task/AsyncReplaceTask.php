@@ -75,6 +75,9 @@ class AsyncReplaceTask extends AsyncTask {
 		$undoClipboard = unserialize($this->undoClipboard);
 		$changed = $this->editBlocks($selection, $manager, $oldBlocks, $newBlocks, $undoClipboard);
 		$chunks = $manager->getChunks();
+        $chunks = array_filter($chunks, function (Chunk $chunk) {
+            return $chunk->hasChanged();
+        });
 		$this->setResult(compact("chunks", "changed", "totalCount", "undoClipboard"));
 	}
 

@@ -70,6 +70,9 @@ class AsyncFillTask extends AsyncTask {
 		$undoClipboard = unserialize($this->undoClipboard);
 		$changed = $this->editBlocks($selection, $manager, $newBlocks, $undoClipboard);
 		$chunks = $manager->getChunks();
+        $chunks = array_filter($chunks, function (Chunk $chunk) {
+            return $chunk->hasChanged();
+        });
 		$this->setResult(compact("chunks", "changed", "totalCount", "undoClipboard"));
 	}
 
@@ -120,6 +123,7 @@ class AsyncFillTask extends AsyncTask {
 
 	public function onProgressUpdate(Server $server, $progress) {
 		[$percentage, $title] = $progress;
+        var_dump($progress);
 		$player = $server->getPlayerByUUID(unserialize($this->playerUUID));
 		if (is_null($player)) return;
 		$session = API::getSession($player);
