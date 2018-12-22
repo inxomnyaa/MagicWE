@@ -5,7 +5,7 @@ namespace xenialdan\MagicWE2\shape;
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
-use pocketmine\level\Position;
+use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\AsyncChunkManager;
@@ -42,7 +42,6 @@ class Flood extends Shape {
 		$this->y = $this->getCenter()->getY();
 		$block = $manager->getBlockAt($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
 		$block->setComponents($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
-		var_dump($block);
 		$this->walked[] = $block;
 		$this->nextToCheck = $this->walked;
 		foreach ($this->walk($manager) as $block) {
@@ -75,67 +74,43 @@ class Flood extends Shape {
 	 * @return \Generator|Block
 	 */
 	private function getHorizontalSides(ChunkManager $manager, Vector3 $vector3): \Generator {
-		$side = $vector3->getSide(Vector3::SIDE_NORTH);
-		$block = $manager->getBlockAt($side->x, $side->y, $side->z);
-		$block->setComponents($side->x, $side->y, $side->z);
-		yield $block;
-		$side = $vector3->getSide(Vector3::SIDE_SOUTH);
-		$block = $manager->getBlockAt($side->x, $side->y, $side->z);
-		$block->setComponents($side->x, $side->y, $side->z);
-		yield $block;
-		$side = $vector3->getSide(Vector3::SIDE_WEST);
-		$block = $manager->getBlockAt($side->x, $side->y, $side->z);
-		$block->setComponents($side->x, $side->y, $side->z);
-		yield $block;
-		$side = $vector3->getSide(Vector3::SIDE_EAST);
-		$block = $manager->getBlockAt($side->x, $side->y, $side->z);
-		$block->setComponents($side->x, $side->y, $side->z);
-		yield $block;
-	}
-
-	/**
-	 * @deprecated TODO rewrite
-	 * @param int $flags
-	 * @param Block[] $filterblocks
-	 * @return array
-	 * @throws \Exception
-	 */
-	public function getBlocksOld(int $flags, Block ...$filterblocks) {//TODO use filterblocks
-		$this->y = $this->getCenter()->getY();
-		$this->walked[] = $this->getLevel()->getBlock($this->getCenter());
-		$this->nextToCheck[] = $this->getLevel()->getBlock($this->getCenter());
-		return $this->walkOld();
-	}
-
-	private function walkOld() {
-		/** @var Block[] $walkTo */
-		$walkTo = [];
-		/** @var Block $next */
-		foreach ($this->nextToCheck as $next) {
-			$sides = $next->getHorizontalSides();
-			$walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
-				return $side->getId() === 0 && !in_array($side, $walkTo) && !in_array($side, $this->walked) && !in_array($side, $this->nextToCheck) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
-			}));
-		}
-		$this->walked = array_merge($this->walked, $walkTo);
-		$this->nextToCheck = $walkTo;
-		if (!empty($this->nextToCheck)) $this->walk();
-		return $this->walked;
-	}
-
-	public function setCenter(Vector3 $center) {
-		$this->center = $center;
-		try {
-			$this->setPos1(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
-		} catch (\Exception $e) {
-		}
-		try {
-			$this->setPos2(new Position($center->getX(), $center->getY(), $center->getZ(), $this->getLevel()));
-		} catch (\Exception $e) {
-		}
+        foreach ([Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH, Vector3::SIDE_WEST, Vector3::SIDE_EAST] as $vSide) {
+            $side = $vector3->getSide($vSide);
+            if ($manager->getChunk($side->x >> 4, $side->z >> 4) === null) continue;//TODO check if continue or stop walking instead
+            $block = $manager->getBlockAt($side->x, $side->y, $side->z);
+            $block->setComponents($side->x, $side->y, $side->z);
+            yield $block;
+        }
 	}
 
 	public function getTotalCount() {
 		return $this->limit;
 	}
+
+    public function getTouchedChunks(): array
+    {
+        $maxRadius = sqrt($this->limit / pi());
+        $v2center = new Vector2($this->getCenter()->x, $this->getCenter()->z);
+        $cv2center = new Vector2($this->getCenter()->x >> 4, $this->getCenter()->z >> 4);
+        $maxX = ($v2center->x + $maxRadius) >> 4;
+        $minX = ($v2center->x - $maxRadius) >> 4;
+        $maxZ = ($v2center->y + $maxRadius) >> 4;
+        $minZ = ($v2center->y - $maxRadius) >> 4;
+        $cmaxRadius = $cv2center->distanceSquared($minX - 0.5, $minZ - 0.5);
+        print "from $minX:$minZ to $maxX:$maxZ" . PHP_EOL;
+        $touchedChunks = [];
+        for ($x = $minX - 1; $x <= $maxX + 1; $x++) {
+            for ($z = $minZ - 1; $z <= $maxZ + 1; $z++) {
+                if ($cv2center->distanceSquared($x, $z) > $cmaxRadius) continue;
+                $chunk = $this->getLevel()->getChunk($x, $z, true);
+                if ($chunk === null) {
+                    continue;
+                }
+                print "Touched Chunk at: $x:$z" . PHP_EOL;
+                $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+            }
+        }
+        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
+        return $touchedChunks;
+    }
 }

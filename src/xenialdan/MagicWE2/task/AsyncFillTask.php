@@ -89,14 +89,13 @@ class AsyncFillTask extends AsyncTask {
 		$i = 0;
 		$changed = 0;
 		$this->publishProgress([0, "Running, changed $changed blocks out of $blockCount 0%% done"]);
-		$lastchunkx = -1;
-		$lastchunkz = -1;
+        $lastchunkx = $lastchunkz = null;
 		/** @var Block $block */
 		foreach ($selection->getBlocks($manager, [], $this->flags) as $block) {
-			if ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
+            if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
 				$lastchunkx = $block->x >> 4;
 				$lastchunkz = $block->z >> 4;
-				if (is_null(($c = $manager->getChunk($block->x >> 4, $block->z >> 4)))) {
+                if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
 					print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}

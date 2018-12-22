@@ -9,6 +9,7 @@ use pocketmine\plugin\PluginBase;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CylinderCommand;
 use xenialdan\MagicWE2\commands\DebugCommand;
+use xenialdan\MagicWE2\commands\FloodCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
@@ -77,7 +78,7 @@ class Loader extends PluginBase {
 			$this->getLogger()->debug("CustomUI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("we", [
 				new BrushCommand($this),
-                #new FloodCommand($this),
+                new FloodCommand($this),
 			]);
 		} else {
 			$this->getLogger()->debug("CustomUI NOT found, can NOT use ui-based commands");
