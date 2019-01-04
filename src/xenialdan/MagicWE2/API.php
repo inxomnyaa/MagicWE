@@ -22,6 +22,7 @@ use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
+use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 use xenialdan\MagicWE2\task\AsyncRevertTask;
@@ -176,6 +177,25 @@ class API
                 return true;
             }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_REDO));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param Selection $selection
+     * @param null|Session $session
+     * @param Block[] $filterBlocks
+     * @param int $flags
+     * @return bool
+     */
+
+    public static function countAsync(Selection $selection, Session $session, array $filterBlocks, int $flags = self::FLAG_BASE)
+    {
+        try {
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $filterBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;

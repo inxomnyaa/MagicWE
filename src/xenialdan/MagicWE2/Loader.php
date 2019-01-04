@@ -8,6 +8,7 @@ use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
+use xenialdan\MagicWE2\commands\CountCommand;
 use xenialdan\MagicWE2\commands\CylinderCommand;
 use xenialdan\MagicWE2\commands\DebugCommand;
 use xenialdan\MagicWE2\commands\FloodCommand;
@@ -80,7 +81,8 @@ class Loader extends PluginBase
             new DebugCommand($this),
             new ToggledebugCommand($this),
             #new RotateCommand($this),
-            new CylinderCommand($this)
+            new CylinderCommand($this),
+            new CountCommand($this)
         ]);
         if (class_exists("xenialdan\\customui\\API")) {
             $this->getLogger()->debug("CustomUI found, can use ui-based commands");
