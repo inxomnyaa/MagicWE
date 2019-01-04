@@ -100,9 +100,7 @@ class EventListener implements Listener
             $event->setCancelled();
             /** @var Session $session */
             $session = API::getSession($event->getPlayer());
-            if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . $this->owner->getName());
-            }
+            if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                     {
@@ -142,9 +140,7 @@ class EventListener implements Listener
             $event->setCancelled();
             /** @var Session $session */
             $session = API::getSession($event->getPlayer());
-            if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . $this->owner->getName());
-            }
+            if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                     {
@@ -191,9 +187,7 @@ class EventListener implements Listener
             $event->setCancelled();
             /** @var Session $session */
             $session = API::getSession($event->getPlayer());
-            if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . $this->owner->getName());
-            }
+            if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                     {
@@ -234,13 +228,11 @@ class EventListener implements Listener
      */
     private function onLeftClickAir(PlayerInteractEvent $event)
     {
-        /** @var Session $session */
-        $session = API::getSession($event->getPlayer());
-        if (is_null($session)) {
-            throw new \Exception("No session was created - probably no permission to use " . $this->owner->getName());
-        }
         if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))) {
             $event->setCancelled();
+            /** @var Session $session */
+            $session = API::getSession($event->getPlayer());
+            if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                     {

@@ -4,10 +4,10 @@ projects:
     path: ""
     icon: "resources/magicwe_icon_square_small.png"
     libs:
-      - src: BlockHorizons/libschematic/libschematic
-        version: ^0.0.6
-      - src: thebigsmilexd/customui/customui
-        version: ^3.0.0
-      - src: thebigsmilexd/BossBarAPI/BossBarAPI
-        version: ^5.0.0
+    - src: BlockHorizons/libschematic/libschematic
+      version: ^0.0.6
+    - src: thebigsmilexd/customui/customui
+      version: ^3.0.0
+    - src: thebigsmilexd/BossBarAPI/BossBarAPI
+      version: ^5.0.0
 ...

@@ -12,44 +12,47 @@ use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class ToggledebugCommand extends WECommand {
-	public function __construct(Plugin $plugin) {
-		parent::__construct("/toggledebug", $plugin);
-		$this->setPermission("we.command.toggledebug");
-		$this->setDescription("Toggle the debug tool on/off");
-		$this->setUsage("//toggledebug");
-	}
+class ToggledebugCommand extends WECommand
+{
+    public function __construct(Plugin $plugin)
+    {
+        parent::__construct("/toggledebug", $plugin);
+        $this->setPermission("we.command.toggledebug");
+        $this->setDescription("Toggle the debug tool on/off");
+        $this->setUsage("//toggledebug");
+    }
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args) {
-		/** @var Player $sender */
-		$return = $sender->hasPermission($this->getPermission());
-		if (!$return) {
-			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-			return true;
-		}
-		$lang = Loader::getInstance()->getLanguage();
-		try {
-			$session = API::getSession($sender);
-			if (is_null($session)) {
-				throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
-			}
-			$sender->sendMessage($session->setDebugStickEnabled(!$session->isDebugStickEnabled()));
-		} catch (\Exception $error) {
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    {
+        /** @var Player $sender */
+        $return = $sender->hasPermission($this->getPermission());
+        if (!$return) {
+            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+            return true;
+        }
+        $lang = Loader::getInstance()->getLanguage();
+        try {
+            $session = API::getSession($sender);
+            if (is_null($session)) {
+                throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+            }
+            $sender->sendMessage($session->setDebugStickEnabled(!$session->isDebugStickEnabled()));
+        } catch (\Exception $error) {
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-			$return = false;
-		} catch (\ArgumentCountError $error) {
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $return = false;
+        } catch (\ArgumentCountError $error) {
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-			$return = false;
-		} catch (\Error $error) {
-			$this->getPlugin()->getLogger()->error($error->getMessage());
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-			$return = false;
-		} finally {
-			return $return;
-		}
-	}
+            $return = false;
+        } catch (\Error $error) {
+            $this->getPlugin()->getLogger()->logException($error);
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $return = false;
+        } finally {
+            return $return;
+        }
+    }
 }

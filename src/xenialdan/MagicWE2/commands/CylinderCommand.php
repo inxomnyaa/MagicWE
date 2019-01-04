@@ -17,66 +17,69 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 
-class CylinderCommand extends WECommand {
-	public function __construct(Plugin $plugin) {
-		parent::__construct("/cylinder", $plugin);
-		$this->setAliases(["/cyl"]);
-		$this->setPermission("we.command.cyl");
-		$this->setDescription("Fill an area");
-		$this->setUsage("//cyl <blocks> <diameter> <height> [flags]");
-	}
+class CylinderCommand extends WECommand
+{
+    public function __construct(Plugin $plugin)
+    {
+        parent::__construct("/cylinder", $plugin);
+        $this->setAliases(["/cyl"]);
+        $this->setPermission("we.command.cyl");
+        $this->setDescription("Fill an area");
+        $this->setUsage("//cyl <blocks> <diameter> <height> [flags]");
+    }
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args) {
-		/** @var Player $sender */
-		$return = $sender->hasPermission($this->getPermission());
-		if (!$return) {
-			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-			return true;
-		}
-		$lang = Loader::getInstance()->getLanguage();
-		try {
+    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    {
+        /** @var Player $sender */
+        $return = $sender->hasPermission($this->getPermission());
+        if (!$return) {
+            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+            return true;
+        }
+        $lang = Loader::getInstance()->getLanguage();
+        try {
             if (count($args) < 3) throw new \ArgumentCountError("No or too less arguments supplied");
-			$messages = [];
-			$error = false;
-			$blocks = array_shift($args);
-			$diameter = intval(array_shift($args));
-			$height = intval(array_shift($args) ?? 1);
-			foreach ($messages as $message) {
-				$sender->sendMessage($message);
-			}
-			$return = !$error;
-			if ($return) {
-				$session = API::getSession($sender);
-				if (is_null($session)) {
-					throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
-				}
+            $messages = [];
+            $error = false;
+            $blocks = array_shift($args);
+            $diameter = intval(array_shift($args));
+            $height = intval(array_shift($args) ?? 1);
+            foreach ($messages as $message) {
+                $sender->sendMessage($message);
+            }
+            $return = !$error;
+            if ($return) {
+                $session = API::getSession($sender);
+                if (is_null($session)) {
+                    throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+                }
                 $return = API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag("MagicWE", [
                     new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
-					new StringTag("blocks", $blocks),
-					new FloatTag("diameter", $diameter),
-					new FloatTag("height", $height),
-					new IntTag("flags", API::flagParser($args)),
-				]), $session);
-			} else {
-				$return = false;
-				throw new \InvalidArgumentException("Could not fill with the selected blocks");
-			}
-		} catch (\Exception $error) {
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+                    new StringTag("blocks", $blocks),
+                    new FloatTag("diameter", $diameter),
+                    new FloatTag("height", $height),
+                    new IntTag("flags", API::flagParser($args)),
+                ]), $session);
+            } else {
+                $return = false;
+                throw new \InvalidArgumentException("Could not fill with the selected blocks");
+            }
+        } catch (\Exception $error) {
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-			$return = false;
-		} catch (\ArgumentCountError $error) {
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $return = false;
+        } catch (\ArgumentCountError $error) {
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-			$return = false;
-		} catch (\Error $error) {
-			$this->getPlugin()->getLogger()->error($error->getMessage());
-			$sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-			$return = false;
-		} finally {
-			return $return;
-		}
-	}
+            $return = false;
+        } catch (\Error $error) {
+            $this->getPlugin()->getLogger()->logException($error);
+            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $return = false;
+        } finally {
+            return $return;
+        }
+    }
 }

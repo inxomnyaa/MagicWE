@@ -18,25 +18,28 @@ use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
+use xenialdan\MagicWE2\task\AsyncRevertTask;
 
-class API {
+class API
+{
     // Base flag to modify on
-	const FLAG_BASE = 1;
+    const FLAG_BASE = 1;
     // Only replaces the air
-	const FLAG_KEEP_BLOCKS = 0x01; // -r
+    const FLAG_KEEP_BLOCKS = 0x01; // -r
     // Only change non-air blocks
-	const FLAG_KEEP_AIR = 0x02; // -k
+    const FLAG_KEEP_AIR = 0x02; // -k
     // The -a flag makes it not paste air.
-	const FLAG_PASTE_WITHOUT_AIR = 0x03; // -a
+    const FLAG_PASTE_WITHOUT_AIR = 0x03; // -a
     // Pastes or sets hollow
     const FLAG_HOLLOW = 0x04; // -h
     // The -n flag makes it only consider naturally occurring blocks.
-	const FLAG_NATURAL = 0x05; // -n
+    const FLAG_NATURAL = 0x05; // -n
     // Without the -p flag, the paste will appear centered at the target location.
     // With the flag, the paste will appear relative to where you had
     // stood, relative by the copied area when you copied it.
@@ -44,37 +47,37 @@ class API {
     // Without the -v flag, block checks, selections and replacing will use and check the exact meta
     // of the blocks, with the flag it will check for similar variants
     // For example: Oak Logs with any rotation instead of a specific rotation
-	const FLAG_VARIANT = 0x07; // -v
+    const FLAG_VARIANT = 0x07; // -v
     // With the -m flag the damage values / meta will be kept
     // For example: Replacing all wool blocks with concrete of the same color
-	const FLAG_KEEP_META = 0x08; // -m
+    const FLAG_KEEP_META = 0x08; // -m
     // Pastes or sets hollow but closes off the ends
     const FLAG_HOLLOW_CLOSED = 0x09; // -hc//TODO
 
     //TODO Split into seperate Class (SessionStorage?)
-	/** @var Session[] */
-	private static $sessions = [];
+    /** @var Session[] */
+    private static $sessions = [];
     //TODO Split into seperate Class (SchematicStorage?)
-	/** @var Clipboard[] */
-	private static $schematics = [];
+    /** @var Clipboard[] *///TODO
+    private static $schematics = [];
 
-	/**
-	 * @param Selection $selection
-	 * @param Session $session
-	 * @param Block[] $newblocks
+    /**
+     * @param Selection $selection
+     * @param Session $session
+     * @param Block[] $newblocks
      * @param int $flags
-	 * @return bool
-	 */
+     * @return bool
+     */
     public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
     {
-		try {
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
-		} catch (\Exception $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-			return false;
-		}
-		return true;
-	}
+        try {
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
 
     /**
      * @param Selection $selection
@@ -86,14 +89,14 @@ class API {
      */
     public static function replaceAsync(Selection $selection, ?Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
     {
-		try {
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
-		} catch (\Exception $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-			return false;
-		}
-		return true;
-	}
+        try {
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
 
     /**
      * @param Selection $selection
@@ -103,7 +106,7 @@ class API {
      */
     public static function copyAsync(Selection $selection, ?Session $session, int $flags = self::FLAG_BASE)
     {
-        return false;
+        #return false;
         try {
             if (self::hasFlag($flags, self::FLAG_POSITION_RELATIVE))//TODO relative or not by flags
                 $offset = new Vector3();
@@ -119,24 +122,18 @@ class API {
 
     /**
      * TODO: flag parsing, Position to paste at
-     * @param Clipboard $clipboard
+     * @param CopyClipboard $clipboard
      * @param null|Session $session
      * @param Position $target
      * @param int $flags
      * @return bool
      */
-    public static function pasteAsync(Clipboard $clipboard, ?Session $session, Position $target, int $flags = self::FLAG_BASE)
+    public static function pasteAsync(CopyClipboard $clipboard, ?Session $session, Position $target, int $flags = self::FLAG_BASE)
     {
-        return false;
+        #return false;
         try {
-            $clipboard = clone $clipboard;
-            if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE))
-                $clipboard->setOffset(new Vector3());
-            var_dump($clipboard->getOffset());
-            #$v3 = $target->add($clipboard->getOffset());
-            #$clipboard->setPos1($target->setComponents($v3->x,$v3->y,$v3->z));
-            #$clipboard->setPos2($target->setComponents($v3->x,$v3->y,$v3->z));
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_SET, $flags));
+            $clipboard->setCenter($target);//TODO check
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunksByLevel($target->asVector3()), AsyncClipboardTask::TYPE_PASTE, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -145,7 +142,6 @@ class API {
     }
 
     /**
-     * TODO
      * @param Session $session
      * @return bool
      */
@@ -158,7 +154,7 @@ class API {
                 $session->getPlayer()->sendMessage("Nothing to undo");//TODO prettify
                 return true;
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_UNDO));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_UNDO));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -167,7 +163,6 @@ class API {
     }
 
     /**
-     * TODO
      * @param Session $session
      * @return bool
      */
@@ -180,7 +175,7 @@ class API {
                 $session->getPlayer()->sendMessage("Nothing to redo");//TODO prettify
                 return true;
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncClipboardTask::TYPE_REDO));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_REDO));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -250,60 +245,76 @@ class API {
 
     /// SESSION RELATED API PART
 
-	public static function &addSession(Session $session) {
-		self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
-		return self::$sessions[$session->getPlayer()->getLowerCaseName()];
-	}
+    public static function &addSession(Session $session)
+    {
+        self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
+        return self::$sessions[$session->getPlayer()->getLowerCaseName()];
+    }
 
-	public static function destroySession(Session $session) {
-		unset(self::$sessions[$session->getPlayer()->getLowerCaseName()]);
-	}
+    public static function destroySession(Session $session)
+    {
+        unset(self::$sessions[$session->getPlayer()->getLowerCaseName()]);
+    }
 
-	/**
-	 * @param Player $player
-	 * @return Session|null
-	 */
-	public static function &getSession(Player $player): ?Session {
-		$session = self::$sessions[$player->getLowerCaseName()] ?? null;
-		if (is_null($session)) {
-			if ($player->hasPermission("we.session")) {
-				$session = API::addSession(new Session($player));
-				Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
-			}
-		}
-		return $session;
-	}
+    /**
+     * @param Player $player
+     * @return Session|null
+     * @throws \Error
+     */
+    public static function &getSession(Player $player): ?Session
+    {
+        $session = self::$sessions[$player->getLowerCaseName()] ?? null;
+        if (is_null($session)) {
+            if ($player->hasPermission("we.session")) {
+                $session = API::addSession(new Session($player));
+                Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+                return $session;
+            } else {
+                $player->sendMessage(Loader::$prefix . TextFormat::RED . "You do not have the permission \"magicwe.session\"");
+            }
+        }
+        if (!$player->hasPermission("we.session")) {
+            if ($session instanceof Session)
+                self::destroySession($session);
+            Loader::getInstance()->getLogger()->info("Player " . $player->getName() . " does not have the permission \"magicwe.session\", but tried to use " . Loader::$prefix);
+        }
+        return $session;
+    }
 
-	/**
-	 * @param Player $player
-	 * @return bool
-	 */
-	public static function hasSession(Player $player): bool {
-		return !is_null(self::$sessions[$player->getLowerCaseName()] ?? null);
-	}
+    /**
+     * @param Player $player
+     * @return bool
+     */
+    public static function hasSession(Player $player): bool
+    {
+        return !is_null(self::$sessions[$player->getLowerCaseName()] ?? null);
+    }
 
-	/**
-	 * @return Session[]
-	 */
-	public static function getSessions(): array {
-		return self::$sessions;
-	}
+    /**
+     * @return Session[]
+     */
+    public static function getSessions(): array
+    {
+        return self::$sessions;
+    }
 
     /// SCHEMATIC RELATED API PART
 
-	/**
-	 * @return Clipboard[]
-	 */
-	public static function getSchematics(): array {
-		return self::$schematics;
-	}
+    /**
+     * @return Clipboard[]
+     */
+    public static function getSchematics(): array
+    {
+        return self::$schematics;
+    }
 
-	/**
-	 * @param Clipboard[] $schematics
-	 */
-	public static function setSchematics(array $schematics) {
-		self::$schematics = $schematics;
-	}
+    /**
+     * @param Clipboard[] $schematics
+     */
+    public static function setSchematics(array $schematics)
+    {
+        self::$schematics = $schematics;
+    }
 
     /* HELPER FUNCTIONS API PART */
 

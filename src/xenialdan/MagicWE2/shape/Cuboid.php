@@ -6,24 +6,26 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 
-class Cuboid extends Shape {
+class Cuboid extends Shape
+{
 
-	/**
+    /**
      * Cuboid constructor.
-	 * @param Level $level
-	 * @param array $options
-	 */
-	public function __construct(Level $level, array $options) {
-		parent::__construct($level, $options);
-	}
+     * @param Level $level
+     * @param array $options
+     */
+    public function __construct(Level $level, array $options)
+    {
+        parent::__construct($level, $options);
+    }
 
     public function setCenter(Vector3 $center)
     {
-		$this->center = $center;
-		try {
-			$this->setPos1(new Position(floor($this->getCenter()->getX() - $this->options['width'] / 2), floor($this->getCenter()->getY() - $this->options['height'] / 2), floor($this->getCenter()->getZ() - $this->options['depth'] / 2), $this->getLevel()));
-			$this->setPos2(new Position(floor($this->getCenter()->getX() + $this->options['width'] / 2), floor($this->getCenter()->getY() + $this->options['height'] / 2), floor($this->getCenter()->getZ() + $this->options['depth'] / 2), $this->getLevel()));
-		} catch (\Exception $e) {
-		}
-	}
+        $this->center = $center;
+        try {
+            $this->setPos1(new Position(floor($this->getCenter()->getX() - $this->options['width'] / 2), floor($this->getCenter()->getY() - $this->options['height'] / 2), floor($this->getCenter()->getZ() - $this->options['depth'] / 2), $this->getLevel()));
+            $this->setPos2(new Position(floor($this->getCenter()->getX() + $this->options['width'] / 2), floor($this->getCenter()->getY() + $this->options['height'] / 2), floor($this->getCenter()->getZ() + $this->options['depth'] / 2), $this->getLevel()));
+        } catch (\Exception $e) {
+        }
+    }
 }

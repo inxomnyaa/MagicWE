@@ -10,70 +10,75 @@ use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\AsyncChunkManager;
 
-class Flood extends Shape {
-	private $limit = 10000;
-	/** @var Block[] */
-	private $walked = [];
-	/** @var Block[] */
-	private $nextToCheck = [];
-	/** @var int */
-	private $y;
+class Flood extends Shape
+{
+    private $limit = 10000;
+    /** @var Block[] */
+    private $walked = [];
+    /** @var Block[] */
+    private $nextToCheck = [];
+    /** @var int */
+    private $y;
 
-	/**
-	 * Square constructor.
-	 * @param Level $level
-	 * @param array $options
-	 */
-	public function __construct(Level $level, array $options) {
-		parent::__construct($level, $options);
-		$this->limit = $options["limit"] ?? $this->limit;
-	}
+    /**
+     * Square constructor.
+     * @param Level $level
+     * @param array $options
+     */
+    public function __construct(Level $level, array $options)
+    {
+        parent::__construct($level, $options);
+        $this->limit = $options["limit"] ?? $this->limit;
+    }
 
-	/**
-	 * Returns the blocks by their actual position
-	 * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
-	 * @param int $flags
-	 * @return \Generator|Block
-	 * @throws \Exception
-	 */
-	public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator {
-		$this->validateChunkManager($manager);
-		$this->y = $this->getCenter()->getY();
-		$block = $manager->getBlockAt($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
-		$block->setComponents($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
-		$this->walked[] = $block;
-		$this->nextToCheck = $this->walked;
-		foreach ($this->walk($manager) as $block) {
-			yield $block;
-		}
-	}
+    /**
+     * Returns the blocks by their actual position
+     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Block[] $filterblocks If not empty, applying a filter on the block list
+     * @param int $flags
+     * @return \Generator|Block
+     * @throws \Exception
+     */
+    public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
+    {
+        $this->validateChunkManager($manager);
+        $this->y = $this->getCenter()->getY();
+        $block = $manager->getBlockAt($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
+        $block->setComponents($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
+        $this->walked[] = $block;
+        $this->nextToCheck = $this->walked;
+        foreach ($this->walk($manager) as $block) {
+            yield $block;
+        }
+    }
 
-	/**
-	 * @param Level|AsyncChunkManager|ChunkManager $manager
-	 * @return Block[]
-	 */
-	private function walk(ChunkManager $manager): array {
-		/** @var Block[] $walkTo */
-		$walkTo = [];
-		foreach ($this->nextToCheck as $next) {
-			$sides = iterator_to_array($this->getHorizontalSides($manager, $next));
-			$walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
-				return $side->getId() === 0 && !in_array($side, $walkTo) && !in_array($side, $this->walked) && !in_array($side, $this->nextToCheck) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
-			}));
-		}
-		$this->walked = array_merge($this->walked, $walkTo);
-		$this->nextToCheck = $walkTo;
-		if (!empty($this->nextToCheck)) $this->walk($manager);
-		return $this->walked;
-	}
+    /**
+     * @param Level|AsyncChunkManager|ChunkManager $manager
+     * @return Block[]
+     */
+    private function walk(ChunkManager $manager): array
+    {
+        /** @var Block[] $walkTo */
+        $walkTo = [];
+        foreach ($this->nextToCheck as $next) {
+            $sides = iterator_to_array($this->getHorizontalSides($manager, $next));
+            $walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
+                return $side->getId() === 0 && !in_array($side, $walkTo) && !in_array($side, $this->walked) && !in_array($side, $this->nextToCheck) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
+            }));
+        }
+        $this->walked = array_merge($this->walked, $walkTo);
+        $this->nextToCheck = $walkTo;
+        if (!empty($this->nextToCheck)) $this->walk($manager);
+        return $this->walked;
+    }
 
-	/**
-	 * @param Level|AsyncChunkManager|ChunkManager $manager
-	 * @param Vector3 $vector3
-	 * @return \Generator|Block
-	 */
-	private function getHorizontalSides(ChunkManager $manager, Vector3 $vector3): \Generator {
+    /**
+     * @param Level|AsyncChunkManager|ChunkManager $manager
+     * @param Vector3 $vector3
+     * @return \Generator|Block
+     */
+    private function getHorizontalSides(ChunkManager $manager, Vector3 $vector3): \Generator
+    {
         foreach ([Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH, Vector3::SIDE_WEST, Vector3::SIDE_EAST] as $vSide) {
             $side = $vector3->getSide($vSide);
             if ($manager->getChunk($side->x >> 4, $side->z >> 4) === null) continue;//TODO check if continue or stop walking instead
@@ -81,11 +86,12 @@ class Flood extends Shape {
             $block->setComponents($side->x, $side->y, $side->z);
             yield $block;
         }
-	}
+    }
 
-	public function getTotalCount() {
-		return $this->limit;
-	}
+    public function getTotalCount()
+    {
+        return $this->limit;
+    }
 
     public function getTouchedChunks(): array
     {
