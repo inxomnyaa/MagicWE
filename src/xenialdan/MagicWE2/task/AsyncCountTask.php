@@ -95,7 +95,7 @@ class AsyncCountTask extends MWEAsyncTask
             }
             if (!BlockFactory::isInit()) BlockFactory::init();
             $block1 = $manager->getBlockArrayAt($block->x, $block->y, $block->z);
-            $tostring = (BlockFactory::get($block1[0], $block1[1]))->__toString();
+            $tostring = (BlockFactory::get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
             $counts[$tostring]++;
             $changed++;
