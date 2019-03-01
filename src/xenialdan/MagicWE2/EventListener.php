@@ -5,6 +5,7 @@ namespace xenialdan\MagicWE2;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
@@ -26,23 +27,18 @@ class EventListener implements Listener{
 			}
 		}
 	}
-
+	public function onUse(PlayerItemUseEvent $event) {
+		$this->onRightClickAir($event);
+	}
 	public function onInteract(PlayerInteractEvent $event){
-		switch ($event->getAction()){
-			case PlayerInteractEvent::RIGHT_CLICK_BLOCK: {
-                try {
-                    $this->onRightClickBlock($event);
-                } catch (\Exception $error){
-                    $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Interaction failed!");
-                    $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-                }
-                break;
+			if($event->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK) {
+				try {
+					$this->onRightClickBlock($event);
+				} catch (\Exception $error) {
+					$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Interaction failed!");
+					$event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+				}
 			}
-			case PlayerInteractEvent::RIGHT_CLICK_AIR: {
-				$this->onRightClickAir($event);
-				break;
-			}
-		}
 	}
 
 	public function onBreak(BlockBreakEvent $event){
@@ -138,7 +134,7 @@ class EventListener implements Listener{
 		}
 	}
 
-	private function onRightClickAir(PlayerInteractEvent $event){
+	private function onRightClickAir(PlayerItemUseEvent $event){
 		if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))){
 			$event->setCancelled();
 			switch ($event->getItem()->getId()){

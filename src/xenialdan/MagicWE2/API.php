@@ -143,7 +143,7 @@ class API
                 if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
                 if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $selection->getMinVec3()->getX() && $block->x < $selection->getMaxVec3()->getX()) && ($block->y > $selection->getMinVec3()->getY() && $block->y < $selection->getMaxVec3()->getY()) && ($block->z > $selection->getMinVec3()->getZ() && $block->z < $selection->getMaxVec3()->getZ())) continue;
                 $newblock = $newblocks[array_rand($newblocks, 1)];
-                $newblock->position($block->asPosition());
+                $newblock->setLevel($block->getLevel())->setComponents($block->getFloorX(), $block->getFloorY(), $block->getFloorZ());
                 if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS)) {
                     if ($level->getBlock($block)->getId() !== Block::AIR) continue;
                 }
