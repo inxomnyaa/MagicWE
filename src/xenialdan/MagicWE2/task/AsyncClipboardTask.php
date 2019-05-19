@@ -5,7 +5,6 @@ namespace xenialdan\MagicWE2\task;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
-use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
@@ -17,7 +16,6 @@ use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Selection;
 
 class AsyncClipboardTask extends AsyncTask
 {
@@ -45,18 +43,13 @@ class AsyncClipboardTask extends AsyncTask
     public function __construct(CopyClipboard $clipboard, UUID $playerUUID, array $chunks, $type = self::TYPE_PASTE, int $flags = API::FLAG_BASE)
     {
         $this->start = microtime(true);
-        var_dump(__CLASS__ . " chunks count", count($chunks));
-        foreach ($chunks as $chunk) {
-            $chunk = Chunk::fastDeserialize($chunk);
-            var_dump("Chunk " . $chunk->getX() . "|" . $chunk->getZ());
-        }
         var_dump(__CLASS__ . " clipboard chunks count", count($clipboard->chunks));
         foreach ($clipboard->chunks as $chunk) {
             #$chunk = Chunk::fastDeserialize($chunk);
             var_dump("Clipboard Chunk " . $chunk->getX() . "|" . $chunk->getZ());
         }
         var_dump(__CLASS__ . " clipboard chunks paste count", count($clipboard->chunks));
-        foreach ($clipboard->getTouchedChunksByLevel($clipboard->getCenter()) as $chunk) {
+        foreach ($chunks as $chunk) {
             $chunk = Chunk::fastDeserialize($chunk);
             var_dump("Clipboard Paste Chunk " . $chunk->getX() . "|" . $chunk->getZ());
             $clipboard->pasteChunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk;
@@ -83,7 +76,7 @@ class AsyncClipboardTask extends AsyncTask
         }
         /** @var CopyClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
-        $manager = Selection::getChunkManager($clipboard->pasteChunks);
+        $manager = Clipboard::getChunkManager($clipboard->pasteChunks);
         $totalCount = $clipboard->getTotalCount();
         unset($chunks);
         $changed = $this->editBlocks($clipboard, $manager);
@@ -110,17 +103,18 @@ class AsyncClipboardTask extends AsyncTask
         $changed = 0;
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
         /** @var Block $block */
-        foreach ($clipboard->getBlocks($manager, $this->flags) as $block) {
-            #var_dump($block);
+        foreach ($clipboard->getBlocks($cbmanager, $this->flags) as $block) {
+            var_dump("Block clipboard used", $block);
             if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
                 $lastchunkx = $block->x >> 4;
                 $lastchunkz = $block->z >> 4;
-                if (is_null($cbmanager->getChunk($block->x >> 4, $block->z >> 4))) {
+                if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
                     print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
                     continue;
                 }
             }
             $manager->setBlockAt($block->x, $block->y, $block->z, $block);
+            #var_dump("Block clipboard pasted", $block);
             $changed++;
             ///
             $i++;
@@ -145,13 +139,15 @@ class AsyncClipboardTask extends AsyncTask
         foreach ($undoChunks as $hash => $data) {
             $undoChunks[$hash] = Chunk::fastDeserialize($data);
         }
+        /*if(($session = API::getSessions()["fake mwe debug player"]) instanceof Session) {
+            $player = $session->getPlayer();
+            var_dump($session->getPlayer()->getName());
+        }*/
         if ($player instanceof Player) {
+            /*if(!$session instanceof Session)*/
             $session = API::getSession($player);
             if (is_null($session)) return;
-            $bpk = new BossEventPacket();
-            $bpk->bossEid = $session->getBossBarId();
-            $bpk->eventType = BossEventPacket::TYPE_HIDE;
-            $player->dataPacket($bpk);
+            $session->getBossBar()->hideFromAll();
             $changed = $result["changed"];//todo use extract()
             $totalCount = $result["totalCount"];
             switch ($this->type) {

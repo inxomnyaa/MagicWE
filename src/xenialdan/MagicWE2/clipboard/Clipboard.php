@@ -27,6 +27,8 @@ abstract class Clipboard implements \Serializable
     public $chunks = [];
     /** @var int */
     public $levelid;
+    /** @var string */
+    public $customName = "";
 
     /**
      * Creates a chunk manager used for async editing
@@ -72,5 +74,21 @@ abstract class Clipboard implements \Serializable
     public function getLevelId(): int
     {
         return $this->levelid;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCustomName(): string
+    {
+        return $this->customName;
+    }
+
+    /**
+     * @param string $customName
+     */
+    public function setCustomName(string $customName): void
+    {
+        $this->customName = $customName;
     }
 }

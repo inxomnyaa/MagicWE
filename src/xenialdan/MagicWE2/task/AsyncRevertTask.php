@@ -4,7 +4,6 @@ namespace xenialdan\MagicWE2\task;
 
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
-use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -99,10 +98,7 @@ class AsyncRevertTask extends MWEAsyncTask
         if ($player instanceof Player) {
             $session = API::getSession($player);
             if (is_null($session)) return;
-            $bpk = new BossEventPacket();
-            $bpk->bossEid = $session->getBossBarId();
-            $bpk->eventType = BossEventPacket::TYPE_HIDE;
-            $player->dataPacket($bpk);
+            $session->getBossBar()->hideFromAll();
             $changed = $result["changed"];//todo use extract()
             $totalCount = $result["totalCount"];
             switch ($this->type) {

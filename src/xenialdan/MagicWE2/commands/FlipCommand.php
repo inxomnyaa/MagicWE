@@ -51,7 +51,7 @@ class FlipCommand extends WECommand
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
             }
-            $clipboard = $session->getClipboards()[0];//TODO multi-clipboard support
+            $clipboard = $session->getCurrentClipboard();
             if (is_null($clipboard)) {
                 throw new \Exception("No clipboard found - create a clipboard first");
             }

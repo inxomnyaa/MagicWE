@@ -1,12 +1,12 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 9.2.6
+version: 9.3.0
 api: [3.4.1, 3.4.2]
 load: STARTUP
 authors:
 - XenialDan
-description: MagicWEv2. Harder, Better, Faster, Stronger
+description: MagicWEv2 by XenialDan. Harder, Better, Faster, Stronger
 prefix: 'MWE2'
 permissions:
   we.session:

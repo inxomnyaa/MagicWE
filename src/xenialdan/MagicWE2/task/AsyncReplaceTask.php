@@ -5,7 +5,6 @@ namespace xenialdan\MagicWE2\task;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
-use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -144,10 +143,7 @@ class AsyncReplaceTask extends MWEAsyncTask
         if ($player instanceof Player) {
             $session = API::getSession($player);
             if (is_null($session)) return;
-            $bpk = new BossEventPacket();
-            $bpk->bossEid = $session->getBossBarId();
-            $bpk->eventType = BossEventPacket::TYPE_HIDE;
-            $player->dataPacket($bpk);
+            $session->getBossBar()->hideFromAll();
             $changed = $result["changed"];//todo use extract()
             $totalCount = $result["totalCount"];
             $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");

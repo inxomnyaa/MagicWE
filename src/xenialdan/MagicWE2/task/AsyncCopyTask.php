@@ -6,7 +6,6 @@ use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -67,6 +66,8 @@ class AsyncCopyTask extends MWEAsyncTask
         $clipboard->setAxisAlignedBB($selection->getAxisAlignedBB());
         $totalCount = $selection->getTotalCount();
         $copied = $this->copyBlocks($selection, $manager, $clipboard);
+        $clipboard->chunks = $manager->getChunks();
+        #var_dump($clipboard->__toString());
         $this->setResult(compact("clipboard", "copied", "totalCount"));
     }
 
@@ -91,6 +92,7 @@ class AsyncCopyTask extends MWEAsyncTask
                 $clipboard->chunks[Level::chunkHash($block->x >> 4, $block->z >> 4)] = $chunk;
             }
             $manager->setBlockAt($block->x, $block->y, $block->z, $block);
+            var_dump("Block copy", $block);
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
@@ -106,20 +108,31 @@ class AsyncCopyTask extends MWEAsyncTask
     {
         $result = $this->getResult();
         $player = $server->getPlayerByUUID(unserialize($this->playerUUID));
+        /** @var CopyClipboard $clipboard */
+        $clipboard = $result["clipboard"];
+        #var_dump($clipboard);
         if ($player instanceof Player) {
             $session = API::getSession($player);
             if (is_null($session)) return;
-            $bpk = new BossEventPacket();
-            $bpk->bossEid = $session->getBossBarId();
-            $bpk->eventType = BossEventPacket::TYPE_HIDE;
-            $player->dataPacket($bpk);
+            $session->getBossBar()->hideFromAll();
             $copied = $result["copied"];//todo use extract()
             /** @var CopyClipboard $clipboard */
             $clipboard = $result["clipboard"];
             print $clipboard . PHP_EOL;
             $totalCount = $result["totalCount"];
             $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
-            $session->setClipboards([0 => $clipboard]);
+            $session->addClipboard($clipboard);
         }
+        /*if(($session = API::getSessions()["fake mwe debug player"]) instanceof Session){
+            $player = $session->getPlayer();
+            var_dump($session->getPlayer()->getName());
+            $copied = $result["copied"];//todo use extract()
+            /** @var CopyClipboard $clipboard * /
+            $clipboard = $result["clipboard"];
+            print $clipboard . PHP_EOL;
+            $totalCount = $result["totalCount"];
+            $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
+            $session->addClipboard($clipboard);
+        }*/
     }
 }

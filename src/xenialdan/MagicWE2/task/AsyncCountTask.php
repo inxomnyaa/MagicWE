@@ -5,7 +5,6 @@ namespace xenialdan\MagicWE2\task;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\level\format\Chunk;
-use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -94,6 +93,7 @@ class AsyncCountTask extends MWEAsyncTask
                 }
             }
             if (!BlockFactory::isInit()) BlockFactory::init();
+            var_dump("Block count", $block);
             $block1 = $manager->getBlockArrayAt($block->x, $block->y, $block->z);
             $tostring = (BlockFactory::get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
@@ -116,13 +116,15 @@ class AsyncCountTask extends MWEAsyncTask
     {
         $result = $this->getResult();
         $player = $server->getPlayerByUUID(unserialize($this->playerUUID));
+        /*if(($session = API::getSessions()["fake mwe debug player"]) instanceof Session) {
+            $player = $session->getPlayer();
+            var_dump($session->getPlayer()->getName());
+        }*/
         if ($player instanceof Player) {
+            /*if(!$session instanceof Session)*/
             $session = API::getSession($player);
             if (is_null($session)) return;
-            $bpk = new BossEventPacket();
-            $bpk->bossEid = $session->getBossBarId();
-            $bpk->eventType = BossEventPacket::TYPE_HIDE;
-            $player->dataPacket($bpk);
+            $session->getBossBar()->hideFromAll();
             $counts = $result["counts"];//todo use extract()
             $totalCount = $result["totalCount"];
             $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));

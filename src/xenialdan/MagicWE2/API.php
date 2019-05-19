@@ -59,7 +59,7 @@ class API
     /** @var Session[] */
     private static $sessions = [];
     //TODO Split into seperate Class (SchematicStorage?)
-    /** @var Clipboard[] *///TODO
+    /** @var CopyClipboard[] *///TODO
     private static $schematics = [];
 
     /**
@@ -133,8 +133,9 @@ class API
     {
         #return false;
         try {
+            $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunksByLevel($target->asVector3()), AsyncClipboardTask::TYPE_PASTE, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -230,7 +231,7 @@ class API
                 }
             case ShapeGenerator::TYPE_CUSTOM://TODO fix/Change to actual shape, flags
                 {
-                    $clipboard = $session->getClipboards()[0] ?? null;
+                    $clipboard = $session->getCurrentClipboard();
                     if (is_null($clipboard)) {
                         $session->getPlayer()->sendMessage(TextFormat::RED . "You have no clipboard - create one first");
                         return false;

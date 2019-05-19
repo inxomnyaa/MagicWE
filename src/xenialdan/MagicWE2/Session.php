@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
-use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
-use xenialdan\BossBarAPI\API as BossBarAPI;
+use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 
 class Session
 {
-
+    const MAX_CLIPBOARDS = 5;
     /** @var UUID */
     private $uuid;
     /** @var Player|null */
@@ -23,6 +22,8 @@ class Session
     private $selections = [];
     /** @var UUID|null */
     private $latestselection = null;
+    /** @var int */
+    private $currentClipboard = -1;
     /** @var Clipboard[] */
     private $clipboards = [];
     /** @var RevertClipboard[] */
@@ -33,26 +34,21 @@ class Session
     private $wandEnabled = true;
     /** @var bool */
     private $debugStickEnabled = true;
-    /** @var int */
-    private $bossBarId;
+    /** @var BossBar */
+    private $bossBar;
 
     public function __construct(Player $player)
     {
         $this->setPlayer($player);
         $this->setUUID($player->getUniqueId());
-        $this->bossBarId = BossBarAPI::addBossBar([$this->getPlayer()], "");
-
-        $bpk = new BossEventPacket(); // This updates the bar
-        $bpk->bossEid = $this->bossBarId;
-        $bpk->eventType = BossEventPacket::TYPE_HIDE;
-        $player->dataPacket($bpk);
-
+        $this->bossBar = (new BossBar())->addPlayer($player);
+        $this->bossBar->hideFrom([$player]);
     }
 
     public function __destruct()
     {
         if (!is_null($this->uuid)) Loader::getInstance()->getLogger()->debug("Destructing session " . $this->getUUID()->__toString());
-        BossBarAPI::removeBossBar([$this->getPlayer()], $this->bossBarId);
+        $this->bossBar->removeAllPlayers();
         foreach ($this as &$value) {
             $value = null;
             unset($value);
@@ -170,6 +166,35 @@ class Session
     }
 
     /**
+     * @return null|Clipboard
+     */
+    public function getCurrentClipboard(): ?Clipboard
+    {
+        return $this->clipboards[$this->currentClipboard] ?? null;
+    }
+
+    /**
+     * @param string $name
+     * @return null|Clipboard
+     */
+    public function getClipboardByName(string $name): ?Clipboard
+    {
+        foreach ($this->clipboards as $clipboard) {
+            if ($clipboard->getCustomName() === $name) return $clipboard;
+        }
+        return null;
+    }
+
+    /**
+     * @param int $id
+     * @return null|Clipboard
+     */
+    public function getClipboardById(int $id): ?Clipboard
+    {
+        return $this->clipboards[$id] ?? null;
+    }
+
+    /**
      * TODO
      * @return Clipboard[]
      */
@@ -187,6 +212,26 @@ class Session
     {
         $this->clipboards = $clipboards;
         return true;
+    }
+
+    /**
+     * @param Clipboard $clipboard
+     * @param bool $setAsCurrent
+     * @return int The index of the clipboard
+     */
+    public function addClipboard(Clipboard $clipboard, bool $setAsCurrent = true): int
+    {
+        $amount = array_push($this->clipboards, $clipboard);
+        $i = array_search($clipboard, $this->clipboards, true);
+        if ($i !== false) {
+            if ($setAsCurrent) $this->currentClipboard = $i;
+        }
+        if ($amount > self::MAX_CLIPBOARDS) array_shift($this->clipboards);
+        if ($i !== false) {
+            if ($setAsCurrent) $this->currentClipboard = $i;
+            return $i;
+        }
+        return -1;
     }
 
     /**
@@ -296,11 +341,11 @@ class Session
     }
 
     /**
-     * @return int
+     * @return BossBar
      */
-    public function getBossBarId(): int
+    public function getBossBar(): BossBar
     {
-        return $this->bossBarId;
+        return $this->bossBar;
     }
 
     /*
@@ -314,7 +359,6 @@ class Session
      * inspect other player's sessions
      * destroy session if owning player lost permission/gets banned
      * optimise destroySession/__destruct of sessions
-     * undo/redo clipboards
      * clipboard selection (renaming?)
      *
      * ask users what else they want
