@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
 use xenialdan\MagicWE2\commands\BrushCommand;
@@ -25,6 +26,7 @@ use xenialdan\MagicWE2\commands\WandCommand;
 
 class Loader extends PluginBase
 {
+    const FAKE_ENCH_ID = 201;
     public static $prefix = "§6§l[MagicWE]§r ";
     /** @var Loader */
     private static $instance = null;
@@ -57,6 +59,8 @@ class Loader extends PluginBase
             }
         }
         $this->getLogger()->info("Sessions successfully restored");
+        $ench = new Enchantment(self::FAKE_ENCH_ID, "", Enchantment::RARITY_MYTHIC, Enchantment::SLOT_AXE, Enchantment::SLOT_NONE, 1);
+        Enchantment::registerEnchantment($ench);
     }
 
     public function onEnable()
