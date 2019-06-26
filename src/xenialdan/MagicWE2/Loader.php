@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
-use pocketmine\lang\Language;
+use pocketmine\lang\BaseLang;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginBase;
 use poggit\virion\devirion\DEVirion;
@@ -66,8 +66,8 @@ class Loader extends PluginBase
     {
         $this->saveDefaultConfig();
         $this->reloadConfig();
-        $lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
-        $this->baseLang = new Language((string)$lang, $this->getFile() . "resources/");
+        $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
+        $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->registerAll("we", [
             new Pos1Command($this),
@@ -111,9 +111,9 @@ class Loader extends PluginBase
 
     /**
      * @api
-     * @return Language
+     * @return BaseLang
      */
-    public function getLanguage(): Language
+    public function getLanguage(): BaseLang
     {
         return $this->baseLang;
     }
