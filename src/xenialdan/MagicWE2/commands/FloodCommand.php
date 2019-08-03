@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
+use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\customui\elements\Input;
 use xenialdan\customui\elements\Label;
@@ -22,24 +22,26 @@ use xenialdan\customui\elements\Slider;
 use xenialdan\customui\windows\CustomForm;
 use xenialdan\MagicWE2\Loader;
 
-class FloodCommand extends WECommand
+class FloodCommand extends BaseCommand
 {
-    public function __construct(Plugin $plugin)
+
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     */
+    protected function prepare(): void
     {
-        parent::__construct("/flood", $plugin);
         $this->setPermission("we.command.flood");
-        $this->setDescription("Opens the flood tool menu");
-        $this->setUsage("//flood");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
+    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
+        if (!$sender instanceof Player) return;
         /** @var Player $sender */
-        $return = $sender->hasPermission($this->getPermission());
-        if (!$return) {
-            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-            return true;
-        }
         $lang = Loader::getInstance()->getLanguage();
         try {
             if ($sender instanceof Player) {
@@ -49,7 +51,7 @@ class FloodCommand extends WECommand
                 $form->addElement(new Label($lang->translateString('ui.flood.options.label.infoapply')));
                 $form->setCallable(function (Player $player, $data) use ($form) {
                     $item = ItemFactory::get(ItemIds::BUCKET, 1);
-                    $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
+                    $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
                     $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Flood');
                     $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                     $item->setNamedTagEntry(new CompoundTag("MagicWE", [
@@ -66,18 +68,13 @@ class FloodCommand extends WECommand
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\ArgumentCountError $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\Error $error) {
-            $this->getPlugin()->getLogger()->logException($error);
+            Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-            $return = false;
-        } finally {
-            return $return;
         }
     }
 }

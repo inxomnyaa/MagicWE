@@ -4,40 +4,48 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
+use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
+use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
-use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\Loader;
 
-class WandCommand extends WECommand
+class WandCommand extends BaseCommand
 {
-    public function __construct(Plugin $plugin)
+
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     */
+    protected function prepare(): void
     {
-        parent::__construct("/wand", $plugin);
         $this->setPermission("we.command.wand");
-        $this->setDescription("Gives you the wand");
-        $this->setUsage("//wand");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
+    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        /** @var Player $sender */
-        $return = $sender->hasPermission($this->getPermission());
-        if (!$return) {
-            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-            return true;
-        }
         $lang = Loader::getInstance()->getLanguage();
+        if (!$sender instanceof Player) {
+            $sender->sendMessage(TextFormat::RED . $lang->translateString('runingame'));
+            return;
+        }
+        /** @var Player $sender */
         try {
+            /** @var Durable $item */
             $item = ItemFactory::get(ItemIds::WOODEN_AXE);
-            $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
+            $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
+            $item->setUnbreakable(true);
             $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Wand');
             $item->setLore([//TODO translation
                 'Left click air or a block to set the position 1 of a selection',
@@ -46,23 +54,18 @@ class WandCommand extends WECommand
                 'Use //togglewand to toggle it\'s functionality'
             ]);
             $item->setNamedTagEntry(new CompoundTag("MagicWE", []));
-            $sender->getInventory()->addItem($item);
+            if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\ArgumentCountError $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\Error $error) {
-            $this->getPlugin()->getLogger()->logException($error);
+            Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-            $return = false;
-        } finally {
-            return $return;
         }
     }
 }

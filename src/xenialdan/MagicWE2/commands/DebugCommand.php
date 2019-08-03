@@ -4,40 +4,45 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
+use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
-use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\Loader;
 
-class DebugCommand extends WECommand
+class DebugCommand extends BaseCommand
 {
-    public function __construct(Plugin $plugin)
+
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     */
+    protected function prepare(): void
     {
-        parent::__construct("/debug", $plugin);
         $this->setPermission("we.command.debug");
-        $this->setDescription("Gives you the debug stick");
-        $this->setUsage("//debug");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
+    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        /** @var Player $sender */
-        $return = $sender->hasPermission($this->getPermission());
-        if (!$return) {
-            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-            return true;
-        }
         $lang = Loader::getInstance()->getLanguage();
+        if (!$sender instanceof Player) {
+            $sender->sendMessage(TextFormat::RED . $lang->translateString('runingame'));
+            return;
+        }
+        /** @var Player $sender */
         try {
             $item = ItemFactory::get(ItemIds::STICK);
-            $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Enchantment::PROTECTION)));
+            $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
             $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Debug Stick');
             $item->setLore([//TODO translation
                 'Left click a block to get information',
@@ -50,18 +55,13 @@ class DebugCommand extends WECommand
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\ArgumentCountError $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\Error $error) {
-            $this->getPlugin()->getLogger()->logException($error);
+            Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-            $return = false;
-        } finally {
-            return $return;
         }
     }
 }

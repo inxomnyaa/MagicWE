@@ -7,12 +7,14 @@ namespace xenialdan\MagicWE2;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
+use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\CountCommand;
 use xenialdan\MagicWE2\commands\CylinderCommand;
 use xenialdan\MagicWE2\commands\DebugCommand;
 use xenialdan\MagicWE2\commands\FloodCommand;
+use xenialdan\MagicWE2\commands\HelpCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
@@ -59,7 +61,7 @@ class Loader extends PluginBase
             }
         }
         $this->getLogger()->info("Sessions successfully restored");
-        $ench = new Enchantment(self::FAKE_ENCH_ID, "", Enchantment::RARITY_MYTHIC, Enchantment::SLOT_AXE, Enchantment::SLOT_NONE, 1);
+        $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
         Enchantment::registerEnchantment($ench);
     }
 
@@ -71,31 +73,32 @@ class Loader extends PluginBase
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->registerAll("we", [
-            new Pos1Command($this),
-            new Pos2Command($this),
-            new SetCommand($this),
-            new ReplaceCommand($this),
-            new CopyCommand($this),
-            new PasteCommand($this),
-            new WandCommand($this),
-            new TogglewandCommand($this),
-            #new FlipCommand($this),
-            new UndoCommand($this),
-            new RedoCommand($this),
-            new DebugCommand($this),
-            new ToggledebugCommand($this),
-            #new RotateCommand($this),
-            new CylinderCommand($this),
-            new CountCommand($this)
+            new Pos1Command("/pos1", "Select first position", ["/1"]),
+            new Pos2Command("/pos2", "Select second position", ["/2"]),
+            new SetCommand("/set", "Fill an area with the specified blocks", ["/fill"]),
+            new ReplaceCommand("/replace", "Replace blocks in an area with other blocks"),
+            new CopyCommand("/copy", "Copy an area into a clipboard"),
+            new PasteCommand("/paste", "Paste your clipboard"),
+            new WandCommand("/wand", "Gives you the selection wand"),
+            new TogglewandCommand("/togglewand", "Toggle the wand tool on/off"),
+            #new FlipCommand("/flip","Flip a clipboard by the given axis"),
+            new UndoCommand("/undo", "Rolls back the last action"),
+            new RedoCommand("/redo", "Applies the last undo action again"),
+            new DebugCommand("/debug", "Gives you the debug stick, which gives information about the clicked block"),
+            new ToggledebugCommand("/toggledebug", "Toggle the debug stick on/off"),
+            #new RotateCommand("/rotate","Rotate a clipboard by x*90 degrees"),
+            new CylinderCommand("/cylinder", "Create a cylinder", ["/cyl"]),
+            new CountCommand("/count", "Count blocks in selection", ["/analyze"]),
+            new HelpCommand("/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"])//Blame MCPE for client side /help shit! only the aliases work
         ]);
         if (class_exists("xenialdan\\customui\\API")) {
-            $this->getLogger()->debug("CustomUI found, can use ui-based commands");
+            $this->getLogger()->notice("CustomUI found, can use ui-based commands");
             $this->getServer()->getCommandMap()->registerAll("we", [
-                new BrushCommand($this),
-                new FloodCommand($this),
+                new BrushCommand("/brush", "Opens the brush tool menu"),
+                new FloodCommand("/flood", "Opens the flood tool menu"),
             ]);
         } else {
-            $this->getLogger()->debug("CustomUI NOT found, can NOT use ui-based commands");
+            $this->getLogger()->notice(TextFormat::RED . "CustomUI NOT found, can NOT use ui-based commands");
         }
     }
 

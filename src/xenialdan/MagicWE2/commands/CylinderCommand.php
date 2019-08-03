@@ -4,82 +4,85 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
+use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\args\IntegerArgument;
+use CortexPE\Commando\args\RawStringArgument;
+use CortexPE\Commando\args\TextArgument;
+use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 
-class CylinderCommand extends WECommand
+class CylinderCommand extends BaseCommand
 {
-    public function __construct(Plugin $plugin)
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws \CortexPE\Commando\exception\ArgumentOrderException
+     */
+    protected function prepare(): void
     {
-        parent::__construct("/cylinder", $plugin);
-        $this->setAliases(["/cyl"]);
+        $this->registerArgument(0, new RawStringArgument("blocks", false));
+        $this->registerArgument(1, new IntegerArgument("diameter", false));
+        $this->registerArgument(2, new IntegerArgument("height", true));
+        $this->registerArgument(3, new TextArgument("flags", true));
         $this->setPermission("we.command.cyl");
-        $this->setDescription("Fill an area");
-        $this->setUsage("//cyl <blocks> <diameter> <height> [flags]");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
+    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        /** @var Player $sender */
-        $return = $sender->hasPermission($this->getPermission());
-        if (!$return) {
-            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-            return true;
-        }
         $lang = Loader::getInstance()->getLanguage();
+        if (!$sender instanceof Player) {
+            $sender->sendMessage(TextFormat::RED . $lang->translateString('runingame'));
+            return;
+        }
+        /** @var Player $sender */
         try {
-            if (count($args) < 3) throw new \ArgumentCountError("No or too less arguments supplied");
             $messages = [];
             $error = false;
-            $blocks = array_shift($args);
-            $diameter = intval(array_shift($args));
-            $height = intval(array_shift($args) ?? 1);
+            $blocks = strval($args["blocks"]);
+            $diameter = intval($args["diameter"]);
+            $height = intval($args["height"] ?? 1);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }
-            $return = !$error;
-            if ($return) {
+            if (!$error) {
                 $session = API::getSession($sender);
                 if (is_null($session)) {
-                    throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+                    throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                 }
-                $return = API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag("MagicWE", [
+                API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag("MagicWE", [
                     new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
                     new StringTag("blocks", $blocks),
                     new FloatTag("diameter", $diameter),
                     new FloatTag("height", $height),
-                    new IntTag("flags", API::flagParser($args)),
+                    new IntTag("flags", API::flagParser(explode(" ", strval($args["flags"])))),
                 ]), $session);
             } else {
-                $return = false;
                 throw new \InvalidArgumentException("Could not fill with the selected blocks");
             }
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\ArgumentCountError $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\Error $error) {
-            $this->getPlugin()->getLogger()->logException($error);
+            Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-            $return = false;
-        } finally {
-            return $return;
         }
     }
 }

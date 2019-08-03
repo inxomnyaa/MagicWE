@@ -4,65 +4,65 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
+use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\args\IntegerArgument;
+use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
-use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class RotateCommand extends WECommand
+class RotateCommand extends BaseCommand
 {
-    public function __construct(Plugin $plugin)
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws \CortexPE\Commando\exception\ArgumentOrderException
+     */
+    protected function prepare(): void
     {
-        parent::__construct("/rotate", $plugin);
+        $this->registerArgument(0, new IntegerArgument("degrees", false));
         $this->setPermission("we.command.rotate");
-        $this->setDescription("rotate a clipboard");
-        $this->setUsage("//rotate <1|2|3|-1|-2|-3>");
+        $this->setUsage("//rotate <degrees: 1|2|3|-1|-2|-3>");
     }
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args)
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
+    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        /** @var Player $sender */
-        $return = $sender->hasPermission($this->getPermission());
-        if (!$return) {
-            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-            return true;
-        }
         $lang = Loader::getInstance()->getLanguage();
+        if (!$sender instanceof Player) {
+            $sender->sendMessage(TextFormat::RED . $lang->translateString('runingame'));
+            return;
+        }
+        /** @var Player $sender */
         try {
-            if (empty($args)) throw new \ArgumentCountError("No arguments supplied");
-            if (intval($args[0]) != $args[0]) throw new \InvalidArgumentException("You must use a number as argument");
-            $args[0] = intval($args[0]);
-
-            $sender->sendMessage(Loader::$prefix . "Trying to rotate clipboard by " . 90 * $args[0] . " degrees");
+            $rotation = intval($args["degrees"]);
+            $sender->sendMessage(Loader::$prefix . "Trying to rotate clipboard by " . 90 * $rotation . " degrees");
             $session = API::getSession($sender);
             if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . $this->getPlugin()->getName());
+                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
             $clipboard = $session->getCurrentClipboard();
             if (is_null($clipboard)) {
                 throw new \Exception("No clipboard found - create a clipboard first");
             }
-            $clipboard->rotate($args[0]);//TODO multi-clipboard support
+            $clipboard->rotate($rotation);//TODO add back
             $sender->sendMessage(Loader::$prefix . "Successfully rotated clipboard");
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\ArgumentCountError $error) {
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-            $return = false;
         } catch (\Error $error) {
-            $this->getPlugin()->getLogger()->logException($error);
+            Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
-            $return = false;
-        } finally {
-            return $return;
         }
     }
 }
