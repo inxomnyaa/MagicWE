@@ -18,7 +18,9 @@ use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
+use xenialdan\MagicWE2\exceptions\LimitExceededException;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
@@ -68,10 +70,15 @@ class API
      * @param Block[] $newblocks
      * @param int $flags
      * @return bool
+     * @throws LimitExceededException
      */
     public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
     {
         try {
+            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+            }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -87,10 +94,15 @@ class API
      * @param Block[] $newBlocks
      * @param int $flags
      * @return bool
+     * @throws LimitExceededException
      */
     public static function replaceAsync(Selection $selection, ?Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
     {
         try {
+            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+            }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -104,11 +116,16 @@ class API
      * @param null|Session $session
      * @param int $flags
      * @return bool
+     * @throws LimitExceededException
      */
     public static function copyAsync(Selection $selection, ?Session $session, int $flags = self::FLAG_BASE)
     {
         #return false;
         try {
+            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+            }
             if (self::hasFlag($flags, self::FLAG_POSITION_RELATIVE))//TODO relative or not by flags
                 $offset = new Vector3();
             else
@@ -128,11 +145,16 @@ class API
      * @param Position $target
      * @param int $flags
      * @return bool
+     * @throws LimitExceededException
      */
     public static function pasteAsync(CopyClipboard $clipboard, ?Session $session, Position $target, int $flags = self::FLAG_BASE)
     {
         #return false;
         try {
+            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+            if ($clipboard->getTotalCount() > $limit && !$limit === -1) {
+                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+            }
             $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
@@ -191,11 +213,15 @@ class API
      * @param Block[] $filterBlocks
      * @param int $flags
      * @return bool
+     * @throws LimitExceededException
      */
-
     public static function countAsync(Selection $selection, Session $session, array $filterBlocks, int $flags = self::FLAG_BASE)
     {
         try {
+            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+                throw new LimitExceededException(Loader::PREFIX . "You are trying to count too many blocks at once. Reduce the selection or raise the limit");
+            }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $filterBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -211,6 +237,7 @@ class API
      * @param Session $session
      * @return bool
      * @throws \Exception
+     * @throws LimitExceededException
      */
     public static function createBrush(Block $target, NamedTag $settings, Session $session)
     {//TODO messages
@@ -253,6 +280,7 @@ class API
      * @param Session $session
      * @param int $flags
      * @return bool
+     * @throws LimitExceededException
      */
     public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE)
     { //TODO
@@ -291,13 +319,13 @@ class API
                 Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
                 return $session;
             } else {
-                $player->sendMessage(Loader::$prefix . TextFormat::RED . "You do not have the permission \"magicwe.session\"");
+                $player->sendMessage(Loader::PREFIX . TextFormat::RED . "You do not have the permission \"magicwe.session\"");
             }
         }
         if (!$player->hasPermission("we.session")) {
             if ($session instanceof Session)
                 self::destroySession($session);
-            Loader::getInstance()->getLogger()->info("Player " . $player->getName() . " does not have the permission \"magicwe.session\", but tried to use " . Loader::$prefix);
+            Loader::getInstance()->getLogger()->info("Player " . $player->getName() . " does not have the permission \"magicwe.session\", but tried to use " . Loader::PREFIX);
         }
         return $session;
     }
@@ -410,11 +438,11 @@ class API
                 $blocks[] = $block;
             } else {
                 $error = true;
-                $messages[] = Loader::$prefix . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
+                $messages[] = Loader::PREFIX . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
                 continue;
             }
             if ($block instanceof UnknownBlock) {
-                $messages[] = Loader::$prefix . TextFormat::GOLD . $block . " is an unknown block";
+                $messages[] = Loader::PREFIX . TextFormat::GOLD . $block . " is an unknown block";
             }
         }
 

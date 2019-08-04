@@ -45,8 +45,8 @@ class EventListener implements Listener
                     try {
                         $this->onRightClickBlock($event);
                     } catch (\Exception $error) {
-                        $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Interaction failed!");
-                        $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "Interaction failed!");
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
                     }
                     break;
                 }
@@ -55,8 +55,8 @@ class EventListener implements Listener
                     try {
                         $this->onRightClickAir($event);
                     } catch (\Exception $error) {
-                        $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Interaction failed!");
-                        $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "Interaction failed!");
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
                     }
                     break;
                 }
@@ -85,8 +85,8 @@ class EventListener implements Listener
         try {
             $this->onBreakBlock($event);
         } catch (\Exception $error) {
-            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "Interaction failed!");
-            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "Interaction failed!");
+            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
         }
     }
 
@@ -106,7 +106,7 @@ class EventListener implements Listener
                     {
                         /** @var Session $session */
                         if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -120,7 +120,7 @@ class EventListener implements Listener
                     {
                         /** @var Session $session */
                         if (!$session->isDebugStickEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
                             break;
                         }
                         $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
@@ -146,7 +146,7 @@ class EventListener implements Listener
                     {
                         /** @var Session $session */
                         if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -160,7 +160,7 @@ class EventListener implements Listener
                     {
                         /** @var Session $session */
                         if (!$session->isDebugStickEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
                             break;
                         }
                         $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
@@ -194,7 +194,7 @@ class EventListener implements Listener
                         $event->setCancelled();
                         /** @var Session $session */
                         if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getPlayer()->getLevel())); // TODO check if the selection inside of the session updates
@@ -204,7 +204,7 @@ class EventListener implements Listener
                         /** @var Block|null $target */
                         $target = $event->getPlayer()->getTargetBlock(100);
                         if ($target === null) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "No target block found");
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "No target block found");
                             return;
                         }
                         $event->getPlayer()->sendMessage($selection->setPos2($target));
@@ -239,7 +239,7 @@ class EventListener implements Listener
                         $event->setCancelled();
                         /** @var Session $session */
                         if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getPlayer()->getLevel())); // TODO check if the selection inside of the session updates
@@ -249,7 +249,7 @@ class EventListener implements Listener
                         /** @var Block|null $target */
                         $target = $event->getPlayer()->getTargetBlock(100);
                         if ($target === null) {
-                            $event->getPlayer()->sendMessage(Loader::$prefix . TextFormat::RED . "No target block found");
+                            $event->getPlayer()->sendMessage(Loader::PREFIX . TextFormat::RED . "No target block found");
                             return;
                         }
                         $event->getPlayer()->sendMessage($selection->setPos1($target));

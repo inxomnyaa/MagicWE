@@ -153,7 +153,7 @@ class AsyncClipboardTask extends AsyncTask
             switch ($this->type) {
                 case self::TYPE_PASTE:
                     {
-                        $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+                        $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
                         $session->addUndo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
                         break;
                     }

@@ -7,29 +7,35 @@ namespace xenialdan\MagicWE2;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\CountCommand;
 use xenialdan\MagicWE2\commands\CylinderCommand;
 use xenialdan\MagicWE2\commands\DebugCommand;
+use xenialdan\MagicWE2\commands\DonateCommand;
 use xenialdan\MagicWE2\commands\FloodCommand;
 use xenialdan\MagicWE2\commands\HelpCommand;
+use xenialdan\MagicWE2\commands\InfoCommand;
+use xenialdan\MagicWE2\commands\LimitCommand;
 use xenialdan\MagicWE2\commands\PasteCommand;
 use xenialdan\MagicWE2\commands\Pos1Command;
 use xenialdan\MagicWE2\commands\Pos2Command;
 use xenialdan\MagicWE2\commands\RedoCommand;
 use xenialdan\MagicWE2\commands\ReplaceCommand;
+use xenialdan\MagicWE2\commands\ReportCommand;
 use xenialdan\MagicWE2\commands\SetCommand;
 use xenialdan\MagicWE2\commands\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\TogglewandCommand;
 use xenialdan\MagicWE2\commands\UndoCommand;
+use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
 
 class Loader extends PluginBase
 {
     const FAKE_ENCH_ID = 201;
-    public static $prefix = "§6§l[MagicWE]§r ";
+    const PREFIX = TextFormat::BOLD . TextFormat::GOLD . "[MagicWE2]" . TextFormat::RESET . " ";
     /** @var Loader */
     private static $instance = null;
     private $baseLang;
@@ -67,10 +73,9 @@ class Loader extends PluginBase
 
     public function onEnable()
     {
-        $this->saveDefaultConfig();
-        $this->reloadConfig();
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
+        if ($this->getConfig()->get("show-startup-icon", true)) $this->showStartupIcon();
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->registerAll("we", [
             new Pos1Command("/pos1", "Select first position", ["/1"]),
@@ -89,7 +94,12 @@ class Loader extends PluginBase
             #new RotateCommand("/rotate","Rotate a clipboard by x*90 degrees"),
             new CylinderCommand("/cylinder", "Create a cylinder", ["/cyl"]),
             new CountCommand("/count", "Count blocks in selection", ["/analyze"]),
-            new HelpCommand("/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"])//Blame MCPE for client side /help shit! only the aliases work
+            new LimitCommand("/limit", "Set the block change limit. Use -1 to disable"),
+            new HelpCommand("/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"]),//Blame MCPE for client side /help shit! only the aliases work
+            new VersionCommand("/version", "MagicWE version", ["/ver"]),
+            new InfoCommand("/info", "Information about MagicWE"),
+            new ReportCommand("/report", "Report a bug to GitHub", ["/bug", "/github"]),
+            new DonateCommand("/donate", "Donate to support development of MagicWE!", ["/support", "/paypal"]),
         ]);
         if (class_exists("xenialdan\\customui\\API")) {
             $this->getLogger()->notice("CustomUI found, can use ui-based commands");
@@ -119,5 +129,57 @@ class Loader extends PluginBase
     public function getLanguage(): BaseLang
     {
         return $this->baseLang;
+    }
+
+    public static function getInfo(): array
+    {
+        return [
+            "| " . TextFormat::GREEN . Loader::getInstance()->getFullName() . TextFormat::RESET . " | Information |",
+            "| --- | --- |",
+            "| Website | " . Loader::getInstance()->getDescription()->getWebsite() . " |",
+            "| Version | " . Loader::getInstance()->getDescription()->getVersion() . " |",
+            "| Plugin API Version | " . implode(", ", Loader::getInstance()->getDescription()->getCompatibleApis()) . " |",
+            "| Authors | " . implode(", ", Loader::getInstance()->getDescription()->getAuthors()) . " |",
+            "| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(Loader::getInstance()) ? TextFormat::GREEN . "Yes" : TextFormat::RED . "No") . TextFormat::RESET . " |",
+            "| Uses UI | " . (class_exists("xenialdan\\customui\\API") ? TextFormat::GREEN . "Yes" : TextFormat::RED . "No") . TextFormat::RESET . " |",
+            "| Phar | " . (Loader::getInstance()->isPhar() ? TextFormat::GREEN . "Yes" : TextFormat::RED . "No") . TextFormat::RESET . " |",
+            "| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
+            "| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
+            "| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
+        ];
+    }
+
+    private function showStartupIcon()
+    {
+        $colorAxe = TextFormat::BOLD . TextFormat::DARK_PURPLE;
+        $colorAxeStem = TextFormat::LIGHT_PURPLE;
+        $colorAxeSky = TextFormat::LIGHT_PURPLE;
+        $colorAxeFill = TextFormat::GOLD;
+        $axe = [
+            "              {$colorAxe}####{$colorAxeSky}      ",
+            "            {$colorAxe}##{$colorAxeFill}####{$colorAxe}##{$colorAxeSky}    ",
+            "          {$colorAxe}##{$colorAxeFill}######{$colorAxe}##{$colorAxeSky}    ",
+            "        {$colorAxe}##{$colorAxeFill}########{$colorAxe}####{$colorAxeSky}  ",
+            "        {$colorAxe}##{$colorAxeFill}######{$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}  ",
+            "          {$colorAxe}######{$colorAxeStem}##{$colorAxe}##{$colorAxeFill}##{$colorAxe}##",
+            "            {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeFill}####{$colorAxe}##",
+            "          {$colorAxe}##{$colorAxeStem}##{$colorAxe}##  {$colorAxe}####{$colorAxeSky}  ",
+            "        {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}          ",
+            "      {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}            ",
+            "    {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}              ",
+            "  {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}                ",
+            "{$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}       MagicWE v.2",
+            "{$colorAxe}####{$colorAxeSky}        by XenialDan"];
+        foreach (array_map(function ($line) {
+            return preg_replace_callback(
+                '/ +(?<![#§l5d6]] )(?= [#§l5d6]+)|(?<=[#§l5d6] ) +(?=\s)/',
+                #'/ +(?<!# )(?= #+)|(?<=# ) +(?=\s)/',
+                function ($v) {
+                    return substr(str_shuffle(str_pad('+*~', strlen($v[0]))), 0, strlen($v[0]));
+                },
+                TextFormat::LIGHT_PURPLE . $line
+            );
+        }, $axe) as $axeMsg)
+            $this->getLogger()->info($axeMsg);
     }
 }

@@ -42,16 +42,16 @@ class ToggledebugCommand extends BaseCommand
             }
             $sender->sendMessage($session->setDebugStickEnabled(!$session->isDebugStickEnabled()));
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
         }
     }
 }

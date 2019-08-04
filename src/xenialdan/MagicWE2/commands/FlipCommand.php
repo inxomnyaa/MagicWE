@@ -53,7 +53,7 @@ class FlipCommand extends BaseCommand
                     throw new \InvalidArgumentException('"' . $arg . '" is not a valid input');
                 }
             }
-            $sender->sendMessage(Loader::$prefix . "Trying to flip clipboard by " . implode("|", $args2));
+            $sender->sendMessage(Loader::PREFIX . "Trying to flip clipboard by " . implode("|", $args2));
             $session = API::getSession($sender);
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
@@ -63,18 +63,18 @@ class FlipCommand extends BaseCommand
                 throw new \Exception("No clipboard found - create a clipboard first");
             }
             $clipboard->flip($flags);
-            $sender->sendMessage(Loader::$prefix . "Successfully flipped clipboard");
+            $sender->sendMessage(Loader::PREFIX . "Successfully flipped clipboard");
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
         }
     }
 }

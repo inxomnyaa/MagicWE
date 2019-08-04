@@ -127,7 +127,7 @@ class AsyncCountTask extends MWEAsyncTask
             $session->getBossBar()->hideFromAll();
             $counts = $result["counts"];//todo use extract()
             $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));
+            $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));
             $player->sendMessage(TextFormat::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
             uasort($counts, function ($a, $b) {
                 if ($a === $b) return 0;

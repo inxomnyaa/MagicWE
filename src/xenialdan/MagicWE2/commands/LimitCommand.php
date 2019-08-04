@@ -5,27 +5,24 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands;
 
 use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\item\Durable;
-use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use xenialdan\MagicWE2\Loader;
 
-class WandCommand extends BaseCommand
+class LimitCommand extends BaseCommand
 {
 
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws \CortexPE\Commando\exception\ArgumentOrderException
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.wand");
+        $this->registerArgument(0, new IntegerArgument("limit", true));
+        $this->setPermission("we.command.limit");
+        $this->setUsage("//limit [limit: int|-1]");
     }
 
     /**
@@ -35,26 +32,14 @@ class WandCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        $lang = Loader::getInstance()->getLanguage();
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TextFormat::RED . $lang->translateString('runingame'));
-            return;
-        }
-        /** @var Player $sender */
         try {
-            /** @var Durable $item */
-            $item = ItemFactory::get(ItemIds::WOODEN_AXE);
-            $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-            $item->setUnbreakable(true);
-            $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Wand');
-            $item->setLore([//TODO translation
-                'Left click air or a block to set the position 1 of a selection',
-                'Right click air or a block to set the position 2 of a selection',
-                'If you click in air its set to the block you are looking at',
-                'Use //togglewand to toggle it\'s functionality'
-            ]);
-            $item->setNamedTagEntry(new CompoundTag("MagicWE", []));
-            if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
+            if (empty($args["limit"])) {
+                $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+                $sender->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Current limit: " . ($limit < 0 ? "Disabled" : $limit));
+            } else {
+                Loader::getInstance()->getConfig()->set("limit", intval($args["limit"]));
+                $sender->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Block change limit was set to " . intval($args["limit"]));
+            }
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());

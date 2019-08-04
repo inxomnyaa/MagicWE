@@ -61,23 +61,23 @@ class SetCommand extends BaseCommand
                     throw new \Exception("The selection is not valid! Check if all positions are set!");
                 }
                 if ($selection->getLevel() !== $sender->getLevel()) {
-                    $sender->sendMessage(Loader::$prefix . TextFormat::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
+                    $sender->sendMessage(Loader::PREFIX . TextFormat::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
                 }
                 API::fillAsync($selection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
                 throw new \InvalidArgumentException("Could not fill with the selected blocks");
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
         }
     }
 }

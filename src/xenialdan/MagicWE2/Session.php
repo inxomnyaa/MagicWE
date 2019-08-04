@@ -249,7 +249,7 @@ class Session
     public function setWandEnabled(bool $wandEnabled)
     {
         $this->wandEnabled = $wandEnabled;
-        return Loader::$prefix . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
+        return Loader::PREFIX . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
     }
 
     /**
@@ -267,7 +267,7 @@ class Session
     public function setDebugStickEnabled(bool $debugStick)
     {
         $this->debugStickEnabled = $debugStick;
-        return Loader::$prefix . "The debug stick is now " . ($debugStick ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
+        return Loader::PREFIX . "The debug stick is now " . ($debugStick ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
     }
 
     /**

@@ -146,7 +146,7 @@ class AsyncReplaceTask extends MWEAsyncTask
             $session->getBossBar()->hideFromAll();
             $changed = $result["changed"];//todo use extract()
             $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+            $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
             $session->addUndo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
         }
         /** @var Selection $selection */

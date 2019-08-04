@@ -141,7 +141,7 @@ class Selection implements \Serializable
             $this->pos2 = null;
         }
         $this->setLevel($position->getLevel());
-        return Loader::$prefix . TextFormat::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ();
+        return Loader::PREFIX . TextFormat::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ();
     }
 
     /**
@@ -169,7 +169,7 @@ class Selection implements \Serializable
             $this->pos1 = null;
         }
         $this->setLevel($position->getLevel());
-        return Loader::$prefix . TextFormat::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ();
+        return Loader::PREFIX . TextFormat::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ();
     }
 
     /**

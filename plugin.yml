@@ -1,13 +1,14 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 9.4.0
+version: 9.4.1
 api: [3.0.0, 4.0.0]
 load: STARTUP
 authors:
 - XenialDan
 description: MagicWEv2 by XenialDan. Harder, Better, Faster, Stronger
 prefix: 'MWE2'
+website: https://github.com/thebigsmileXD/MagicWE2
 permissions:
   we.session:
     default: op
@@ -50,4 +51,95 @@ permissions:
         default: op
       we.command.count:
         default: op
+      we.command.cyl:
+        default: op
+      we.command.sphere:
+        default: op
+      we.command.version:
+        default: op
+      we.command.info:
+        default: op
+      we.command.report:
+        default: op
+      we.command.limit:
+        default: op
+      we.command.ceil:
+        default: op
+      we.command.up:
+        default: op
+      we.command.thru:
+        default: op
+      we.command.size:
+        default: op
+      we.command.hpos1:
+        default: op
+      we.command.hpos2:
+        default: op
+      we.command.inset:
+        default: op
+      we.command.outset:
+        default: op
+      we.command.chunk:
+        default: op
+      we.command.expand:
+        default: op
+      we.command.stack:
+        default: op
+      we.command.smooth:
+        default: op
+      we.command.forest:
+        default: op
+      we.command.walls:
+        default: op
+      we.command.move:
+        default: op
+      we.command.overlay:
+        default: op
+      we.command.naturalize:
+        default: op
+      we.command.pumpkins:
+        default: op
+      we.command.pyramid:
+        default: op
+      we.command.forestgen:
+        default: op
+      we.command.clearclipboard:
+        default: op
+      we.command.cut:
+        default: op
+      we.command.biome:
+        default: op
+        children:
+          we.command.biome.info:
+            default: op
+          we.command.biome.list:
+            default: op
+          we.command.biome.set:
+            default: op
+      we.command.listchunks:
+        default: op
+      we.command.delchunks:
+        default: op
+      we.command.fill:
+        default: op
+      we.command.removenear:
+        default: op
+      we.command.snow:
+        default: op
+      we.command.thaw:
+        default: op
+      we.command.green:
+        default: op
+      we.command.extinguish:
+        default: op
+      we.command.fixlava:
+        default: op
+      we.command.fixwater:
+        default: op
+      we.command.replacenear:
+        default: op
+      we.command.drain:
+        default: op
+      we.command.donate:
+        default: true
 ...

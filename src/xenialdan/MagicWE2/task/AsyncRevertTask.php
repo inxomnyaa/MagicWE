@@ -104,13 +104,13 @@ class AsyncRevertTask extends MWEAsyncTask
             switch ($this->type) {
                 case self::TYPE_UNDO:
                     {
-                        $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Undo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
+                        $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async Undo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
                         $session->addRedo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
                         break;
                     }
                 case self::TYPE_REDO:
                     {
-                        $player->sendMessage(Loader::$prefix . TextFormat::GREEN . "Async Redo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
+                        $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async Redo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
                         $session->addUndo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
                         break;
                     }

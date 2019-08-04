@@ -53,7 +53,7 @@ class BrushCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $form = new SimpleForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.select.title'));
+            $form = new SimpleForm(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.select.title'));
             $form->addButton(new Button($lang->translateString('ui.brush.select.type.sphere')));
             $form->addButton(new Button($lang->translateString('ui.brush.select.type.cylinder')));
             $form->addButton(new Button($lang->translateString('ui.brush.select.type.cuboid')));
@@ -65,7 +65,7 @@ class BrushCommand extends BaseCommand
                     case $lang->translateString('ui.brush.select.type.sphere'):
                         {
                             ///
-                            $form = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
+                            $form = new CustomForm(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
                             $form->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
                             $form->addElement(new Slider($lang->translateString('ui.brush.options.diameter'), 1, 50, 1.0));
                             $form->addElement(new Label($lang->translateString('ui.brush.options.flags')));
@@ -76,7 +76,7 @@ class BrushCommand extends BaseCommand
                             $form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
                                 $item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
                                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-                                $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
+                                $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag("MagicWE", [
@@ -94,7 +94,7 @@ class BrushCommand extends BaseCommand
                     case $lang->translateString('ui.brush.select.type.cylinder'):
                         {
                             ///
-                            $form = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
+                            $form = new CustomForm(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
                             $form->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
                             $form->addElement(new Slider($lang->translateString('ui.brush.options.diameter'), 1, 50, 1.0));
                             $form->addElement(new Slider($lang->translateString('ui.brush.options.height'), 1, 50, 1.0));
@@ -107,7 +107,7 @@ class BrushCommand extends BaseCommand
                             $form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
                                 $item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
                                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-                                $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
+                                $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag("MagicWE", [
@@ -127,7 +127,7 @@ class BrushCommand extends BaseCommand
                     case $lang->translateString('ui.brush.select.type.cuboid'):
                         {
                             ///
-                            $form = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
+                            $form = new CustomForm(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
                             $form->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
                             $form->addElement(new Slider($lang->translateString('ui.brush.options.width'), 1, 100, 1.0));
                             $form->addElement(new Slider($lang->translateString('ui.brush.options.height'), 1, 100, 1.0));
@@ -140,7 +140,7 @@ class BrushCommand extends BaseCommand
                             $form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
                                 $item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
                                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-                                $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
+                                $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag("MagicWE", [
@@ -161,7 +161,7 @@ class BrushCommand extends BaseCommand
                     case $lang->translateString('ui.brush.select.type.cube'):
                         {
                             ///
-                            $form = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
+                            $form = new CustomForm(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
                             $form->addElement(new Input($lang->translateString('ui.brush.options.blocks'), $lang->translateString('ui.brush.options.blocks.placeholder')));
                             $form->addElement(new Slider($lang->translateString('ui.brush.options.width'), 1, 100, 1.0));
                             $form->addElement(new Label($lang->translateString('ui.brush.options.flags')));
@@ -172,7 +172,7 @@ class BrushCommand extends BaseCommand
                             $form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
                                 $item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
                                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-                                $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
+                                $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag("MagicWE", [
@@ -193,7 +193,7 @@ class BrushCommand extends BaseCommand
                     case $lang->translateString('ui.brush.select.type.clipboard'):
                         {
                             ///
-                            $form = new CustomForm(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
+                            $form = new CustomForm(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.brush.settings.title', [ucfirst($selectedOption)]));
                             $form->addElement(new Label($lang->translateString('ui.brush.options.flags')));
                             $form->addElement(new Toggle($lang->translateString('ui.flags.keepexistingblocks'), false));
                             $form->addElement(new Toggle($lang->translateString('ui.flags.keepair'), false));
@@ -202,7 +202,7 @@ class BrushCommand extends BaseCommand
                             $form->setCallable(function (Player $player, $data) use ($selectedOption, $form) {
                                 $item = ItemFactory::get(ItemIds::WOODEN_SHOVEL);
                                 $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-                                $item->setCustomName(Loader::$prefix . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
+                                $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag("MagicWE", [
@@ -226,16 +226,16 @@ class BrushCommand extends BaseCommand
             });
             $sender->sendForm($form);
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::$prefix . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
         }
     }
 
