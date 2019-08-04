@@ -1,47 +1,82 @@
-![MagicWEv2's awesome wide banner!](https://github.com/thebigsmileXD/MagicWE2/blob/master/resources/magicwe_icon_wide.png)
-# MagicWEv2 - Harder, Better, Faster, Stronger [![Poggit-CI](https://poggit.pmmp.io/ci.badge/thebigsmileXD/MagicWE2/MagicWE2/master)](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2) 
-The new MagicWE, now way more powerful, with more support, more commands, new tools and more!
+![MagicWE2's awesome wide banner!](https://github.com/thebigsmileXD/MagicWE2/blob/master/resources/magicwe_icon_wide.png)
+---
+# MagicWE2
+Lag free asynchronous world editor for [PMMP](https://github.com/pmmp/PocketMine-MP)
 
-# What's new?
-Literally everything.
+Try the new MagicWE, now way more powerful, with more support, more commands, new tools and more!
 
-The code is totally different to the MESS of MagicWEv1 - MagicWEv2 has a new fresh coating over the full plugin, with rainbow colored sprinkle topping.
+[![Poggit-CI](https://poggit.pmmp.io/ci.badge/thebigsmileXD/MagicWE2/MagicWE2/master)](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2)
+## Why MagicWE2?
+_Rainbow sprinkles!_
 
-Who does *NOT* love rainbow sprinkles? Freak!
+Jokes aside, here is a list of pros:
 
-- An icon
-- New commands
-- New features
+- Simple usage
 - Translations
-- ***EXTREME*** speed
-- progress bars like on Windows 98!
-- sessions
-- clipboards
+- Good performance and great speeds
+- Progress bars like on Windows 98!
+- Sessions
+- Clipboards
+- Optimized item / block parsing - you can place any block, by id, name, and item!
+- Alot more commands
+- Command auto-completion
+- Command flags (i.e. -p for relative copying/pasting, -h for hollow objects)
+- UI for brush setup and configuration
+- Fancy icon and startup ASCII art
+- Direct bug reporting to GitHub
+<!-- 
 - schematic support
 - MyPlot support
+-->
 
 ## Commands
-- //wand - now gives a proper wand tool which never stops working, and still allows your normal wooden axes to behave normal
+| Command | Alias | Description | Usage |
+| --- | --- | --- | --- |
+| `//pos1` | `//1` | `Select first position` | `//pos1` |
+| `//pos2` | `//2` | `Select second position` | `//pos2` |
+| `//set` | `//fill` | `Fill an area with the specified blocks` | `//set <blocks:string> [flags:text]` |
+| `//replace` | `| Replace blocks in an area with other blocks` | `//replace <findblocks:string> <replaceblocks:string> [flags:text]` |
+| `//copy` | `| Copy an area into a clipboard` | `//copy [flags:text]` |
+| `//paste` |  | `Paste your clipboard` | `//paste [flags:text]` |
+| `//wand` |  | `Gives you the selection wand` | `//wand` |
+| `//togglewand` |  | `Toggle the wand tool on/off` | `//togglewand` |
+| `//undo` |  | `Rolls back the last action` | `//undo` |
+| `//redo` |  | `Applies the last undo action again` | `//redo` |
+| `//debug` |  | `Gives you the debug stick, which gives information about the clicked block` | `//debug` |
+| `//toggledebug` |  | `Toggle the debug stick on/off` | `//toggledebug` |
+| `//cylinder` | `//cyl` | `Create a cylinder` | `//cylinder <blocks:string> <diameter:int> [height:int] [flags:text]` |
+| `//count` | `//analyze` | `Count blocks in selection` | `//count [blocks:string] [flags:text]` |
+| `//help` | `//?,//mwe,//wehelp` | `MagicWE help command` | `//help [command:string]` |
+| `//version` | `//ver` | `MagicWE version` | `//version` |
+| `//info` |  | `Information about MagicWE` | `//info` |
+| `//report` | `//bug,//github` | `Report a bug to GitHub` | `//report [title:text]` |
+| `//donate` | `//support,//paypal` | `Donate to support development of MagicWE!` | `//donate` |
+| `//brush` |  | `Opens the brush tool menu` | `//brush` |
+| `//flood` |  | `Opens the flood tool menu` | `//flood` |
 
-<!-- 
-- //brush - brushes that can be configured via user interface - select whatever you want and receive your brush tool!
--->
+## Planned features
+- Saved sessions (saved brushes and clipboards)
+- More commands, a glimpse at the plugin.yml should give you a good look what is coming up
+- Command based flags, since they are currently in a global state
+- Schematic and structure block data support
+- Clipboard naming, exporting and switching
+- ScoreboardAPI integration
+- Better and more brushes. For now i suggest using [BlockSniper](https://github.com/BlockHorizons/BlockSniper) for brushes!
+- [MyPlot](https://github.com/jasonwynn10/MyPlot) integration
 
-- //copy - Copy and Paste anything! Copied areas are saved in clipboards, which can be modified afterwards, cloned from other players, cached and reloaded!
-
-- //paste - Paste your clipboard - now with flags! (See below)
-
-- //pos1, //1, //pos2, //2 - shorter aliases for lazy people! Wohoo, that includes me!
-
-- //set, //fill, //afill - Block parsing has be ***hyperoptimized*** - you can place any block, by id, name, and item!
-Also, there are flags for keeping existing blocks, replacing only existing blocks, hollow set commands etc.. Did i mention that is a ton faster than on MagicWEv1? And asynchronous? And ***awesome***?
-
-- //replace - replaces certain blocks within the selection (for example, dirt) with another block (for example, grass). 
-
-- //help, //? - Well, not really.. It is being worked on though!
-
-<!--
 ## Fast updates
-You have an urgent issue, which crashes your server, messes with the world or players start griefing?
-Either create an issue, or, if ***REALLY*** urgent (similar to a live-saving heart operation), tag me on Twitter with your issue: [@xenialdan](https://twitter.com/xenialdan)
--->
+You have an urgent issue, your server is crashing or players mess with the world and start griefing?
+
+Consider using //report to create a pre-filled GitHub issue!
+
+Feel free to open issues, feature requests and criticism are welcome!
+
+If you have an urgent issue, tag me on Twitter for faster response time: [@xenialdan](https://twitter.com/xenialdan)
+
+## Quotes
+- _"MagicWE2 has a new fresh coating over the plugin, with rainbow colored sprinkle topping!"_ ~ XenialDan, 2017
+
+### Foot notes
+License: GNU GENERAL PUBLIC LICENSE
+
+Readme last updated: 4th August 2019
