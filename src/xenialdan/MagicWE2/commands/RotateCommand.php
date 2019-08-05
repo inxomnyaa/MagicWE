@@ -9,7 +9,7 @@ use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
@@ -35,7 +35,7 @@ class RotateCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TextFormat::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
             return;
         }
         /** @var Player $sender */
@@ -53,16 +53,16 @@ class RotateCommand extends BaseCommand
             $clipboard->rotate($rotation);//TODO add back
             $sender->sendMessage(Loader::PREFIX . "Successfully rotated clipboard");
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
     }
 }

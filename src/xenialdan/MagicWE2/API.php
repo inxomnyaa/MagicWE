@@ -17,7 +17,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\exceptions\LimitExceededException;
@@ -260,7 +260,7 @@ class API
                 {
                     $clipboard = $session->getCurrentClipboard();
                     if (is_null($clipboard)) {
-                        $session->getPlayer()->sendMessage(TextFormat::RED . "You have no clipboard - create one first");
+                        $session->getPlayer()->sendMessage(TF::RED . "You have no clipboard - create one first");
                         return false;
                     }
                     return self::pasteAsync($clipboard, $session, $target);//TODO flags & proper brush tool
@@ -319,7 +319,7 @@ class API
                 Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
                 return $session;
             } else {
-                $player->sendMessage(Loader::PREFIX . TextFormat::RED . "You do not have the permission \"magicwe.session\"");
+                $player->sendMessage(Loader::PREFIX . TF::RED . "You do not have the permission \"magicwe.session\"");
             }
         }
         if (!$player->hasPermission("we.session")) {
@@ -438,11 +438,11 @@ class API
                 $blocks[] = $block;
             } else {
                 $error = true;
-                $messages[] = Loader::PREFIX . TextFormat::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
+                $messages[] = Loader::PREFIX . TF::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
                 continue;
             }
             if ($block instanceof UnknownBlock) {
-                $messages[] = Loader::PREFIX . TextFormat::GOLD . $block . " is an unknown block";
+                $messages[] = Loader::PREFIX . TF::GOLD . $block . " is an unknown block";
             }
         }
 

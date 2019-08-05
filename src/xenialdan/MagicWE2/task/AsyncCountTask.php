@@ -7,7 +7,7 @@ use pocketmine\block\BlockFactory;
 use pocketmine\level\format\Chunk;
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\AsyncChunkManager;
@@ -127,14 +127,14 @@ class AsyncCountTask extends MWEAsyncTask
             $session->getBossBar()->hideFromAll();
             $counts = $result["counts"];//todo use extract()
             $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));
-            $player->sendMessage(TextFormat::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
+            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));
+            $player->sendMessage(TF::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
             uasort($counts, function ($a, $b) {
                 if ($a === $b) return 0;
                 return ($a > $b) ? -1 : 1;
             });
             foreach ($counts as $block => $count) {
-                $player->sendMessage(TextFormat::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
+                $player->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
             }
         }
     }

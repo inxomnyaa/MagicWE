@@ -8,7 +8,7 @@ use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\commands\BrushCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\CountCommand;
@@ -35,7 +35,7 @@ use xenialdan\MagicWE2\commands\WandCommand;
 class Loader extends PluginBase
 {
     const FAKE_ENCH_ID = 201;
-    const PREFIX = TextFormat::BOLD . TextFormat::GOLD . "[MagicWE2]" . TextFormat::RESET . " ";
+    const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
     /** @var Loader */
     private static $instance = null;
     private $baseLang;
@@ -108,7 +108,7 @@ class Loader extends PluginBase
                 new FloodCommand("/flood", "Opens the flood tool menu"),
             ]);
         } else {
-            $this->getLogger()->notice(TextFormat::RED . "CustomUI NOT found, can NOT use ui-based commands");
+            $this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
         }
     }
 
@@ -134,15 +134,15 @@ class Loader extends PluginBase
     public static function getInfo(): array
     {
         return [
-            "| " . TextFormat::GREEN . Loader::getInstance()->getFullName() . TextFormat::RESET . " | Information |",
+            "| " . TF::GREEN . Loader::getInstance()->getFullName() . TF::RESET . " | Information |",
             "| --- | --- |",
             "| Website | " . Loader::getInstance()->getDescription()->getWebsite() . " |",
             "| Version | " . Loader::getInstance()->getDescription()->getVersion() . " |",
             "| Plugin API Version | " . implode(", ", Loader::getInstance()->getDescription()->getCompatibleApis()) . " |",
             "| Authors | " . implode(", ", Loader::getInstance()->getDescription()->getAuthors()) . " |",
-            "| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(Loader::getInstance()) ? TextFormat::GREEN . "Yes" : TextFormat::RED . "No") . TextFormat::RESET . " |",
-            "| Uses UI | " . (class_exists("xenialdan\\customui\\API") ? TextFormat::GREEN . "Yes" : TextFormat::RED . "No") . TextFormat::RESET . " |",
-            "| Phar | " . (Loader::getInstance()->isPhar() ? TextFormat::GREEN . "Yes" : TextFormat::RED . "No") . TextFormat::RESET . " |",
+            "| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(Loader::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+            "| Uses UI | " . (class_exists("xenialdan\\customui\\API") ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+            "| Phar | " . (Loader::getInstance()->isPhar() ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
             "| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
             "| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
             "| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
@@ -151,10 +151,10 @@ class Loader extends PluginBase
 
     private function showStartupIcon()
     {
-        $colorAxe = TextFormat::BOLD . TextFormat::DARK_PURPLE;
-        $colorAxeStem = TextFormat::LIGHT_PURPLE;
-        $colorAxeSky = TextFormat::LIGHT_PURPLE;
-        $colorAxeFill = TextFormat::GOLD;
+        $colorAxe = TF::BOLD . TF::DARK_PURPLE;
+        $colorAxeStem = TF::LIGHT_PURPLE;
+        $colorAxeSky = TF::LIGHT_PURPLE;
+        $colorAxeFill = TF::GOLD;
         $axe = [
             "              {$colorAxe}####{$colorAxeSky}      ",
             "            {$colorAxe}##{$colorAxeFill}####{$colorAxe}##{$colorAxeSky}    ",
@@ -177,7 +177,7 @@ class Loader extends PluginBase
                 function ($v) {
                     return substr(str_shuffle(str_pad('+*~', strlen($v[0]))), 0, strlen($v[0]));
                 },
-                TextFormat::LIGHT_PURPLE . $line
+                TF::LIGHT_PURPLE . $line
             );
         }, $axe) as $axeMsg)
             $this->getLogger()->info($axeMsg);

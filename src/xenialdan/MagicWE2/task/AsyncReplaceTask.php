@@ -7,7 +7,7 @@ use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\AsyncChunkManager;
@@ -146,7 +146,7 @@ class AsyncReplaceTask extends MWEAsyncTask
             $session->getBossBar()->hideFromAll();
             $changed = $result["changed"];//todo use extract()
             $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Replace succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
             $session->addUndo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
         }
         /** @var Selection $selection */

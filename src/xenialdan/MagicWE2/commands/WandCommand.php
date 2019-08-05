@@ -14,7 +14,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\Loader;
 
 class WandCommand extends BaseCommand
@@ -37,7 +37,7 @@ class WandCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TextFormat::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
             return;
         }
         /** @var Player $sender */
@@ -46,7 +46,7 @@ class WandCommand extends BaseCommand
             $item = ItemFactory::get(ItemIds::WOODEN_AXE);
             $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
             $item->setUnbreakable(true);
-            $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Wand');
+            $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . 'Wand');
             $item->setLore([//TODO translation
                 'Left click air or a block to set the position 1 of a selection',
                 'Right click air or a block to set the position 2 of a selection',
@@ -56,16 +56,16 @@ class WandCommand extends BaseCommand
             $item->setNamedTagEntry(new CompoundTag("MagicWE", []));
             if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
     }
 }

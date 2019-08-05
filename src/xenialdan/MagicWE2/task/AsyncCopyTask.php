@@ -8,7 +8,7 @@ use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\AsyncChunkManager;
@@ -120,7 +120,7 @@ class AsyncCopyTask extends MWEAsyncTask
             $clipboard = $result["clipboard"];
             print $clipboard . PHP_EOL;
             $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
+            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
             $session->addClipboard($clipboard);
         }
         /*if(($session = API::getSessions()["fake mwe debug player"]) instanceof Session){
@@ -131,7 +131,7 @@ class AsyncCopyTask extends MWEAsyncTask
             $clipboard = $result["clipboard"];
             print $clipboard . PHP_EOL;
             $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TextFormat::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
+            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
             $session->addClipboard($clipboard);
         }*/
     }

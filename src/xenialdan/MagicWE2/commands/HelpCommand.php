@@ -9,7 +9,7 @@ use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\Loader;
 
 class HelpCommand extends BaseCommand
@@ -42,35 +42,35 @@ class HelpCommand extends BaseCommand
                     $cmds[$cmd->getName()] = $cmd;
                 }
             } else {
-                if (($cmd = Loader::getInstance()->getServer()->getCommandMap()->getCommand("/" . str_replace("/", "", TextFormat::clean(strval($args["command"]))))) instanceof Command) {
+                if (($cmd = Loader::getInstance()->getServer()->getCommandMap()->getCommand("/" . str_replace("/", "", TF::clean(strval($args["command"]))))) instanceof Command) {
                     $cmds[$cmd->getName()] = $cmd;
                 } else {
-                    $sender->sendMessage(TextFormat::RED . str_replace("/", "//", Loader::getInstance()->getServer()->getLanguage()->translateString("%commands.generic.notFound")));
+                    $sender->sendMessage(TF::RED . str_replace("/", "//", Loader::getInstance()->getServer()->getLanguage()->translateString("%commands.generic.notFound")));
                     return;
                 }
             }
             foreach ($cmds as $command) {
-                $message = TextFormat::LIGHT_PURPLE . "/" . $command->getName();
+                $message = TF::LIGHT_PURPLE . "/" . $command->getName();
                 if (!empty(($aliases = $command->getAliases()))) {
                     foreach ($aliases as $i => $alias) {
                         $aliases[$i] = "/" . $alias;
                     }
-                    $message .= TextFormat::DARK_PURPLE . " [" . implode(",", $aliases) . "]";
+                    $message .= TF::DARK_PURPLE . " [" . implode(",", $aliases) . "]";
                 }
-                $message .= TextFormat::AQUA . " " . $command->getDescription() . PHP_EOL . " - " . $command->getUsage();
+                $message .= TF::AQUA . " " . $command->getDescription() . PHP_EOL . " - " . $command->getUsage();
                 $sender->sendMessage($message);
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
     }
 }

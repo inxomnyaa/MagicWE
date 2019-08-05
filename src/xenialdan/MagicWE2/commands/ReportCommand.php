@@ -10,7 +10,7 @@ use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\Loader;
 
 class ReportCommand extends BaseCommand
@@ -42,22 +42,22 @@ class ReportCommand extends BaseCommand
                 PHP_EOL .
                 PHP_EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
                 PHP_EOL . "---" .
-                PHP_EOL . TextFormat::clean(implode(PHP_EOL, Loader::getInfo())));
-            $url .= "&title=" . urlencode(TextFormat::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . strval($args["title"] ?? "")));
+                PHP_EOL . TF::clean(implode(PHP_EOL, Loader::getInfo())));
+            $url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . strval($args["title"] ?? "")));
 
             if (!$sender instanceof ConsoleCommandSender) $sender->sendMessage(Loader::PREFIX . $url);
             Loader::getInstance()->getLogger()->alert($url);
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
     }
 }

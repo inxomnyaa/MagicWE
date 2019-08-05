@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\clipboard\Clipboard;
@@ -249,7 +249,7 @@ class Session
     public function setWandEnabled(bool $wandEnabled)
     {
         $this->wandEnabled = $wandEnabled;
-        return Loader::PREFIX . "The wand tool is now " . ($wandEnabled ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
+        return Loader::PREFIX . "The wand tool is now " . ($wandEnabled ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
     }
 
     /**
@@ -267,7 +267,7 @@ class Session
     public function setDebugStickEnabled(bool $debugStick)
     {
         $this->debugStickEnabled = $debugStick;
-        return Loader::PREFIX . "The debug stick is now " . ($debugStick ? TextFormat::GREEN . "enabled" : TextFormat::RED . "disabled") . TextFormat::RESET . "!";//TODO #translation
+        return Loader::PREFIX . "The debug stick is now " . ($debugStick ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
     }
 
     /**

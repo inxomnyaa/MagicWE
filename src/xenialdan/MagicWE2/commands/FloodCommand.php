@@ -15,7 +15,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-use pocketmine\utils\TextFormat;
+use pocketmine\utils\TextFormat as TF;
 use xenialdan\customui\elements\Input;
 use xenialdan\customui\elements\Label;
 use xenialdan\customui\elements\Slider;
@@ -45,14 +45,14 @@ class FloodCommand extends BaseCommand
         $lang = Loader::getInstance()->getLanguage();
         try {
             if ($sender instanceof Player) {
-                $form = new CustomForm(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . $lang->translateString('ui.flood.title'));
+                $form = new CustomForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.flood.title'));
                 $form->addElement(new Slider($lang->translateString('ui.flood.options.limit'), 0, 5000, 500.0));
                 $form->addElement(new Input($lang->translateString('ui.flood.options.blocks'), $lang->translateString('ui.flood.options.blocks.placeholder')));
                 $form->addElement(new Label($lang->translateString('ui.flood.options.label.infoapply')));
                 $form->setCallable(function (Player $player, $data) use ($form) {
                     $item = ItemFactory::get(ItemIds::BUCKET, 1);
                     $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-                    $item->setCustomName(Loader::PREFIX . TextFormat::BOLD . TextFormat::DARK_PURPLE . 'Flood');
+                    $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . 'Flood');
                     $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                     $item->setNamedTagEntry(new CompoundTag("MagicWE", [
                         new StringTag("blocks", $data[1]),
@@ -62,19 +62,19 @@ class FloodCommand extends BaseCommand
                 });
                 $sender->sendForm($form);
             } else {
-                $sender->sendMessage(TextFormat::RED . "Console can not use this command.");
+                $sender->sendMessage(TF::RED . "Console can not use this command.");
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . "Looks like you are missing an argument or used the command wrong!");
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TextFormat::RED . $error->getMessage());
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
     }
 }
