@@ -79,6 +79,7 @@ class API
             if ($selection->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
+            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -103,6 +104,7 @@ class API
             if ($selection->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
+            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -130,6 +132,7 @@ class API
                 $offset = new Vector3();
             else
                 $offset = $selection->getMinVec3()->subtract($session->getPlayer())->floor();
+            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($selection, $offset, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -157,6 +160,7 @@ class API
             }
             $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
+            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
