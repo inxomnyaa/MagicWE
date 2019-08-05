@@ -35,14 +35,14 @@ class ReportCommand extends BaseCommand
     {
         /** @var Player $sender */
         try {
-            $url = "Please report your bug with this link (link also in console)" . PHP_EOL;
+            $url = "Please report your bug with this link (link also in console)" . TF::EOL;
             $url .= "https://github.com/thebigsmileXD/MagicWE2/issues/new?labels=Bug&body=";
             $url .= urlencode(
-                "### Description" . PHP_EOL . "<!-- DESCRIPTION OF YOUR ISSUE -->" .
-                PHP_EOL .
-                PHP_EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
-                PHP_EOL . "---" .
-                PHP_EOL . TF::clean(implode(PHP_EOL, Loader::getInfo())));
+                "### Description" . TF::EOL . "<!-- DESCRIPTION OF YOUR ISSUE -->" .
+                TF::EOL .
+                TF::EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
+                TF::EOL . "---" .
+                TF::EOL . TF::clean(implode(TF::EOL, Loader::getInfo())));
             $url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . strval($args["title"] ?? "")));
 
             if (!$sender instanceof ConsoleCommandSender) $sender->sendMessage(Loader::PREFIX . $url);

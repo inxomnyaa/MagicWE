@@ -38,14 +38,14 @@ class DonateCommand extends BaseCommand
             $sender->sendMessage($name . "Thank you! With " . TF::BOLD . TF::RED . "<3" . TF::RESET . TF::DARK_PURPLE . " - MagicWE2 by https://github.com/thebigsmileXD");
             $colorHeart = (mt_rand(0, 1) === 1 ? TF::DARK_RED : TF::DARK_PURPLE);
             $sender->sendMessage(
-                TF::BOLD . $colorHeart . "   ****     ****   " . PHP_EOL .
-                TF::BOLD . $colorHeart . " **    ** **    ** " . PHP_EOL .
-                TF::BOLD . $colorHeart . "**       *       **" . PHP_EOL .
-                TF::BOLD . $colorHeart . " **     " . TF::GOLD . "MWE" . $colorHeart . "     ** " . PHP_EOL .
-                TF::BOLD . $colorHeart . "  **           **  " . PHP_EOL .
-                TF::BOLD . $colorHeart . "    **       **    " . PHP_EOL .
-                TF::BOLD . $colorHeart . "      **   **      " . PHP_EOL .
-                TF::BOLD . $colorHeart . "        ***        " . PHP_EOL .
+                TF::BOLD . $colorHeart . "   ****     ****   " . TF::EOL .
+                TF::BOLD . $colorHeart . " **    ** **    ** " . TF::EOL .
+                TF::BOLD . $colorHeart . "**       *       **" . TF::EOL .
+                TF::BOLD . $colorHeart . " **     " . TF::GOLD . "MWE" . $colorHeart . "     ** " . TF::EOL .
+                TF::BOLD . $colorHeart . "  **           **  " . TF::EOL .
+                TF::BOLD . $colorHeart . "    **       **    " . TF::EOL .
+                TF::BOLD . $colorHeart . "      **   **      " . TF::EOL .
+                TF::BOLD . $colorHeart . "        ***        " . TF::EOL .
                 TF::BOLD . $colorHeart . "         *         "
             );
         } catch (\Exception $error) {

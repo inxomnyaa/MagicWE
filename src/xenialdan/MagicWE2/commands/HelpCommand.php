@@ -57,7 +57,7 @@ class HelpCommand extends BaseCommand
                     }
                     $message .= TF::DARK_PURPLE . " [" . implode(",", $aliases) . "]";
                 }
-                $message .= TF::AQUA . " " . $command->getDescription() . PHP_EOL . " - " . $command->getUsage();
+                $message .= TF::AQUA . " " . $command->getDescription() . TF::EOL . " - " . $command->getUsage();
                 $sender->sendMessage($message);
             }
         } catch (\Exception $error) {
