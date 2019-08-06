@@ -1,8 +1,6 @@
 <?php
 
-
-namespace xenialdan\MagicWE2\exceptions;
-
+namespace xenialdan\MagicWE2\exception;
 
 use pocketmine\plugin\PluginException;
 

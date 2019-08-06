@@ -20,7 +20,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
-use xenialdan\MagicWE2\exceptions\LimitExceededException;
+use xenialdan\MagicWE2\exception\LimitExceededException;
 use xenialdan\MagicWE2\shape\ShapeGenerator;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
