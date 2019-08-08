@@ -9,7 +9,7 @@ projects:
     - src: thebigsmilexd/customui/customui
       version: ^3.0.0
     - src: thebigsmilexd/apibossbar/apibossbar
-      version: ^0.0.2
+      version: ^0.0.3
     - src: CortexPE/Commando/Commando
       version: ^0.3.1
 ...
