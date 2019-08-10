@@ -79,7 +79,7 @@ class BrushCommand extends BaseCommand
                                 $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
-                                $item->setNamedTagEntry(new CompoundTag("MagicWE", [
+                                $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
                                     new IntTag("type", ShapeGenerator::TYPE_SPHERE),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("diameter", $data[1]),
@@ -110,7 +110,7 @@ class BrushCommand extends BaseCommand
                                 $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
-                                $item->setNamedTagEntry(new CompoundTag("MagicWE", [
+                                $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
                                     new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("diameter", $data[1]),
@@ -143,7 +143,7 @@ class BrushCommand extends BaseCommand
                                 $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
-                                $item->setNamedTagEntry(new CompoundTag("MagicWE", [
+                                $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
                                     new IntTag("type", ShapeGenerator::TYPE_CUBOID),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("width", $data[1]),
@@ -175,7 +175,7 @@ class BrushCommand extends BaseCommand
                                 $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
-                                $item->setNamedTagEntry(new CompoundTag("MagicWE", [
+                                $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
                                     new IntTag("type", ShapeGenerator::TYPE_CUBE),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("width", $data[1]),
@@ -205,7 +205,7 @@ class BrushCommand extends BaseCommand
                                 $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . ucfirst($selectedOption) . ' brush');
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
-                                $item->setNamedTagEntry(new CompoundTag("MagicWE", [
+                                $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
                                     new IntTag("type", ShapeGenerator::TYPE_CUSTOM),
                                     new IntTag("flags", $flags),
                                 ]));

@@ -57,6 +57,8 @@ class API
     // Pastes or sets hollow but closes off the ends
     const FLAG_HOLLOW_CLOSED = 0x09; // -hc//TODO
 
+    const TAG_MAGIC_WE = "MagicWE";
+
     //TODO Split into seperate Class (SessionStorage?)
     /** @var Session[] */
     private static $sessions = [];

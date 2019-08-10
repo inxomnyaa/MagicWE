@@ -15,6 +15,7 @@ use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
 class WandCommand extends BaseCommand
@@ -53,7 +54,7 @@ class WandCommand extends BaseCommand
                 'If you click in air its set to the block you are looking at',
                 'Use //togglewand to toggle it\'s functionality'
             ]);
-            $item->setNamedTagEntry(new CompoundTag("MagicWE", []));
+            $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));
             if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");

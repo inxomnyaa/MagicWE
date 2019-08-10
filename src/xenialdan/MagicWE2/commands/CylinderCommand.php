@@ -62,7 +62,7 @@ class CylinderCommand extends BaseCommand
                 if (is_null($session)) {
                     throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                 }
-                API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag("MagicWE", [
+                API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag(API::TAG_MAGIC_WE, [
                     new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
                     new StringTag("blocks", $blocks),
                     new FloatTag("diameter", $diameter),

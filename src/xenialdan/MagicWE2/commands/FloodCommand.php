@@ -20,6 +20,7 @@ use xenialdan\customui\elements\Input;
 use xenialdan\customui\elements\Label;
 use xenialdan\customui\elements\Slider;
 use xenialdan\customui\windows\CustomForm;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
 class FloodCommand extends BaseCommand
@@ -54,7 +55,7 @@ class FloodCommand extends BaseCommand
                     $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
                     $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . 'Flood');
                     $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
-                    $item->setNamedTagEntry(new CompoundTag("MagicWE", [
+                    $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
                         new StringTag("blocks", $data[1]),
                         new FloatTag("limit", $data[0]),
                     ]));

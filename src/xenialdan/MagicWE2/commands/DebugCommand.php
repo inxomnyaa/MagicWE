@@ -14,6 +14,7 @@ use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
 class DebugCommand extends BaseCommand
@@ -49,7 +50,7 @@ class DebugCommand extends BaseCommand
                 'like the name and damage values of a block',
                 'Use //toggledebug to toggle it\'s functionality'
             ]);
-            $item->setNamedTagEntry(new CompoundTag("MagicWE", []));
+            $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));
             $sender->getInventory()->addItem($item);
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");

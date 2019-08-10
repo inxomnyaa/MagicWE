@@ -96,7 +96,7 @@ class EventListener implements Listener
      */
     private function onBreakBlock(BlockBreakEvent $event)
     {
-        if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))) {
+        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
             /** @var Session $session */
             $session = API::getSession($event->getPlayer());
@@ -136,7 +136,7 @@ class EventListener implements Listener
      */
     private function onRightClickBlock(PlayerInteractEvent $event)
     {
-        if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))) {
+        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
             /** @var Session $session */
             $session = API::getSession($event->getPlayer());
@@ -169,7 +169,7 @@ class EventListener implements Listener
                 case ItemIds::BUCKET:
                     {
                         #if (){// && has perms
-                        API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry("MagicWE"), $session);
+                        API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
                         #}
                         break;
                     }
@@ -183,38 +183,17 @@ class EventListener implements Listener
      */
     private function onRightClickAir(PlayerInteractEvent $event)
     {
-        if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))) {
+        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
             /** @var Session $session */
             $session = API::getSession($event->getPlayer());
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
-                case ItemIds::WOODEN_AXE:
-                    {
-                        $event->setCancelled();
-                        /** @var Session $session */
-                        if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
-                            break;
-                        }
-                        $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getPlayer()->getLevel())); // TODO check if the selection inside of the session updates
-                        if (is_null($selection)) {
-                            throw new \Error("No selection created - Check the console for errors");
-                        }
-                        /** @var Block|null $target */
-                        $target = $event->getPlayer()->getTargetBlock(100);
-                        if ($target === null) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "No target block found");
-                            return;
-                        }
-                        $event->getPlayer()->sendMessage($selection->setPos2($target));
-                        break;
-                    }
                 case ItemIds::WOODEN_SHOVEL:
                     {
                         $target = $event->getPlayer()->getTargetBlock(100);
                         if (!is_null($target)) {// && has perms
-                            API::createBrush($target, $event->getItem()->getNamedTagEntry("MagicWE"), $session);
+                            API::createBrush($target, $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
                         }
                         break;
                     }
@@ -228,7 +207,7 @@ class EventListener implements Listener
      */
     private function onLeftClickAir(PlayerInteractEvent $event)
     {
-        if (!is_null($event->getItem()->getNamedTagEntry("MagicWE"))) {
+        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
             /** @var Session $session */
             $session = API::getSession($event->getPlayer());
