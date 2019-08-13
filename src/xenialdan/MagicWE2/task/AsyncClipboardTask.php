@@ -94,12 +94,12 @@ class AsyncClipboardTask extends MWEAsyncTask
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
         /** @var Block $block */
         foreach ($clipboard->getBlocks($chunkManager, $this->flags) as $block) {
-            var_dump("Block clipboard used", $block);
+            #var_dump("Block clipboard used", $block);
             if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
                 $lastchunkx = $block->x >> 4;
                 $lastchunkz = $block->z >> 4;
                 if (is_null($pasteChunkManager->getChunk($block->x >> 4, $block->z >> 4))) {
-                    print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
+                    #print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
                     continue;
                 }
             }

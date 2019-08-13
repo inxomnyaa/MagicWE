@@ -87,7 +87,7 @@ class AsyncCountTask extends MWEAsyncTask
                 $lastchunkx = $block->x >> 4;
                 $lastchunkz = $block->z >> 4;
                 if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
-                    print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
+                    #print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
                     continue;
                 }
             }

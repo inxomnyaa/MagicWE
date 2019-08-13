@@ -60,7 +60,7 @@ class AsyncRevertTask extends MWEAsyncTask
         unset($chunks);
         $changed = $this->editChunks($clipboard, $manager);
         $chunks = $manager->getChunks();
-        var_dump("chunks count", count($chunks));
+        #var_dump("chunks count", count($chunks));
         $this->setResult(compact("chunks", "changed", "totalCount"));
     }
 
@@ -98,7 +98,7 @@ class AsyncRevertTask extends MWEAsyncTask
         }
         /** @var Chunk[] $chunks */
         $chunks = $result["chunks"];
-        print "onCompletion chunks count: " . count($chunks);
+        #print "onCompletion chunks count: " . count($chunks);
         /** @var RevertClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
         /** @var Level $level */

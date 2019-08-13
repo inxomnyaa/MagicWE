@@ -77,18 +77,18 @@ class CopyClipboard extends Clipboard
     public function getTouchedChunks(Vector3 $center): array
     {
         $c = $center->subtract($this->center);//should be 0,0,0
-        var_dump("Center c ", $c);
+        #var_dump("Center c ", $c);
         $offset = new Vector2($c->getX() >> 4, $c->getZ() >> 4);
-        var_dump("offset ", $c);
+        #var_dump("offset ", $c);
         $chunks = [];
         foreach ($this->chunks as $chunk) {
-            print "Touched Chunk at: " . $chunk->getX() . ":" . $chunk->getZ() . PHP_EOL;
+            #print "Touched Chunk at: " . $chunk->getX() . ":" . $chunk->getZ() . PHP_EOL;
             $chunk->setX(intval($chunk->getX() + $offset->x));
             $chunk->setZ(intval($chunk->getZ() + $offset->y));
-            print "New Touched Chunk at: " . $chunk->getX() . ":" . $chunk->getZ() . PHP_EOL;
+            #print "New Touched Chunk at: " . $chunk->getX() . ":" . $chunk->getZ() . PHP_EOL;
             $chunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
         }
-        print "Touched chunks count: " . count($chunks) . PHP_EOL;
+        #print "Touched chunks count: " . count($chunks) . PHP_EOL;
         return $chunks;
     }
 
@@ -102,7 +102,7 @@ class CopyClipboard extends Clipboard
             #if(is_null($chunk)) continue;
             $chunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
         }
-        print "Touched chunks serialize count: " . count($chunks) . PHP_EOL;
+        #print "Touched chunks serialize count: " . count($chunks) . PHP_EOL;
         return $chunks;
     }
 
@@ -116,9 +116,9 @@ class CopyClipboard extends Clipboard
     public function getBlocks(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        var_dump($this->aabb);
+        #var_dump($this->aabb);
         $this->recalculateAABB();
-        var_dump($this->aabb);
+        #var_dump($this->aabb);
         //todo should RX RY RZ be center coords?
         for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
             for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
@@ -223,7 +223,7 @@ class CopyClipboard extends Clipboard
      */
     public function serialize()
     {
-        var_dump("Called " . __METHOD__);
+        #var_dump("Called " . __METHOD__);
         return serialize([
             $this->levelid,
             $this->center->asVector3(),
@@ -244,7 +244,7 @@ class CopyClipboard extends Clipboard
      */
     public function unserialize($serialized)
     {
-        var_dump("Called " . __METHOD__);
+        #var_dump("Called " . __METHOD__);
         [
             $this->levelid,
             $this->center,
@@ -254,7 +254,7 @@ class CopyClipboard extends Clipboard
         ] = unserialize($serialized);
         foreach ($chunks as $hash => $chunk)//TODO save serialized chunks instead?
             $this->chunks[$hash] = Chunk::fastDeserialize($chunk);
-        print "Touched chunks unserialize count: " . count($this->chunks) . PHP_EOL;
+        #print "Touched chunks unserialize count: " . count($this->chunks) . PHP_EOL;
     }
 
     public function __toString()

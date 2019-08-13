@@ -301,7 +301,7 @@ class Selection implements \Serializable
         $minX = $this->getMinVec3()->x >> 4;
         $maxZ = $this->getMaxVec3()->z >> 4;
         $minZ = $this->getMinVec3()->z >> 4;
-        print "from $minX:$minZ to $maxX:$maxZ" . PHP_EOL;
+        #print "from $minX:$minZ to $maxX:$maxZ" . PHP_EOL;
         $touchedChunks = [];
         for ($x = $minX; $x <= $maxX; $x++) {
             for ($z = $minZ; $z <= $maxZ; $z++) {
@@ -309,11 +309,11 @@ class Selection implements \Serializable
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
+                #print "Touched Chunk at: $x:$z" . PHP_EOL;
                 $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
             }
         }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
+        #print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
         return $touchedChunks;
     }
 

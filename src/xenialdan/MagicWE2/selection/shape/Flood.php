@@ -103,7 +103,7 @@ class Flood extends Shape
         $maxZ = ($v2center->y + $maxRadius) >> 4;
         $minZ = ($v2center->y - $maxRadius) >> 4;
         $cmaxRadius = $cv2center->distanceSquared($minX - 0.5, $minZ - 0.5);
-        print "from $minX:$minZ to $maxX:$maxZ" . PHP_EOL;
+        #print "from $minX:$minZ to $maxX:$maxZ" . PHP_EOL;
         $touchedChunks = [];
         for ($x = $minX - 1; $x <= $maxX + 1; $x++) {
             for ($z = $minZ - 1; $z <= $maxZ + 1; $z++) {
@@ -112,11 +112,11 @@ class Flood extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
+                #print "Touched Chunk at: $x:$z" . PHP_EOL;
                 $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
             }
         }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
+        #print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
         return $touchedChunks;
     }
 }
