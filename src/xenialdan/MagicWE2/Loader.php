@@ -74,7 +74,7 @@ class Loader extends PluginBase
     {
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
-        if ($this->getConfig()->get("show-startup-icon", true)) $this->showStartupIcon();
+        if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->registerAll("we", [
             new Pos1Command("/pos1", "Select first position", ["/1"]),
