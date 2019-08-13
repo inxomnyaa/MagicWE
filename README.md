@@ -6,6 +6,8 @@ Lag free asynchronous world editor for [PMMP](https://github.com/pmmp/PocketMine
 Try the new MagicWE, now way more powerful, with more support, more commands, new tools and more!
 
 [![Poggit-CI](https://poggit.pmmp.io/ci.badge/thebigsmileXD/MagicWE2/MagicWE2/master)](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2)
+[![](https://poggit.pmmp.io/shield.state/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)
+[![](https://poggit.pmmp.io/shield.api/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)
 ## Why MagicWE2?
 _Rainbow sprinkles!_
 
@@ -22,7 +24,7 @@ Jokes aside, here is a list of pros:
 - Command auto-completion
 - Command flags (i.e. -p for relative copying/pasting, -h for hollow objects)
 - UI for brush setup and configuration
-- Fancy icon and startup ASCII art
+- Fancy icon and optional startup ASCII art
 - Direct bug reporting to GitHub
 <!-- 
 - schematic support
@@ -35,8 +37,8 @@ Jokes aside, here is a list of pros:
 | `//pos1` | `//1` | `Select first position` | `//pos1` |
 | `//pos2` | `//2` | `Select second position` | `//pos2` |
 | `//set` | `//fill` | `Fill an area with the specified blocks` | `//set <blocks:string> [flags:text]` |
-| `//replace` | `| Replace blocks in an area with other blocks` | `//replace <findblocks:string> <replaceblocks:string> [flags:text]` |
-| `//copy` | `| Copy an area into a clipboard` | `//copy [flags:text]` |
+| `//replace` | | `Replace blocks in an area with other blocks` | `//replace <findblocks:string> <replaceblocks:string> [flags:text]` |
+| `//copy` | | `Copy an area into a clipboard` | `//copy [flags:text]` |
 | `//paste` |  | `Paste your clipboard` | `//paste [flags:text]` |
 | `//wand` |  | `Gives you the selection wand` | `//wand` |
 | `//togglewand` |  | `Toggle the wand tool on/off` | `//togglewand` |
