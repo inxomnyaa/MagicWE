@@ -76,7 +76,7 @@ class Loader extends PluginBase
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
         if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
-        $this->getServer()->getCommandMap()->registerAll("we", [
+        $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
             new Pos1Command("/pos1", "Select first position", ["/1"]),
             new Pos2Command("/pos2", "Select second position", ["/2"]),
             new SetCommand("/set", "Fill an area with the specified blocks", ["/fill"]),
@@ -102,7 +102,7 @@ class Loader extends PluginBase
         ]);
         if (class_exists("xenialdan\\customui\\API")) {
             $this->getLogger()->notice("CustomUI found, can use ui-based commands");
-            $this->getServer()->getCommandMap()->registerAll("we", [
+            $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
                 new BrushCommand("/brush", "Opens the brush tool menu"),
                 new FloodCommand("/flood", "Opens the flood tool menu"),
             ]);
