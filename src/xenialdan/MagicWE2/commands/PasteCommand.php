@@ -48,9 +48,9 @@ class PasteCommand extends BaseCommand
             if (is_null($clipboard)) {
                 throw new \Exception("No clipboard found - create a clipboard first");
             }
-            if (!API::hasFlag(API::flagParser(explode(" ", strval($args["flags"]))), API::FLAG_POSITION_RELATIVE)) {
-                #$clipboard->setOffset(new Vector3());//TODO fix? Move to API
-            }
+            /*if (!API::hasFlag(API::flagParser(explode(" ", strval($args["flags"]))), API::FLAG_POSITION_RELATIVE)) {
+                $clipboard->setOffset(new Vector3());//TODO fix? Move to API
+            }*/
             API::pasteAsync($clipboard, $session, $sender->asPosition(), API::flagParser(explode(" ", strval($args["flags"]))));
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");

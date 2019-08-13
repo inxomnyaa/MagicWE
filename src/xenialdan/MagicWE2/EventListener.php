@@ -13,6 +13,9 @@ use pocketmine\level\Position;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\Session;
+use xenialdan\MagicWE2\session\UserSession;
 
 class EventListener implements Listener
 {
@@ -26,8 +29,7 @@ class EventListener implements Listener
     public function onLogin(PlayerLoginEvent $event)
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
-            if (API::hasSession($event->getPlayer())) {
-                $session = API::getSession($event->getPlayer());
+            if (($session = API::findSession($event->getPlayer())) instanceof UserSession) {
                 Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
             }
         }
@@ -98,13 +100,12 @@ class EventListener implements Listener
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
-            /** @var Session $session */
+            /** @var UserSession $session */
             $session = API::getSession($event->getPlayer());
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                     {
-                        /** @var Session $session */
                         if (!$session->isWandEnabled()) {
                             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                             break;
@@ -118,7 +119,6 @@ class EventListener implements Listener
                     }
                 case ItemIds::STICK:
                     {
-                        /** @var Session $session */
                         if (!$session->isDebugStickEnabled()) {
                             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
                             break;
@@ -138,13 +138,12 @@ class EventListener implements Listener
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
-            /** @var Session $session */
+            /** @var UserSession $session */
             $session = API::getSession($event->getPlayer());
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                     {
-                        /** @var Session $session */
                         if (!$session->isWandEnabled()) {
                             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                             break;
@@ -158,7 +157,6 @@ class EventListener implements Listener
                     }
                 case ItemIds::STICK:
                     {
-                        /** @var Session $session */
                         if (!$session->isDebugStickEnabled()) {
                             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
                             break;
@@ -209,14 +207,13 @@ class EventListener implements Listener
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
-            /** @var Session $session */
+            /** @var UserSession $session */
             $session = API::getSession($event->getPlayer());
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                     {
                         $event->setCancelled();
-                        /** @var Session $session */
                         if (!$session->isWandEnabled()) {
                             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                             break;

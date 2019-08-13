@@ -2,22 +2,18 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2;
+namespace xenialdan\MagicWE2\session;
 
-use pocketmine\Player;
-use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
-use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\selection\Selection;
 
-class Session
+abstract class Session
 {
     const MAX_CLIPBOARDS = 5;
     /** @var UUID */
     private $uuid;
-    /** @var Player|null */
-    private $player = null;
     /** @var Selection[] */
     private $selections = [];
     /** @var UUID|null */
@@ -30,46 +26,6 @@ class Session
     private $undo = [];
     /** @var RevertClipboard[] */
     private $redo = [];
-    /** @var bool */
-    private $wandEnabled = true;
-    /** @var bool */
-    private $debugStickEnabled = true;
-    /** @var BossBar */
-    private $bossBar;
-
-    public function __construct(Player $player)
-    {
-        $this->setPlayer($player);
-        $this->setUUID($player->getUniqueId());
-        $this->bossBar = (new BossBar())->addPlayer($player);
-        $this->bossBar->hideFrom([$player]);
-    }
-
-    public function __destruct()
-    {
-        if (!is_null($this->uuid)) Loader::getInstance()->getLogger()->debug("Destructing session " . $this->getUUID()->__toString());
-        $this->bossBar->removeAllPlayers();
-        foreach ($this as &$value) {
-            $value = null;
-            unset($value);
-        }
-    }
-
-    /**
-     * @param null|Player $player
-     */
-    public function setPlayer($player)
-    {
-        $this->player = $player;
-    }
-
-    /**
-     * @return null|Player
-     */
-    public function getPlayer()
-    {
-        return $this->player;
-    }
 
     /**
      * @return UUID
@@ -166,6 +122,14 @@ class Session
     }
 
     /**
+     * @return int
+     */
+    public function getCurrentClipboardIndex(): int
+    {
+        return $this->currentClipboard;
+    }
+
+    /**
      * @return null|Clipboard
      */
     public function getCurrentClipboard(): ?Clipboard
@@ -235,42 +199,6 @@ class Session
     }
 
     /**
-     * @return bool
-     */
-    public function isWandEnabled(): bool
-    {
-        return $this->wandEnabled;
-    }
-
-    /**
-     * @param bool $wandEnabled
-     * @return string
-     */
-    public function setWandEnabled(bool $wandEnabled)
-    {
-        $this->wandEnabled = $wandEnabled;
-        return Loader::PREFIX . "The wand tool is now " . ($wandEnabled ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDebugStickEnabled(): bool
-    {
-        return $this->debugStickEnabled;
-    }
-
-    /**
-     * @param bool $debugStick
-     * @return string
-     */
-    public function setDebugStickEnabled(bool $debugStick)
-    {
-        $this->debugStickEnabled = $debugStick;
-        return Loader::PREFIX . "The debug stick is now " . ($debugStick ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
-    }
-
-    /**
      * @return RevertClipboard[]
      */
     public function getUndos(): array
@@ -287,11 +215,11 @@ class Session
     }
 
     /**
-     * @param RevertClipboard $RevertClipboard
+     * @param RevertClipboard $revertClipboard
      */
-    public function addUndo(RevertClipboard $RevertClipboard)
+    public function addUndo(RevertClipboard $revertClipboard)
     {
-        array_push($this->undo, $RevertClipboard);
+        array_push($this->undo, $revertClipboard);
     }
 
     /**
@@ -299,9 +227,9 @@ class Session
      */
     public function getLatestUndo(): ?RevertClipboard
     {
-        $RevertClipboards = $this->getUndos();
-        $return = array_pop($RevertClipboards);
-        $this->setUndos($RevertClipboards);
+        $revertClipboards = $this->getUndos();
+        $return = array_pop($revertClipboards);
+        $this->setUndos($revertClipboards);
         return $return;
     }
 
@@ -322,11 +250,11 @@ class Session
     }
 
     /**
-     * @param RevertClipboard $RevertClipboard
+     * @param RevertClipboard $revertClipboard
      */
-    public function addRedo(RevertClipboard $RevertClipboard)
+    public function addRedo(RevertClipboard $revertClipboard)
     {
-        array_push($this->redo, $RevertClipboard);
+        array_push($this->redo, $revertClipboard);
     }
 
     /**
@@ -334,18 +262,24 @@ class Session
      */
     public function getLatestRedo(): ?RevertClipboard
     {
-        $RevertClipboards = $this->getRedos();
-        $return = array_pop($RevertClipboards);
-        $this->setRedos($RevertClipboards);
+        $revertClipboards = $this->getRedos();
+        $return = array_pop($revertClipboards);
+        $this->setRedos($revertClipboards);
         return $return;
     }
 
-    /**
-     * @return BossBar
-     */
-    public function getBossBar(): BossBar
+    public abstract function sendMessage(string $message);
+
+    public function __toString()
     {
-        return $this->bossBar;
+        return __CLASS__ .
+            " UUID: " . $this->getUUID()->__toString() .
+            " Selections: " . count($this->getSelections()) .
+            " Latest: " . $this->getLatestSelectionUUID() .
+            " Clipboards: " . count($this->getClipboards()) .
+            " Current: " . $this->getCurrentClipboardIndex() .
+            " Undos: " . count($this->getUndos()) .
+            " Redos: " . count($this->getRedos());
     }
 
     /*

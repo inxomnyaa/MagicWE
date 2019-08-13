@@ -7,7 +7,7 @@ namespace xenialdan\MagicWE2\clipboard;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\Server;
-use xenialdan\MagicWE2\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 abstract class Clipboard implements \Serializable
 {

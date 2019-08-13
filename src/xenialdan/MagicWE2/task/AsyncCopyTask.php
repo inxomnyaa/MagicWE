@@ -6,15 +6,15 @@ use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\AsyncChunkManager;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Selection;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncCopyTask extends MWEAsyncTask
 {
@@ -29,16 +29,16 @@ class AsyncCopyTask extends MWEAsyncTask
      * AsyncCopyTask constructor.
      * @param Selection $selection
      * @param Vector3 $offset
-     * @param UUID $playerUUID
+     * @param UUID $sessionUUID
      * @param Chunk[] $chunks
      * @param int $flags
      * @throws \Exception
      */
-    public function __construct(Selection $selection, Vector3 $offset, UUID $playerUUID, array $chunks, int $flags)
+    public function __construct(Selection $selection, Vector3 $offset, UUID $sessionUUID, array $chunks, int $flags)
     {
         $this->start = microtime(true);
         $this->chunks = serialize($chunks);
-        $this->playerUUID = serialize($playerUUID);
+        $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
         $this->offset = serialize($offset);
         $this->flags = $flags;
@@ -54,9 +54,9 @@ class AsyncCopyTask extends MWEAsyncTask
     {
         $this->publishProgress([0, "Start"]);
         $chunks = unserialize($this->chunks);
-        foreach ($chunks as $hash => $data) {
-            $chunks[$hash] = Chunk::fastDeserialize($data);
-        }
+        array_walk($chunks, function ($chunk) {
+            return Chunk::fastDeserialize($chunk);
+        });
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
         $manager = Selection::getChunkManager($chunks);
@@ -67,7 +67,6 @@ class AsyncCopyTask extends MWEAsyncTask
         $totalCount = $selection->getTotalCount();
         $copied = $this->copyBlocks($selection, $manager, $clipboard);
         $clipboard->chunks = $manager->getChunks();
-        #var_dump($clipboard->__toString());
         $this->setResult(compact("clipboard", "copied", "totalCount"));
     }
 
@@ -92,7 +91,6 @@ class AsyncCopyTask extends MWEAsyncTask
                 $clipboard->chunks[Level::chunkHash($block->x >> 4, $block->z >> 4)] = $chunk;
             }
             $manager->setBlockAt($block->x, $block->y, $block->z, $block);
-            var_dump("Block copy", $block);
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
@@ -100,39 +98,19 @@ class AsyncCopyTask extends MWEAsyncTask
                 $lastprogress = $progress;
             }
         }
-        var_dump(__METHOD__ . " clipboard chunks count", count($clipboard->chunks));
         return $i;
     }
 
     public function onCompletion(Server $server)
     {
         $result = $this->getResult();
-        $player = $server->getPlayerByUUID(unserialize($this->playerUUID));
+        $session = API::getSessions()[$this->sessionUUID];
+        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        $copied = $result["copied"];
         /** @var CopyClipboard $clipboard */
         $clipboard = $result["clipboard"];
-        #var_dump($clipboard);
-        if ($player instanceof Player) {
-            $session = API::getSession($player);
-            if (is_null($session)) return;
-            $session->getBossBar()->hideFromAll();
-            $copied = $result["copied"];//todo use extract()
-            /** @var CopyClipboard $clipboard */
-            $clipboard = $result["clipboard"];
-            print $clipboard . PHP_EOL;
-            $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
-            $session->addClipboard($clipboard);
-        }
-        /*if(($session = API::getSessions()["fake mwe debug player"]) instanceof Session){
-            $player = $session->getPlayer();
-            var_dump($session->getPlayer()->getName());
-            $copied = $result["copied"];//todo use extract()
-            /** @var CopyClipboard $clipboard * /
-            $clipboard = $result["clipboard"];
-            print $clipboard . PHP_EOL;
-            $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
-            $session->addClipboard($clipboard);
-        }*/
+        $totalCount = $result["totalCount"];
+        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async Copy succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", copied $copied blocks out of $totalCount.");
+        $session->addClipboard($clipboard);
     }
 }

@@ -31,7 +31,6 @@ class HelpCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        $lang = Loader::getInstance()->getLanguage();
         try {
             $cmds = [];
             /** @var Command $cmd */

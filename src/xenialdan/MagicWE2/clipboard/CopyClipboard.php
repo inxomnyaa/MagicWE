@@ -13,7 +13,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class CopyClipboard extends Clipboard
 {
@@ -151,12 +151,7 @@ class CopyClipboard extends Clipboard
      */
     public function validateChunkManager(ChunkManager $manager): void
     {
-        if ($manager instanceof Level) {
-            $async = false;//TODO cleanup
-        } elseif ($manager instanceof AsyncChunkManager) {
-            $async = true;//TODO cleanup
-        } else
-            throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
     }
 
     /**

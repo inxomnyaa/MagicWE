@@ -1,11 +1,11 @@
 <?php
 
-namespace xenialdan\MagicWE2\shape;
+namespace xenialdan\MagicWE2\selection\shape;
 
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-use xenialdan\MagicWE2\Selection;
+use xenialdan\MagicWE2\selection\Selection;
 
 abstract class Shape extends Selection
 {

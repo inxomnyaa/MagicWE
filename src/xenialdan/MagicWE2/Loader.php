@@ -31,6 +31,7 @@ use xenialdan\MagicWE2\commands\TogglewandCommand;
 use xenialdan\MagicWE2\commands\UndoCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\commands\WandCommand;
+use xenialdan\MagicWE2\session\UserSession;
 
 class Loader extends PluginBase
 {
@@ -52,15 +53,13 @@ class Loader extends PluginBase
     public function onLoad()
     {
         self::$instance = $this;
-        // TODO restore sessions
+        // TODO restore sessions properly / from file
         $this->getLogger()->info("Restoring Sessions");
 
         foreach ($this->getServer()->getOnlinePlayers() as $player) { // Restores on /reload for now
             if ($player->hasPermission("we.session")) {
-                if (is_null(($session = API::getSession($player)))) {
-                    $session = API::addSession(new Session($player));
-                    Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
-                } else {
+                $session = API::getSession($player);
+                if ($session instanceof UserSession) {
                     $session->setPlayer($player);
                     Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
                 }

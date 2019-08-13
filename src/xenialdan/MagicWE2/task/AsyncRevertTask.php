@@ -4,14 +4,14 @@ namespace xenialdan\MagicWE2\task;
 
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
-use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\AsyncChunkManager;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncRevertTask extends MWEAsyncTask
 {
@@ -27,14 +27,14 @@ class AsyncRevertTask extends MWEAsyncTask
     /**
      * AsyncRevertTask constructor.
      * @param RevertClipboard $clipboard
-     * @param UUID $playerUUID
+     * @param UUID $sessionUUID
      * @param Chunk[] $chunks
      * @param int $type The type of clipboard pasting.
      */
-    public function __construct(RevertClipboard $clipboard, UUID $playerUUID, array $chunks, $type = self::TYPE_UNDO)
+    public function __construct(RevertClipboard $clipboard, UUID $sessionUUID, array $chunks, $type = self::TYPE_UNDO)
     {
         $this->start = microtime(true);
-        $this->playerUUID = serialize($playerUUID);
+        $this->sessionUUID = $sessionUUID->toString();
         $this->chunks = serialize($chunks);
         $this->clipboard = serialize($clipboard);
         $this->type = $type;
@@ -90,43 +90,37 @@ class AsyncRevertTask extends MWEAsyncTask
     public function onCompletion(Server $server)
     {
         $result = $this->getResult();
-        $player = $server->getPlayerByUUID(unserialize($this->playerUUID));
+        $session = API::getSessions()[$this->sessionUUID];
+        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
         $undoChunks = unserialize($this->chunks);
         foreach ($undoChunks as $hash => $data) {
             $undoChunks[$hash] = Chunk::fastDeserialize($data);
-        }
-        if ($player instanceof Player) {
-            $session = API::getSession($player);
-            if (is_null($session)) return;
-            $session->getBossBar()->hideFromAll();
-            $changed = $result["changed"];//todo use extract()
-            $totalCount = $result["totalCount"];
-            switch ($this->type) {
-                case self::TYPE_UNDO:
-                    {
-                        $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Undo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
-                        $session->addRedo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
-                        break;
-                    }
-                case self::TYPE_REDO:
-                    {
-                        $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Redo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
-                        $session->addUndo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
-                        break;
-                    }
-            }
         }
         /** @var Chunk[] $chunks */
         $chunks = $result["chunks"];
         print "onCompletion chunks count: " . count($chunks);
         /** @var RevertClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
-        if ($clipboard instanceof RevertClipboard) {
-            /** @var Level $level */
-            $level = $clipboard->getLevel();
-            foreach ($chunks as $hash => $chunk) {
-                $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
-            }
-        } else throw new \Error("Not a clipboard");
+        /** @var Level $level */
+        $level = $clipboard->getLevel();
+        foreach ($chunks as $hash => $chunk) {
+            $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+        }
+        $changed = $result["changed"];//todo use extract()
+        $totalCount = $result["totalCount"];
+        switch ($this->type) {
+            case self::TYPE_UNDO:
+                {
+                    $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async Undo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
+                    $session->addRedo(new RevertClipboard($clipboard->levelid, $undoChunks));
+                    break;
+                }
+            case self::TYPE_REDO:
+                {
+                    $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async Redo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed chunks out of $totalCount changed.");
+                    $session->addUndo(new RevertClipboard($clipboard->levelid, $undoChunks));
+                    break;
+                }
+        }
     }
 }

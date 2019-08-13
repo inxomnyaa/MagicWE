@@ -1,15 +1,15 @@
 <?php
 
-namespace xenialdan\MagicWE2\shape;
+namespace xenialdan\MagicWE2\selection\shape;
 
 use pocketmine\level\Level;
 use pocketmine\Server;
 
 /**
- * Class ShapeGenerator
+ * Class ShapeRegistry
  * @package xenialdan\MagicWE2\shape
  */
-class ShapeGenerator
+class ShapeRegistry
 {
     const TYPE_SPHERE = 0;
     const TYPE_CONE = 1;

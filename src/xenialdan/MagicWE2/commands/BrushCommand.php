@@ -27,7 +27,7 @@ use xenialdan\customui\windows\CustomForm;
 use xenialdan\customui\windows\SimpleForm;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\shape\ShapeGenerator;
+use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 
 class BrushCommand extends BaseCommand
 {
@@ -80,7 +80,7 @@ class BrushCommand extends BaseCommand
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
-                                    new IntTag("type", ShapeGenerator::TYPE_SPHERE),
+                                    new IntTag("type", ShapeRegistry::TYPE_SPHERE),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("diameter", $data[1]),
                                     new IntTag("flags", $flags),
@@ -111,7 +111,7 @@ class BrushCommand extends BaseCommand
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
-                                    new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
+                                    new IntTag("type", ShapeRegistry::TYPE_CYLINDER),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("diameter", $data[1]),
                                     new FloatTag("height", $data[2]),
@@ -144,7 +144,7 @@ class BrushCommand extends BaseCommand
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
-                                    new IntTag("type", ShapeGenerator::TYPE_CUBOID),
+                                    new IntTag("type", ShapeRegistry::TYPE_CUBOID),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("width", $data[1]),
                                     new FloatTag("height", $data[2]),
@@ -176,7 +176,7 @@ class BrushCommand extends BaseCommand
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
-                                    new IntTag("type", ShapeGenerator::TYPE_CUBE),
+                                    new IntTag("type", ShapeRegistry::TYPE_CUBE),
                                     new StringTag("blocks", $data[0]),
                                     new FloatTag("width", $data[1]),
                                     new FloatTag("height", $data[1]),
@@ -206,7 +206,7 @@ class BrushCommand extends BaseCommand
                                 $item->setLore(BrushCommand::generateLore($form->getContent(), $data));
                                 $flags = BrushCommand::translateElementsToFlags($form->getContent(), $data);
                                 $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
-                                    new IntTag("type", ShapeGenerator::TYPE_CUSTOM),
+                                    new IntTag("type", ShapeRegistry::TYPE_CUSTOM),
                                     new IntTag("flags", $flags),
                                 ]));
                                 $player->getInventory()->addItem($item);

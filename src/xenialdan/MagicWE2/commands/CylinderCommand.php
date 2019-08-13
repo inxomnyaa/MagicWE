@@ -18,7 +18,7 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\shape\ShapeGenerator;
+use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 
 class CylinderCommand extends BaseCommand
 {
@@ -63,7 +63,7 @@ class CylinderCommand extends BaseCommand
                     throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                 }
                 API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag(API::TAG_MAGIC_WE, [
-                    new IntTag("type", ShapeGenerator::TYPE_CYLINDER),
+                    new IntTag("type", ShapeRegistry::TYPE_CYLINDER),
                     new StringTag("blocks", $blocks),
                     new FloatTag("diameter", $diameter),
                     new FloatTag("height", $height),

@@ -1,6 +1,6 @@
 <?php
 
-namespace xenialdan\MagicWE2\shape;
+namespace xenialdan\MagicWE2\selection\shape;
 
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;

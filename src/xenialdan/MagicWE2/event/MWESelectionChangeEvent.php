@@ -4,8 +4,9 @@ namespace xenialdan\MagicWE2\event;
 
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
-use xenialdan\MagicWE2\Selection;
-use xenialdan\MagicWE2\Session;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\Session;
+use xenialdan\MagicWE2\session\UserSession;
 
 class MWESelectionChangeEvent extends MWEEvent
 {
@@ -66,7 +67,9 @@ class MWESelectionChangeEvent extends MWEEvent
      */
     public function getPlayer(): ?Player
     {
-        return $this->getSession()->getPlayer();
+        /** @var UserSession $session */
+        if (($session = $this->getSession()) instanceof UserSession) $session->getPlayer();
+        return null;
     }
 
     /**
@@ -74,6 +77,7 @@ class MWESelectionChangeEvent extends MWEEvent
      */
     public function setPlayer(?Player $player)
     {
-        $this->getSession()->setPlayer($player);
+        /** @var UserSession $session */
+        if (($session = $this->getSession()) instanceof UserSession) $session->setPlayer($player);
     }
 }

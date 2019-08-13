@@ -5,14 +5,14 @@ namespace xenialdan\MagicWE2\task;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\level\format\Chunk;
-use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Selection;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncCountTask extends MWEAsyncTask
 {
@@ -26,17 +26,17 @@ class AsyncCountTask extends MWEAsyncTask
     /**
      * AsyncFillTask constructor.
      * @param Selection $selection
-     * @param UUID $playerUUID
+     * @param UUID $sessionUUID
      * @param Chunk[] $chunks
      * @param Block[] $newBlocks
      * @param int $flags
      * @throws \Exception
      */
-    public function __construct(Selection $selection, UUID $playerUUID, array $chunks, array $newBlocks, int $flags)
+    public function __construct(Selection $selection, UUID $sessionUUID, array $chunks, array $newBlocks, int $flags)
     {
         $this->start = microtime(true);
         $this->chunks = serialize($chunks);
-        $this->playerUUID = serialize($playerUUID);
+        $this->sessionUUID = serialize($sessionUUID);
         $this->selection = serialize($selection);
         $this->newBlocks = serialize($newBlocks);
         $this->flags = $flags;
@@ -63,7 +63,6 @@ class AsyncCountTask extends MWEAsyncTask
         $newBlocks = unserialize($this->newBlocks);
         $totalCount = $selection->getTotalCount();
         $counts = $this->countBlocks($selection, $manager, $newBlocks);
-        var_dump($counts);
         $this->setResult(compact("counts", "totalCount"));
     }
 
@@ -93,7 +92,6 @@ class AsyncCountTask extends MWEAsyncTask
                 }
             }
             if (!BlockFactory::isInit()) BlockFactory::init();
-            var_dump("Block count", $block);
             $block1 = $manager->getBlockArrayAt($block->x, $block->y, $block->z);
             $tostring = (BlockFactory::get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
@@ -115,27 +113,18 @@ class AsyncCountTask extends MWEAsyncTask
     public function onCompletion(Server $server)
     {
         $result = $this->getResult();
-        $player = $server->getPlayerByUUID(unserialize($this->playerUUID));
-        /*if(($session = API::getSessions()["fake mwe debug player"]) instanceof Session) {
-            $player = $session->getPlayer();
-            var_dump($session->getPlayer()->getName());
-        }*/
-        if ($player instanceof Player) {
-            /*if(!$session instanceof Session)*/
-            $session = API::getSession($player);
-            if (is_null($session)) return;
-            $session->getBossBar()->hideFromAll();
-            $counts = $result["counts"];//todo use extract()
-            $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));
-            $player->sendMessage(TF::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
-            uasort($counts, function ($a, $b) {
-                if ($a === $b) return 0;
-                return ($a > $b) ? -1 : 1;
-            });
-            foreach ($counts as $block => $count) {
-                $player->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
-            }
+        $session = API::getSessions()[$this->sessionUUID];
+        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        $counts = $result["counts"];
+        $totalCount = $result["totalCount"];
+        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));
+        $session->sendMessage(TF::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
+        uasort($counts, function ($a, $b) {
+            if ($a === $b) return 0;
+            return ($a > $b) ? -1 : 1;
+        });
+        foreach ($counts as $block => $count) {
+            $session->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
         }
     }
 }

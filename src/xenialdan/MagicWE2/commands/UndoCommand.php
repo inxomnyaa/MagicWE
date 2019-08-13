@@ -11,7 +11,7 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Session;
+use xenialdan\MagicWE2\session\Session;
 
 class UndoCommand extends BaseCommand
 {

@@ -5,15 +5,15 @@ namespace xenialdan\MagicWE2\task;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
-use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\AsyncChunkManager;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\Selection;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncFillTask extends MWEAsyncTask
 {
@@ -27,17 +27,17 @@ class AsyncFillTask extends MWEAsyncTask
     /**
      * AsyncFillTask constructor.
      * @param Selection $selection
-     * @param UUID $playerUUID
+     * @param UUID $sessionUUID
      * @param Chunk[] $chunks
      * @param Block[] $newBlocks
      * @param int $flags
      * @throws \Exception
      */
-    public function __construct(Selection $selection, UUID $playerUUID, array $chunks, array $newBlocks, int $flags)
+    public function __construct(Selection $selection, UUID $sessionUUID, array $chunks, array $newBlocks, int $flags)
     {
         $this->start = microtime(true);
         $this->chunks = serialize($chunks);
-        $this->playerUUID = serialize($playerUUID);
+        $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
         $this->newBlocks = serialize($newBlocks);
         $this->flags = $flags;
@@ -124,7 +124,6 @@ class AsyncFillTask extends MWEAsyncTask
     public function onCompletion(Server $server)
     {
         $result = $this->getResult();
-        $player = $server->getPlayerByUUID(unserialize($this->playerUUID));
         /** @var Chunk[] $chunks */
         $chunks = $result["chunks"];
         $undoChunks1 = unserialize($this->chunks);
@@ -134,28 +133,18 @@ class AsyncFillTask extends MWEAsyncTask
             if (isset($chunks[$hash]) && $chunks[$hash]->hasChanged())
                 $undoChunks[$hash] = Chunk::fastDeserialize($data);
         }
-        /*if(($session = API::getSessions()["fake mwe debug player"]) instanceof Session) {
-            $player = $session->getPlayer();
-            var_dump($session->getPlayer()->getName());
-        }*/
-        if ($player instanceof Player) {
-            /*if(!$session instanceof Session)*/
-            $session = API::getSession($player);
-            if (is_null($session)) return;
-            $session->getBossBar()->hideFromAll();
-            $changed = $result["changed"];//todo use extract()
-            $totalCount = $result["totalCount"];
-            $player->sendMessage(Loader::PREFIX . TF::GREEN . "Async Fill succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
-            $session->addUndo(new RevertClipboard($player->getLevel()->getId(), $undoChunks));
-        }
+        $session = API::getSessions()[$this->sessionUUID];
+        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        $changed = $result["changed"];//todo use extract()
+        $totalCount = $result["totalCount"];
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
-        if ($selection instanceof Selection) {
-            /** @var Level $level */
-            $level = $selection->getLevel();
-            foreach ($chunks as $hash => $chunk) {
-                $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
-            }
-        } else throw new \Error("Not a selection");
+        /** @var Level $level */
+        $level = $selection->getLevel();
+        foreach ($chunks as $hash => $chunk) {
+            $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+        }
+        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async Fill succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+        $session->addUndo(new RevertClipboard($selection->levelid, $undoChunks));
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2;
+namespace xenialdan\MagicWE2\selection;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
@@ -14,6 +14,9 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
+use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\Loader;
 
 /**
  * Class Selection
@@ -284,12 +287,7 @@ class Selection implements \Serializable
      */
     public function validateChunkManager(ChunkManager $manager): void
     {
-        if ($manager instanceof Level) {
-            $async = false;//TODO cleanup
-        } elseif ($manager instanceof AsyncChunkManager) {
-            $async = true;//TODO cleanup
-        } else
-            throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
     }
 
     /**

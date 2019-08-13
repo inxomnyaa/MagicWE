@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
-use pocketmine\block\BlockIds;
 use pocketmine\block\UnknownBlock;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
@@ -16,12 +15,16 @@ use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Player;
+use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\exception\LimitExceededException;
-use xenialdan\MagicWE2\shape\ShapeGenerator;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
+use xenialdan\MagicWE2\session\Session;
+use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncCountTask;
@@ -81,7 +84,7 @@ class API
             if ($selection->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
-            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -92,21 +95,21 @@ class API
 
     /**
      * @param Selection $selection
-     * @param Session|null $session
+     * @param Session $session
      * @param Block[] $oldBlocks
      * @param Block[] $newBlocks
      * @param int $flags
      * @return bool
      * @throws LimitExceededException
      */
-    public static function replaceAsync(Selection $selection, ?Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
+    public static function replaceAsync(Selection $selection, Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
     {
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
-            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -117,12 +120,12 @@ class API
 
     /**
      * @param Selection $selection
-     * @param null|Session $session
+     * @param Session $session
      * @param int $flags
      * @return bool
      * @throws LimitExceededException
      */
-    public static function copyAsync(Selection $selection, ?Session $session, int $flags = self::FLAG_BASE)
+    public static function copyAsync(Selection $selection, Session $session, int $flags = self::FLAG_BASE)
     {
         #return false;
         try {
@@ -130,11 +133,11 @@ class API
             if ($selection->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
-            if (self::hasFlag($flags, self::FLAG_POSITION_RELATIVE))//TODO relative or not by flags
-                $offset = new Vector3();
-            else
+            //TODO check/edit how relative position works
+            $offset = new Vector3();
+            if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE) && $session instanceof UserSession)//TODO relative or not by flags
                 $offset = $selection->getMinVec3()->subtract($session->getPlayer())->floor();
-            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($selection, $offset, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
@@ -162,8 +165,8 @@ class API
             }
             $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
-            if($session instanceof Session) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
+            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getUUID(), $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -178,13 +181,13 @@ class API
     public static function undoAsync(Session $session)
     {
         try {
-            $session->getPlayer()->sendMessage("You had " . count($session->getUndos()) . " undo actions left");//TODO remove
+            $session->sendMessage("You had " . count($session->getUndos()) . " undo actions left");//TODO remove
             $clipboard = $session->getLatestUndo();
             if (is_null($clipboard)) {
-                $session->getPlayer()->sendMessage("Nothing to undo");//TODO prettify
+                $session->sendMessage("Nothing to undo");//TODO prettify
                 return true;
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_UNDO));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getUUID(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_UNDO));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -199,13 +202,13 @@ class API
     public static function redoAsync(Session $session)
     {
         try {
-            $session->getPlayer()->sendMessage("You had " . count($session->getRedos()) . " redo actions left");//TODO remove
+            $session->sendMessage("You had " . count($session->getRedos()) . " redo actions left");//TODO remove
             $clipboard = $session->getLatestRedo();
             if (is_null($clipboard)) {
-                $session->getPlayer()->sendMessage("Nothing to redo");//TODO prettify
+                $session->sendMessage("Nothing to redo");//TODO prettify
                 return true;
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getPlayer()->getUniqueId(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_REDO));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getUUID(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_REDO));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -228,7 +231,7 @@ class API
             if ($selection->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to count too many blocks at once. Reduce the selection or raise the limit");
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $filterBlocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($selection, $session->getUUID(), $selection->getTouchedChunks(), $filterBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -252,21 +255,21 @@ class API
         $messages = [];
         $error = false;
         switch ($type = $settings->getInt("type", -1)) {
-            case ShapeGenerator::TYPE_CUBOID:
-            case ShapeGenerator::TYPE_CUBE:
-            case ShapeGenerator::TYPE_CYLINDER:
-            case ShapeGenerator::TYPE_SPHERE:
+            case ShapeRegistry::TYPE_CUBOID:
+            case ShapeRegistry::TYPE_CUBE:
+            case ShapeRegistry::TYPE_CYLINDER:
+            case ShapeRegistry::TYPE_SPHERE:
                 {
-                    $shape = ShapeGenerator::getShape($target->getLevel(), $type, self::compoundToArray($settings));
+                    $shape = ShapeRegistry::getShape($target->getLevel(), $type, self::compoundToArray($settings));
                     $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
                     return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $shape->options["flags"]);
                     break;
                 }
-            case ShapeGenerator::TYPE_CUSTOM://TODO fix/Change to actual shape, flags
+            case ShapeRegistry::TYPE_CUSTOM://TODO fix/Change to actual shape, flags
                 {
                     $clipboard = $session->getCurrentClipboard();
                     if (is_null($clipboard)) {
-                        $session->getPlayer()->sendMessage(TF::RED . "You have no clipboard - create one first");
+                        $session->sendMessage(TF::RED . "You have no clipboard - create one first");
                         return false;
                     }
                     return self::pasteAsync($clipboard, $session, $target);//TODO flags & proper brush tool
@@ -274,7 +277,7 @@ class API
                 }
             default:
                 {
-                    $session->getPlayer()->sendMessage("Unknown shape");
+                    $session->sendMessage("Unknown shape");
                 }
         }
         return false;
@@ -291,7 +294,7 @@ class API
     public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE)
     { //TODO
         if (!$settings instanceof CompoundTag) return null;
-        $shape = ShapeGenerator::getShape($target->getLevel(), ShapeGenerator::TYPE_FLOOD, self::compoundToArray($settings));
+        $shape = ShapeRegistry::getShape($target->getLevel(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));
         $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
         $messages = [];
         $error = false;
@@ -300,28 +303,28 @@ class API
 
     /// SESSION RELATED API PART
 
-    public static function &addSession(Session $session)
+    public static function addSession(Session $session)
     {
-        self::$sessions[$session->getPlayer()->getLowerCaseName()] = $session;
-        return self::$sessions[$session->getPlayer()->getLowerCaseName()];
+        return (self::$sessions[$session->getUUID()->toString()] = $session);
     }
 
     public static function destroySession(Session $session)
     {
-        unset(self::$sessions[$session->getPlayer()->getLowerCaseName()]);
+        unset(self::$sessions[$session->getUUID()->toString()]);
     }
 
     /**
      * @param Player $player
-     * @return Session|null
+     * @return UserSession|null
      * @throws \Error
      */
-    public static function &getSession(Player $player): ?Session
+    public static function getSession(Player $player): ?UserSession
     {
-        $session = self::$sessions[$player->getLowerCaseName()] ?? null;
+        $session = self::findSession($player);
         if (is_null($session)) {
             if ($player->hasPermission("we.session")) {
-                $session = API::addSession(new Session($player));
+                $session = new UserSession($player);
+                API::addSession($session);
                 Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
                 return $session;
             } else {
@@ -329,7 +332,7 @@ class API
             }
         }
         if (!$player->hasPermission("we.session")) {
-            if ($session instanceof Session)
+            if ($session instanceof UserSession)
                 self::destroySession($session);
             Loader::getInstance()->getLogger()->info("Player " . $player->getName() . " does not have the permission \"magicwe.session\", but tried to use " . Loader::PREFIX);
         }
@@ -342,7 +345,21 @@ class API
      */
     public static function hasSession(Player $player): bool
     {
-        return !is_null(self::$sessions[$player->getLowerCaseName()] ?? null);
+        return self::findSession($player) instanceof UserSession;
+    }
+
+    /**
+     * @param Player $player
+     * @return null|UserSession
+     */
+    public static function findSession(Player $player): ?UserSession
+    {
+        $filtered = array_filter(self::$sessions, function (Session $session) use ($player) {
+            return $session instanceof UserSession && $session->getPlayer() === $player;
+        });
+        if (count($filtered) > 1) throw new PluginException("Multiple sessions found for player {$player->getName()}. This should never happen!");
+        if (count($filtered) === 1) return array_values($filtered)[0];
+        return null;
     }
 
     /**
@@ -493,7 +510,7 @@ class API
 
             if (is_numeric($b[0])) {
                 $item = ItemFactory::get(((int)$b[0]) & 0xFFFF, $meta);
-            } elseif (defined(Item::class . "::" . strtoupper($b[0]))) {
+            } else if (defined(Item::class . "::" . strtoupper($b[0]))) {
                 $item = ItemFactory::get(constant(Item::class . "::" . strtoupper($b[0])), $meta);
                 if ($item->getId() === Item::AIR and strtoupper($b[0]) !== "AIR") {
                     $item = null;
@@ -516,167 +533,5 @@ class API
         $nbt = new LittleEndianNBTStream();
         $nbt->writeTag($compoundTag);
         return $nbt::toArray($compoundTag);
-    }
-
-    /**
-     * TODO needs updates/fixes
-     * @param Block $block
-     * @param int $timesRotate
-     * @return int|mixed
-     */
-    public static function rotationMetaHelper(Block $block, $timesRotate = 1)
-    {
-        $meta = $block->getDamage();
-        $variant = $block->getVariant();
-        $rotation = [0, 0, 0, 0];
-        switch ($block->getId()) {
-            case BlockIds::FURNACE:
-            case BlockIds::BURNING_FURNACE:
-            case BlockIds::CHEST:
-            case BlockIds::TRAPPED_CHEST:
-            case BlockIds::ENDER_CHEST:
-            case BlockIds::STONE_BUTTON:
-            case BlockIds::WOODEN_BUTTON:
-            case BlockIds::WALL_BANNER:
-            case BlockIds::PURPLE_GLAZED_TERRACOTTA:
-            case BlockIds::WHITE_GLAZED_TERRACOTTA :
-            case BlockIds::ORANGE_GLAZED_TERRACOTTA :
-            case BlockIds::MAGENTA_GLAZED_TERRACOTTA :
-            case BlockIds::LIGHT_BLUE_GLAZED_TERRACOTTA:
-            case BlockIds::YELLOW_GLAZED_TERRACOTTA:
-            case BlockIds::LIME_GLAZED_TERRACOTTA :
-            case BlockIds::PINK_GLAZED_TERRACOTTA :
-            case BlockIds::GRAY_GLAZED_TERRACOTTA :
-            case BlockIds::SILVER_GLAZED_TERRACOTTA :
-            case BlockIds::CYAN_GLAZED_TERRACOTTA:
-            case BlockIds::BLUE_GLAZED_TERRACOTTA:
-            case BlockIds::BROWN_GLAZED_TERRACOTTA :
-            case BlockIds::GREEN_GLAZED_TERRACOTTA :
-            case BlockIds::RED_GLAZED_TERRACOTTA :
-            case BlockIds::BLACK_GLAZED_TERRACOTTA :
-            case BlockIds::LADDER:
-            case BlockIds::WALL_SIGN:
-                {
-                    $rotation = [3, 4, 2, 5];
-                    break;
-                }
-            case BlockIds::ITEM_FRAME_BLOCK:
-                {
-                    $rotation = [2, 1, 3, 0];
-                    //$rotation = [14,12,15,12];//TODO
-                    break;
-                }
-            case BlockIds::IRON_TRAPDOOR:
-            case BlockIds::TRAPDOOR:
-                {
-                    $rotation = [2, 1, 3, 0];
-                    //$rotation = [14,12,15,12];//TODO
-                    break;
-                }
-            case BlockIds::UNPOWERED_REPEATER:
-            case BlockIds::UNPOWERED_COMPARATOR:
-            case BlockIds::POWERED_REPEATER:
-            case BlockIds::POWERED_COMPARATOR:
-            case BlockIds::END_PORTAL_FRAME:
-            case BlockIds::LIT_PUMPKIN:
-            case BlockIds::PUMPKIN:
-                {
-                    $rotation = [0, 1, 2, 3];
-                    break;
-                }
-            case BlockIds::WOODEN_STAIRS:
-            case BlockIds::STONE_STAIRS:
-            case BlockIds::BRICK_STAIRS:
-            case BlockIds::STONE_BRICK_STAIRS:
-            case BlockIds::NETHER_BRICK_STAIRS:
-            case BlockIds::SANDSTONE_STAIRS:
-            case BlockIds::SPRUCE_STAIRS:
-            case BlockIds::BIRCH_STAIRS:
-            case BlockIds::JUNGLE_STAIRS:
-            case BlockIds::QUARTZ_STAIRS:
-            case BlockIds::ACACIA_STAIRS:
-            case BlockIds::DARK_OAK_STAIRS:
-            case BlockIds::RED_SANDSTONE_STAIRS:
-            case BlockIds::PURPUR_STAIRS:
-                {
-                    $rotation = [3, 0, 2, 1];
-                    break;
-                }
-            case BlockIds::WOODEN_DOOR_BLOCK:
-            case BlockIds::IRON_DOOR_BLOCK:
-            case BlockIds::SPRUCE_DOOR_BLOCK:
-            case BlockIds::BIRCH_DOOR_BLOCK:
-            case BlockIds::JUNGLE_DOOR_BLOCK:
-            case BlockIds::ACACIA_DOOR_BLOCK:
-            case BlockIds::DARK_OAK_DOOR_BLOCK:
-            case BlockIds::ANVIL:
-                {
-                    $rotation = [3, 0, 1, 2];
-                    break;
-                }
-            case BlockIds::VINE:
-                {
-                    $rotation = [4, 8, 1, 2];
-                    break;
-                }
-            case BlockIds::BED_BLOCK:
-            case BlockIds::OAK_FENCE_GATE:
-            case BlockIds::SPRUCE_FENCE_GATE:
-            case BlockIds::BIRCH_FENCE_GATE:
-            case BlockIds::JUNGLE_FENCE_GATE:
-            case BlockIds::DARK_OAK_FENCE_GATE:
-            case BlockIds::ACACIA_FENCE_GATE:
-                {
-                    $rotation = [2, 3, 0, 1];
-                    //TODO [10, 11,8,9]
-                    break;
-                }
-            case BlockIds::STANDING_BANNER:
-            case BlockIds::SIGN_POST:
-                {
-                    $rotation = [0, 4, 8, 12];
-                    //TODO all rotation
-                    break;
-                }
-            case BlockIds::QUARTZ_BLOCK:
-            case BlockIds::PURPUR_BLOCK:
-                {
-                    $rotation = [10, 6, 10, 6];
-                    break;
-                }
-            case BlockIds::HAY_BLOCK:
-            case BlockIds::BONE_BLOCK:
-            case BlockIds::LOG:
-            case BlockIds::LOG2:
-                {
-                    $rotation = [10, 6, 10, 6];
-                    break;
-                }
-            case BlockIds::END_ROD:
-                {
-                    $rotation = [2, 4, 3, 5];
-                    break;
-                }
-            case BlockIds::PISTON:
-            case BlockIds::STICKY_PISTON:
-                {
-                    $rotation = [2, 5, 3, 4];
-                    break;
-                }
-            case BlockIds::TORCH:
-            case BlockIds::REDSTONE_ORE:
-            case BlockIds::UNLIT_REDSTONE_TORCH:
-                {
-                    $rotation = [3, 2, 4, 1];
-                    break;
-                }
-            //TODO: Heads
-        }
-        $currentrotationindex = array_search($meta % count($rotation), $rotation);
-        if ($currentrotationindex === false) return $block->getDamage();
-        $currentrotationindex += $timesRotate;
-        #return $rotation[($currentrotationindex % count($rotation))];
-        $extra = intval($meta / count($rotation));
-        return $rotation[$currentrotationindex % count($rotation)] + ($extra * count($rotation)) % 16;
     }
 }

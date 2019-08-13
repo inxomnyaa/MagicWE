@@ -1,6 +1,6 @@
 <?php
 
-namespace xenialdan\MagicWE2\shape;
+namespace xenialdan\MagicWE2\selection\shape;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
@@ -9,7 +9,7 @@ use pocketmine\level\Position;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cylinder extends Shape
 {
