@@ -6,7 +6,7 @@ api: [3.9]
 load: STARTUP
 authors:
 - XenialDan
-description: MagicWEv2 by XenialDan. Harder, Better, Faster, Stronger
+description: Lag free asynchronous world editor for PMMP with plenty of options
 prefix: 'MWE2'
 website: https://github.com/thebigsmileXD/MagicWE2
 permissions:
