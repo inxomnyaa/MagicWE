@@ -5,4 +5,5 @@
 language: eng
 show-startup-icon: false
 limit: -1
+tool-range: 100
 ...

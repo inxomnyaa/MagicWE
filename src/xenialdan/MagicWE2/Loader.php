@@ -26,6 +26,7 @@ use xenialdan\MagicWE2\commands\ReportCommand;
 use xenialdan\MagicWE2\commands\selection\info\CountCommand;
 use xenialdan\MagicWE2\commands\selection\Pos1Command;
 use xenialdan\MagicWE2\commands\selection\Pos2Command;
+use xenialdan\MagicWE2\commands\SetRangeCommand;
 use xenialdan\MagicWE2\commands\tool\DebugCommand;
 use xenialdan\MagicWE2\commands\tool\FloodCommand;
 use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
@@ -55,8 +56,8 @@ class Loader extends PluginBase
     {
         self::$instance = $this;
         // TODO restore sessions properly / from file
-        $this->getLogger()->info("Restoring Sessions");
-
+        #$this->getLogger()->debug("Restoring Sessions");
+        //This may take longer than 1 second when file sessions are coming. Re-enable messages after!
         foreach ($this->getServer()->getOnlinePlayers() as $player) { // Restores on /reload for now
             if ($player->hasPermission("we.session")) {
                 $session = API::getSession($player);
@@ -66,7 +67,7 @@ class Loader extends PluginBase
                 }
             }
         }
-        $this->getLogger()->info("Sessions successfully restored");
+        #$this->getLogger()->debug("Sessions successfully restored");
         $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
         Enchantment::registerEnchantment($ench);
     }
@@ -145,7 +146,7 @@ class Loader extends PluginBase
             //new TogglePlaceCommand("/toggleplace", "Switch between your position and pos1 for placement"),
             //new SearchItemCommand("/searchitem", "Search for an item"),
             //new RangeCommand("/range", "Set the brush range"),
-            //new SetRangeCommand("/setrange", "Set tool range", ["/toolrange"]),
+            new SetRangeCommand("/setrange", "Set tool range", ["/toolrange"]),
             //new ListChunksCommand("/listchunks", "List chunks that your selection includes"),
             new LimitCommand("/limit", "Set the block change limit. Use -1 to disable"),
             new HelpCommand("/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"]),//Blame MCPE for client side /help shit! only the aliases work
@@ -180,12 +181,12 @@ class Loader extends PluginBase
 
     public function onDisable()
     {
-        $this->getLogger()->info("Destroying Sessions");
+        #$this->getLogger()->debug("Destroying Sessions");
         foreach (API::getSessions() as $session) {
             //TODO store sessions
             API::destroySession($session);
         }
-        $this->getLogger()->info("Sessions successfully destroyed");
+        #$this->getLogger()->debug("Sessions successfully destroyed");
     }
 
     /**
@@ -195,6 +196,11 @@ class Loader extends PluginBase
     public function getLanguage(): BaseLang
     {
         return $this->baseLang;
+    }
+
+    public function getToolDistance(): int
+    {
+        return intval($this->getConfig()->get("tool-range", 100));
     }
 
     public static function getInfo(): array

@@ -189,7 +189,7 @@ class EventListener implements Listener
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_SHOVEL:
                     {
-                        $target = $event->getPlayer()->getTargetBlock(100);
+                        $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
                         if (!is_null($target)) {// && has perms
                             API::createBrush($target, $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
                         }
@@ -223,7 +223,7 @@ class EventListener implements Listener
                             throw new \Error("No selection created - Check the console for errors");
                         }
                         /** @var Block|null $target */
-                        $target = $event->getPlayer()->getTargetBlock(100);
+                        $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
                         if ($target === null) {
                             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "No target block found");
                             return;
