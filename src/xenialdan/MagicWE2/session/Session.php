@@ -26,6 +26,7 @@ abstract class Session
     private $undo = [];
     /** @var RevertClipboard[] */
     private $redo = [];
+    //todo change to a list of objects with a pointer of the latest action
 
     /**
      * @return UUID
@@ -266,6 +267,12 @@ abstract class Session
         $return = array_pop($revertClipboards);
         $this->setRedos($revertClipboards);
         return $return;
+    }
+
+    public function clearHistory()
+    {
+        $this->setUndos([]);
+        $this->setRedos([]);
     }
 
     public abstract function sendMessage(string $message);

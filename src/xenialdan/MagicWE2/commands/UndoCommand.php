@@ -11,7 +11,7 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\session\Session;
+use xenialdan\MagicWE2\session\UserSession;
 
 class UndoCommand extends BaseCommand
 {
@@ -38,7 +38,7 @@ class UndoCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            /** @var Session $session */
+            /** @var UserSession $session */
             $session = API::getSession($sender);
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());

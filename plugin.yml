@@ -41,6 +41,8 @@ permissions:
         default: op
       we.command.redo:
         default: op
+      we.command.clearhistory:
+        default: op
       we.command.debug:
         default: op
       we.command.toggledebug:

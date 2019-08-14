@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 
-class RedoCommand extends BaseCommand
+class ClearhistoryCommand extends BaseCommand
 {
 
     /**
@@ -21,7 +21,7 @@ class RedoCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.redo");
+        $this->setPermission("we.command.clearhistory");
     }
 
     /**
@@ -43,7 +43,7 @@ class RedoCommand extends BaseCommand
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
-            API::redoAsync($session);
+            $session->clearHistory();
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

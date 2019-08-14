@@ -10,6 +10,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\commands\BrushCommand;
+use xenialdan\MagicWE2\commands\ClearhistoryCommand;
 use xenialdan\MagicWE2\commands\CopyCommand;
 use xenialdan\MagicWE2\commands\CountCommand;
 use xenialdan\MagicWE2\commands\CylinderCommand;
@@ -75,36 +76,102 @@ class Loader extends PluginBase
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
         if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
+        $this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
-            new Pos1Command("/pos1", "Select first position", ["/1"]),
-            new Pos2Command("/pos2", "Select second position", ["/2"]),
-            new SetCommand("/set", "Fill an area with the specified blocks", ["/fill"]),
-            new ReplaceCommand("/replace", "Replace blocks in an area with other blocks"),
-            new CopyCommand("/copy", "Copy an area into a clipboard"),
-            new PasteCommand("/paste", "Paste your clipboard"),
+            /* -- selection -- */
+            new Pos1Command("/pos1", "Set position 1", ["/1"]),
+            new Pos2Command("/pos2", "Set position 2", ["/2"]),
+            //new HPos1Command("/hpos1", "Set position 1 to targeted block", ["/h1"]),
+            //new HPos2Command("/hpos2", "Set position 2 to targeted block", ["/h2"]),
+            //new ChunkCommand("/chunk", "Set the selection to your current chunk"),
+            /* -- tools -- */
             new WandCommand("/wand", "Gives you the selection wand"),
-            new TogglewandCommand("/togglewand", "Toggle the wand tool on/off"),
-            #new FlipCommand("/flip","Flip a clipboard by the given axis"),
-            new UndoCommand("/undo", "Rolls back the last action"),
-            new RedoCommand("/redo", "Applies the last undo action again"),
+            new TogglewandCommand("/togglewand", "Toggle the wand tool on/off", ["/toggleeditwand"]),
             new DebugCommand("/debug", "Gives you the debug stick, which gives information about the clicked block"),
             new ToggledebugCommand("/toggledebug", "Toggle the debug stick on/off"),
-            #new RotateCommand("/rotate","Rotate a clipboard by x*90 degrees"),
+            /* -- selection modify -- */
+            //new ContractCommand("/contract", "Contract the selection area"),
+            //new ShiftCommand("/shift", "Shift the selection area"),
+            //new OutsetCommand("/outset", "Outset the selection area"),
+            //new InsetCommand("/inset", "Inset the selection area"),
+            /* -- selection info -- */
+            //new SizeCommand("/size", "Get information about the selection"),
+            new CountCommand("/count", "Counts the number of blocks matching a mask in selection", ["/analyze"]),
+            /* -- region -- */
+            new SetCommand("/set", "Fill a selection with the specified blocks"),
+            //new LineCommand("/line", "Draws a line segment between cuboid selection corners"),
+            new ReplaceCommand("/replace", "Replace blocks in an area with other blocks"),
+            //new OverlayCommand("/overlay", "Set a block on top of blocks in the region",["/cover"]),
+            //new CenterCommand("/center", "Set the center block(s)",["/middle"]),
+            //new NaturalizeCommand("/naturalize", "3 layers of dirt on top then rock below"),
+            //new WallsCommand("/walls", "Build the four sides of the selection"),
+            //new FacesCommand("/faces", "Build the walls, ceiling, and floor of a selection"),
+            //new MoveCommand("/move", "Move the contents of the selection"),
+            //new StackCommand("/stack", "Repeat the contents of the selection"),
+            //new HollowCommand("/hollow", "Hollows out the object contained in this selection"),
+            /* -- cosmetic -- */
+            //new ForestCommand("/forest", "Make a forest within the region"),
+            //new FloraCommand("/flora", "Make flora within the region"),
+            /* -- generation -- */
             new CylinderCommand("/cylinder", "Create a cylinder", ["/cyl"]),
-            new CountCommand("/count", "Count blocks in selection", ["/analyze"]),
+            //new HollowCylinderCommand("/hcyl", "Generates a hollow cylinder"),
+            //new SphereCommand("/sphere", "Generates a filled sphere"),
+            //new HollowSphereCommand("/hsphere", "Generates a hollow sphere"),
+            //new PyramidCommand("/pyramid", "Generates a filled pyramid"),
+            //new HollowPyramidCommand("/hpyramid", "Generates a hollow pyramid"),
+            //new PumpkinsCommand("/pumpkins", "Generate pumpkin patches"),
+            /* -- clipboard -- */
+            new CopyCommand("/copy", "Copy the selection to the clipboard"),
+            new PasteCommand("/paste", "Paste the clipboard’s contents"),
+            //new CutCommand("/cut", "Cut the selection to the clipboard"),
+            //new ClearClipboardCommand("/clearclipboard", "Clear your clipboard"),
+            //new FlipCommand("/flip","Flip the contents of the clipboard across the origin"),
+            //new RotateCommand("/rotate","Rotate the contents of the clipboard around the origin"),
+            /* -- history -- */
+            new UndoCommand("/undo", "Rolls back the last action"),
+            new RedoCommand("/redo", "Applies the last undo action again"),
+            new ClearhistoryCommand("/clearhistory", "Clear your history"),
+            /* -- schematic -- */
+            //new SchematicCommand("/schematic", "Schematic commands for saving/loading areas"),
+            /* -- navigation -- */
+            //new UnstuckCommand("/unstuck", "Switch between your position and pos1 for placement"),
+            //new AscendCommand("/ascend", "Switch between your position and pos1 for placement", ["/asc"]),
+            //new DescendCommand("/descend", "Switch between your position and pos1 for placement", ["/desc"]),
+            //new CeilCommand("/ceil", "Switch between your position and pos1 for placement"),
+            //new ThruCommand("/thru", "Switch between your position and pos1 for placement"),
+            //new UpCommand("/up", "Switch between your position and pos1 for placement"),
+            /* -- generic -- */
+            //new TogglePlaceCommand("/toggleplace", "Switch between your position and pos1 for placement"),
+            //new SearchItemCommand("/searchitem", "Search for an item"),
+            //new RangeCommand("/range", "Set the brush range"),
+            //new SetRangeCommand("/setrange", "Set tool range", ["/toolrange"]),
+            //new ListChunksCommand("/listchunks", "List chunks that your selection includes"),
             new LimitCommand("/limit", "Set the block change limit. Use -1 to disable"),
             new HelpCommand("/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"]),//Blame MCPE for client side /help shit! only the aliases work
             new VersionCommand("/version", "MagicWE version", ["/ver"]),
             new InfoCommand("/info", "Information about MagicWE"),
             new ReportCommand("/report", "Report a bug to GitHub", ["/bug", "/github"]),
             new DonateCommand("/donate", "Donate to support development of MagicWE!", ["/support", "/paypal"]),
+            /* -- biome -- */
+            //new BiomeListCommand("/biomelist", "Gets all biomes available", ["/biomels"]),
+            //new BiomeInfoCommand("/biomeinfo", "Get the biome of the targeted block"),
+            //new SetBiomeCommand("/setbiome", "Sets the biome of your current block or region"),
+            /* -- utility -- */
+            //new DrainCommand("/drain", "Drain a pool"),
+            //new FixLavaCommand("/fixlava", "Fix lava to be stationary"),
+            //new FixWaterCommand("/fixwater", "Fix water to be stationary"),
+            //new SnowCommand("/snow", "Creates a snow layer cover in the selection"),
+            //new ThawCommand("/thaw", "Thaws blocks in the selection"),
+            //new CalculateCommand("/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
         ]);
         if (class_exists("xenialdan\\customui\\API")) {
             $this->getLogger()->notice("CustomUI found, can use ui-based commands");
             $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
+                /* -- brush -- */
                 new BrushCommand("/brush", "Opens the brush tool menu"),
-                new FloodCommand("/flood", "Opens the flood tool menu"),
+                /* -- tool -- */
+                new FloodCommand("/flood", "Opens the flood fill tool menu", ["/floodfill"]),
             ]);
         } else {
             $this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
