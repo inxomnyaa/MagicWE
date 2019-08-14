@@ -11,6 +11,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
+use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
 use xenialdan\MagicWE2\commands\brush\BrushCommand;
 use xenialdan\MagicWE2\commands\clipboard\ClearClipboardCommand;
 use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
@@ -166,7 +167,7 @@ class Loader extends PluginBase
             /* -- biome -- */
             new BiomeListCommand("/biomelist", "Gets all biomes available", ["/biomels"]),
             new BiomeInfoCommand("/biomeinfo", "Get the biome of the targeted block"),
-            //new SetBiomeCommand("/setbiome", "Sets the biome of your current block or region"),
+            new SetBiomeCommand("/setbiome", "Sets the biome of your current block or region"),
             /* -- utility -- */
             //new DrainCommand("/drain", "Drain a pool"),
             //new FixLavaCommand("/fixlava", "Fix lava to be stationary"),
