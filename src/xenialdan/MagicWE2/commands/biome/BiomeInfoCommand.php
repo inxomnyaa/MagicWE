@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands\biome;
 
 use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\level\biome\Biome;
@@ -16,6 +17,8 @@ use xenialdan\MagicWE2\Loader;
 
 class BiomeInfoCommand extends BaseCommand
 {
+    const FLAG_T = "t";
+    const FLAG_P = "p";
 
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
@@ -23,6 +26,7 @@ class BiomeInfoCommand extends BaseCommand
      */
     protected function prepare(): void
     {
+        $this->registerArgument(0, new TextArgument("flags", true));
         $this->setPermission("we.command.biomeinfo");
     }
 
@@ -44,6 +48,28 @@ class BiomeInfoCommand extends BaseCommand
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
+            $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
+            $biomeNames = array_flip($biomeNames);
+            unset($biomeNames[Biome::MAX_BIOMES]);
+            if (!empty(($flags = ltrim(strval($args["flags"] ?? ""), "-")))) {
+                $flagArray = str_split($flags);
+                if (in_array(self::FLAG_T, $flagArray)) {
+                    $target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
+                    if ($target === null) {
+                        $sender->sendMessage(Loader::PREFIX . TF::RED . "No target block found. Increase tool range with //setrange if needed");
+                        return;
+                    }
+                    $biomeId = $target->getLevel()->getChunkAtPosition($target)->getBiomeId($target->getX() % 16, $target->getZ() % 16);
+                    $session->sendMessage(TF::DARK_AQUA . "Biome at target");
+                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . ucfirst(strtolower($biomeNames[$biomeId])));
+                }
+                if (in_array(self::FLAG_P, $flagArray)) {
+                    $biomeId = $sender->getLevel()->getChunkAtPosition($sender)->getBiomeId($sender->getX() % 16, $sender->getZ() % 16);
+                    $session->sendMessage(TF::DARK_AQUA . "Biome at position");
+                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . ucfirst(strtolower($biomeNames[$biomeId])));
+                }
+                return;
+            }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
                 throw new \Exception("No selection found - select an area first");
@@ -56,9 +82,6 @@ class BiomeInfoCommand extends BaseCommand
             }
             $touchedChunks = $selection->getTouchedChunks();
             $biomes = [];
-            $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
-            $biomeNames = array_flip($biomeNames);
-            unset($biomeNames[Biome::MAX_BIOMES]);
             foreach ($touchedChunks as $touchedChunk) {
                 $biomes = array_merge($biomes, Chunk::fastDeserialize($touchedChunk)->getBiomeIdArray());
             }
