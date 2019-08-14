@@ -7,13 +7,12 @@ namespace xenialdan\MagicWE2\commands\selection\info;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\level\format\Chunk;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class ListChunksCommand extends BaseCommand
+class SizeCommand extends BaseCommand
 {
 
     /**
@@ -22,7 +21,7 @@ class ListChunksCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.listchunks");
+        $this->setPermission("we.command.size");
     }
 
     /**
@@ -53,14 +52,8 @@ class ListChunksCommand extends BaseCommand
             if ($selection->getLevel() !== $sender->getLevel()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
             }
-            $touchedChunks = $selection->getTouchedChunks();
-            $session->sendMessage(TF::DARK_AQUA . count($touchedChunks) . " chunks found in selection");
-            foreach ($touchedChunks as $chunkHash => $touchedChunk) {
-                $chunk = Chunk::fastDeserialize($touchedChunk);
-                $biomecount = count($chunk->getBiomeIdArray());
-                $biomes = implode(", ", $chunk->getBiomeIdArray());//TODO biome alias/name?
-                $session->sendMessage(TF::AQUA . "ID: {$chunkHash} | X: {$chunk->getX()} Z: {$chunk->getZ()} | Subchunks: {$chunk->getHeight()} | Biomes: ($biomecount) $biomes");
-            }
+            $session->sendMessage(TF::DARK_AQUA . "Selection size");
+            $session->sendMessage(TF::AQUA . "Total: {$selection->getTotalCount()} X: {$selection->getSizeX()} Y: {$selection->getSizeY()} Z: {$selection->getSizeZ()}");
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

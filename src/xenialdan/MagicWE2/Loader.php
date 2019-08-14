@@ -30,6 +30,7 @@ use xenialdan\MagicWE2\commands\selection\HPos1Command;
 use xenialdan\MagicWE2\commands\selection\HPos2Command;
 use xenialdan\MagicWE2\commands\selection\info\CountCommand;
 use xenialdan\MagicWE2\commands\selection\info\ListChunksCommand;
+use xenialdan\MagicWE2\commands\selection\info\SizeCommand;
 use xenialdan\MagicWE2\commands\selection\Pos1Command;
 use xenialdan\MagicWE2\commands\selection\Pos2Command;
 use xenialdan\MagicWE2\commands\SetRangeCommand;
@@ -103,7 +104,7 @@ class Loader extends PluginBase
             //new OutsetCommand("/outset", "Outset the selection area"),
             //new InsetCommand("/inset", "Inset the selection area"),
             /* -- selection info -- */
-            //new SizeCommand("/size", "Get information about the selection"),
+            new SizeCommand("/size", "Get information about the selection"),
             new CountCommand("/count", "Counts the number of blocks matching a mask in selection", ["/analyze"]),
             new ListChunksCommand("/listchunks", "List chunks that your selection includes"),
             /* -- region -- */
