@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\tool;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;

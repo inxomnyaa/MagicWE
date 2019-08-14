@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\tool;
 
 use CortexPE\Commando\args\BaseArgument;
-use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
@@ -13,17 +12,14 @@ use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class RotateCommand extends BaseCommand
+class ToggledebugCommand extends BaseCommand
 {
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\ArgumentOrderException
      */
     protected function prepare(): void
     {
-        $this->registerArgument(0, new IntegerArgument("degrees", false));
-        $this->setPermission("we.command.rotate");
-        $this->setUsage("//rotate <degrees: 1|2|3|-1|-2|-3>");
+        $this->setPermission("we.command.toggledebug");
     }
 
     /**
@@ -40,18 +36,11 @@ class RotateCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $rotation = intval($args["degrees"]);
-            $sender->sendMessage(Loader::PREFIX . "Trying to rotate clipboard by " . 90 * $rotation . " degrees");
             $session = API::getSession($sender);
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
-            $clipboard = $session->getCurrentClipboard();
-            if (is_null($clipboard)) {
-                throw new \Exception("No clipboard found - create a clipboard first");
-            }
-            $clipboard->rotate($rotation);//TODO add back
-            $sender->sendMessage(Loader::PREFIX . "Successfully rotated clipboard");
+            $sender->sendMessage($session->setDebugStickEnabled(!$session->isDebugStickEnabled()));
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

@@ -2,27 +2,28 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\clipboard;
 
 use CortexPE\Commando\args\BaseArgument;
+use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\session\Session;
 
-class Pos1Command extends BaseCommand
+class CopyCommand extends BaseCommand
 {
 
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws \CortexPE\Commando\exception\ArgumentOrderException
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.pos");
+        $this->registerArgument(0, new TextArgument("flags", true));
+        $this->setPermission("we.command.copy");
     }
 
     /**
@@ -39,16 +40,21 @@ class Pos1Command extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            /** @var Session $session */
             $session = API::getSession($sender);
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
-            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($sender->getLevel())); // TODO check if the selection inside of the session updates
+            $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-                throw new \Error("No selection created - Check the console for errors");
+                throw new \Exception("No selection found - select an area first");
             }
-            $sender->sendMessage($selection->setPos1($sender->getPosition()));
+            if (!$selection->isValid()) {
+                throw new \Exception("The selection is not valid! Check if all positions are set!");
+            }
+            if ($selection->getLevel() !== $sender->getLevel()) {
+                $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
+            }
+            API::copyAsync($selection, $session, API::flagParser(explode(" ", strval($args["flags"]))));
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

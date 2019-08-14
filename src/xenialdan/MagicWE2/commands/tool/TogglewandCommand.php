@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\tool;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
@@ -12,14 +12,14 @@ use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class ToggledebugCommand extends BaseCommand
+class TogglewandCommand extends BaseCommand
 {
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.toggledebug");
+        $this->setPermission("we.command.togglewand");
     }
 
     /**
@@ -40,7 +40,7 @@ class ToggledebugCommand extends BaseCommand
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
-            $sender->sendMessage($session->setDebugStickEnabled(!$session->isDebugStickEnabled()));
+            $sender->sendMessage($session->setWandEnabled(!$session->isWandEnabled()));
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

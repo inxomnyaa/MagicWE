@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\selection;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
@@ -11,9 +11,10 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\Session;
 
-class ClearhistoryCommand extends BaseCommand
+class Pos2Command extends BaseCommand
 {
 
     /**
@@ -21,7 +22,7 @@ class ClearhistoryCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.clearhistory");
+        $this->setPermission("we.command.pos");
     }
 
     /**
@@ -38,12 +39,16 @@ class ClearhistoryCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            /** @var UserSession $session */
+            /** @var Session $session */
             $session = API::getSession($sender);
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
-            $session->clearHistory();
+            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($sender->getLevel())); // TODO check if the selection inside of the session updates
+            if (is_null($selection)) {
+                throw new \Error("No selection created - Check the console for errors");
+            }
+            $sender->sendMessage($selection->setPos2($sender->getPosition()));
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

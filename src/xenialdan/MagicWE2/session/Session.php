@@ -294,7 +294,7 @@ abstract class Session
      * session storing/recovering from file/cleanup if too old
      * session items
      * session brushes
-     * recover session items + commands to get back already created/configured items/tools/brushes
+     * recover session items + commands to get back already created/configured items/tool/brushes
      * proper multi-selection-usage
      * setState/getState on big actions, status bar/boss bar/texts/titles/popups
      * inspect other player's sessions

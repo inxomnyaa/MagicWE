@@ -2,22 +2,18 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\history;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\session\UserSession;
 
-class DebugCommand extends BaseCommand
+class RedoCommand extends BaseCommand
 {
 
     /**
@@ -25,7 +21,7 @@ class DebugCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.debug");
+        $this->setPermission("we.command.redo");
     }
 
     /**
@@ -42,16 +38,12 @@ class DebugCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $item = ItemFactory::get(ItemIds::STICK);
-            $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-            $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . 'Debug Stick');
-            $item->setLore([//TODO translation
-                'Left click a block to get information',
-                'like the name and damage values of a block',
-                'Use //toggledebug to toggle it\'s functionality'
-            ]);
-            $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));
-            $sender->getInventory()->addItem($item);
+            /** @var UserSession $session */
+            $session = API::getSession($sender);
+            if (is_null($session)) {
+                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+            }
+            API::redoAsync($session);
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

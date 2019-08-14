@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\region;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\RawStringArgument;
@@ -14,7 +14,7 @@ use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 
-class SetCommand extends BaseCommand
+class ReplaceCommand extends BaseCommand
 {
 
     /**
@@ -23,9 +23,10 @@ class SetCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->registerArgument(0, new RawStringArgument("blocks", false));
-        $this->registerArgument(1, new TextArgument("flags", true));
-        $this->setPermission("we.command.set");
+        $this->registerArgument(0, new RawStringArgument("findblocks", false));
+        $this->registerArgument(1, new RawStringArgument("replaceblocks", false));
+        $this->registerArgument(2, new TextArgument("flags", true));
+        $this->setPermission("we.command.replace");
     }
 
     /**
@@ -44,11 +45,13 @@ class SetCommand extends BaseCommand
         try {
             $messages = [];
             $error = false;
-            $newblocks = API::blockParser(strval($args["blocks"]), $messages, $error);
+            $blocks1 = API::blockParser(strval($args["findblocks"]), $messages, $error);
+            $blocks2 = API::blockParser(strval($args["replaceblocks"]), $messages, $error);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }
-            if (!$error) {
+            $return = !$error;
+            if ($return) {
                 $session = API::getSession($sender);
                 if (is_null($session)) {
                     throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
@@ -63,9 +66,9 @@ class SetCommand extends BaseCommand
                 if ($selection->getLevel() !== $sender->getLevel()) {
                     $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
                 }
-                API::fillAsync($selection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));
+                API::replaceAsync($selection, $session, $blocks1, $blocks2, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
-                throw new \InvalidArgumentException("Could not fill with the selected blocks");
+                throw new \InvalidArgumentException("Could not replace with the selected blocks");
             }
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
