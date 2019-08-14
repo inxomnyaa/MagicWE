@@ -291,7 +291,7 @@ class Selection implements \Serializable
     }
 
     /**
-     * @return array
+     * @return array fastSerialized chunks
      * @throws \Exception
      */
     public function getTouchedChunks(): array

@@ -29,6 +29,7 @@ use xenialdan\MagicWE2\commands\selection\ChunkCommand;
 use xenialdan\MagicWE2\commands\selection\HPos1Command;
 use xenialdan\MagicWE2\commands\selection\HPos2Command;
 use xenialdan\MagicWE2\commands\selection\info\CountCommand;
+use xenialdan\MagicWE2\commands\selection\info\ListChunksCommand;
 use xenialdan\MagicWE2\commands\selection\Pos1Command;
 use xenialdan\MagicWE2\commands\selection\Pos2Command;
 use xenialdan\MagicWE2\commands\SetRangeCommand;
@@ -104,6 +105,7 @@ class Loader extends PluginBase
             /* -- selection info -- */
             //new SizeCommand("/size", "Get information about the selection"),
             new CountCommand("/count", "Counts the number of blocks matching a mask in selection", ["/analyze"]),
+            new ListChunksCommand("/listchunks", "List chunks that your selection includes"),
             /* -- region -- */
             new SetCommand("/set", "Fill a selection with the specified blocks"),
             //new LineCommand("/line", "Draws a line segment between cuboid selection corners"),
@@ -152,7 +154,6 @@ class Loader extends PluginBase
             //new SearchItemCommand("/searchitem", "Search for an item"),
             //new RangeCommand("/range", "Set the brush range"),
             new SetRangeCommand("/setrange", "Set tool range", ["/toolrange"]),
-            //new ListChunksCommand("/listchunks", "List chunks that your selection includes"),
             new LimitCommand("/limit", "Set the block change limit. Use -1 to disable"),
             new HelpCommand("/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"]),//Blame MCPE for client side /help shit! only the aliases work
             new VersionCommand("/version", "MagicWE version", ["/ver"]),
