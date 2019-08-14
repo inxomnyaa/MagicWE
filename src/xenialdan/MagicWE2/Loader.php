@@ -23,6 +23,7 @@ use xenialdan\MagicWE2\commands\LimitCommand;
 use xenialdan\MagicWE2\commands\region\ReplaceCommand;
 use xenialdan\MagicWE2\commands\region\SetCommand;
 use xenialdan\MagicWE2\commands\ReportCommand;
+use xenialdan\MagicWE2\commands\selection\ChunkCommand;
 use xenialdan\MagicWE2\commands\selection\HPos1Command;
 use xenialdan\MagicWE2\commands\selection\HPos2Command;
 use xenialdan\MagicWE2\commands\selection\info\CountCommand;
@@ -87,7 +88,7 @@ class Loader extends PluginBase
             new Pos2Command("/pos2", "Set position 2", ["/2"]),
             new HPos1Command("/hpos1", "Set position 1 to targeted block", ["/h1"]),
             new HPos2Command("/hpos2", "Set position 2 to targeted block", ["/h2"]),
-            //new ChunkCommand("/chunk", "Set the selection to your current chunk"),
+            new ChunkCommand("/chunk", "Set the selection to your current chunk"),
             /* -- tool -- */
             new WandCommand("/wand", "Gives you the selection wand"),
             new TogglewandCommand("/togglewand", "Toggle the wand tool on/off", ["/toggleeditwand"]),
