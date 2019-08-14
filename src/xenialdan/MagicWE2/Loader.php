@@ -10,7 +10,9 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\commands\brush\BrushCommand;
+use xenialdan\MagicWE2\commands\clipboard\ClearClipboardCommand;
 use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
+use xenialdan\MagicWE2\commands\clipboard\CutCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
 use xenialdan\MagicWE2\commands\DonateCommand;
 use xenialdan\MagicWE2\commands\generation\CylinderCommand;
@@ -128,8 +130,8 @@ class Loader extends PluginBase
             /* -- clipboard -- */
             new CopyCommand("/copy", "Copy the selection to the clipboard"),
             new PasteCommand("/paste", "Paste the clipboard’s contents"),
-            //new CutCommand("/cut", "Cut the selection to the clipboard"),
-            //new ClearClipboardCommand("/clearclipboard", "Clear your clipboard"),
+            new CutCommand("/cut", "Cut the selection to the clipboard"),
+            new ClearClipboardCommand("/clearclipboard", "Clear your clipboard"),
             //new FlipCommand("/flip","Flip the contents of the clipboard across the origin"),
             //new RotateCommand("/rotate","Rotate the contents of the clipboard around the origin"),
             /* -- history -- */

@@ -275,6 +275,12 @@ abstract class Session
         $this->setRedos([]);
     }
 
+    public function clearClipboard()
+    {
+        $this->setClipboards([]);
+        $this->currentClipboard = -1;
+    }
+
     public abstract function sendMessage(string $message);
 
     public function __toString()

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands\history;
+namespace xenialdan\MagicWE2\commands\clipboard;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 
-class ClearhistoryCommand extends BaseCommand
+class ClearClipboardCommand extends BaseCommand
 {
 
     /**
@@ -21,7 +21,7 @@ class ClearhistoryCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.clearhistory");
+        $this->setPermission("we.command.clearclipboard");
     }
 
     /**
@@ -43,8 +43,8 @@ class ClearhistoryCommand extends BaseCommand
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
-            $session->clearHistory();
-            $sender->sendMessage(Loader::PREFIX . TF::GREEN . "History cleared");
+            $session->clearClipboard();
+            $sender->sendMessage(Loader::PREFIX . TF::GREEN . "Clipboards cleared");
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

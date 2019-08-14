@@ -23,6 +23,10 @@ class CopyClipboard extends Clipboard
     private $aabb;
     /** @var Chunk[] */
     public $pasteChunks = [];
+    /** @var bool If entities were copied */
+    public $entities = false;
+    /** @var bool If biomes were copied */
+    public $biomes = false;
 
     /**
      * RevertClipboard constructor.
