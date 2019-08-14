@@ -2,15 +2,12 @@
 
 namespace xenialdan\MagicWE2;
 
-use pocketmine\block\Block;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerAnimationEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
-use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\selection\Selection;
@@ -62,23 +59,6 @@ class EventListener implements Listener
                     }
                     break;
                 }
-            case PlayerInteractEvent::LEFT_CLICK_AIR://BROKEN CLIENT VISE
-                {
-                    $this->onLeftClickAir($event);
-                    break;
-                }
-        }
-    }
-
-    /**
-     * @param PlayerAnimationEvent $event
-     * @throws \Exception
-     */
-    public function playerAnimate(PlayerAnimationEvent $event)
-    {//TEMP FIX client does not send PlayerInteractEvent on left click
-        if ($event->getAnimationType() === AnimatePacket::ACTION_SWING_ARM) {
-            $ev = new PlayerInteractEvent($event->getPlayer(), $event->getPlayer()->getInventory()->getItemInHand(), null, null, 0, PlayerInteractEvent::LEFT_CLICK_AIR);
-            $ev->call();
         }
     }
 
@@ -193,42 +173,6 @@ class EventListener implements Listener
                         if (!is_null($target)) {// && has perms
                             API::createBrush($target, $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
                         }
-                        break;
-                    }
-            }
-        }
-    }
-
-    /**
-     * @param PlayerInteractEvent $event
-     * @throws \Exception
-     */
-    private function onLeftClickAir(PlayerInteractEvent $event)
-    {
-        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
-            $event->setCancelled();
-            /** @var UserSession $session */
-            $session = API::getSession($event->getPlayer());
-            if (is_null($session)) return;
-            switch ($event->getItem()->getId()) {
-                case ItemIds::WOODEN_AXE:
-                    {
-                        $event->setCancelled();
-                        if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
-                            break;
-                        }
-                        $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($event->getPlayer()->getLevel())); // TODO check if the selection inside of the session updates
-                        if (is_null($selection)) {
-                            throw new \Error("No selection created - Check the console for errors");
-                        }
-                        /** @var Block|null $target */
-                        $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
-                        if ($target === null) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "No target block found");
-                            return;
-                        }
-                        $event->getPlayer()->sendMessage($selection->setPos1($target));
                         break;
                     }
             }
