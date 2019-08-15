@@ -32,7 +32,6 @@ use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 use xenialdan\MagicWE2\task\AsyncOverlayTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
-use xenialdan\MagicWE2\task\AsyncRevertTask;
 use xenialdan\MagicWE2\task\AsyncSetBiomeTask;
 
 class API
@@ -88,7 +87,7 @@ class API
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $newblocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getTouchedChunks(), $newblocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -170,48 +169,6 @@ class API
             $clipboard->setCenter($target);//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getUUID(), $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
-        } catch (\Exception $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @param Session $session
-     * @return bool
-     */
-    public static function undoAsync(Session $session)
-    {
-        try {
-            $session->sendMessage("You had " . count($session->getUndos()) . " undo actions left");//TODO remove
-            $clipboard = $session->getLatestUndo();
-            if (is_null($clipboard)) {
-                $session->sendMessage("Nothing to undo");//TODO prettify
-                return true;
-            }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getUUID(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_UNDO));
-        } catch (\Exception $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @param Session $session
-     * @return bool
-     */
-    public static function redoAsync(Session $session)
-    {
-        try {
-            $session->sendMessage("You had " . count($session->getRedos()) . " redo actions left");//TODO remove
-            $clipboard = $session->getLatestRedo();
-            if (is_null($clipboard)) {
-                $session->sendMessage("Nothing to redo");//TODO prettify
-                return true;
-            }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($clipboard, $session->getUUID(), $clipboard->getTouchedChunks(), AsyncRevertTask::TYPE_REDO));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;

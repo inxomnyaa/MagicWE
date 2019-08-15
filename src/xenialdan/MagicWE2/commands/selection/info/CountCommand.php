@@ -65,7 +65,7 @@ class CountCommand extends BaseCommand
                 if ($selection->getLevel() !== $sender->getLevel()) {
                     $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
                 }
-                API::countAsync($selection, $session, $filterBlocks, API::flagParser(explode(" ", strval($args["flags"]))));
+                API::countAsync($selection, $session, $filterBlocks, API::flagParser(explode(" ", strval($args["flags"] ?? ""))));
             } else {
                 throw new \InvalidArgumentException("Could not fill with the selected blocks");
             }

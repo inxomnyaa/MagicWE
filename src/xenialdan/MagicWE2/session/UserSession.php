@@ -26,6 +26,8 @@ class UserSession extends Session
         $this->setUUID($player->getUniqueId());
         $this->bossBar = (new BossBar())->addPlayer($player);
         $this->bossBar->hideFrom([$player]);
+        $this->undoHistory = new \Ds\Deque();
+        $this->redoHistory = new \Ds\Deque();
     }
 
     public function __destruct()
@@ -106,8 +108,8 @@ class UserSession extends Session
             " Latest: " . $this->getLatestSelectionUUID() .
             " Clipboards: " . count($this->getClipboards()) .
             " Current: " . $this->getCurrentClipboardIndex() .
-            " Undos: " . count($this->getUndos()) .
-            " Redos: " . count($this->getRedos());
+            " Undos: " . count($this->undoHistory) .
+            " Redos: " . count($this->redoHistory);
     }
 
     public function sendMessage(string $message)

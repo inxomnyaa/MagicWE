@@ -36,7 +36,7 @@ class AsyncCountTask extends MWEAsyncTask
     {
         $this->start = microtime(true);
         $this->chunks = serialize($chunks);
-        $this->sessionUUID = serialize($sessionUUID);
+        $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
         $this->newBlocks = serialize($newBlocks);
         $this->flags = $flags;

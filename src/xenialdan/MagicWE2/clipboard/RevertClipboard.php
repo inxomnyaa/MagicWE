@@ -4,20 +4,26 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\clipboard;
 
+use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 
 class RevertClipboard extends Clipboard
 {
+    /** @var Block[] */
+    public $blocksAfter;
+
     /**
      * RevertClipboard constructor.
      * @param int $levelId
      * @param Chunk[] $chunks
+     * @param Block[] $blocksAfter
      */
-    public function __construct(int $levelId, array $chunks = [])
+    public function __construct(int $levelId, array $chunks = [], array $blocksAfter = [])
     {
         $this->levelid = $levelId;
         $this->chunks = $chunks;
+        $this->blocksAfter = $blocksAfter;
     }
 
     /**
@@ -28,9 +34,13 @@ class RevertClipboard extends Clipboard
      */
     public function serialize()
     {
+        $chunks = [];
+        foreach ($this->chunks as $chunk)
+            $chunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
         return serialize([
             $this->levelid,
-            $this->getTouchedChunks()
+            $chunks,
+            $this->blocksAfter
         ]);
     }
 
@@ -47,20 +57,10 @@ class RevertClipboard extends Clipboard
     {
         [
             $this->levelid,
-            $chunks
+            $chunks,
+            $this->blocksAfter
         ] = unserialize($serialized);
         foreach ($chunks as $hash => $chunk)
             $this->chunks[$hash] = Chunk::fastDeserialize($chunk);
-    }
-
-    /**
-     * @return array
-     */
-    public function getTouchedChunks(): array
-    {
-        $touchedChunks = [];
-        foreach ($this->chunks as $chunk)
-            $touchedChunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
-        return $touchedChunks;
     }
 }

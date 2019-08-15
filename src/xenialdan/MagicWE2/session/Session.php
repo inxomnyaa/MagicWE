@@ -4,29 +4,34 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
+use pocketmine\Server;
+use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\task\AsyncRevertTask;
 
 abstract class Session
 {
     const MAX_CLIPBOARDS = 5;
+    const MAX_HISTORY = 32;
     /** @var UUID */
     private $uuid;
+    //todo change to a list of objects with a pointer of the latest action
     /** @var Selection[] */
     private $selections = [];
     /** @var UUID|null */
     private $latestselection = null;
-    /** @var int */
-    private $currentClipboard = -1;
+    //todo change to a list of objects with a pointer of the latest action
     /** @var Clipboard[] */
     private $clipboards = [];
-    /** @var RevertClipboard[] */
-    private $undo = [];
-    /** @var RevertClipboard[] */
-    private $redo = [];
-    //todo change to a list of objects with a pointer of the latest action
+    /** @var int */
+    private $currentClipboard = -1;
+    /** @var \Ds\Deque */
+    public $undoHistory;
+    /** @var \Ds\Deque */
+    public $redoHistory;
 
     /**
      * @return UUID
@@ -200,79 +205,43 @@ abstract class Session
     }
 
     /**
-     * @return RevertClipboard[]
-     */
-    public function getUndos(): array
-    {
-        return $this->undo;
-    }
-
-    /**
-     * @param RevertClipboard[] $undo
-     */
-    private function setUndos(array $undo)
-    {
-        $this->undo = $undo;
-    }
-
-    /**
      * @param RevertClipboard $revertClipboard
      */
-    public function addUndo(RevertClipboard $revertClipboard)
+    public function addRevert(RevertClipboard $revertClipboard)
     {
-        array_push($this->undo, $revertClipboard);
+        $this->redoHistory->clear();
+        $this->undoHistory->push($revertClipboard);
+        while ($this->undoHistory->count() > self::MAX_HISTORY) {
+            $this->undoHistory->shift();
+        }
     }
 
-    /**
-     * @return null|RevertClipboard
-     */
-    public function getLatestUndo(): ?RevertClipboard
+    public function undo()
     {
-        $revertClipboards = $this->getUndos();
-        $return = array_pop($revertClipboards);
-        $this->setUndos($revertClipboards);
-        return $return;
+        if ($this->undoHistory->count() === 0) {
+            $this->sendMessage(TF::RED . "Nothing to undo");
+            return;
+        }
+        $revertClipboard = $this->undoHistory->pop();
+        Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
+        $this->sendMessage(TF::GREEN . "You have " . count($this->undoHistory) . " undo actions left");
     }
 
-    /**
-     * @return RevertClipboard[]
-     */
-    public function getRedos(): array
+    public function redo()
     {
-        return $this->redo;
-    }
-
-    /**
-     * @param RevertClipboard[] $redo
-     */
-    private function setRedos(array $redo)
-    {
-        $this->redo = $redo;
-    }
-
-    /**
-     * @param RevertClipboard $revertClipboard
-     */
-    public function addRedo(RevertClipboard $revertClipboard)
-    {
-        array_push($this->redo, $revertClipboard);
-    }
-
-    /**
-     * @return null|RevertClipboard
-     */
-    public function getLatestRedo(): ?RevertClipboard
-    {
-        $revertClipboards = $this->getRedos();
-        $return = array_pop($revertClipboards);
-        $this->setRedos($revertClipboards);
-        return $return;
+        if ($this->redoHistory->count() === 0) {
+            $this->sendMessage(TF::RED . "Nothing to redo");
+            return;
+        }
+        $revertClipboard = $this->redoHistory->pop();
+        Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
+        $this->sendMessage(TF::GREEN . "You have " . count($this->redoHistory) . " redo actions left");
     }
 
     public function clearHistory()
     {
-        $this->setUndos([]);
-        $this->setRedos([]);
+        $this->undoHistory->clear();
+        $this->redoHistory->clear();
     }
 
     public function clearClipboard()
@@ -291,8 +260,8 @@ abstract class Session
             " Latest: " . $this->getLatestSelectionUUID() .
             " Clipboards: " . count($this->getClipboards()) .
             " Current: " . $this->getCurrentClipboardIndex() .
-            " Undos: " . count($this->getUndos()) .
-            " Redos: " . count($this->getRedos());
+            " Undos: " . count($this->undoHistory) .
+            " Redos: " . count($this->redoHistory);
     }
 
     /*

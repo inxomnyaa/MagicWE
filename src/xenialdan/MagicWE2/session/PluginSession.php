@@ -17,6 +17,8 @@ class PluginSession extends Session
     {
         $this->plugin = $plugin;
         $this->setUUID(UUID::fromRandom());
+        $this->undoHistory = new \Ds\Deque();
+        $this->redoHistory = new \Ds\Deque();
     }
 
     public function getPlugin(): Plugin
@@ -33,8 +35,8 @@ class PluginSession extends Session
             " Latest: " . $this->getLatestSelectionUUID() .
             " Clipboards: " . count($this->getClipboards()) .
             " Current: " . $this->getCurrentClipboardIndex() .
-            " Undos: " . count($this->getUndos()) .
-            " Redos: " . count($this->getRedos());
+            " Undos: " . count($this->undoHistory) .
+            " Redos: " . count($this->redoHistory);
     }
 
     public function sendMessage(string $message)

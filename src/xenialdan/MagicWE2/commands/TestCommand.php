@@ -2,18 +2,23 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands\history;
+namespace xenialdan\MagicWE2\commands;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
+use pocketmine\block\Block;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\PluginSession;
+use xenialdan\MagicWE2\task\action\TestAction;
+use xenialdan\MagicWE2\task\AsyncActionTask;
 
-class RedoCommand extends BaseCommand
+class TestCommand extends BaseCommand
 {
 
     /**
@@ -21,7 +26,7 @@ class RedoCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.history.redo");
+        $this->setPermission("we.command.test");
     }
 
     /**
@@ -31,19 +36,22 @@ class RedoCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        $lang = Loader::getInstance()->getLanguage();
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
-            return;
-        }
         /** @var Player $sender */
         try {
-            /** @var UserSession $session */
-            $session = API::getSession($sender);
-            if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
-            }
-            $session->redo();
+            //TODO REMOVE DEBUG
+            $pluginSession = new PluginSession(Loader::getInstance());
+            API::addSession($pluginSession);
+            $pluginSession->addSelection(new Selection(Server::getInstance()->getDefaultLevel(), 256, 1, 256, 256, 1, 256));
+            Server::getInstance()->getAsyncPool()->submitTask(
+                new AsyncActionTask(
+                    $pluginSession->getUUID(),
+                    $pluginSession->getLatestSelection(),
+                    new TestAction(),
+                    $pluginSession->getLatestSelection()->getTouchedChunks(),
+                    [Block::get(Block::SNOW)],
+                    [Block::get(Block::TNT)]
+                )
+            );
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

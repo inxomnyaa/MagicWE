@@ -38,6 +38,7 @@ use xenialdan\MagicWE2\commands\selection\info\SizeCommand;
 use xenialdan\MagicWE2\commands\selection\Pos1Command;
 use xenialdan\MagicWE2\commands\selection\Pos2Command;
 use xenialdan\MagicWE2\commands\SetRangeCommand;
+use xenialdan\MagicWE2\commands\TestCommand;
 use xenialdan\MagicWE2\commands\tool\DebugCommand;
 use xenialdan\MagicWE2\commands\tool\FloodCommand;
 use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
@@ -159,6 +160,7 @@ class Loader extends PluginBase
             //new TogglePlaceCommand("/toggleplace", "Switch between your position and pos1 for placement"),
             //new SearchItemCommand("/searchitem", "Search for an item"),
             //new RangeCommand("/range", "Set the brush range"),
+            new TestCommand("/test", "test action"),//TODO REMOVE
             new SetRangeCommand("/setrange", "Set tool range", ["/toolrange"]),
             new LimitCommand("/limit", "Set the block change limit. Use -1 to disable"),
             new HelpCommand("/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"]),//Blame MCPE for client side /help shit! only the aliases work
