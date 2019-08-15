@@ -22,7 +22,7 @@ class RotateCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerArgument(0, new IntegerArgument("degrees", false));
-        $this->setPermission("we.command.rotate");
+        $this->setPermission("we.command.clipboard.rotate");
         $this->setUsage("//rotate <degrees: 1|2|3|-1|-2|-3>");
     }
 

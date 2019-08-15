@@ -22,7 +22,7 @@ class ListChunksCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.listchunks");
+        $this->setPermission("we.command.selection.info.listchunks");
     }
 
     /**

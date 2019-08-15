@@ -21,7 +21,7 @@ class SizeCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.size");
+        $this->setPermission("we.command.selection.info.size");
     }
 
     /**

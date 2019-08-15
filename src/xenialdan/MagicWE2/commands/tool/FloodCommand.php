@@ -31,7 +31,7 @@ class FloodCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.flood");
+        $this->setPermission("we.command.tool.floodfill");
     }
 
     /**

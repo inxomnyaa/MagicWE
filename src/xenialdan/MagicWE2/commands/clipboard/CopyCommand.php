@@ -23,7 +23,7 @@ class CopyCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerArgument(0, new TextArgument("flags", true));
-        $this->setPermission("we.command.copy");
+        $this->setPermission("we.command.clipboard.copy");
     }
 
     /**

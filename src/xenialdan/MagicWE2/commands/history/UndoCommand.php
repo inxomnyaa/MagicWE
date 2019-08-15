@@ -21,7 +21,7 @@ class UndoCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.undo");
+        $this->setPermission("we.command.history.undo");
     }
 
     /**

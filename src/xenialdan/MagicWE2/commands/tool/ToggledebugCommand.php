@@ -19,7 +19,7 @@ class ToggledebugCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.toggledebug");
+        $this->setPermission("we.command.tool.toggledebug");
     }
 
     /**

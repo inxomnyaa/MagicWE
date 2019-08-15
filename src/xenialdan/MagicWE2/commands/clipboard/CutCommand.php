@@ -24,7 +24,7 @@ class CutCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerArgument(0, new TextArgument("flags", true));
-        $this->setPermission("we.command.cut");
+        $this->setPermission("we.command.clipboard.cut");
     }
 
     /**

@@ -21,7 +21,7 @@ class RedoCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.redo");
+        $this->setPermission("we.command.history.redo");
     }
 
     /**

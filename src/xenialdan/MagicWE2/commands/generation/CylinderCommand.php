@@ -32,7 +32,7 @@ class CylinderCommand extends BaseCommand
         $this->registerArgument(1, new IntegerArgument("diameter", false));
         $this->registerArgument(2, new IntegerArgument("height", true));
         $this->registerArgument(3, new TextArgument("flags", true));
-        $this->setPermission("we.command.cyl");
+        $this->setPermission("we.command.generation.cyl");
     }
 
     /**

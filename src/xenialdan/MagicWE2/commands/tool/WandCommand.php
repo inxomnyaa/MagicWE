@@ -26,7 +26,7 @@ class WandCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.wand");
+        $this->setPermission("we.command.tool.wand");
     }
 
     /**

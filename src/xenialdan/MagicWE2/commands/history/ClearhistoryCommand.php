@@ -21,7 +21,7 @@ class ClearhistoryCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.clearhistory");
+        $this->setPermission("we.command.history.clear");
     }
 
     /**

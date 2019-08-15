@@ -27,7 +27,7 @@ class BiomeInfoCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerArgument(0, new TextArgument("flags", true));
-        $this->setPermission("we.command.biomeinfo");
+        $this->setPermission("we.command.biome.info");
     }
 
     /**

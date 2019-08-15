@@ -25,7 +25,7 @@ class DebugCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.debug");
+        $this->setPermission("we.command.tool.debug");
     }
 
     /**

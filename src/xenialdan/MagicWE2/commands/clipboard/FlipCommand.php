@@ -24,7 +24,7 @@ class FlipCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerArgument(0, new TextArgument("direction", false));
-        $this->setPermission("we.command.flip");
+        $this->setPermission("we.command.clipboard.flip");
         $this->setUsage("//flip <direction: X|Y|Z|UP|DOWN|WEST|EAST|NORTH|SOUTH...>");
     }
 

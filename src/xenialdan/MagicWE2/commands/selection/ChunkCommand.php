@@ -25,7 +25,7 @@ class ChunkCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.pos");
+        $this->setPermission("we.command.selection.chunk");
     }
 
     /**

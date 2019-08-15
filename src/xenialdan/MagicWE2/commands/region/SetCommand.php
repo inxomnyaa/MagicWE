@@ -25,7 +25,7 @@ class SetCommand extends BaseCommand
     {
         $this->registerArgument(0, new RawStringArgument("blocks", false));
         $this->registerArgument(1, new TextArgument("flags", true));
-        $this->setPermission("we.command.set");
+        $this->setPermission("we.command.region.set");
     }
 
     /**

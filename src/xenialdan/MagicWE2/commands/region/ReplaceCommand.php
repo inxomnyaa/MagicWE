@@ -26,7 +26,7 @@ class ReplaceCommand extends BaseCommand
         $this->registerArgument(0, new RawStringArgument("findblocks", false));
         $this->registerArgument(1, new RawStringArgument("replaceblocks", false));
         $this->registerArgument(2, new TextArgument("flags", true));
-        $this->setPermission("we.command.replace");
+        $this->setPermission("we.command.region.replace");
     }
 
     /**

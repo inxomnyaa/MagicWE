@@ -23,7 +23,7 @@ class OverlayCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerArgument(0, new RawStringArgument("blocks", false));
-        $this->setPermission("we.command.overlay");
+        $this->setPermission("we.command.region.overlay");
     }
 
     /**

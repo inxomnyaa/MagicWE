@@ -25,7 +25,7 @@ class CountCommand extends BaseCommand
     {
         $this->registerArgument(0, new RawStringArgument("blocks", true));
         $this->registerArgument(1, new TextArgument("flags", true));
-        $this->setPermission("we.command.count");
+        $this->setPermission("we.command.selection.info.count");
     }
 
     /**

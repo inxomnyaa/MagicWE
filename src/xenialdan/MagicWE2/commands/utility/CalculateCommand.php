@@ -24,7 +24,7 @@ class CalculateCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerArgument(0, new TextArgument("expression", false));
-        $this->setPermission("we.command.calculate");
+        $this->setPermission("we.command.utility.calculate");
     }
 
     /**

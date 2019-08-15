@@ -21,7 +21,7 @@ class ClearClipboardCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.clearclipboard");
+        $this->setPermission("we.command.clipboard.clear");
     }
 
     /**

@@ -19,7 +19,7 @@ class TogglewandCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.togglewand");
+        $this->setPermission("we.command.tool.togglewand");
     }
 
     /**

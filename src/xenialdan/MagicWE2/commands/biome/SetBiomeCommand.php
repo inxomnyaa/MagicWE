@@ -25,7 +25,7 @@ class SetBiomeCommand extends BaseCommand
     {
         $this->registerArgument(0, new IntegerArgument("biome", false));
         //TODO flags
-        $this->setPermission("we.command.setbiome");
+        $this->setPermission("we.command.biome.set");
     }
 
     /**

@@ -21,7 +21,7 @@ class BiomeListCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->setPermission("we.command.biomelist");
+        $this->setPermission("we.command.biome.list");
     }
 
     /**
