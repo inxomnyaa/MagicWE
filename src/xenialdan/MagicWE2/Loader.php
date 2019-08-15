@@ -43,6 +43,7 @@ use xenialdan\MagicWE2\commands\tool\FloodCommand;
 use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\tool\TogglewandCommand;
 use xenialdan\MagicWE2\commands\tool\WandCommand;
+use xenialdan\MagicWE2\commands\utility\CalculateCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\session\UserSession;
 
@@ -175,7 +176,7 @@ class Loader extends PluginBase
             //new FixWaterCommand("/fixwater", "Fix water to be stationary"),
             //new SnowCommand("/snow", "Creates a snow layer cover in the selection"),
             //new ThawCommand("/thaw", "Thaws blocks in the selection"),
-            //new CalculateCommand("/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
+            new CalculateCommand("/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
         ]);
         if (class_exists("xenialdan\\customui\\API")) {
             $this->getLogger()->notice("CustomUI found, can use ui-based commands");

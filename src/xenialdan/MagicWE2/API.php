@@ -20,6 +20,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
+use xenialdan\MagicWE2\exception\CalculationException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
@@ -572,6 +573,81 @@ class API
 
             return [$b[0], $item];
         }
+    }
+
+    /**
+     * Evaluate mathematics in a string
+     * https://stackoverflow.com/a/54684348/4532380
+     * @param string $str
+     * @return float|int
+     * @throws CalculationException
+     */
+    public static function evalAsMath(string $str)
+    {
+        $error = false;
+        $div_mul = false;
+        $add_sub = false;
+        $result = 0;
+
+        $str = preg_replace('/[^\d\.\+\-\*\/]/i', '', $str);
+        $str = rtrim(trim($str, '/*+'), '-');
+
+        if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
+            $div_mul = true;
+            $operators = ['*', '/'];
+            while (!$error && $operators) {
+                $operator = array_pop($operators);
+                while ($operator && strpos($str, $operator) !== false) {
+                    if ($error) {
+                        break;
+                    }
+                    $regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
+                    preg_match($regex, $str, $matches);
+                    if (isset($matches[1]) && isset($matches[2])) {
+                        if ($operator == '+') $result = (float)$matches[1] + (float)$matches[2];
+                        if ($operator == '-') $result = (float)$matches[1] - (float)$matches[2];
+                        if ($operator == '*') $result = (float)$matches[1] * (float)$matches[2];
+                        if ($operator == '/') {
+                            if ((float)$matches[2]) {
+                                $result = (float)$matches[1] / (float)$matches[2];
+                            } else {
+                                $error = true;
+                            }
+                        }
+                        $str = preg_replace($regex, $result, $str, 1);
+                        $str = str_replace(['++', '--', '-+', '+-'], ['+', '+', '-', '-'], $str);
+                    } else {
+                        $error = true;
+                    }
+                }
+            }
+        }
+
+        if (!$error && (strpos($str, '+') !== false || strpos($str, '-') !== false)) {
+            $add_sub = true;
+            preg_match_all('/([\d\.]+|[\+\-])/', $str, $matches);
+            if (isset($matches[0])) {
+                $result = 0;
+                $operator = '+';
+                $tokens = $matches[0];
+                $count = count($tokens);
+                for ($i = 0; $i < $count; $i++) {
+                    if ($tokens[$i] == '+' || $tokens[$i] == '-') {
+                        $operator = $tokens[$i];
+                    } else {
+                        $result = ($operator == '+') ? ($result + (float)$tokens[$i]) : ($result - (float)$tokens[$i]);
+                    }
+                }
+            }
+        }
+
+        if (!$error && !$div_mul && !$add_sub) {
+            $result = (float)$str;
+        }
+
+        if ($error) throw new CalculationException("Expression contains an error");
+
+        return $result;
     }
 
     /**
