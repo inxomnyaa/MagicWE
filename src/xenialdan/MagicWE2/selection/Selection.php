@@ -304,6 +304,33 @@ class Selection implements \Serializable
     }
 
     /**
+     * Returns a flat layer of all included x z positions in selection
+     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Block[] $filterblocks If not empty, applying a filter on the block list
+     * @param int $flags
+     * @return \Generator|Block
+     * @throws \Exception
+     */
+    public function getHighestBlockLayer(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
+    {
+        //TODO rewrite function, right now this is total crap and inefficient, better iterate from top down
+        $this->validateChunkManager($manager);
+        /** @var Vector2 $vector2 */
+        foreach ($this->getLayer($manager, $flags) as $vector2) {
+            $highestBlock = $this->getHighestBlock($vector2, $manager, $filterblocks, $flags);
+            $highestBlock = max(floor($this->getMaxVec3()->y), $highestBlock);
+            yield $manager->getBlock(new Vector3($vector2->x, $highestBlock, $vector2->y));
+        }
+    }
+
+    public function getHighestBlock(Vector2 $vector2, ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE)
+    {
+        $chunk = $manager->getChunk($vector2->x >> 4, $vector2->y >> 4);
+        if (is_null($chunk)) return -1;
+        return $chunk->getHighestBlockAt($vector2->x & 0x0f, $vector2->y & 0x0f) + 1;
+    }
+
+    /**
      * @param ChunkManager $manager
      * @throws \Exception
      */

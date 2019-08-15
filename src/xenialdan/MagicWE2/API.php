@@ -29,6 +29,7 @@ use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
+use xenialdan\MagicWE2\task\AsyncOverlayTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 use xenialdan\MagicWE2\task\AsyncRevertTask;
 use xenialdan\MagicWE2\task\AsyncSetBiomeTask;
@@ -257,6 +258,31 @@ class API
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncSetBiomeTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $biomeId, $flags));
+        } catch (\Exception $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param Selection $selection
+     * @param Session $session
+     * @param Block[] $filterBlocks
+     * @param Block[] $newBlocks
+     * @param int $flags
+     * @return bool
+     * @throws LimitExceededException
+     */
+    public static function overlayReplaceAsync(Selection $selection, Session $session, $filterBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
+    {
+        try {
+            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+            }
+            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncOverlayTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $filterBlocks, $newBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
