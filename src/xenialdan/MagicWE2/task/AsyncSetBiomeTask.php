@@ -2,9 +2,9 @@
 
 namespace xenialdan\MagicWE2\task;
 
-use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
+use pocketmine\math\Vector2;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
@@ -77,22 +77,22 @@ class AsyncSetBiomeTask extends MWEAsyncTask
      */
     private function editBlocks(Selection $selection, AsyncChunkManager $manager, int $biomeId): int
     {
-        $blockCount = $selection->getTotalCount();
+        $blockCount = $selection->getSizeX() * $selection->getSizeZ();
         $changed = 0;
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
         $lastchunkx = $lastchunkz = null;
         $lastprogress = 0;
-        /** @var Block $block */
-        foreach ($selection->getBlocks($manager, [], $this->flags) as $block) {//TODO speed up by only iterating over x and z, skip y
-            if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
-                $lastchunkx = $block->x >> 4;
-                $lastchunkz = $block->z >> 4;
+        /** @var Vector2 $vec2 */
+        foreach ($selection->getLayer($manager, $this->flags) as $vec2) {
+            if (is_null($lastchunkx) || $vec2->x >> 4 !== $lastchunkx && $vec2->y >> 4 !== $lastchunkz) {
+                $lastchunkx = $vec2->x >> 4;
+                $lastchunkz = $vec2->y >> 4;
                 if (is_null($manager->getChunk($lastchunkx, $lastchunkz))) {
-                    #print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
+                    #print PHP_EOL . "Not found: " . strval($vec2->x >> 4) . ":" . strval($vec2->y >> 4) . PHP_EOL;
                     continue;
                 }
             }
-            $manager->getChunk($lastchunkx, $lastchunkz)->setBiomeId($block->x % 16, $block->z % 16, $biomeId);
+            $manager->getChunk($lastchunkx, $lastchunkz)->setBiomeId($vec2->x % 16, $vec2->y % 16, $biomeId);
             $changed++;
             $progress = floor($changed / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets

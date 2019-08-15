@@ -88,6 +88,30 @@ class Cylinder extends Shape
     }
 
     /**
+     * Returns a flat layer of all included x z positions in selection
+     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param int $flags
+     * @return \Generator|Vector2
+     * @throws \Exception
+     */
+    public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
+    {
+        $this->validateChunkManager($manager);
+        $centerVec2 = new Vector2($this->getCenter()->getX(), $this->getCenter()->getZ());
+        for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
+            for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
+                if (API::hasFlag($flags, API::FLAG_POSITION_RELATIVE))//TODO check if correct
+                    $vec2 = new Vector2($rx, $rz);
+                else
+                    $vec2 = new Vector2($x, $z);
+                if ($vec2->distanceSquared($centerVec2) > (($this->options['diameter'] / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($rz !== 0 && $rz !== $this->getSizeY() - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2))))
+                    continue;
+                yield $vec2;
+            }
+        }
+    }
+
+    /**
      * @param Vector3 $center
      * @throws \Exception
      */

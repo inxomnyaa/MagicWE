@@ -53,6 +53,20 @@ class Flood extends Shape
     }
 
     /**
+     * Returns a flat layer of all included x z positions in selection
+     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param int $flags
+     * @return \Generator|Vector2
+     * @throws \Exception
+     */
+    public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
+    {
+        foreach ($this->getBlocks($manager, []) as $block) {
+            yield new Vector2($block->x, $block->z);
+        }
+    }
+
+    /**
      * @param Level|AsyncChunkManager|ChunkManager $manager
      * @return Block[]
      */

@@ -250,7 +250,6 @@ class API
      */
     public static function setBiomeAsync(Selection $selection, Session $session, int $biomeId, int $flags = self::FLAG_BASE)
     {
-        //TODO optimize to iterate over only x and z
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getTotalCount() > $limit && !$limit === -1) {
