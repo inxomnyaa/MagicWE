@@ -39,7 +39,8 @@ class BiomeListCommand extends BaseCommand
             $session->sendMessage(TF::DARK_AQUA . "Biome list");
             foreach ((new \ReflectionClass(Biome::class))->getConstants() as $name => $value) {
                 if ($value === Biome::MAX_BIOMES) continue;
-                $session->sendMessage(TF::AQUA . "ID: $value Name: $value");
+                $name = Biome::getBiome($value)->getName();;
+                $session->sendMessage(TF::AQUA . "ID: $value Name: $name");
             }
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");

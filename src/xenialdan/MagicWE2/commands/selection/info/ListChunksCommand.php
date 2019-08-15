@@ -57,8 +57,13 @@ class ListChunksCommand extends BaseCommand
             $session->sendMessage(TF::DARK_AQUA . count($touchedChunks) . " chunks found in selection");
             foreach ($touchedChunks as $chunkHash => $touchedChunk) {
                 $chunk = Chunk::fastDeserialize($touchedChunk);
-                $biomecount = count($chunk->getBiomeIdArray());
-                $biomes = implode(", ", $chunk->getBiomeIdArray());//TODO biome alias/name?
+                $biomes = [];
+                for ($x = 0; $x < 16; $x++)
+                    for ($z = 0; $z < 16; $z++)
+                        $biomes[] = (Chunk::fastDeserialize($touchedChunk)->getBiomeId($x, $z));
+                $biomes = array_unique($biomes);
+                $biomecount = count($biomes);
+                $biomes = implode(", ", $biomes);
                 $session->sendMessage(TF::AQUA . "ID: {$chunkHash} | X: {$chunk->getX()} Z: {$chunk->getZ()} | Subchunks: {$chunk->getHeight()} | Biomes: ($biomecount) $biomes");
             }
         } catch (\Exception $error) {

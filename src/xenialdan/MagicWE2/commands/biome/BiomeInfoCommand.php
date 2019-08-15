@@ -51,6 +51,9 @@ class BiomeInfoCommand extends BaseCommand
             $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
             $biomeNames = array_flip($biomeNames);
             unset($biomeNames[Biome::MAX_BIOMES]);
+            array_walk($biomeNames, function (&$value, $key) {
+                $value = Biome::getBiome($key)->getName();
+            });
             if (!empty(($flags = ltrim(strval($args["flags"] ?? ""), "-")))) {
                 $flagArray = str_split($flags);
                 if (in_array(self::FLAG_T, $flagArray)) {
@@ -61,12 +64,12 @@ class BiomeInfoCommand extends BaseCommand
                     }
                     $biomeId = $target->getLevel()->getChunkAtPosition($target)->getBiomeId($target->getX() % 16, $target->getZ() % 16);
                     $session->sendMessage(TF::DARK_AQUA . "Biome at target");
-                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . ucfirst(strtolower($biomeNames[$biomeId])));
+                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
                 if (in_array(self::FLAG_P, $flagArray)) {
                     $biomeId = $sender->getLevel()->getChunkAtPosition($sender)->getBiomeId($sender->getX() % 16, $sender->getZ() % 16);
                     $session->sendMessage(TF::DARK_AQUA . "Biome at position");
-                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . ucfirst(strtolower($biomeNames[$biomeId])));
+                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
                 return;
             }
@@ -83,11 +86,14 @@ class BiomeInfoCommand extends BaseCommand
             $touchedChunks = $selection->getTouchedChunks();
             $biomes = [];
             foreach ($touchedChunks as $touchedChunk) {
-                $biomes = array_merge($biomes, Chunk::fastDeserialize($touchedChunk)->getBiomeIdArray());
+                for ($x = 0; $x < 16; $x++)
+                    for ($z = 0; $z < 16; $z++)
+                        $biomes[] = (Chunk::fastDeserialize($touchedChunk)->getBiomeId($x, $z));
             }
+            $biomes = array_unique($biomes);
             $session->sendMessage(TF::DARK_AQUA . count($biomes) . " biomes found in selection");
             foreach ($biomes as $biomeId) {
-                $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . ucfirst(strtolower($biomeNames[$biomeId])));
+                $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
             }
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
