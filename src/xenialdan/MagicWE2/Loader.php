@@ -25,7 +25,6 @@ use xenialdan\MagicWE2\commands\history\RedoCommand;
 use xenialdan\MagicWE2\commands\history\UndoCommand;
 use xenialdan\MagicWE2\commands\InfoCommand;
 use xenialdan\MagicWE2\commands\LimitCommand;
-use xenialdan\MagicWE2\commands\region\OverlayCommand;
 use xenialdan\MagicWE2\commands\region\ReplaceCommand;
 use xenialdan\MagicWE2\commands\region\SetCommand;
 use xenialdan\MagicWE2\commands\ReportCommand;
@@ -117,7 +116,7 @@ class Loader extends PluginBase
             new SetCommand("/set", "Fill a selection with the specified blocks"),
             //new LineCommand("/line", "Draws a line segment between cuboid selection corners"),
             new ReplaceCommand("/replace", "Replace blocks in an area with other blocks"),
-            new OverlayCommand("/overlay", "Set a block on top of blocks in the region", ["/cover"]),
+            #new OverlayCommand("/overlay", "Set a block on top of blocks in the region", ["/cover"]),
             //new CenterCommand("/center", "Set the center block(s)",["/middle"]),
             //new NaturalizeCommand("/naturalize", "3 layers of dirt on top then rock below"),
             //new WallsCommand("/walls", "Build the four sides of the selection"),

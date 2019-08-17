@@ -9,15 +9,16 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncFillTask extends MWEAsyncTask
 {
 
-    private $start;
-    private $chunks;
+    private $touchedChunks;
     private $selection;
     private $flags;
     private $newBlocks;
@@ -26,17 +27,17 @@ class AsyncFillTask extends MWEAsyncTask
      * AsyncFillTask constructor.
      * @param UUID $sessionUUID
      * @param Selection $selection
-     * @param Chunk[] $chunks
+     * @param Chunk[] $touchedChunks
      * @param Block[] $newBlocks
      * @param int $flags
      * @throws \Exception
      */
-    public function __construct(UUID $sessionUUID, Selection $selection, array $chunks, array $newBlocks, int $flags)
+    public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
     {
         $this->start = microtime(true);
-        $this->chunks = serialize($chunks);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
+        $this->touchedChunks = serialize($touchedChunks);
         $this->newBlocks = serialize($newBlocks);
         $this->flags = $flags;
     }
@@ -50,42 +51,51 @@ class AsyncFillTask extends MWEAsyncTask
     public function onRun()
     {
         $this->publishProgress([0, "Start"]);
-        $chunks = unserialize($this->chunks);
-        foreach ($chunks as $hash => $data) {
-            $chunks[$hash] = Chunk::fastDeserialize($data);
-        }
+
+        $touchedChunks = unserialize($this->touchedChunks);
+        array_walk($touchedChunks, function ($chunk) {
+            return Chunk::fastDeserialize($chunk);
+        });
+
+        $manager = Shape::getChunkManager($touchedChunks);
+        unset($touchedChunks);
+
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
-        $manager = Selection::getChunkManager($chunks);
-        unset($chunks);
+
         /** @var Block[] $newBlocks */
         $newBlocks = unserialize($this->newBlocks);
-        $totalCount = $selection->getTotalCount();
-        $oldBlocks = iterator_to_array($this->editBlocks($selection, $manager, $newBlocks));
-        $chunks = $manager->getChunks();
-        $chunks = array_filter($chunks, function (Chunk $chunk) {
+        $oldBlocks = iterator_to_array($this->execute($selection, $manager, $newBlocks, $changed));
+
+        $resultChunks = $manager->getChunks();
+        $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
             return $chunk->hasChanged();
         });
-        $this->setResult(compact("chunks", "oldBlocks", "totalCount"));
+        $this->setResult(compact("resultChunks", "oldBlocks", "changed"));
     }
 
     /**
      * @param Selection $selection
      * @param AsyncChunkManager $manager
      * @param Block[] $newBlocks
+     * @param int $changed
      * @return \Generator|Block[]
      * @throws \Exception
      */
-    private function editBlocks(Selection $selection, AsyncChunkManager $manager, array $newBlocks): \Generator
+    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, int &$changed): \Generator
     {
-        $blockCount = $selection->getTotalCount();
+        $blockCount = $selection->getShape()->getTotalCount();
+        $lastchunkx = $lastchunkz = null;
+        $lastprogress = 0;
         $i = 0;
         $changed = 0;
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
-        $lastchunkx = $lastchunkz = null;
-        $lastprogress = 0;
         /** @var Block $block */
-        foreach ($selection->getBlocks($manager, [], $this->flags) as $block) {
+        foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
+            /*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
+                $rel = $block->subtract($selection->shape->getPasteVector());
+                $block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
+            }*/
             if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
                 $lastchunkx = $block->x >> 4;
                 $lastchunkz = $block->z >> 4;
@@ -121,29 +131,26 @@ class AsyncFillTask extends MWEAsyncTask
      */
     public function onCompletion(Server $server)
     {
-        $result = $this->getResult();
-        /** @var Chunk[] $chunks */
-        $chunks = $result["chunks"];
-        $undoChunks1 = unserialize($this->chunks);
-        /** @var Chunk[] $undoChunks */
-        $undoChunks = [];
-        foreach ($undoChunks1 as $hash => $data) {
-            if (isset($chunks[$hash]) && $chunks[$hash]->hasChanged())
-                $undoChunks[$hash] = Chunk::fastDeserialize($data);
-        }
         $session = API::getSessions()[$this->sessionUUID];
         if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        $result = $this->getResult();
+        /** @var Chunk[] $resultChunks */
+        $resultChunks = $result["resultChunks"];
+        $undoChunks = unserialize($this->touchedChunks);
+        array_walk($undoChunks, function ($chunk) {
+            return Chunk::fastDeserialize($chunk);
+        });
         $oldBlocks = $result["oldBlocks"];
-        $changed = count($oldBlocks);
-        $totalCount = $result["totalCount"];
+        $changed = $result["changed"];
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
+        $totalCount = $selection->getShape()->getTotalCount();
         /** @var Level $level */
         $level = $selection->getLevel();
-        foreach ($chunks as $hash => $chunk) {
+        foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        $session->sendMessage(TF::GREEN . "Async Fill succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+        $session->sendMessage(TF::GREEN . "Async Fill succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
         $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
     }
 }

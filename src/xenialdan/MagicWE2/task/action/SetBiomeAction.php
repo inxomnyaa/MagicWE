@@ -8,9 +8,15 @@ use pocketmine\block\Block;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\selection\Selection;
 
-class TestAction extends TaskAction
+class SetBiomeAction extends TaskAction
 {
     public $addRevert = false;
+    private $biomeId;
+
+    public function __construct(int $biomeId)
+    {
+        $this->biomeId = $biomeId;
+    }
 
     /**
      * @param string $sessionUUID
@@ -24,13 +30,14 @@ class TestAction extends TaskAction
      */
     public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, int &$changed, array $newBlocks, array $blockFilter): \Generator
     {
-        foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
-            yield $block;
+        foreach ($selection->getShape()->getLayer($manager) as $vec2) {
+            $manager->getChunk($vec2->x >> 4, $vec2->y >> 4)->setBiomeId($vec2->x % 16, $vec2->y % 16, $this->biomeId);
         }
+        yield;
     }
 
     public function getName(): string
     {
-        return "TEsT aCTiOn";
+        return "Set biome";
     }
 }

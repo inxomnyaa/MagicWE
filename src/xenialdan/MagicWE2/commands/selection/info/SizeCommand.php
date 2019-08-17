@@ -17,7 +17,6 @@ class SizeCommand extends BaseCommand
 
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\ArgumentOrderException
      */
     protected function prepare(): void
     {
@@ -53,7 +52,7 @@ class SizeCommand extends BaseCommand
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
             }
             $session->sendMessage(TF::DARK_AQUA . "Selection size");
-            $session->sendMessage(TF::AQUA . "Total: {$selection->getTotalCount()} X: {$selection->getSizeX()} Y: {$selection->getSizeY()} Z: {$selection->getSizeZ()}");
+            $session->sendMessage(TF::AQUA . "Total: {$selection->getShape()->getTotalCount()} X: {$selection->getSizeX()} Y: {$selection->getSizeY()} Z: {$selection->getSizeZ()}");
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

@@ -7,21 +7,7 @@ namespace xenialdan\MagicWE2\commands\tool;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\StringTag;
-use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\customui\elements\Input;
-use xenialdan\customui\elements\Label;
-use xenialdan\customui\elements\Slider;
-use xenialdan\customui\windows\CustomForm;
-use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\Loader;
 
 class FloodCommand extends BaseCommand
 {
@@ -41,8 +27,11 @@ class FloodCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
+        $sender->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
+        return;
+        /*
         if (!$sender instanceof Player) return;
-        /** @var Player $sender */
+        /** @var Player $sender * /
         $lang = Loader::getInstance()->getLanguage();
         try {
             if ($sender instanceof Player) {
@@ -76,6 +65,6 @@ class FloodCommand extends BaseCommand
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
+        }*/
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace xenialdan\MagicWE2\selection\shape;
+namespace xenialdan\MagicWE2\tool;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
@@ -10,7 +10,7 @@ use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
-class Flood extends Shape
+class Flood extends WETool
 {
     private $limit = 10000;
     /** @var Block[] */
@@ -22,13 +22,11 @@ class Flood extends Shape
 
     /**
      * Square constructor.
-     * @param Level $level
-     * @param array $options
+     * @param int $limit
      */
-    public function __construct(Level $level, array $options)
+    public function __construct(int $limit)
     {
-        parent::__construct($level, $options);
-        $this->limit = $options["limit"] ?? $this->limit;
+        $this->limit = $limit;
     }
 
     /**
@@ -102,7 +100,7 @@ class Flood extends Shape
         }
     }
 
-    public function getTotalCount()
+    public function getTotalCount(): int
     {
         return $this->limit;
     }

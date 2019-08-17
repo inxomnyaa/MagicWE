@@ -62,6 +62,7 @@ class FlipCommand extends BaseCommand
             if (is_null($clipboard)) {
                 throw new \Exception("No clipboard found - create a clipboard first");
             }
+            /** @noinspection PhpUndefinedMethodInspection */
             $clipboard->flip($flags);
             $sender->sendMessage(Loader::PREFIX . "Successfully flipped clipboard");
         } catch (\Exception $error) {

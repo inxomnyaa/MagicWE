@@ -83,7 +83,7 @@ class BiomeInfoCommand extends BaseCommand
             if ($selection->getLevel() !== $sender->getLevel()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
             }
-            $touchedChunks = $selection->getTouchedChunks();
+            $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getLevel());
             $biomes = [];
             foreach ($touchedChunks as $touchedChunk) {
                 for ($x = 0; $x < 16; $x++)

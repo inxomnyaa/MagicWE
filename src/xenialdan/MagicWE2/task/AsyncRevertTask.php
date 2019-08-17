@@ -18,7 +18,6 @@ class AsyncRevertTask extends MWEAsyncTask
     const TYPE_UNDO = 0;
     const TYPE_REDO = 1;
 
-    private $start;
     private $clipboard;
     private $type;
 
@@ -95,13 +94,13 @@ class AsyncRevertTask extends MWEAsyncTask
         switch ($this->type) {
             case self::TYPE_UNDO:
                 {
-                    $session->sendMessage(TF::GREEN . "Async Undo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+                    $session->sendMessage(TF::GREEN . "Async Undo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
                     $session->redoHistory->push($clipboard);
                     break;
                 }
             case self::TYPE_REDO:
                 {
-                    $session->sendMessage(TF::GREEN . "Async Redo succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
+                    $session->sendMessage(TF::GREEN . "Async Redo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
                     $session->undoHistory->push($clipboard);
                     break;
                 }

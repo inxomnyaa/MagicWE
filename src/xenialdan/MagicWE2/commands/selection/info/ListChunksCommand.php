@@ -18,7 +18,6 @@ class ListChunksCommand extends BaseCommand
 
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\ArgumentOrderException
      */
     protected function prepare(): void
     {
@@ -53,7 +52,7 @@ class ListChunksCommand extends BaseCommand
             if ($selection->getLevel() !== $sender->getLevel()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
             }
-            $touchedChunks = $selection->getTouchedChunks();
+            $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getLevel());
             $session->sendMessage(TF::DARK_AQUA . count($touchedChunks) . " chunks found in selection");
             foreach ($touchedChunks as $chunkHash => $touchedChunk) {
                 $chunk = Chunk::fastDeserialize($touchedChunk);

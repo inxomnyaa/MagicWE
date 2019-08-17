@@ -12,13 +12,13 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncCountTask extends MWEAsyncTask
 {
 
-    private $start;
-    private $chunks;
+    private $touchedChunks;
     private $selection;
     private $flags;
     private $newBlocks;
@@ -27,15 +27,15 @@ class AsyncCountTask extends MWEAsyncTask
      * AsyncFillTask constructor.
      * @param Selection $selection
      * @param UUID $sessionUUID
-     * @param Chunk[] $chunks
+     * @param Chunk[] $touchedChunks
      * @param Block[] $newBlocks
      * @param int $flags
      * @throws \Exception
      */
-    public function __construct(Selection $selection, UUID $sessionUUID, array $chunks, array $newBlocks, int $flags)
+    public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
     {
         $this->start = microtime(true);
-        $this->chunks = serialize($chunks);
+        $this->touchedChunks = serialize($touchedChunks);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
         $this->newBlocks = serialize($newBlocks);
@@ -51,17 +51,17 @@ class AsyncCountTask extends MWEAsyncTask
     public function onRun()
     {
         $this->publishProgress([0, "Start"]);
-        $chunks = unserialize($this->chunks);
+        $chunks = unserialize($this->touchedChunks);
         foreach ($chunks as $hash => $data) {
             $chunks[$hash] = Chunk::fastDeserialize($data);
         }
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
-        $manager = Selection::getChunkManager($chunks);
+        $manager = Shape::getChunkManager($chunks);
         unset($chunks);
         /** @var Block[] $newBlocks */
         $newBlocks = unserialize($this->newBlocks);
-        $totalCount = $selection->getTotalCount();
+        $totalCount = $selection->getShape()->getTotalCount();
         $counts = $this->countBlocks($selection, $manager, $newBlocks);
         $this->setResult(compact("counts", "totalCount"));
     }
@@ -75,14 +75,14 @@ class AsyncCountTask extends MWEAsyncTask
      */
     private function countBlocks(Selection $selection, AsyncChunkManager $manager, array $newBlocks): array
     {
-        $blockCount = $selection->getTotalCount();
+        $blockCount = $selection->getShape()->getTotalCount();
         $changed = 0;
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
         $lastchunkx = $lastchunkz = null;
         $lastprogress = 0;
         $counts = [];
         /** @var Block $block */
-        foreach ($selection->getBlocks($manager, $newBlocks, $this->flags) as $block) {
+        foreach ($selection->getShape()->getBlocks($manager, $newBlocks, $this->flags) as $block) {
             if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
                 $lastchunkx = $block->x >> 4;
                 $lastchunkz = $block->z >> 4;
@@ -112,12 +112,12 @@ class AsyncCountTask extends MWEAsyncTask
      */
     public function onCompletion(Server $server)
     {
-        $result = $this->getResult();
         $session = API::getSessions()[$this->sessionUUID];
         if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        $result = $this->getResult();
         $counts = $result["counts"];
         $totalCount = $result["totalCount"];
-        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async analyzing succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)));
+        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async analyzing succeed, took " . $this->generateTookString());
         $session->sendMessage(TF::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
         uasort($counts, function ($a, $b) {
             if ($a === $b) return 0;

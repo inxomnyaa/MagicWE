@@ -47,7 +47,7 @@ class ChunkCommand extends BaseCommand
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }
-            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($sender->getLevel())); // TODO check if the selection inside of the session updates
+            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
                 throw new \Error("No selection created - Check the console for errors");
             }
@@ -55,8 +55,8 @@ class ChunkCommand extends BaseCommand
             if (is_null($chunk)) {
                 throw new \Error("Could not find a chunk at your position");
             }
-            $sender->sendMessage($selection->setPos1(Position::fromObject(new Vector3($chunk->getX() * 16, 0, $chunk->getZ() * 16), $sender->getLevel())));
-            $sender->sendMessage($selection->setPos2(Position::fromObject(new Vector3($chunk->getX() * 16 + 15, Level::Y_MAX, $chunk->getZ() * 16 + 15), $sender->getLevel())));
+            $selection->setPos1(Position::fromObject(new Vector3($chunk->getX() * 16, 0, $chunk->getZ() * 16), $sender->getLevel()));
+            $selection->setPos2(Position::fromObject(new Vector3($chunk->getX() * 16 + 15, Level::Y_MAX, $chunk->getZ() * 16 + 15), $sender->getLevel()));
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

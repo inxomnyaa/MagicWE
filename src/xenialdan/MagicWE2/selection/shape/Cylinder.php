@@ -5,7 +5,7 @@ namespace xenialdan\MagicWE2\selection\shape;
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
-use pocketmine\level\Position;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
@@ -13,35 +13,18 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cylinder extends Shape
 {
+    public $height;
+    public $diameter;
 
     /**
      * Cylinder constructor.
-     * @param Level $level
-     * @param array $options
+     * @param int $height
+     * @param int $diameter
      */
-    public function __construct(Level $level, array $options)
+    public function __construct(int $height, int $diameter)
     {
-        parent::__construct($level, $options);
-    }
-
-    public function getPos1()//TODO check if loop
-    {
-        try {
-            return parent::getPos1();
-        } catch (\Exception $e) {
-            $this->setCenter($this->getCenter());
-            return $this->pos1;
-        }
-    }
-
-    public function getPos2()//TODO check if loop
-    {
-        try {
-            return parent::getPos2();
-        } catch (\Exception $e) {
-            $this->setCenter($this->getCenter());
-            return $this->pos2;
-        }
+        $this->height = $height;
+        $this->diameter = $diameter;
     }
 
     /**
@@ -55,26 +38,19 @@ class Cylinder extends Shape
     public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        $centerVec2 = new Vector2($this->getCenter()->getX(), $this->getCenter()->getZ());
-        for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
-            for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
-                for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-                    if (API::hasFlag($flags, API::FLAG_POSITION_RELATIVE)) {//TODO check if correct
-                        $vec2 = new Vector2($rx, $rz);
-                        $vec3 = new Vector3($rx, $ry, $rz);
-                    } else {
-                        $vec2 = new Vector2($x, $z);
-                        $vec3 = new Vector3($x, $y, $z);
-                    }
-                    if ($vec2->distanceSquared($centerVec2) > (($this->options['diameter'] / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->getSizeY() - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2))))
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+        for ($x = intval(floor($centerVec2->x - $this->diameter / 2 - 1)); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
+            for ($y = intval(floor($this->getPasteVector()->y)), $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+                for ($z = intval(floor($centerVec2->y - $this->diameter / 2 - 1)); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
+                    $vec2 = new Vector2($x, $z);
+                    $vec3 = new Vector3($x, $y, $z);
+                    if ($vec2->distanceSquared($centerVec2) > (($this->diameter / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
                         continue;
-                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
+                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z)->setComponents($vec3->x, $vec3->y, $vec3->z);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
 
-                    $block->setComponents($vec3->x, $vec3->y, $vec3->z);
-
-                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
+                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
                     if (empty($filterblocks)) yield $block;
                     else {
                         foreach ($filterblocks as $filterblock) {
@@ -97,14 +73,11 @@ class Cylinder extends Shape
     public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        $centerVec2 = new Vector2($this->getCenter()->getX(), $this->getCenter()->getZ());
-        for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
-            for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-                if (API::hasFlag($flags, API::FLAG_POSITION_RELATIVE))//TODO check if correct
-                    $vec2 = new Vector2($rx, $rz);
-                else
-                    $vec2 = new Vector2($x, $z);
-                if ($vec2->distanceSquared($centerVec2) > (($this->options['diameter'] / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($rz !== 0 && $rz !== $this->getSizeY() - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->options['diameter'] / 2) - 1) ** 2))))
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+        for ($x = intval(floor($centerVec2->x - $this->diameter / 2 - 1)); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
+            for ($z = intval(floor($centerVec2->y - $this->diameter / 2 - 1)); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
+                $vec2 = new Vector2($x, $z);
+                if ($vec2->distanceSquared($centerVec2) > (($this->diameter / 2) ** 2) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
                     continue;
                 yield $vec2;
             }
@@ -112,18 +85,46 @@ class Cylinder extends Shape
     }
 
     /**
-     * @param Vector3 $center
+     * @param ChunkManager $manager
+     * @return string[] fastSerialized chunks
      * @throws \Exception
      */
-    public function setCenter(Vector3 $center)
-    {
-        $this->center = $center;
-        $this->setPos1(new Position($center->getX() - $this->options["diameter"] / 2, floor($center->getY() - $this->options["height"] / 2), $center->getZ() - $this->options["diameter"] / 2, $this->getLevel()));
-        $this->setPos2(new Position($center->getX() + $this->options["diameter"] / 2, floor($center->getY() + $this->options["height"] / 2) - 1, $center->getZ() + $this->options["diameter"] / 2, $this->getLevel()));
+    public function getTouchedChunks(ChunkManager $manager): array
+    {//TODO optimize to remove "corner" chunks
+        $this->validateChunkManager($manager);
+        $maxX = $this->getMaxVec3()->x >> 4;
+        $minX = $this->getMinVec3()->x >> 4;
+        $maxZ = $this->getMaxVec3()->z >> 4;
+        $minZ = $this->getMinVec3()->z >> 4;
+        $touchedChunks = [];
+        for ($x = $minX; $x <= $maxX; $x++) {
+            for ($z = $minZ; $z <= $maxZ; $z++) {
+                $chunk = $manager->getChunk($x, $z);
+                if ($chunk === null) {
+                    continue;
+                }
+                print "Touched Chunk at: $x:$z" . PHP_EOL;
+                $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+            }
+        }
+        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+        return $touchedChunks;
     }
 
-    public function getTotalCount()
+    public function getAABB(): AxisAlignedBB
     {
-        return ceil((pi() * ($this->options["diameter"] ** 2)) / 4) * $this->options["height"];
+        return new AxisAlignedBB(
+            $this->pasteVector->x - floor($this->diameter / 2),
+            $this->pasteVector->y,
+            $this->pasteVector->z - floor($this->diameter / 2),
+            $this->pasteVector->x + ceil($this->diameter / 2),
+            $this->pasteVector->y + $this->height,
+            $this->pasteVector->z + ceil($this->diameter / 2)
+        );
+    }
+
+    public function getTotalCount(): int
+    {
+        return ceil((pi() * ($this->diameter ** 2)) / 4) * $this->height;
     }
 }

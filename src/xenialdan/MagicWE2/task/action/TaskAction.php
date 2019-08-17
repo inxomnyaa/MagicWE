@@ -10,6 +10,7 @@ use xenialdan\MagicWE2\selection\Selection;
 
 abstract class TaskAction
 {
+    public $addRevert = true;
 
     /**
      * @param string $sessionUUID

@@ -7,27 +7,12 @@ namespace xenialdan\MagicWE2\commands\brush;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
-use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\customui\elements\Button;
-use xenialdan\customui\elements\Input;
 use xenialdan\customui\elements\Label;
-use xenialdan\customui\elements\Slider;
 use xenialdan\customui\elements\Toggle;
 use xenialdan\customui\elements\UIElement;
-use xenialdan\customui\windows\CustomForm;
-use xenialdan\customui\windows\SimpleForm;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 
 class BrushCommand extends BaseCommand
 {
@@ -46,12 +31,15 @@ class BrushCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
+        $sender->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
+        return;
+        /*
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
             return;
         }
-        /** @var Player $sender */
+        /** @var Player $sender * /
         try {
             $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.select.title'));
             $form->addButton(new Button($lang->translateString('ui.brush.select.type.sphere')));
@@ -236,7 +224,7 @@ class BrushCommand extends BaseCommand
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
+        }*/
     }
 
     /**

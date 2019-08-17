@@ -10,15 +10,12 @@ use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\Cylinder;
 
 class CylinderCommand extends BaseCommand
 {
@@ -54,6 +51,7 @@ class CylinderCommand extends BaseCommand
             $blocks = strval($args["blocks"]);
             $diameter = intval($args["diameter"]);
             $height = intval($args["height"] ?? 1);
+            $newblocks = API::blockParser($blocks, $messages, $error);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }
@@ -62,13 +60,10 @@ class CylinderCommand extends BaseCommand
                 if (is_null($session)) {
                     throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                 }
-                API::createBrush($sender->getLevel()->getBlock($sender->add(0, $height / 2 + 1)), new CompoundTag(API::TAG_MAGIC_WE, [
-                    new IntTag("type", ShapeRegistry::TYPE_CYLINDER),
-                    new StringTag("blocks", $blocks),
-                    new FloatTag("diameter", $diameter),
-                    new FloatTag("height", $height),
-                    new IntTag("flags", API::flagParser(explode(" ", strval($args["flags"])))),
-                ]), $session);
+                $cyl = new Cylinder($height, $diameter);
+                $cylSelection = new Selection($session->getUUID(), $sender->getLevel());
+                $cylSelection->setShape($cyl);
+                API::fillAsync($cylSelection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
                 throw new \InvalidArgumentException("Could not fill with the selected blocks");
             }

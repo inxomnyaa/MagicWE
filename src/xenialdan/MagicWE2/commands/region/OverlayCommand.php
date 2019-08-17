@@ -62,7 +62,7 @@ class OverlayCommand extends BaseCommand
                 if ($selection->getLevel() !== $sender->getLevel()) {
                     $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
                 }
-                API::overlayReplaceAsync($selection, $session, [], $blocks, API::flagParser(explode(" ", strval($args["flags"]))));
+                #API::overlayReplaceAsync($selection, $session, [], $blocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
                 throw new \InvalidArgumentException("Could not replace with the selected blocks");
             }

@@ -41,13 +41,13 @@ class TestCommand extends BaseCommand
             //TODO REMOVE DEBUG
             $pluginSession = new PluginSession(Loader::getInstance());
             API::addSession($pluginSession);
-            $pluginSession->addSelection(new Selection(Server::getInstance()->getDefaultLevel(), 256, 1, 256, 256, 1, 256));
+            $pluginSession->addSelection(new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 256, 1, 256, 256, 1, 256));
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncActionTask(
                     $pluginSession->getUUID(),
                     $pluginSession->getLatestSelection(),
                     new TestAction(),
-                    $pluginSession->getLatestSelection()->getTouchedChunks(),
+                    $pluginSession->getLatestSelection()->getShape()->getTouchedChunks($pluginSession->getLatestSelection()->getLevel()),
                     [Block::get(Block::SNOW)],
                     [Block::get(Block::TNT)]
                 )

@@ -22,8 +22,7 @@ class AsyncClipboardTask extends MWEAsyncTask
     const TYPE_SCHEMATIC = 1;
     const TYPE_STRUCTURE = 2;
 
-    private $start;
-    private $undoChunks;
+    private $touchedChunks;
     private $clipboard;
     private $type;
     private $flags;
@@ -32,22 +31,15 @@ class AsyncClipboardTask extends MWEAsyncTask
      * AsyncClipboardTask constructor.
      * @param CopyClipboard $clipboard
      * @param UUID $sessionUUID
-     * @param Chunk[] $chunks
+     * @param Chunk[] $touchedChunks
      * @param int $type The type of clipboard pasting.
      * @param int $flags
      */
-    public function __construct(CopyClipboard $clipboard, UUID $sessionUUID, array $chunks, $type = self::TYPE_PASTE, int $flags = API::FLAG_BASE)
+    public function __construct(UUID $sessionUUID, CopyClipboard $clipboard, array $touchedChunks, $type = self::TYPE_PASTE, int $flags = API::FLAG_BASE)
     {
         $this->start = microtime(true);
-        #var_dump(__CLASS__ . " clipboard chunks count", count($clipboard->chunks));
-        #var_dump(__CLASS__ . " clipboard chunks paste count", count($chunks));
-        $clipboard->pasteChunks = $chunks;
-        /*foreach ($chunks as $chunk) {
-            $chunk = Chunk::fastDeserialize($chunk);
-            #var_dump("Clipboard Paste Chunk " . $chunk->getX() . "|" . $chunk->getZ());
-            $clipboard->pasteChunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk;
-        }*/
-        $this->undoChunks = serialize($chunks);
+        $clipboard->pasteChunks = $touchedChunks;
+        $this->touchedChunks = serialize($touchedChunks);
         $this->sessionUUID = $sessionUUID->toString();
         $this->clipboard = serialize($clipboard);
         $this->flags = $flags;
@@ -63,28 +55,32 @@ class AsyncClipboardTask extends MWEAsyncTask
     public function onRun()
     {
         $this->publishProgress([0, "Start"]);
+
         /** @var CopyClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
+
         array_walk($clipboard->pasteChunks, function ($chunk) {
             return Chunk::fastDeserialize($chunk);
         });
         $pasteChunkManager = Clipboard::getChunkManager($clipboard->pasteChunks);
-        $totalCount = $clipboard->getTotalCount();
-        $changed = $this->editBlocks($clipboard, $pasteChunkManager);
-        $chunks = $pasteChunkManager->getChunks();
-        $chunks = array_filter($chunks, function (Chunk $chunk) {
+
+        $oldBlocks = iterator_to_array($this->execute($clipboard, $pasteChunkManager, $changed));
+
+        $resultChunks = $pasteChunkManager->getChunks();
+        $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
             return $chunk->hasChanged();
         });
-        $this->setResult(compact("chunks", "changed", "totalCount"));
+        $this->setResult(compact("resultChunks", "oldBlocks", "changed"));
     }
 
     /**
      * @param CopyClipboard $clipboard
      * @param AsyncChunkManager $pasteChunkManager
-     * @return int
+     * @param int $changed
+     * @return \Generator|Block[] blocks before the change
      * @throws \Exception
      */
-    private function editBlocks(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager): int
+    private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, int &$changed): \Generator
     {
         $blockCount = $clipboard->getTotalCount();
         $chunkManager = Clipboard::getChunkManager($clipboard->chunks);
@@ -103,6 +99,7 @@ class AsyncClipboardTask extends MWEAsyncTask
                     continue;
                 }
             }
+            yield $pasteChunkManager->getBlockAt($block->x, $block->y, $block->z)->setComponents($block->x, $block->y, $block->z);//TODO check
             $pasteChunkManager->setBlockAt($block->x, $block->y, $block->z, $block);
             $changed++;
             $progress = floor($changed / $blockCount * 100);
@@ -111,7 +108,6 @@ class AsyncClipboardTask extends MWEAsyncTask
                 $lastprogress = $progress;
             }
         }
-        return $changed;
     }
 
     /**
@@ -120,30 +116,31 @@ class AsyncClipboardTask extends MWEAsyncTask
      */
     public function onCompletion(Server $server)
     {
-        $result = $this->getResult();
         $session = API::getSessions()[$this->sessionUUID];
         if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        $undoChunks = unserialize($this->undoChunks);
+        $result = $this->getResult();
+        $undoChunks = unserialize($this->touchedChunks);
         array_walk($undoChunks, function ($chunk) {
             return Chunk::fastDeserialize($chunk);
         });
+        $oldBlocks = $result["oldBlocks"];
         $changed = $result["changed"];
         $totalCount = $result["totalCount"];
-        /** @var Chunk[] $chunks */
-        $chunks = $result["chunks"];
+        /** @var Chunk[] $resultChunks */
+        $resultChunks = $result["resultChunks"];
         /** @var CopyClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
         /** @var Level $level */
         $level = $clipboard->getLevel();
-        foreach ($chunks as $hash => $chunk) {
+        foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
         if (is_null($session)) return;
         switch ($this->type) {
             case self::TYPE_PASTE:
                 {
-                    $session->sendMessage(TF::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN)) . ", $changed blocks out of $totalCount changed.");
-                    $session->addUndo(new RevertClipboard($clipboard->levelid, $undoChunks));
+                    $session->sendMessage(TF::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+                    $session->addRevert(new RevertClipboard($clipboard->levelid, $undoChunks, $oldBlocks));
                     break;
                 }
         }

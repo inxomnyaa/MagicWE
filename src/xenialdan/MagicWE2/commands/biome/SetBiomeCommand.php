@@ -57,7 +57,7 @@ class SetBiomeCommand extends BaseCommand
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
             }
             $biomeId = intval($args["biome"]);
-            API::setBiomeAsync($selection, $session, $biomeId, API::flagParser(explode(" ", strval($args["flags"]))));
+            API::setBiomeAsync($selection, $session, $biomeId);
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

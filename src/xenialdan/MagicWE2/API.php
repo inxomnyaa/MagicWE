@@ -18,21 +18,21 @@ use pocketmine\Player;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\exception\CalculationException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
 use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\task\action\SetBiomeAction;
+use xenialdan\MagicWE2\task\AsyncActionTask;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
-use xenialdan\MagicWE2\task\AsyncOverlayTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
-use xenialdan\MagicWE2\task\AsyncSetBiomeTask;
 
 class API
 {
@@ -83,11 +83,11 @@ class API
     {
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getTouchedChunks(), $newblocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $newblocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -108,11 +108,11 @@ class API
     {
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $oldBlocks, $newBlocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $oldBlocks, $newBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -132,15 +132,15 @@ class API
         #return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             //TODO check/edit how relative position works
             $offset = new Vector3();
             if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE) && $session instanceof UserSession)//TODO relative or not by flags
-                $offset = $selection->getMinVec3()->subtract($session->getPlayer())->floor();
+                $offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer())->floor();
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($selection, $offset, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getLevel()), $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -168,7 +168,7 @@ class API
             $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($clipboard, $session->getUUID(), $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($session->getUUID(), $clipboard, $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -188,10 +188,10 @@ class API
     {
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to count too many blocks at once. Reduce the selection or raise the limit");
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($selection, $session->getUUID(), $selection->getTouchedChunks(), $filterBlocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $filterBlocks, $flags));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -203,44 +203,17 @@ class API
      * @param Selection $selection
      * @param Session $session
      * @param int $biomeId
-     * @param int $flags
      * @return bool
-     * @throws LimitExceededException
      */
-    public static function setBiomeAsync(Selection $selection, Session $session, int $biomeId, int $flags = self::FLAG_BASE)
+    public static function setBiomeAsync(Selection $selection, Session $session, int $biomeId)
     {
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncSetBiomeTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $biomeId, $flags));
-        } catch (\Exception $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * @param Selection $selection
-     * @param Session $session
-     * @param Block[] $filterBlocks
-     * @param Block[] $newBlocks
-     * @param int $flags
-     * @return bool
-     * @throws LimitExceededException
-     */
-    public static function overlayReplaceAsync(Selection $selection, Session $session, $filterBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
-    {
-        try {
-            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
-            }
-            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncOverlayTask($selection, $session->getPlayer()->getUniqueId(), $selection->getTouchedChunks(), $filterBlocks, $newBlocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getLevel())));
         } catch (\Exception $e) {
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -259,6 +232,7 @@ class API
      */
     public static function createBrush(Block $target, NamedTag $settings, Session $session)
     {//TODO messages
+        $session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");/*
         $shape = null;
         if (!$settings instanceof CompoundTag) return false;
         $messages = [];
@@ -288,7 +262,7 @@ class API
                 {
                     $session->sendMessage("Unknown shape");
                 }
-        }
+        }*/
         return false;
     }
 
@@ -303,11 +277,13 @@ class API
     public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE)
     { //TODO
         if (!$settings instanceof CompoundTag) return null;
+        $session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
+        return false;/*
         $shape = ShapeRegistry::getShape($target->getLevel(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));
         $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
         $messages = [];
         $error = false;
-        return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flags);
+        return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flags);*/
     }
 
     /// SESSION RELATED API PART
@@ -369,6 +345,15 @@ class API
         if (count($filtered) > 1) throw new PluginException("Multiple sessions found for player {$player->getName()}. This should never happen!");
         if (count($filtered) === 1) return array_values($filtered)[0];
         return null;
+    }
+
+    /**
+     * @param UUID $uuid
+     * @return null|Session
+     */
+    public static function getSessionByUUID(UUID $uuid): ?Session
+    {
+        return self::$sessions[$uuid->toString()] ?? null;
     }
 
     /**
