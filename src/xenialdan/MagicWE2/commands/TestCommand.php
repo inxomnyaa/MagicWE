@@ -41,18 +41,31 @@ class TestCommand extends BaseCommand
             //TODO REMOVE DEBUG
             $pluginSession = new PluginSession(Loader::getInstance());
             API::addSession($pluginSession);
-            $pluginSession->addSelection(new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 256, 1, 256, 256, 1, 256));
+            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 256, 1, 256, 256, 1, 256);
+            $pluginSession->addSelection($selection);
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncActionTask(
                     $pluginSession->getUUID(),
-                    $pluginSession->getLatestSelection(),
+                    $selection,
                     new TestAction(),
-                    $pluginSession->getLatestSelection()->getShape()->getTouchedChunks($pluginSession->getLatestSelection()->getLevel()),
+                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    [Block::get(Block::SNOW)],
+                    [Block::get(Block::TNT)]
+                )
+            );
+            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 256, 1, 256, 257, 2, 257);
+            Server::getInstance()->getAsyncPool()->submitTask(
+                new AsyncActionTask(
+                    $pluginSession->getUUID(),
+                    $selection,
+                    new TestAction(),
+                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
                     [Block::get(Block::SNOW)],
                     [Block::get(Block::TNT)]
                 )
             );
         } catch (\Exception $error) {
+            Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());

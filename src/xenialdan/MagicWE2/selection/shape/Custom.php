@@ -18,10 +18,12 @@ class Custom extends Shape
 
     /**
      * Custom constructor.
+     * @param Vector3 $pasteVector
      * @param Vector3[] $positions
      */
-    public function __construct(array $positions)
+    public function __construct(Vector3 $pasteVector, array $positions)
     {
+        $this->pasteVector = $pasteVector;
         $this->positions = $positions;
     }
 

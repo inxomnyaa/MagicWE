@@ -53,10 +53,9 @@ class AsyncCopyTask extends MWEAsyncTask
     public function onRun()
     {
         $this->publishProgress([0, "Start"]);
-        $chunks = unserialize($this->chunks);
-        array_walk($chunks, function ($chunk) {
+        $chunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
-        });
+        }, unserialize($this->chunks));
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
         $manager = Shape::getChunkManager($chunks);

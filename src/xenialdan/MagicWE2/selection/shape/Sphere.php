@@ -17,10 +17,12 @@ class Sphere extends Shape
 
     /**
      * Sphere constructor.
-     * @param $diameter
+     * @param Vector3 $pasteVector
+     * @param int $diameter
      */
-    public function __construct(int $diameter)
+    public function __construct(Vector3 $pasteVector, int $diameter)
     {
+        $this->pasteVector = $pasteVector;
         $this->diameter = $diameter;
     }
 
@@ -109,12 +111,12 @@ class Sphere extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - floor($this->diameter / 2),
+            $this->pasteVector->x - round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
             $this->pasteVector->y,
-            $this->pasteVector->z - floor($this->diameter / 2),
-            $this->pasteVector->x + ceil($this->diameter / 2),
-            $this->pasteVector->y + $this->diameter,
-            $this->pasteVector->z + ceil($this->diameter / 2)
+            $this->pasteVector->z - round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->x + round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->y + $this->diameter - 1,
+            $this->pasteVector->z + round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN)
         );
     }
 

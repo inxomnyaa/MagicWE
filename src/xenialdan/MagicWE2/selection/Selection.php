@@ -50,10 +50,10 @@ class Selection implements \Serializable
         $this->sessionUUID = $sessionUUID;
         $this->setLevel($level);
         if (isset($minX) && isset($minY) && isset($minZ)) {
-            $this->setPos1(new Vector3($minX, $minY, $minZ));
+            $this->setPos1(new Position($minX, $minY, $minZ, $level));
         }
         if (isset($maxX) && isset($maxY) && isset($maxZ)) {
-            $this->setPos2(new Vector3($maxX, $maxY, $maxZ));
+            $this->setPos2(new Position($maxX, $maxY, $maxZ, $level));
         }
         $this->setUUID(UUID::fromRandom());
     }
@@ -107,7 +107,7 @@ class Selection implements \Serializable
         }
         $this->setLevel($position->getLevel());
         if (!$this->shape instanceof Shape && $this->isValid())
-            $this->setShape(new Cuboid($this->getSizeX(), $this->getSizeY(), $this->getSizeZ()));
+            $this->setShape(new Cuboid(new Vector3(($this->pos1->x + $this->pos2->x) / 2, $this->pos1->y, ($this->pos1->x + $this->pos2->x) / 2), $this->getSizeX(), $this->getSizeY(), $this->getSizeZ()));
         $session = API::getSessionByUUID($this->sessionUUID);
         if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ());
     }
@@ -137,7 +137,7 @@ class Selection implements \Serializable
         }
         $this->setLevel($position->getLevel());
         if (!$this->shape instanceof Shape && $this->isValid())
-            $this->setShape(new Cuboid($this->getSizeX(), $this->getSizeY(), $this->getSizeZ()));
+            $this->setShape(new Cuboid(new Vector3(($this->pos1->x + $this->pos2->x) / 2, $this->pos1->y, ($this->pos1->x + $this->pos2->x) / 2), $this->getSizeX(), $this->getSizeY(), $this->getSizeZ()));
         $session = API::getSessionByUUID($this->sessionUUID);
         if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ());
     }
@@ -173,12 +173,12 @@ class Selection implements \Serializable
         try {
             #$this->getShape();
             $this->getLevel();
-            if ($this->getPos1()->getLevel()->getId() !== $this->getPos2()->getLevel()->getId()) throw new \Exception("Position level not same");
+            $this->getPos1();
+            $this->getPos2();
         } catch (\Exception $e) {
             return false;
-        } finally {
-            return true;
         }
+        return true;
     }
 
     /**
@@ -234,7 +234,8 @@ class Selection implements \Serializable
             $this->pos1,
             $this->pos2,
             $this->uuid,
-            $this->sessionUUID
+            $this->sessionUUID,
+            $this->shape
         ]);
     }
 
@@ -255,7 +256,8 @@ class Selection implements \Serializable
             $this->pos1,
             $this->pos2,
             $this->uuid,
-            $this->sessionUUID
+            $this->sessionUUID,
+            $this->shape
         ] = unserialize($serialized);
     }
 }

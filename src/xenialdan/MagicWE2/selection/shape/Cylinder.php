@@ -18,11 +18,13 @@ class Cylinder extends Shape
 
     /**
      * Cylinder constructor.
+     * @param Vector3 $pasteVector
      * @param int $height
      * @param int $diameter
      */
-    public function __construct(int $height, int $diameter)
+    public function __construct(Vector3 $pasteVector, int $height, int $diameter)
     {
+        $this->pasteVector = $pasteVector;
         $this->height = $height;
         $this->diameter = $diameter;
     }
@@ -114,12 +116,12 @@ class Cylinder extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - floor($this->diameter / 2),
+            $this->pasteVector->x - round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
             $this->pasteVector->y,
-            $this->pasteVector->z - floor($this->diameter / 2),
-            $this->pasteVector->x + ceil($this->diameter / 2),
-            $this->pasteVector->y + $this->height,
-            $this->pasteVector->z + ceil($this->diameter / 2)
+            $this->pasteVector->z - round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->x + round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->y + $this->height - 1,
+            $this->pasteVector->z + round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN)
         );
     }
 

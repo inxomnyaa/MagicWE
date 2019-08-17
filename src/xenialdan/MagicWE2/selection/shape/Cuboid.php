@@ -7,6 +7,7 @@ use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
+use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
@@ -19,12 +20,14 @@ class Cuboid extends Shape
 
     /**
      * Cuboid constructor.
+     * @param Vector3 $pasteVector
      * @param int $width
      * @param int $height
      * @param int $depth
      */
-    public function __construct(int $width, int $height, int $depth)
+    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
     {
+        $this->pasteVector = $pasteVector;
         $this->width = $width;
         $this->height = $height;
         $this->depth = $depth;
@@ -44,6 +47,7 @@ class Cuboid extends Shape
         for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
             for ($y = intval(floor($this->getMinVec3()->y)); $y <= floor($this->getMaxVec3()->y); $y++) {
                 for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
+                    //print PHP_EOL.var_dump($x,$y,$z);
                     $block = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
@@ -98,23 +102,21 @@ class Cuboid extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
                 $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
             }
         }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
         return $touchedChunks;
     }
 
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - floor($this->width / 2),
+            $this->pasteVector->x - round($this->width / 2, 0, PHP_ROUND_HALF_DOWN),
             $this->pasteVector->y,
-            $this->pasteVector->z - floor($this->depth / 2),
-            $this->pasteVector->x + ceil($this->width / 2),
-            $this->pasteVector->y + $this->height,
-            $this->pasteVector->z + ceil($this->depth / 2)
+            $this->pasteVector->z - round($this->depth / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->x + round($this->width / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->y + $this->height - 1,
+            $this->pasteVector->z + round($this->depth / 2, 0, PHP_ROUND_HALF_DOWN)
         );
     }
 

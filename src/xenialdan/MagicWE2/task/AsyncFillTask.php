@@ -52,10 +52,9 @@ class AsyncFillTask extends MWEAsyncTask
     {
         $this->publishProgress([0, "Start"]);
 
-        $touchedChunks = unserialize($this->touchedChunks);
-        array_walk($touchedChunks, function ($chunk) {
+        $touchedChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
-        });
+        }, unserialize($this->touchedChunks));
 
         $manager = Shape::getChunkManager($touchedChunks);
         unset($touchedChunks);
@@ -78,11 +77,11 @@ class AsyncFillTask extends MWEAsyncTask
      * @param Selection $selection
      * @param AsyncChunkManager $manager
      * @param Block[] $newBlocks
-     * @param int $changed
+     * @param null|int $changed
      * @return \Generator|Block[]
      * @throws \Exception
      */
-    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, int &$changed): \Generator
+    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): \Generator
     {
         $blockCount = $selection->getShape()->getTotalCount();
         $lastchunkx = $lastchunkz = null;
@@ -136,10 +135,9 @@ class AsyncFillTask extends MWEAsyncTask
         $result = $this->getResult();
         /** @var Chunk[] $resultChunks */
         $resultChunks = $result["resultChunks"];
-        $undoChunks = unserialize($this->touchedChunks);
-        array_walk($undoChunks, function ($chunk) {
+        $undoChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
-        });
+        }, unserialize($this->touchedChunks));
         $oldBlocks = $result["oldBlocks"];
         $changed = $result["changed"];
         /** @var Selection $selection */

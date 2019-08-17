@@ -16,14 +16,15 @@ class TestAction extends TaskAction
      * @param string $sessionUUID
      * @param Selection $selection
      * @param AsyncChunkManager $manager
-     * @param int $changed
+     * @param null|int $changed
      * @param Block[] $newBlocks
      * @param Block[] $blockFilter
      * @return \Generator|Block[] blocks before the change
      * @throws \Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, int &$changed, array $newBlocks, array $blockFilter): \Generator
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter): \Generator
     {
+        $changed = 0;
         foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
             yield $block;
         }

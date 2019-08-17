@@ -12,7 +12,7 @@ use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
-abstract class Shape
+abstract class Shape implements \Serializable
 {
     /** @var null|Vector3 */
     public $pasteVector = null;
@@ -104,7 +104,7 @@ abstract class Shape
      */
     public function serialize()
     {
-        return serialize($this->pasteVector);
+        return serialize((array)$this);
     }
 
     /**
@@ -118,6 +118,9 @@ abstract class Shape
      */
     public function unserialize($serialized)
     {
-        unserialize($serialized);
+        $unserialize = unserialize($serialized);
+        array_walk($unserialize, function ($value, $key) {
+            $this->$key = $value;
+        });
     }
 }

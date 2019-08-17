@@ -63,9 +63,9 @@ class AsyncActionTask extends MWEAsyncTask
         $this->publishProgress([0, "Start"]);
 
         $touchedChunks = unserialize($this->touchedChunks);
-        array_walk($touchedChunks, function ($chunk) {
+        $touchedChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
-        });
+        }, $touchedChunks);
 
         $manager = Shape::getChunkManager($touchedChunks);
         unset($touchedChunks);
@@ -95,10 +95,9 @@ class AsyncActionTask extends MWEAsyncTask
         $result = $this->getResult();
         /** @var Chunk[] $resultChunks */
         $resultChunks = $result["resultChunks"];
-        $undoChunks = unserialize($this->touchedChunks);
-        array_walk($undoChunks, function ($chunk) {
+        $undoChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
-        });
+        }, unserialize($this->touchedChunks));
         $oldBlocks = $result["oldBlocks"];
         $changed = $result["changed"];
         /** @var Selection $selection */

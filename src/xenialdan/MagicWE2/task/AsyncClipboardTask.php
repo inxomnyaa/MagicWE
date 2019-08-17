@@ -58,10 +58,9 @@ class AsyncClipboardTask extends MWEAsyncTask
 
         /** @var CopyClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
-
-        array_walk($clipboard->pasteChunks, function ($chunk) {
+        $clipboard->pasteChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
-        });
+        }, $clipboard->pasteChunks);
         $pasteChunkManager = Clipboard::getChunkManager($clipboard->pasteChunks);
 
         $oldBlocks = iterator_to_array($this->execute($clipboard, $pasteChunkManager, $changed));
@@ -76,11 +75,11 @@ class AsyncClipboardTask extends MWEAsyncTask
     /**
      * @param CopyClipboard $clipboard
      * @param AsyncChunkManager $pasteChunkManager
-     * @param int $changed
+     * @param null|int $changed
      * @return \Generator|Block[] blocks before the change
      * @throws \Exception
      */
-    private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, int &$changed): \Generator
+    private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, ?int &$changed): \Generator
     {
         $blockCount = $clipboard->getTotalCount();
         $chunkManager = Clipboard::getChunkManager($clipboard->chunks);
@@ -119,10 +118,9 @@ class AsyncClipboardTask extends MWEAsyncTask
         $session = API::getSessions()[$this->sessionUUID];
         if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
         $result = $this->getResult();
-        $undoChunks = unserialize($this->touchedChunks);
-        array_walk($undoChunks, function ($chunk) {
+        $undoChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
-        });
+        }, unserialize($this->touchedChunks));
         $oldBlocks = $result["oldBlocks"];
         $changed = $result["changed"];
         $totalCount = $result["totalCount"];

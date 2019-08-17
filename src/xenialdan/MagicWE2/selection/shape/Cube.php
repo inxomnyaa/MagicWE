@@ -7,6 +7,7 @@ use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
+use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
@@ -14,8 +15,9 @@ class Cube extends Shape
 {
     public $width;
 
-    public function __construct(int $width)
+    public function __construct(Vector3 $pasteVector, int $width)
     {
+        $this->pasteVector = $pasteVector;
         $this->width = $width;
     }
 
@@ -98,12 +100,12 @@ class Cube extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - floor($this->width / 2),
+            $this->pasteVector->x - round($this->width / 2, 0, PHP_ROUND_HALF_DOWN),
             $this->pasteVector->y,
-            $this->pasteVector->z - floor($this->width / 2),
-            $this->pasteVector->x + ceil($this->width / 2),
-            $this->pasteVector->y + $this->width,
-            $this->pasteVector->z + ceil($this->width / 2)
+            $this->pasteVector->z - round($this->width / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->x + round($this->width / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->y + $this->width - 1,
+            $this->pasteVector->z + round($this->width / 2, 0, PHP_ROUND_HALF_DOWN)
         );
     }
 

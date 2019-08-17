@@ -22,14 +22,15 @@ class SetBiomeAction extends TaskAction
      * @param string $sessionUUID
      * @param Selection $selection
      * @param AsyncChunkManager $manager
-     * @param int $changed
+     * @param null|int $changed
      * @param Block[] $newBlocks
      * @param Block[] $blockFilter
      * @return \Generator|Block[] blocks before the change
      * @throws \Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, int &$changed, array $newBlocks, array $blockFilter): \Generator
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter): \Generator
     {
+        $changed = 0;
         foreach ($selection->getShape()->getLayer($manager) as $vec2) {
             $manager->getChunk($vec2->x >> 4, $vec2->y >> 4)->setBiomeId($vec2->x % 16, $vec2->y % 16, $this->biomeId);
         }
