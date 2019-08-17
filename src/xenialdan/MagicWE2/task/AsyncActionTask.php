@@ -75,7 +75,7 @@ class AsyncActionTask extends MWEAsyncTask
 
         $oldBlocks = iterator_to_array($this->action->execute($this->sessionUUID, $selection, $manager, $changed, unserialize($this->newBlocks), unserialize($this->blockFilter)));
 
-        var_dump($oldBlocks);
+        #var_dump($oldBlocks);
 
         $resultChunks = $manager->getChunks();
         $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {

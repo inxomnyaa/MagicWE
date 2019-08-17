@@ -111,12 +111,12 @@ class Sphere extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->x - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP),
             $this->pasteVector->y,
-            $this->pasteVector->z - round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
-            $this->pasteVector->x + round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN),
+            $this->pasteVector->z - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP),
+            $this->pasteVector->x - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP) + $this->diameter - 1,
             $this->pasteVector->y + $this->diameter - 1,
-            $this->pasteVector->z + round($this->diameter / 2, 0, PHP_ROUND_HALF_DOWN)
+            $this->pasteVector->z - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP) + $this->diameter - 1
         );
     }
 

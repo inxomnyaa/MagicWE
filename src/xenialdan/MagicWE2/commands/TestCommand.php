@@ -41,7 +41,7 @@ class TestCommand extends BaseCommand
             //TODO REMOVE DEBUG
             $pluginSession = new PluginSession(Loader::getInstance());
             API::addSession($pluginSession);
-            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 256, 1, 256, 256, 1, 256);
+            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 0, 0, 0);
             $pluginSession->addSelection($selection);
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncActionTask(
@@ -53,7 +53,29 @@ class TestCommand extends BaseCommand
                     [Block::get(Block::TNT)]
                 )
             );
-            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 256, 1, 256, 257, 2, 257);
+            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 1, 1, 1);
+            Server::getInstance()->getAsyncPool()->submitTask(
+                new AsyncActionTask(
+                    $pluginSession->getUUID(),
+                    $selection,
+                    new TestAction(),
+                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    [Block::get(Block::SNOW)],
+                    [Block::get(Block::TNT)]
+                )
+            );
+            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 2, 2, 2);
+            Server::getInstance()->getAsyncPool()->submitTask(
+                new AsyncActionTask(
+                    $pluginSession->getUUID(),
+                    $selection,
+                    new TestAction(),
+                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    [Block::get(Block::SNOW)],
+                    [Block::get(Block::TNT)]
+                )
+            );
+            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 1, 2, 3);
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncActionTask(
                     $pluginSession->getUUID(),

@@ -26,6 +26,7 @@ class TestAction extends TaskAction
     {
         $changed = 0;
         foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
+            $changed++;
             yield $block;
         }
     }
