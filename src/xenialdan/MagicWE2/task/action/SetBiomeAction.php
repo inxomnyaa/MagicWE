@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\task\action;
 
 use pocketmine\block\Block;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
 
 class SetBiomeAction extends TaskAction
@@ -18,6 +19,11 @@ class SetBiomeAction extends TaskAction
         $this->biomeId = $biomeId;
     }
 
+    public static function getName(): string
+    {
+        return "Set biome";
+    }
+
     /**
      * @param string $sessionUUID
      * @param Selection $selection
@@ -25,20 +31,21 @@ class SetBiomeAction extends TaskAction
      * @param null|int $changed
      * @param Block[] $newBlocks
      * @param Block[] $blockFilter
-     * @return \Generator|Block[] blocks before the change
+     * @param Block[] $oldBlocks blocks before the change
+     * @return \Generator|Progress
      * @throws \Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter): \Generator
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = []): \Generator
     {
         $changed = 0;
-        foreach ($selection->getShape()->getLayer($manager) as $vec2) {
+        $oldBlocks = [];
+        $count = null;
+        foreach (($all = $selection->getShape()->getLayer($manager)) as $vec2) {
+            if (is_null($count)) $count = count($all);
             $manager->getChunk($vec2->x >> 4, $vec2->y >> 4)->setBiomeId($vec2->x % 16, $vec2->y % 16, $this->biomeId);
+            $changed++;
+            $progress = $changed / $count;
+            yield new Progress($progress, "Changed Biome for $changed/$count blocks");
         }
-        yield;
-    }
-
-    public function getName(): string
-    {
-        return "Set biome";
     }
 }

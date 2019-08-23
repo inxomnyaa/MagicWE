@@ -19,9 +19,11 @@ abstract class TaskAction
      * @param null|int $changed
      * @param Block[] $newBlocks
      * @param Block[] $blockFilter
-     * @return \Generator|Block[] blocks before the change
+     * @param Block[] $oldBlocks blocks before the change
+     * @return \Generator|array[int,string] Progress [percentage, string]
+     * @throws \Exception
      */
-    public abstract function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter): \Generator;
+    public abstract function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = []): \Generator;
 
-    public abstract function getName(): string;
+    public static abstract function getName(): string;
 }
