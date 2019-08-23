@@ -31,15 +31,12 @@ class BrushCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        $sender->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
-        return;
-        /*
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
             return;
         }
-        /** @var Player $sender * /
+        /** @var Player $sender */
         try {
             $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.select.title'));
             $form->addButton(new Button($lang->translateString('ui.brush.select.type.sphere')));
@@ -224,49 +221,7 @@ class BrushCommand extends BaseCommand
         } catch (\Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }*/
-    }
-
-    /**
-     * @param UIElement[] $elements
-     * @param $data
-     * @return int
-     */
-    public static function translateElementsToFlags(array $elements, array $data)
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        $flags = [];
-        foreach ($elements as $i => $value) {
-            if (!$value instanceof Toggle) continue;
-            switch ($value->getText()) {
-                case $lang->translateString('ui.flags.keepexistingblocks'):
-                    {
-                        if ($data[$i]) $flags[] = "-keepblocks";
-                        break;
-                    }
-                case $lang->translateString('ui.flags.keepair'):
-                    {
-                        if ($data[$i]) $flags[] = "-keepair";
-                        break;
-                    }
-                case $lang->translateString('ui.flags.hollow'):
-                    {
-                        if ($data[$i]) $flags[] = "-h";
-                        break;
-                    }
-                case $lang->translateString('ui.flags.hollowclosed'):
-                    {
-                        if ($data[$i]) $flags[] = "-hc";
-                        break;
-                    }
-                case $lang->translateString('ui.flags.natural'):
-                    {
-                        if ($data[$i]) $flags[] = "-n";
-                        break;
-                    }
-            }
         }
-        return API::flagParser($flags);
     }
 
     /**

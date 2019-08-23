@@ -3,17 +3,17 @@ projects:
   MagicWE2:
     path: ""
     icon: "resources/magicwe_icon_square_small.png"
+    excludeFiles:
+    - "resources/magicwe_icon_square.png"
+    - "resources/magicwe_icon_square_small.png"
+    - "resources/magicwe_icon_wide.png"
     libs:
     - src: BlockHorizons/libschematic/libschematic
-      version: ^0.0.6
+      version: ^2.0.0
     - src: thebigsmilexd/customui/customui
       version: ^3.0.0
     - src: thebigsmilexd/apibossbar/apibossbar
       version: ^0.0.3
     - src: CortexPE/Commando/Commando
       version: ^0.3.1
-    excludeFiles:
-    - "resources/magicwe_icon_square.png"
-    - "resources/magicwe_icon_square_small.png"
-    - "resources/magicwe_icon_wide.png"
 ...
