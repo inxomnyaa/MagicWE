@@ -116,12 +116,12 @@ class Cylinder extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP),
+            floor($this->pasteVector->x - $this->diameter / 2),
             $this->pasteVector->y,
-            $this->pasteVector->z - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP),
-            $this->pasteVector->x - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP) + $this->diameter - 1,
-            $this->pasteVector->y + $this->height - 1,
-            $this->pasteVector->z - round($this->diameter / 2, 0, PHP_ROUND_HALF_UP) + $this->diameter - 1
+            floor($this->pasteVector->z - $this->diameter / 2),
+            -1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
+            -1 + $this->pasteVector->y + $this->height,
+            -1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
         );
     }
 

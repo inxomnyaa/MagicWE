@@ -47,7 +47,6 @@ class Cuboid extends Shape
         for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
             for ($y = intval(floor($this->getMinVec3()->y)); $y <= floor($this->getMaxVec3()->y); $y++) {
                 for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
-                    //print PHP_EOL.var_dump($x,$y,$z);
                     $block = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
@@ -111,12 +110,12 @@ class Cuboid extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - round($this->width / 2, 0, PHP_ROUND_HALF_UP),
+            floor($this->pasteVector->x - $this->width / 2),
             $this->pasteVector->y,
-            $this->pasteVector->z - round($this->depth / 2, 0, PHP_ROUND_HALF_UP),
-            $this->pasteVector->x - round($this->width / 2, 0, PHP_ROUND_HALF_UP) + $this->width - 1,
-            $this->pasteVector->y + $this->height - 1,
-            $this->pasteVector->x - round($this->depth / 2, 0, PHP_ROUND_HALF_UP) + $this->depth - 1
+            floor($this->pasteVector->z - $this->depth / 2),
+            -1 + floor($this->pasteVector->x - $this->width / 2) + $this->width,
+            -1 + $this->pasteVector->y + $this->height,
+            -1 + floor($this->pasteVector->z - $this->depth / 2) + $this->depth
         );
     }
 

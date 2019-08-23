@@ -100,12 +100,12 @@ class Cube extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            $this->pasteVector->x - round($this->width / 2, 0, PHP_ROUND_HALF_UP),
+            floor($this->pasteVector->x - $this->width / 2),
             $this->pasteVector->y,
-            $this->pasteVector->z - round($this->width / 2, 0, PHP_ROUND_HALF_UP),
-            $this->pasteVector->x - round($this->width / 2, 0, PHP_ROUND_HALF_UP) + $this->width - 1,
-            $this->pasteVector->y + $this->width - 1,
-            $this->pasteVector->z - round($this->width / 2, 0, PHP_ROUND_HALF_UP) + $this->width - 1
+            floor($this->pasteVector->z - $this->width / 2),
+            -1 + floor($this->pasteVector->x - $this->width / 2) + $this->width,
+            -1 + $this->pasteVector->y + $this->width,
+            -1 + floor($this->pasteVector->z - $this->width / 2) + $this->width
         );
     }
 
