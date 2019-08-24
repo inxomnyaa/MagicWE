@@ -106,8 +106,8 @@ class Selection implements \Serializable
             $this->pos2 = null;
         }
         $this->setLevel($position->getLevel());
-        if (!$this->shape instanceof Shape && $this->isValid())
-            $this->setShape(new Cuboid(new Vector3(($this->pos1->x + $this->pos2->x) / 2, $this->pos1->y, ($this->pos1->z + $this->pos2->z) / 2), $this->getSizeX(), $this->getSizeY(), $this->getSizeZ()));
+        if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
+            $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         $session = API::getSessionByUUID($this->sessionUUID);
         if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ());
     }
@@ -136,8 +136,8 @@ class Selection implements \Serializable
             $this->pos1 = null;
         }
         $this->setLevel($position->getLevel());
-        if (!$this->shape instanceof Shape && $this->isValid())
-            $this->setShape(new Cuboid(new Vector3(($this->pos1->x + $this->pos2->x) / 2, $this->pos1->y, ($this->pos1->z + $this->pos2->z) / 2), $this->getSizeX(), $this->getSizeY(), $this->getSizeZ()));
+        if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
+            $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         $session = API::getSessionByUUID($this->sessionUUID);
         if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ());
     }

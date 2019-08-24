@@ -48,7 +48,10 @@ class AsyncRevertTask extends MWEAsyncTask
         $clipboard = unserialize($this->clipboard);
         $totalCount = count($clipboard->blocksAfter);
         $manager = $clipboard::getChunkManager($clipboard->chunks);
-        $oldBlocks = iterator_to_array($this->editChunks($manager, $clipboard));
+        if ($this->type === self::TYPE_UNDO)
+            $oldBlocks = iterator_to_array($this->undoChunks($manager, $clipboard));
+        if ($this->type === self::TYPE_REDO)
+            $oldBlocks = iterator_to_array($this->redoChunks($manager, $clipboard));
         $chunks = $manager->getChunks();
         $this->setResult(compact("chunks", "oldBlocks", "totalCount"));
     }
@@ -58,16 +61,34 @@ class AsyncRevertTask extends MWEAsyncTask
      * @param RevertClipboard $clipboard
      * @return \Generator|Block[]
      */
-    private function editChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): \Generator
+    private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): \Generator
     {
         $count = count($clipboard->blocksAfter);
         $changed = 0;
-        $this->publishProgress([0, "Reverted $changed blocks out of $count | 0% done"]);
+        $this->publishProgress([0, "Reverted $changed blocks out of $count"]);
         foreach ($clipboard->blocksAfter as $block) {
             yield $manager->getBlockAt($block->getX(), $block->getY(), $block->getZ())->setComponents($block->getX(), $block->getY(), $block->getZ());
             $manager->setBlockAt($block->getX(), $block->getY(), $block->getZ(), $block);
             $changed++;
-            $this->publishProgress([round($changed / $count), "Reverted $changed blocks out of $count | " . round($changed / $count) . "% done"]);
+            $this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
+        }
+    }
+
+    /**
+     * @param AsyncChunkManager $manager
+     * @param RevertClipboard $clipboard
+     * @return \Generator|Block[]
+     */
+    private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): \Generator
+    {
+        $count = count($clipboard->blocksAfter);
+        $changed = 0;
+        $this->publishProgress([0, "Redone $changed blocks out of $count"]);
+        foreach ($clipboard->blocksAfter as $block) {
+            yield $manager->getBlockAt($block->getX(), $block->getY(), $block->getZ())->setComponents($block->getX(), $block->getY(), $block->getZ());
+            $manager->setBlockAt($block->getX(), $block->getY(), $block->getZ(), $block);
+            $changed++;
+            $this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
         }
     }
 
@@ -83,9 +104,9 @@ class AsyncRevertTask extends MWEAsyncTask
         /** @var RevertClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
         $clipboard->chunks = $result["chunks"];
-        $clipboard->blocksAfter = $result["oldBlocks"];
         $totalCount = $result["totalCount"];
-        $changed = count($clipboard->blocksAfter);
+        $changed = count($result["oldBlocks"]);
+        $clipboard->blocksAfter = $result["oldBlocks"];
         /** @var Level $level */
         $level = $clipboard->getLevel();
         foreach ($clipboard->chunks as $chunk) {

@@ -33,6 +33,19 @@ class Cuboid extends Shape
         $this->depth = $depth;
     }
 
+    public static function constructFromPositions(Vector3 $pos1, Vector3 $pos2): self
+    {
+        $pos1 = $pos1->floor();
+        $pos2 = $pos2->floor();
+        $cuboid = new Cuboid(new Vector3(), 0, 0, 0);
+        $cuboid->pasteVector = $pos1->add($pos2)->divide(2);
+        $cuboid->pasteVector->setComponents($cuboid->pasteVector->x, $pos1->y, $cuboid->pasteVector->z);
+        $cuboid->width = abs($pos1->getX() - $pos2->getX()) + 1;
+        $cuboid->height = abs($pos1->getY() - $pos2->getY()) + 1;
+        $cuboid->depth = abs($pos1->getZ() - $pos2->getZ()) + 1;
+        return $cuboid;
+    }
+
     /**
      * Returns the blocks by their actual position
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
@@ -110,12 +123,12 @@ class Cuboid extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            floor($this->pasteVector->x - $this->width / 2),
+            ceil($this->pasteVector->x - $this->width / 2),
             $this->pasteVector->y,
-            floor($this->pasteVector->z - $this->depth / 2),
-            -1 + floor($this->pasteVector->x - $this->width / 2) + $this->width,
+            ceil($this->pasteVector->z - $this->depth / 2),
+            -1 + ceil($this->pasteVector->x - $this->width / 2) + $this->width,
             -1 + $this->pasteVector->y + $this->height,
-            -1 + floor($this->pasteVector->z - $this->depth / 2) + $this->depth
+            -1 + ceil($this->pasteVector->z - $this->depth / 2) + $this->depth
         );
     }
 
