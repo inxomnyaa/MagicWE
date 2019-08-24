@@ -10,5 +10,5 @@ TODO and bug list
 - [ ] Boss bar title does not always reset
 - [ ] Action with 0 blocks gets stuck (ErrorException: "Division by zero" (EXCEPTION) in "plugins/MagicWE2.phar/src/xenialdan/MagicWE2/task/AsyncFillTask" at line 119)
 - [ ] The flag  is unknown
-- [ ] "Created new session" string contains { and }
+- [x] "Created new session" string contains { and }
 - [ ] Session destructs upon re-login instead upon logout

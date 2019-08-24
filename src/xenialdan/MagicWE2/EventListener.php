@@ -27,7 +27,7 @@ class EventListener implements Listener
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
             if (($session = API::findSession($event->getPlayer())) instanceof UserSession) {
-                Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+                Loader::getInstance()->getLogger()->debug("Restored session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
             }
         }
     }

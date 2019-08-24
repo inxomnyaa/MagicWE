@@ -75,7 +75,7 @@ class Loader extends PluginBase
                 $session = API::getSession($player);
                 if ($session instanceof UserSession) {
                     $session->setPlayer($player);
-                    Loader::getInstance()->getLogger()->debug("Restored session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
+                    Loader::getInstance()->getLogger()->debug("Restored session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
                 }
             }
         }
