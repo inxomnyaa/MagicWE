@@ -2,7 +2,7 @@ TODO and bug list
 - [ ] Redo does not apply changes
 - [ ] Setbiome does not send the changes, but //biomeinfo returns that it was set
 - [ ] Count returns no messages
-- [ ] Wand left click does not work without breaking blocks
+- [x] Wand left click does not work without breaking blocks
 - [ ] Brush command needs rework
 - [ ] Undo seems to execute the action offset by 1
 - [ ] Shape does not refresh after pos1 and pos2 were set once

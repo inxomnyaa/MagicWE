@@ -49,6 +49,16 @@ class EventListener implements Listener
                     }
                     break;
                 }
+            case PlayerInteractEvent::LEFT_CLICK_BLOCK:
+                {
+                    try {
+                        $this->onLeftClickBlock($event);
+                    } catch (\Exception $error) {
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+                    }
+                    break;
+                }
             case PlayerInteractEvent::RIGHT_CLICK_AIR:
                 {
                     try {
@@ -64,6 +74,9 @@ class EventListener implements Listener
 
     public function onBreak(BlockBreakEvent $event)
     {
+        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
+            $event->setCancelled();
+        }
         try {
             $this->onBreakBlock($event);
         } catch (\Exception $error) {
@@ -77,6 +90,41 @@ class EventListener implements Listener
      * @throws \Exception
      */
     private function onBreakBlock(BlockBreakEvent $event)
+    {
+        /** @var UserSession $session */
+        $session = API::getSession($event->getPlayer());
+        if (is_null($session)) return;
+        switch ($event->getItem()->getId()) {
+            case ItemIds::WOODEN_AXE:
+                {
+                    if (!$session->isWandEnabled()) {
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                        break;
+                    }
+                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+                    if (is_null($selection)) {
+                        throw new \Error("No selection created - Check the console for errors");
+                    }
+                    $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                    break;
+                }
+            case ItemIds::STICK:
+                {
+                    if (!$session->isDebugStickEnabled()) {
+                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+                        break;
+                    }
+                    $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+                    break;
+                }
+        }
+    }
+
+    /**
+     * @param PlayerInteractEvent $event
+     * @throws \Exception
+     */
+    private function onRightClickBlock(PlayerInteractEvent $event)
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
@@ -94,7 +142,7 @@ class EventListener implements Listener
                         if (is_null($selection)) {
                             throw new \Error("No selection created - Check the console for errors");
                         }
-                        $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                        $selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
                         break;
                     }
                 case ItemIds::STICK:
@@ -106,6 +154,13 @@ class EventListener implements Listener
                         $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
                         break;
                     }
+                case ItemIds::BUCKET:
+                    {
+                        #if (){// && has perms
+                        API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
+                        #}
+                        break;
+                    }
             }
         }
     }
@@ -114,7 +169,7 @@ class EventListener implements Listener
      * @param PlayerInteractEvent $event
      * @throws \Exception
      */
-    private function onRightClickBlock(PlayerInteractEvent $event)
+    private function onLeftClickBlock(PlayerInteractEvent $event)
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
