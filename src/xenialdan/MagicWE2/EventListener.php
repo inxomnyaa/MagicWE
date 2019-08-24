@@ -187,7 +187,7 @@ class EventListener implements Listener
                         if (is_null($selection)) {
                             throw new \Error("No selection created - Check the console for errors");
                         }
-                        $selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                        $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
                         break;
                     }
                 case ItemIds::STICK:
