@@ -81,29 +81,20 @@ class AsyncClipboardTask extends MWEAsyncTask
      */
     private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, ?int &$changed): \Generator
     {
-        $blockCount = $clipboard->getTotalCount();
+        $blockCount = $clipboard->getShape()->getTotalCount();
         $chunkManager = Clipboard::getChunkManager($clipboard->chunks);
         $lastprogress = 0;
-        $lastchunkx = $lastchunkz = null;
         $changed = 0;
-        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
+        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
         /** @var Block $block */
-        foreach ($clipboard->getBlocks($chunkManager, $this->flags) as $block) {
+        foreach ($clipboard->getShape()->getBlocks($chunkManager, $this->flags) as $block) {
             #var_dump("Block clipboard used", $block);
-            if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
-                $lastchunkx = $block->x >> 4;
-                $lastchunkz = $block->z >> 4;
-                if (is_null($pasteChunkManager->getChunk($block->x >> 4, $block->z >> 4))) {
-                    #print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
-                    continue;
-                }
-            }
             yield $pasteChunkManager->getBlockAt($block->x, $block->y, $block->z)->setComponents($block->x, $block->y, $block->z);//TODO check
             $pasteChunkManager->setBlockAt($block->x, $block->y, $block->z, $block);
             $changed++;
             $progress = floor($changed / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount | " . $progress . "% done"]);
+                $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount"]);
                 $lastprogress = $progress;
             }
         }
@@ -123,11 +114,11 @@ class AsyncClipboardTask extends MWEAsyncTask
         }, unserialize($this->touchedChunks));
         $oldBlocks = $result["oldBlocks"];
         $changed = $result["changed"];
-        $totalCount = $result["totalCount"];
         /** @var Chunk[] $resultChunks */
         $resultChunks = $result["resultChunks"];
         /** @var CopyClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
+        $totalCount = count($clipboard->getShape()->getTotalCount());
         /** @var Level $level */
         $level = $clipboard->getLevel();
         foreach ($resultChunks as $hash => $chunk) {

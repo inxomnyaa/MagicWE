@@ -60,7 +60,7 @@ class CylinderCommand extends BaseCommand
                 if (is_null($session)) {
                     throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                 }
-                $cyl = new Cylinder($sender->asVector3(), $height, $diameter);
+                $cyl = new Cylinder($sender->asVector3()->floor(), $height, $diameter);
                 $cylSelection = new Selection($session->getUUID(), $sender->getLevel());
                 $cylSelection->setShape($cyl);
                 API::fillAsync($cylSelection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));

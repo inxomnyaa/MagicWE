@@ -10,7 +10,6 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
-use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
@@ -77,7 +76,7 @@ class AsyncCountTask extends MWEAsyncTask
     {
         $blockCount = $selection->getShape()->getTotalCount();
         $changed = 0;
-        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
+        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
         $lastchunkx = $lastchunkz = null;
         $lastprogress = 0;
         $counts = [];
@@ -99,7 +98,7 @@ class AsyncCountTask extends MWEAsyncTask
             $changed++;
             $progress = floor($changed / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, counting $changed blocks out of $blockCount | " . $progress . "% done"]);
+                $this->publishProgress([$progress, "Running, counting $changed blocks out of $blockCount"]);
                 $lastprogress = $progress;
             }
         }
@@ -117,7 +116,7 @@ class AsyncCountTask extends MWEAsyncTask
         $result = $this->getResult();
         $counts = $result["counts"];
         $totalCount = $result["totalCount"];
-        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async analyzing succeed, took " . $this->generateTookString());
+        $session->sendMessage(TF::GREEN . "Async analyzing succeed, took " . $this->generateTookString());
         $session->sendMessage(TF::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
         uasort($counts, function ($a, $b) {
             if ($a === $b) return 0;

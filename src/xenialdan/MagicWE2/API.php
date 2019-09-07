@@ -33,6 +33,7 @@ use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
+use xenialdan\MagicWE2\tool\Brush;
 
 class API
 {
@@ -63,6 +64,7 @@ class API
     const FLAG_HOLLOW_CLOSED = 0x09; // -hc//TODO
 
     const TAG_MAGIC_WE = "MagicWE";
+    const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
 
     //TODO Split into seperate Class (SessionStorage?)
     /** @var Session[] */
@@ -162,7 +164,7 @@ class API
         #return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($clipboard->getTotalCount() > $limit && !$limit === -1) {
+            if ($clipboard->getShape()->getTotalCount() > $limit && !$limit === -1) {
                 throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             $c = $clipboard->getCenter();
@@ -224,46 +226,19 @@ class API
     /**
      * Creates a brush at a specific location with the passed settings
      * @param Block $target
-     * @param NamedTag $settings
+     * @param Brush $brush
      * @param Session $session
      * @return bool
-     * @throws \Exception
-     * @throws LimitExceededException
      */
-    public static function createBrush(Block $target, NamedTag $settings, Session $session)
+    public static function createBrush(Block $target, Brush $brush, Session $session)
     {//TODO messages
-        $session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");/*
-        $shape = null;
-        if (!$settings instanceof CompoundTag) return false;
+        $shapeClass = $brush->properties->shape;
         $messages = [];
         $error = false;
-        switch ($type = $settings->getInt("type", -1)) {
-            case ShapeRegistry::TYPE_CUBOID:
-            case ShapeRegistry::TYPE_CUBE:
-            case ShapeRegistry::TYPE_CYLINDER:
-            case ShapeRegistry::TYPE_SPHERE:
-                {
-                    $shape = ShapeRegistry::getShape($target->getLevel(), $type, self::compoundToArray($settings));
-                    $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
-                    return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $shape->options["flags"]);
-                    break;
-                }
-            case ShapeRegistry::TYPE_CUSTOM://TODO fix/Change to actual shape, flags
-                {
-                    $clipboard = $session->getCurrentClipboard();
-                    if (is_null($clipboard)) {
-                        $session->sendMessage(TF::RED . "You have no clipboard - create one first");
-                        return false;
-                    }
-                    return self::pasteAsync($clipboard, $session, $target);//TODO flags & proper brush tool
-                    break;
-                }
-            default:
-                {
-                    $session->sendMessage("Unknown shape");
-                }
-        }*/
-        return false;
+        $shape = new $shapeClass($target->asVector3(), ...array_values($brush->properties->shapeProperties));
+        $selection = new Selection($session->getUUID(), $target->getLevel());
+        $selection->setShape($shape);
+        return self::fillAsync($selection, $session, self::blockParser($brush->properties->blocks, $messages, $error));
     }
 
     /**

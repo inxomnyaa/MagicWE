@@ -11,35 +11,25 @@ use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
-class Cuboid extends Shape
+class Cone extends Shape
 {
-
-    public $width = 5;
     public $height = 5;
-    public $depth = 5;
+    public $diameter = 5;
+    public $flipped = false;
 
     /**
-     * Cuboid constructor.
+     * Cone constructor.
      * @param Vector3 $pasteVector
-     * @param int $width
      * @param int $height
-     * @param int $depth
+     * @param int $diameter
+     * @param bool $flipped
      */
-    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
+    public function __construct(Vector3 $pasteVector, int $height, int $diameter, bool $flipped = false)
     {
         $this->pasteVector = $pasteVector;
-        $this->width = $width;
         $this->height = $height;
-        $this->depth = $depth;
-    }
-
-    public static function constructFromPositions(Vector3 $pos1, Vector3 $pos2): self
-    {
-        $width = abs($pos1->getX() - $pos2->getX()) + 1;
-        $height = abs($pos1->getY() - $pos2->getY()) + 1;
-        $depth = abs($pos1->getZ() - $pos2->getZ()) + 1;
-        $cuboid = new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, $pos1->y, ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
-        return $cuboid;
+        $this->diameter = $diameter;
+        $this->flipped = $flipped;
     }
 
     /**
@@ -47,21 +37,30 @@ class Cuboid extends Shape
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
-     * @return \Generator|Block[]
+     * @return \Generator|Block
      * @throws \Exception
      */
     public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
-            for ($y = intval(floor($this->getMinVec3()->y)); $y <= floor($this->getMaxVec3()->y); $y++) {
-                for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
-                    $block = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
+        $reducePerLayer = ($this->diameter / $this->height);
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+        for ($x = intval(floor($centerVec2->x - $this->diameter / 2 - 1)); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
+            for ($y = intval(floor($this->getPasteVector()->y)), $ry = 0; $y < floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+                for ($z = intval(floor($centerVec2->y - $this->diameter / 2 - 1)); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
+                    $vec2 = new Vector2($x, $z);
+                    $vec3 = new Vector3($x, $y, $z);
+                    if ($this->flipped)
+                        $radiusLayer = ($this->diameter - $reducePerLayer * ($this->height - $ry)) / 2;
+                    else
+                        $radiusLayer = ($this->diameter - $reducePerLayer * $ry) / 2;
+                    if ($vec2->distanceSquared($centerVec2) > ($radiusLayer ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
+                        continue;
+                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z)->setComponents($vec3->x, $vec3->y, $vec3->z);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
 
-                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;//TODO check for removal because relative might be at other y
-                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
+                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
                     if (empty($filterblocks)) yield $block;
                     else {
                         foreach ($filterblocks as $filterblock) {
@@ -78,15 +77,19 @@ class Cuboid extends Shape
      * Returns a flat layer of all included x z positions in selection
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
-     * @return \Generator|Vector2[]
+     * @return \Generator|Vector2
      * @throws \Exception
      */
     public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
-            for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
-                yield new Vector2($x, $z);
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+        for ($x = intval(floor($centerVec2->x - $this->diameter / 2 - 1)); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
+            for ($z = intval(floor($centerVec2->y - $this->diameter / 2 - 1)); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
+                $vec2 = new Vector2($x, $z);
+                if ($vec2->distanceSquared($centerVec2) > (($this->diameter / 2) ** 2) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
+                    continue;
+                yield $vec2;
             }
         }
     }
@@ -97,7 +100,7 @@ class Cuboid extends Shape
      * @throws \Exception
      */
     public function getTouchedChunks(ChunkManager $manager): array
-    {
+    {//TODO optimize to remove "corner" chunks
         $this->validateChunkManager($manager);
         $maxX = $this->getMaxVec3()->x >> 4;
         $minX = $this->getMinVec3()->x >> 4;
@@ -110,34 +113,33 @@ class Cuboid extends Shape
                 if ($chunk === null) {
                     continue;
                 }
+                print "Touched Chunk at: $x:$z" . PHP_EOL;
                 $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
             }
         }
+        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
         return $touchedChunks;
     }
 
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            ceil($this->pasteVector->x - $this->width / 2),
+            floor($this->pasteVector->x - $this->diameter / 2),
             $this->pasteVector->y,
-            ceil($this->pasteVector->z - $this->depth / 2),
-            -1 + ceil($this->pasteVector->x - $this->width / 2) + $this->width,
+            floor($this->pasteVector->z - $this->diameter / 2),
+            -1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
             -1 + $this->pasteVector->y + $this->height,
-            -1 + ceil($this->pasteVector->z - $this->depth / 2) + $this->depth
+            -1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
         );
     }
 
-    /**
-     * @return int
-     */
     public function getTotalCount(): int
     {
-        return $this->width * $this->height * $this->depth;
+        return ceil((pi() * (($this->diameter / 2) ** 2) * $this->height) / 3);
     }
 
     public static function getName(): string
     {
-        return "Cuboid";
+        return "Cone";
     }
 }

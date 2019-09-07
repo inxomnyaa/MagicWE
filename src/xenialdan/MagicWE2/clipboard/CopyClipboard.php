@@ -10,26 +10,26 @@ use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\selection\shape\Shape;
 
 class CopyClipboard extends Clipboard
 {
     /** @var Vector3 */
     private $center;
-    /** @var AxisAlignedBB */
-    private $aabb;
     /** @var Chunk[] */
     public $pasteChunks = [];
     /** @var bool If entities were copied */
     public $entities = false;
     /** @var bool If biomes were copied */
     public $biomes = false;
+    /** @var Shape */
+    public $shape;
 
     /**
-     * RevertClipboard constructor.
+     * CopyClipboard constructor.
      * @param int $levelId
      * @param Chunk[] $chunks
      */
@@ -59,55 +59,43 @@ class CopyClipboard extends Clipboard
     }
 
     /**
-     * @return AxisAlignedBB
+     * @return Shape
+     * @throws \Exception
      */
-    public function getAxisAlignedBB(): AxisAlignedBB
+    public function getShape(): Shape
     {
-        return $this->aabb;
+        if (!$this->shape instanceof Shape) throw new \Exception("Shape is not valid");
+        return $this->shape;
     }
 
     /**
-     * @param AxisAlignedBB $aabb
+     * @param Shape $shape
      */
-    public function setAxisAlignedBB(AxisAlignedBB $aabb): void
+    public function setShape(Shape $shape): void
     {
-        $this->aabb = $aabb;
+        $this->shape = $shape;
+    }
+
+    /**
+     * @return AxisAlignedBB
+     * @throws \Exception
+     * @deprecated
+     */
+    public function getAxisAlignedBB(): AxisAlignedBB
+    {
+        return $this->getShape()->getAABB();
     }
 
     /**
      * @param Vector3 $center
      * @return array of fastSerialized chunks
+     * @throws \Exception
      */
     public function getTouchedChunks(Vector3 $center): array
     {
-        $c = $center->subtract($this->center);//should be 0,0,0
-        #var_dump("Center c ", $c);
-        $offset = new Vector2($c->getX() >> 4, $c->getZ() >> 4);
-        #var_dump("offset ", $c);
-        $chunks = [];
-        foreach ($this->chunks as $chunk) {
-            #print "Touched Chunk at: " . $chunk->getX() . ":" . $chunk->getZ() . PHP_EOL;
-            $chunk->setX(intval($chunk->getX() + $offset->x));
-            $chunk->setZ(intval($chunk->getZ() + $offset->y));
-            #print "New Touched Chunk at: " . $chunk->getX() . ":" . $chunk->getZ() . PHP_EOL;
-            $chunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
-        }
-        #print "Touched chunks count: " . count($chunks) . PHP_EOL;
-        return $chunks;
-    }
-
-    /**
-     * @return array of fastSerialized chunks
-     */
-    public function getTouchedChunksSerialize(): array
-    {
-        $chunks = [];
-        foreach ($this->chunks as $chunk) {
-            #if(is_null($chunk)) continue;
-            $chunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
-        }
-        #print "Touched chunks serialize count: " . count($chunks) . PHP_EOL;
-        return $chunks;
+        $shape = $this->getShape();
+        $shape->setPasteVector($center);
+        return $shape->getTouchedChunks($this->getLevel());
     }
 
     /**
@@ -116,37 +104,12 @@ class CopyClipboard extends Clipboard
      * @param int $flags
      * @return \Generator|Block
      * @throws \Exception
+     * @deprecated
      */
     public function getBlocks(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        #var_dump($this->aabb);
-        $this->recalculateAABB();
-        #var_dump($this->aabb);
-        //todo should RX RY RZ be center coords?
-        for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
-            for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
-                for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-                    if (API::hasFlag($flags, API::FLAG_POSITION_RELATIVE))//TODO check if correct
-                        $vec3 = new Vector3($rx, $ry, $rz);//todo should RX RY RZ be center coords?
-                    else
-                        $vec3 = new Vector3($x, $y, $z);//This is the old position
-                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z);
-                    $vec3 = $vec3->subtract($this->getMinVec3())->add($this->center->floor())->floor();
-                    $block->setComponents($vec3->x, $vec3->y, $vec3->z);
-                    #var_dump(__METHOD__ . __LINE__.$vec3);
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
-
-                    /*$block = */
-                    #$block->setComponents($vec3->x, $vec3->y, $vec3->z);
-
-                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;
-                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
-                    yield $block;
-                }
-            }
-        }
+        yield $this->getShape()->getBlocks($manager);
     }
 
     /**
@@ -159,64 +122,14 @@ class CopyClipboard extends Clipboard
     }
 
     /**
-     * @return Vector3
-     */
-    public function getMinVec3()
-    {
-        return new Vector3($this->getAxisAlignedBB()->minX, $this->getAxisAlignedBB()->minY, $this->getAxisAlignedBB()->minZ);
-    }
-
-    /**
-     * @return Vector3
-     */
-    public function getMaxVec3()
-    {
-        return new Vector3($this->getAxisAlignedBB()->maxX, $this->getAxisAlignedBB()->maxY, $this->getAxisAlignedBB()->maxZ);
-    }
-
-    /**
-     * @return int
-     */
-    public function getSizeX()
-    {
-        return abs($this->aabb->minX - $this->aabb->maxX) + 1;
-    }
-
-    /**
-     * @return int
-     */
-    public function getSizeY()
-    {
-        return abs($this->aabb->maxY - $this->aabb->maxY) + 1;
-    }
-
-    /**
-     * @return int
-     */
-    public function getSizeZ()
-    {
-        return abs($this->aabb->maxZ - $this->aabb->maxZ) + 1;
-    }
-
-    /**
      * Approximated count of blocks
      * @return int
+     * @throws \Exception
+     * @deprecated
      */
     public function getTotalCount()
     {
-        return $this->getSizeX() * $this->getSizeY() * $this->getSizeZ();
-    }
-
-    public function recalculateAABB()
-    {
-        $this->aabb = new AxisAlignedBB(
-            min($this->aabb->minX, $this->aabb->maxX),
-            min($this->aabb->minY, $this->aabb->maxY),
-            min($this->aabb->minZ, $this->aabb->maxZ),
-            max($this->aabb->minX, $this->aabb->maxX),
-            max($this->aabb->minY, $this->aabb->maxY),
-            max($this->aabb->minZ, $this->aabb->maxZ)
-        );
+        return $this->getShape()->getTotalCount();
     }
 
     /**
@@ -227,12 +140,13 @@ class CopyClipboard extends Clipboard
      */
     public function serialize()
     {
-        #var_dump("Called " . __METHOD__);
+        $chunks = [];
+        foreach ($this->chunks as $hash => $chunk)
+            $chunks[$hash] = $chunk->fastSerialize();
         return serialize([
             $this->levelid,
             $this->center->asVector3(),
-            $this->aabb,
-            $this->getTouchedChunksSerialize(),
+            $chunks,
             $this->pasteChunks
         ]);
     }
@@ -252,7 +166,6 @@ class CopyClipboard extends Clipboard
         [
             $this->levelid,
             $this->center,
-            $this->aabb,
             $chunks,
             $this->pasteChunks
         ] = unserialize($serialized);
@@ -263,6 +176,6 @@ class CopyClipboard extends Clipboard
 
     public function __toString()
     {
-        return __CLASS__ . " AxisAlignedBB: " . $this->aabb . " Chunk count: " . count($this->chunks);
+        return __CLASS__ . " Chunk count: " . count($this->chunks);
     }
 }

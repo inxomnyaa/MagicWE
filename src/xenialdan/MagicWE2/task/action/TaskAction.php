@@ -11,6 +11,8 @@ use xenialdan\MagicWE2\selection\Selection;
 abstract class TaskAction
 {
     public $addRevert = true;
+    public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} changed.';
+    public $completionMessages = [];
 
     /**
      * @param string $sessionUUID

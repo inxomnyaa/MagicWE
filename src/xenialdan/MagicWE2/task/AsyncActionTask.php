@@ -11,6 +11,7 @@ use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\helper\Progress;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
@@ -114,7 +115,8 @@ class AsyncActionTask extends MWEAsyncTask
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        $session->sendMessage(TF::GREEN . $this->action::getName() . " succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+        $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString($this->action->completionString, ["name" => $this->action::getName(), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
+        foreach ($this->action->completionMessages as $message) $session->sendMessage($message);
         if ($this->action->addRevert)
             $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
     }

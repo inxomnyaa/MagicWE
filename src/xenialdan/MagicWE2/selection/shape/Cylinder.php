@@ -13,8 +13,8 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cylinder extends Shape
 {
-    public $height;
-    public $diameter;
+    public $height = 1;
+    public $diameter = 5;
 
     /**
      * Cylinder constructor.
@@ -42,7 +42,7 @@ class Cylinder extends Shape
         $this->validateChunkManager($manager);
         $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
         for ($x = intval(floor($centerVec2->x - $this->diameter / 2 - 1)); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
-            for ($y = intval(floor($this->getPasteVector()->y)), $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+            for ($y = intval(floor($this->getPasteVector()->y)), $ry = 0; $y < floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
                 for ($z = intval(floor($centerVec2->y - $this->diameter / 2 - 1)); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
                     $vec2 = new Vector2($x, $z);
                     $vec3 = new Vector3($x, $y, $z);
@@ -127,6 +127,11 @@ class Cylinder extends Shape
 
     public function getTotalCount(): int
     {
-        return ceil((pi() * ($this->diameter ** 2)) / 4) * $this->height;
+        return ceil(pi() * (($this->diameter / 2) ** 2) * $this->height);
+    }
+
+    public static function getName(): string
+    {
+        return "Cylinder";
     }
 }

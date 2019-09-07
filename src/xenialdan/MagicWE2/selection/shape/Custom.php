@@ -14,7 +14,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 class Custom extends Shape
 {
     /** @var Vector3[] */
-    public $positions;
+    public $positions = [];
 
     /**
      * Custom constructor.
@@ -109,5 +109,10 @@ class Custom extends Shape
     public function getTotalCount(): int
     {
         return count($this->positions);
+    }
+
+    public static function getName(): string
+    {
+        return "Custom";
     }
 }

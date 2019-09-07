@@ -11,14 +11,28 @@ use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
-class Cube extends Shape
+class Pyramid extends Shape
 {
     public $width = 5;
+    public $height = 5;
+    public $depth = 5;
+    public $flipped = false;
 
-    public function __construct(Vector3 $pasteVector, int $width)
+    /**
+     * Pyramid constructor.
+     * @param Vector3 $pasteVector
+     * @param int $width
+     * @param int $height
+     * @param int $depth
+     * @param bool $flipped
+     */
+    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth, bool $flipped = false)
     {
         $this->pasteVector = $pasteVector;
         $this->width = $width;
+        $this->height = $height;
+        $this->depth = $depth;
+        $this->flipped = $flipped;
     }
 
     /**
@@ -26,21 +40,35 @@ class Cube extends Shape
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
-     * @return \Generator|Block[]
+     * @return \Generator|Block
      * @throws \Exception
      */
     public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
-            for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
-                for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-                    $block = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
+        $reduceXPerLayer = -($this->width / $this->height);
+        $reduceZPerLayer = -($this->depth / $this->height);
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+        for ($x = intval(floor($centerVec2->x - $this->width / 2 - 1)); $x <= floor($centerVec2->x + $this->width / 2 + 1); $x++) {
+            for ($y = intval(floor($this->getPasteVector()->y)), $ry = 0; $y < floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+                for ($z = intval(floor($centerVec2->y - $this->depth / 2 - 1)); $z <= floor($centerVec2->y + $this->depth / 2 + 1); $z++) {
+                    $vec2 = new Vector2($x, $z);
+                    $vec3 = new Vector3($x, $y, $z);
+                    if ($this->flipped) {
+                        $radiusLayerX = ($this->width + $reduceXPerLayer * ($this->height - $ry)) / 2;
+                        $radiusLayerZ = ($this->depth + $reduceZPerLayer * ($this->height - $ry)) / 2;
+                    } else {
+                        $radiusLayerX = ($this->width + $reduceXPerLayer * $ry) / 2;
+                        $radiusLayerZ = ($this->depth + $reduceZPerLayer * $ry) / 2;
+                    }
+                    //TODO hollow
+                    if (floor(abs($centerVec2->x - $vec2->x)) >= $radiusLayerX or floor(abs($centerVec2->y - $vec2->y)) >= $radiusLayerZ)
+                        continue;
+                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z)->setComponents($vec3->x, $vec3->y, $vec3->z);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
 
-                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;//TODO check for removal because relative might be at other y
-                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
+                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
                     if (empty($filterblocks)) yield $block;
                     else {
                         foreach ($filterblocks as $filterblock) {
@@ -57,15 +85,18 @@ class Cube extends Shape
      * Returns a flat layer of all included x z positions in selection
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
-     * @return \Generator|Vector2[]
+     * @return \Generator|Vector2
      * @throws \Exception
      */
     public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
     {
         $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
-            for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
-                yield new Vector2($x, $z);
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+        for ($x = intval(floor($centerVec2->x - $this->width / 2 - 1)); $x <= floor($centerVec2->x + $this->width / 2 + 1); $x++) {
+            for ($z = intval(floor($centerVec2->y - $this->depth / 2 - 1)); $z <= floor($centerVec2->y + $this->depth / 2 + 1); $z++) {
+                $vec2 = new Vector2($x, $z);
+                //TODO hollow
+                yield $vec2;
             }
         }
     }
@@ -76,7 +107,7 @@ class Cube extends Shape
      * @throws \Exception
      */
     public function getTouchedChunks(ChunkManager $manager): array
-    {
+    {//TODO optimize to remove "corner" chunks
         $this->validateChunkManager($manager);
         $maxX = $this->getMaxVec3()->x >> 4;
         $minX = $this->getMinVec3()->x >> 4;
@@ -100,22 +131,22 @@ class Cube extends Shape
     public function getAABB(): AxisAlignedBB
     {
         return new AxisAlignedBB(
-            ceil($this->pasteVector->x - $this->width / 2),
+            floor($this->pasteVector->x - $this->width / 2),
             $this->pasteVector->y,
-            ceil($this->pasteVector->z - $this->width / 2),
-            -1 + ceil($this->pasteVector->x - $this->width / 2) + $this->width,
-            -1 + $this->pasteVector->y + $this->width,
-            -1 + ceil($this->pasteVector->z - $this->width / 2) + $this->width
+            floor($this->pasteVector->z - $this->depth / 2),
+            -1 + floor($this->pasteVector->x - $this->width / 2) + $this->width,
+            -1 + $this->pasteVector->y + $this->height,
+            -1 + floor($this->pasteVector->z - $this->depth / 2) + $this->depth
         );
     }
 
     public function getTotalCount(): int
     {
-        return $this->width ** 3;
+        return ceil((1 / 3) * ($this->width * $this->depth) * $this->height);
     }
 
     public static function getName(): string
     {
-        return "Cube";
+        return "Pyramid";
     }
 }

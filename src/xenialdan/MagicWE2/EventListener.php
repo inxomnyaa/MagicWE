@@ -11,8 +11,8 @@ use pocketmine\level\Position;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\tool\Brush;
 
 class EventListener implements Listener
 {
@@ -216,20 +216,15 @@ class EventListener implements Listener
      */
     private function onRightClickAir(PlayerInteractEvent $event)
     {
-        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
+        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
             $event->setCancelled();
-            /** @var Session $session */
             $session = API::getSession($event->getPlayer());
-            if (is_null($session)) return;
-            switch ($event->getItem()->getId()) {
-                case ItemIds::WOODEN_SHOVEL:
-                    {
-                        $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
-                        if (!is_null($target)) {// && has perms
-                            API::createBrush($target, $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
-                        }
-                        break;
-                    }
+            if (!$session instanceof UserSession) return;
+            $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
+            $brush = $session->getBrushFromItem($event->getItem());
+            var_dump($brush);
+            if (!is_null($target) && $brush instanceof Brush) {// && has perms
+                API::createBrush($target, $brush, $session);
             }
         }
     }

@@ -13,7 +13,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Sphere extends Shape
 {
-    public $diameter;
+    public $diameter = 5;
 
     /**
      * Sphere constructor.
@@ -122,6 +122,11 @@ class Sphere extends Shape
 
     public function getTotalCount(): int
     {
-        return ceil(4 / 3 * (pi() * ($this->diameter / 2) ** 3));
+        return ceil((4 / 3) * pi() * (($this->diameter / 2) ** 3));
+    }
+
+    public static function getName(): string
+    {
+        return "Sphere";
     }
 }

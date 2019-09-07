@@ -10,9 +10,12 @@ use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\task\action\CountAction;
+use xenialdan\MagicWE2\task\AsyncActionTask;
 
 class CountCommand extends BaseCommand
 {
@@ -63,11 +66,20 @@ class CountCommand extends BaseCommand
                     throw new \Exception("The selection is not valid! Check if all positions are set!");
                 }
                 if ($selection->getLevel() !== $sender->getLevel()) {
-                    $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
+                    $session->sendMessage(TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
                 }
-                API::countAsync($selection, $session, $filterBlocks, API::flagParser(explode(" ", strval($args["flags"] ?? ""))));
+                Server::getInstance()->getAsyncPool()->submitTask(
+                    new AsyncActionTask(
+                        $session->getUUID(),
+                        $selection,
+                        new CountAction(),
+                        $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                        [],
+                        $filterBlocks
+                    )
+                );
             } else {
-                throw new \InvalidArgumentException("Could not fill with the selected blocks");
+                throw new \InvalidArgumentException("Could not count the selected blocks");
             }
         } catch (\Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");

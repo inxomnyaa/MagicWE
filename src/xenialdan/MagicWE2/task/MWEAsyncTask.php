@@ -17,6 +17,9 @@ abstract class MWEAsyncTask extends AsyncTask
 
     public function onProgressUpdate(Server $server, $progress)
     {
+        if (!$progress instanceof Progress) {//TODO Temp fix until all async tasks are modified
+            $progress = new Progress($progress[0] / 100, $progress[1]);
+        }
         $session = API::getSessions()[$this->sessionUUID];
         /** @var Progress $progress */
         if ($session instanceof UserSession) $session->getBossBar()->setPercentage($progress->progress)->setSubTitle(str_replace("%", "%%%%", $progress->string . " | " . floor($progress->progress * 100) . "%"));

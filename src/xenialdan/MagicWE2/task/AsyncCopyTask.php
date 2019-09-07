@@ -62,7 +62,6 @@ class AsyncCopyTask extends MWEAsyncTask
         unset($chunks);
         $clipboard = new CopyClipboard($selection->levelid);
         $clipboard->setCenter(unserialize($this->offset));
-        $clipboard->setAxisAlignedBB($selection->getShape()->getAABB());
         $totalCount = $selection->getShape()->getTotalCount();
         $copied = $this->copyBlocks($selection, $manager, $clipboard);
         $clipboard->chunks = $manager->getChunks();
@@ -81,7 +80,7 @@ class AsyncCopyTask extends MWEAsyncTask
         $blockCount = $selection->getShape()->getTotalCount();
         $i = 0;
         $lastprogress = 0;
-        $this->publishProgress([0, "Running, copied $i blocks out of $blockCount | 0% done"]);
+        $this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
             $chunk = $clipboard->chunks[Level::chunkHash($block->x >> 4, $block->z >> 4)] ?? null;
@@ -93,7 +92,7 @@ class AsyncCopyTask extends MWEAsyncTask
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, copied $i blocks out of $blockCount | " . $progress . "% done"]);
+                $this->publishProgress([$progress, "Running, copied $i blocks out of $blockCount"]);
                 $lastprogress = $progress;
             }
         }

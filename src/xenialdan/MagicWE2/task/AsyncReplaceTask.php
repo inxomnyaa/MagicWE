@@ -96,7 +96,7 @@ class AsyncReplaceTask extends MWEAsyncTask
         $lastprogress = 0;
         $i = 0;
         $changed = 0;
-        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
+        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, $replaceBlocks, $this->flags) as $block) {
             if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
@@ -122,7 +122,7 @@ class AsyncReplaceTask extends MWEAsyncTask
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount | " . $progress . "% done"]);
+                $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount"]);
                 $lastprogress = $progress;
             }
         }

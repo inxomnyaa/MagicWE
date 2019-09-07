@@ -88,7 +88,7 @@ class AsyncFillTask extends MWEAsyncTask
         $lastprogress = 0;
         $i = 0;
         $changed = 0;
-        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount | 0% done"]);
+        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
             /*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
@@ -118,7 +118,7 @@ class AsyncFillTask extends MWEAsyncTask
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount | " . $progress . "% done"]);
+                $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount"]);
                 $lastprogress = $progress;
             }
         }

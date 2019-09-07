@@ -131,4 +131,9 @@ class Flood extends WETool
         #print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
         return $touchedChunks;
     }
+
+    public function getName(): string
+    {
+        return "Flood Fill";
+    }
 }

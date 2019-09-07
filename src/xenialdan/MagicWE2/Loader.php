@@ -45,6 +45,8 @@ use xenialdan\MagicWE2\commands\tool\TogglewandCommand;
 use xenialdan\MagicWE2\commands\tool\WandCommand;
 use xenialdan\MagicWE2\commands\utility\CalculateCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
+use xenialdan\MagicWE2\exception\ShapeRegistryException;
+use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\UserSession;
 
 class Loader extends PluginBase
@@ -53,6 +55,8 @@ class Loader extends PluginBase
     const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
     /** @var Loader */
     private static $instance = null;
+    /** @var null|ShapeRegistry */
+    public static $shapeRegistry = null;
     private $baseLang;
 
     /**
@@ -62,6 +66,16 @@ class Loader extends PluginBase
     public static function getInstance()
     {
         return self::$instance;
+    }
+
+    /**
+     * ShapeRegistry
+     * @return ShapeRegistry
+     */
+    public static function getShapeRegistry(): ShapeRegistry
+    {
+        if (self::$shapeRegistry) return self::$shapeRegistry;
+        throw new ShapeRegistryException("Shape registry is not initialized");
     }
 
     public function onLoad()
@@ -82,6 +96,7 @@ class Loader extends PluginBase
         #$this->getLogger()->debug("Sessions successfully restored");
         $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
         Enchantment::registerEnchantment($ench);
+        self::$shapeRegistry = new ShapeRegistry();
     }
 
     public function onEnable()

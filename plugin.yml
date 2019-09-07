@@ -1,7 +1,7 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 9.5.0
+version: 9.6.0
 api: [3.9]
 load: STARTUP
 authors:
@@ -40,6 +40,9 @@ permissions:
             default: op
       we.command.brush:
         default: op
+        children:
+          we.command.brush.name:
+            default: op
       we.command.clipboard:
         default: op
         children:

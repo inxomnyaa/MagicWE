@@ -96,6 +96,13 @@ abstract class Shape implements \Serializable
         return new Vector3($this->getAABB()->maxX, $this->getAABB()->maxY, $this->getAABB()->maxZ);
     }
 
+    abstract public static function getName(): string;
+
+    public function getShapeProperties(): array
+    {
+        return array_diff(get_object_vars($this), get_class_vars(Shape::class));
+    }
+
     /**
      * String representation of object
      * @link http://php.net/manual/en/serializable.serialize.php

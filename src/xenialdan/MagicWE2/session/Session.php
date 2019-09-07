@@ -216,13 +216,21 @@ abstract class Session
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function undo()
     {
         if ($this->undoHistory->count() === 0) {
             $this->sendMessage(TF::RED . "Nothing to undo");
             return;
         }
+        /** @var RevertClipboard $revertClipboard */
         $revertClipboard = $this->undoHistory->pop();
+        $level = $revertClipboard->getLevel();
+        foreach ($revertClipboard->chunks as $hash => $chunk) {
+            $revertClipboard->chunks[$hash] = $level->getChunk($chunk->getX(), $chunk->getZ(), false);
+        }
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
         $this->sendMessage(TF::GREEN . "You have " . count($this->undoHistory) . " undo actions left");
     }
