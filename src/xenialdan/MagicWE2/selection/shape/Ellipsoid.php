@@ -1,0 +1,164 @@
+<?php
+
+namespace xenialdan\MagicWE2\selection\shape;
+
+use pocketmine\block\Block;
+use pocketmine\level\ChunkManager;
+use pocketmine\level\Level;
+use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector2;
+use pocketmine\math\Vector3;
+use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\AsyncChunkManager;
+
+class Ellipsoid extends Shape
+{
+    public $width = 5;
+    public $height = 5;
+    public $depth = 5;
+
+    /**
+     * Pyramid constructor.
+     * @param Vector3 $pasteVector
+     * @param int $width
+     * @param int $height
+     * @param int $depth
+     */
+    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
+    {
+        $this->pasteVector = $pasteVector;
+        $this->width = $width;
+        $this->height = $height;
+        $this->depth = $depth;
+    }
+
+    /**
+     * Returns the blocks by their actual position
+     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Block[] $filterblocks If not empty, applying a filter on the block list
+     * @param int $flags
+     * @return \Generator|Block
+     * @throws \Exception
+     */
+    public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
+    {
+        $this->validateChunkManager($manager);
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+        $this->pasteVector = $this->getPasteVector()->add(0, -0.5, 0);
+
+        $xrad = $this->width / 2;
+        $yrad = $this->height / 2;
+        $zrad = $this->depth / 2;
+        $xradSquared = $xrad ** 2;
+        $yradSquared = $yrad ** 2;
+        $zradSquared = $zrad ** 2;
+        $targetX = $this->pasteVector->getX();
+        $targetY = $this->pasteVector->getY();
+        $targetZ = $this->pasteVector->getZ();
+
+        for ($x = intval(floor($centerVec2->x - $this->width / 2 /*- 1*/)); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
+            $xSquared = ($targetX - $x) ** 2;
+            for ($y = intval(floor($this->getPasteVector()->y)) + 1, $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+                $ySquared = ($targetY - $y + $yrad) ** 2;
+                for ($z = intval(floor($centerVec2->y - $this->depth / 2 /*- 1*/)); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
+                    $zSquared = ($targetZ - $z) ** 2;
+
+                    $vec3 = new Vector3($x, $y, $z);
+                    //TODO hollow
+                    if ($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) continue;
+                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z)->setComponents($vec3->x, $vec3->y, $vec3->z);
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
+                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
+
+                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
+                    if (empty($filterblocks)) yield $block;
+                    else {
+                        foreach ($filterblocks as $filterblock) {
+                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getDamage() === $filterblock->getDamage() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+                                yield $block;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a flat layer of all included x z positions in selection
+     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param int $flags
+     * @return \Generator|Vector2
+     * @throws \Exception
+     */
+    public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
+    {
+        $this->validateChunkManager($manager);
+        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+
+        $xrad = $this->width / 2;
+        $zrad = $this->depth / 2;
+        $xradSquared = $xrad ** 2;
+        $zradSquared = $zrad ** 2;
+        $targetX = $this->pasteVector->getX();
+        $targetZ = $this->pasteVector->getZ();
+
+        for ($x = intval(floor($centerVec2->x - $this->width / 2 /*- 1*/)); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
+            $xSquared = ($targetX - $x) ** 2;
+            for ($z = intval(floor($centerVec2->y - $this->depth / 2 /*- 1*/)); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
+                $zSquared = ($targetZ - $z) ** 2;
+                if ($xSquared / $xradSquared + $zSquared / $zradSquared >= 1) continue;
+                //TODO hollow
+                yield new Vector2($x, $z);
+            }
+        }
+    }
+
+    /**
+     * @param ChunkManager $manager
+     * @return string[] fastSerialized chunks
+     * @throws \Exception
+     */
+    public function getTouchedChunks(ChunkManager $manager): array
+    {//TODO optimize to remove "corner" chunks
+        $this->validateChunkManager($manager);
+        $maxX = $this->getMaxVec3()->x >> 4;
+        $minX = $this->getMinVec3()->x >> 4;
+        $maxZ = $this->getMaxVec3()->z >> 4;
+        $minZ = $this->getMinVec3()->z >> 4;
+        $touchedChunks = [];
+        for ($x = $minX - 1; $x <= $maxX + 1; $x++) {
+            for ($z = $minZ - 1; $z <= $maxZ + 1; $z++) {
+                $chunk = $manager->getChunk($x, $z);
+                if ($chunk === null) {
+                    continue;
+                }
+                print "Touched Chunk at: $x:$z" . PHP_EOL;
+                $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+            }
+        }
+        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+        return $touchedChunks;
+    }
+
+    public function getAABB(): AxisAlignedBB
+    {
+        return new AxisAlignedBB(
+            floor($this->pasteVector->x - $this->width / 2),
+            $this->pasteVector->y,
+            floor($this->pasteVector->z - $this->depth / 2),
+            -1 + floor($this->pasteVector->x - $this->width / 2) + $this->width,
+            -1 + $this->pasteVector->y + $this->height,
+            -1 + floor($this->pasteVector->z - $this->depth / 2) + $this->depth
+        );
+    }
+
+    public function getTotalCount(): int
+    {
+        return floor(4 * pi() * (($this->width / 2) + 1) * (($this->height / 2) + 1) * (($this->depth / 2) + 1) / 3);
+    }
+
+    public static function getName(): string
+    {
+        return "Ellipsoid";
+    }
+}

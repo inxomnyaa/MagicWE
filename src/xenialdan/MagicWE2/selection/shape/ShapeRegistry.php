@@ -17,16 +17,18 @@ class ShapeRegistry
     public const SPHERE = "Sphere";
     public const CONE = "Cone";
     public const PYRAMID = "Pyramid";
+    public const ELLIPSOID = "Ellipsoid";
 
     public function __construct()
     {
-        self::registerShape(self::CUBOID, Cuboid::class);
-        self::registerShape(self::CUBE, Cube::class);
-        self::registerShape(self::CUSTOM, Custom::class);
-        self::registerShape(self::CYLINDER, Cylinder::class);
         self::registerShape(self::SPHERE, Sphere::class);
+        self::registerShape(self::CUBE, Cube::class);
+        self::registerShape(self::CUBOID, Cuboid::class);
+        self::registerShape(self::CYLINDER, Cylinder::class);
         self::registerShape(self::CONE, Cone::class);
         self::registerShape(self::PYRAMID, Pyramid::class);
+        self::registerShape(self::ELLIPSOID, Ellipsoid::class);
+        self::registerShape(self::CUSTOM, Custom::class);
     }
 
     public static function registerShape(string $name, string $class): void
