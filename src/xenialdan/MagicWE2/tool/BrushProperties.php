@@ -9,6 +9,9 @@ use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\selection\shape\Sphere;
+use xenialdan\MagicWE2\task\action\ActionRegistry;
+use xenialdan\MagicWE2\task\action\SetBlockAction;
+use xenialdan\MagicWE2\task\action\TaskAction;
 
 class BrushProperties implements \JsonSerializable
 {
@@ -22,12 +25,16 @@ class BrushProperties implements \JsonSerializable
     public $shape = Sphere::class;
     /** @var array */
     public $shapeProperties = [];
+    /** @var string */
+    public $action = SetBlockAction::class;
+    /** @var array */
+    public $actionProperties = [];
     /** @var bool */
     public $hollow = false;//TODO consider moving into shape properties
     /** @var string */
     public $blocks = "stone";
     /** @var string */
-    public $filter = "air";
+    public $filter = "";
     /** @var int */
     public $biomeId = Biome::PLAINS;
     /** @var string */
@@ -59,6 +66,11 @@ class BrushProperties implements \JsonSerializable
         return is_subclass_of($this->shape, Shape::class) ? ShapeRegistry::getShapeName($this->shape) : "";
     }
 
+    public function getActionName(): string
+    {
+        return is_subclass_of($this->action, TaskAction::class) ? ActionRegistry::getActionName($this->action) : "";
+    }
+
     public function hasCustomName(): bool
     {
         return !empty($this->customName);
@@ -77,11 +89,18 @@ class BrushProperties implements \JsonSerializable
         $shapeProperties = array_map(function ($k, $v): string {
             return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
         }, array_keys($this->shapeProperties), $this->shapeProperties);
+        $actionProperties = array_map(function ($k, $v): string {
+            return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
+        }, array_keys($this->actionProperties), $this->actionProperties);
         return array_merge(
             [
                 TF::GOLD . "Shape: {$this->getShapeName()}",
             ],
             $shapeProperties,
+            [
+                TF::GOLD . "Action: {$this->getActionName()}",
+            ],
+            $actionProperties,
             [
                 TF::GOLD . "Blocks: {$this->blocks}",
                 TF::GOLD . "Filter: {$this->filter}",

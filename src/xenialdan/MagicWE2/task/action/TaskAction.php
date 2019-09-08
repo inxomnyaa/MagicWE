@@ -10,9 +10,10 @@ use xenialdan\MagicWE2\selection\Selection;
 
 abstract class TaskAction
 {
+
+    public $prefix = "";
     public $addRevert = true;
     public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} changed.';
-    public $completionMessages = [];
 
     /**
      * @param string $sessionUUID
@@ -22,10 +23,10 @@ abstract class TaskAction
      * @param Block[] $newBlocks
      * @param Block[] $blockFilter
      * @param Block[] $oldBlocks blocks before the change
+     * @param string[] $messages
      * @return \Generator|array[int,string] Progress [percentage, string]
-     * @throws \Exception
      */
-    public abstract function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = []): \Generator;
+    public abstract function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = [], array &$messages = []): \Generator;
 
     public static abstract function getName(): string;
 }

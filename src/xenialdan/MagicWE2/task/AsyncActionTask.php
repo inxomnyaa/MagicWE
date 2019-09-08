@@ -2,7 +2,6 @@
 
 namespace xenialdan\MagicWE2\task;
 
-use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\Server;
@@ -40,18 +39,18 @@ class AsyncActionTask extends MWEAsyncTask
      * @param Selection $selection
      * @param TaskAction $action
      * @param Chunk[] $touchedChunks
-     * @param Block[] $newBlocks
-     * @param Block[] $blockFilter
+     * @param string $newBlocks
+     * @param string $blockFilter
      */
-    public function __construct(UUID $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, array $newBlocks = [], array $blockFilter = [])
+    public function __construct(UUID $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, string $newBlocks = "", string $blockFilter = "")
     {
         $this->start = microtime(true);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
         $this->action = $action;
         $this->touchedChunks = serialize($touchedChunks);
-        $this->newBlocks = serialize($newBlocks);
-        $this->blockFilter = serialize($blockFilter);
+        $this->newBlocks = $newBlocks;
+        $this->blockFilter = $blockFilter;
 
         $session = API::getSessionByUUID($sessionUUID);
         if ($session instanceof UserSession) $session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
@@ -79,8 +78,12 @@ class AsyncActionTask extends MWEAsyncTask
         $selection = unserialize($this->selection);
 
         $oldBlocks = [];
+        $messages = [];
+        $error = false;
+        $newBlocks = API::blockParser($this->newBlocks, $messages, $error);//TODO error handling
+        $blockFilter = API::blockParser($this->blockFilter, $messages, $error);//TODO error handling
         /** @var Progress $progress */
-        foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, unserialize($this->newBlocks), unserialize($this->blockFilter), $oldBlocks) as $progress) {
+        foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $newBlocks, $blockFilter, $oldBlocks, $messages) as $progress) {
             $this->publishProgress($progress);
         }
 
@@ -88,7 +91,7 @@ class AsyncActionTask extends MWEAsyncTask
         $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
             return $chunk->hasChanged();
         });
-        $this->setResult(compact("resultChunks", "oldBlocks", "changed"));
+        $this->setResult(compact("resultChunks", "oldBlocks", "changed", "messages"));
     }
 
     /**
@@ -115,8 +118,8 @@ class AsyncActionTask extends MWEAsyncTask
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString($this->action->completionString, ["name" => $this->action::getName(), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
-        foreach ($this->action->completionMessages as $message) $session->sendMessage($message);
+        $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
+        foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
         if ($this->action->addRevert)
             $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
     }

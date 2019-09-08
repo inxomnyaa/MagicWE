@@ -24,9 +24,11 @@ use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\exception\CalculationException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\SetBiomeAction;
+use xenialdan\MagicWE2\task\action\TaskAction;
 use xenialdan\MagicWE2\task\AsyncActionTask;
 use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
@@ -228,17 +230,21 @@ class API
      * @param Block $target
      * @param Brush $brush
      * @param Session $session
-     * @return bool
+     * @throws \Exception
      */
     public static function createBrush(Block $target, Brush $brush, Session $session)
-    {//TODO messages
+    {
         $shapeClass = $brush->properties->shape;
-        $messages = [];
-        $error = false;
+        /** @var Shape $shape */
         $shape = new $shapeClass($target->asVector3(), ...array_values($brush->properties->shapeProperties));
         $selection = new Selection($session->getUUID(), $target->getLevel());
         $selection->setShape($shape);
-        return self::fillAsync($selection, $session, self::blockParser($brush->properties->blocks, $messages, $error));
+        $actionClass = $brush->properties->action;
+        /** @var TaskAction $action */
+        $action = new $actionClass(...array_values($brush->properties->actionProperties));
+        $action->prefix = "Brush";
+        if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+        Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getLevel()), $brush->properties->blocks));
     }
 
     /**
@@ -430,11 +436,11 @@ class API
                 $blocks[] = $block;
             } else {
                 $error = true;
-                $messages[] = Loader::PREFIX . TF::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
+                $messages[] = TF::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
                 continue;
             }
             if ($block instanceof UnknownBlock) {
-                $messages[] = Loader::PREFIX . TF::GOLD . $block . " is an unknown block";
+                $messages[] = TF::GOLD . $block . " is an unknown block";
             }
         }
 

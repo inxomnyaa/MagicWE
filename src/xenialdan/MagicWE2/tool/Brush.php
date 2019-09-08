@@ -25,6 +25,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Brush extends WETool
 {
@@ -81,9 +82,9 @@ class Brush extends WETool
             $brushProperties = $this->properties ?? new BrushProperties();
             $form = new CustomForm("Brush settings");
             // Shape
-            $form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
+            #$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
             if ($new) {
-                $dropdownShape = new Dropdown("Shape");
+                $dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
                 foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
                     if ($name === ShapeRegistry::CUSTOM) continue;
                     $dropdownShape->addOption($name, $class === $brushProperties->shape);
@@ -92,6 +93,12 @@ class Brush extends WETool
             } else {
                 $form->addElement(new Label($brushProperties->getShapeName()));
             }
+            // Action
+            $dropdownAction = new Dropdown("Action");
+            foreach (ActionRegistry::getActions() as $name => $class) {
+                $dropdownAction->addOption($name, $class === $brushProperties->action);
+            }
+            $form->addElement($dropdownAction);
             // Name
             $form->addElement(new Input("Name", "Name", $new ? "" : $this->getName()));
             // Blocks
@@ -117,8 +124,8 @@ class Brush extends WETool
             // Function
             $form->setCallable(function (Player $player, $data) use ($form, $new) {
                 #var_dump(__LINE__, $data);
-                #$data = array_slice($data, 0, 6);
-                [, $shape, $name, $blocks, $filter, $biome, $hollow] = $data;
+                #$data = array_slice($data, 0, 7);
+                [$shape, $action, $name, $blocks, $filter, $biome, $hollow] = $data;
                 $extraData = [];
                 #var_dump(__LINE__, array_slice($data, 7));
                 $base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
@@ -165,6 +172,11 @@ class Brush extends WETool
                     $error['shape'] = $ex->getMessage();
                 }
                 try {
+                    $action = Loader::getActionRegistry()::getAction($action);
+                } catch (\Exception $ex) {
+                    $error['action'] = $ex->getMessage();
+                }
+                try {
                     if (!is_int($biomeId)) throw new \Exception("Biome not found");
                 } catch (\Exception $ex) {
                     $error['biome'] = $ex->getMessage();
@@ -173,12 +185,15 @@ class Brush extends WETool
                 //Set properties (called before resending, so form contains errors)
                 if (!empty(trim(TF::clean($name)))) $this->properties->customName = $name;
                 if (!isset($error['shape'])) {
-                    $this->properties->shape = $shape;//TODO
+                    $this->properties->shape = $shape;
                     if (!$new && !empty($extraData))
-                        $this->properties->shapeProperties = $extraData;//TODO
+                        $this->properties->shapeProperties = $extraData;
                 }
-                if (!isset($error['blocks'])) $this->properties->blocks = $blocks;
-                if (!isset($error['filter'])) $this->properties->filter = $filter;
+                if (!isset($error['action'])) $this->properties->action = $action;
+                /*if (!isset($error['blocks']))*/
+                $this->properties->blocks = $blocks;
+                /*if (!isset($error['filter']))*/
+                $this->properties->filter = $filter;
                 $this->properties->hollow = $hollow;
 
                 //Resend form upon error

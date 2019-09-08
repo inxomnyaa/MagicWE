@@ -6,7 +6,6 @@ namespace xenialdan\MagicWE2\commands;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
-use pocketmine\block\Block;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -49,8 +48,8 @@ class TestCommand extends BaseCommand
                     $selection,
                     new TestAction(),
                     $selection->getShape()->getTouchedChunks($selection->getLevel()),
-                    [Block::get(Block::SNOW)],
-                    [Block::get(Block::TNT)]
+                    "minecraft:snow_block",
+                    "minecraft:tnt"
                 )
             );
             $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 1, 1, 1);
@@ -60,8 +59,8 @@ class TestCommand extends BaseCommand
                     $selection,
                     new TestAction(),
                     $selection->getShape()->getTouchedChunks($selection->getLevel()),
-                    [Block::get(Block::SNOW)],
-                    [Block::get(Block::TNT)]
+                    "minecraft:snow_block",
+                    "minecraft:tnt"
                 )
             );
             $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 2, 2, 2);
@@ -71,8 +70,8 @@ class TestCommand extends BaseCommand
                     $selection,
                     new TestAction(),
                     $selection->getShape()->getTouchedChunks($selection->getLevel()),
-                    [Block::get(Block::SNOW)],
-                    [Block::get(Block::TNT)]
+                    "minecraft:snow_block",
+                    "minecraft:tnt"
                 )
             );
             $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 1, 2, 3);
@@ -82,8 +81,8 @@ class TestCommand extends BaseCommand
                     $selection,
                     new TestAction(),
                     $selection->getShape()->getTouchedChunks($selection->getLevel()),
-                    [Block::get(Block::SNOW)],
-                    [Block::get(Block::TNT)]
+                    "minecraft:snow_block",
+                    "minecraft:tnt"
                 )
             );
         } catch (\Exception $error) {

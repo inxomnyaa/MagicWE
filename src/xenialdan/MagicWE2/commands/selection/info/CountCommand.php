@@ -48,11 +48,11 @@ class CountCommand extends BaseCommand
             $error = false;
             if (!empty($args["blocks"])) {
                 $messages = [];
-                $filterBlocks = API::blockParser(strval($args["blocks"]), $messages, $error);
+                API::blockParser(($filterBlocks = strval($args["blocks"])), $messages, $error);
                 foreach ($messages as $message) {
                     $sender->sendMessage($message);
                 }
-            } else $filterBlocks = [];
+            } else $filterBlocks = "";
             if (!$error) {
                 $session = API::getSession($sender);
                 if (is_null($session)) {
@@ -74,7 +74,7 @@ class CountCommand extends BaseCommand
                         $selection,
                         new CountAction(),
                         $selection->getShape()->getTouchedChunks($selection->getLevel()),
-                        [],
+                        "",
                         $filterBlocks
                     )
                 );

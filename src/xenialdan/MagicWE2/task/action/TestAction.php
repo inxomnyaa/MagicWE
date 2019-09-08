@@ -13,6 +13,7 @@ use xenialdan\MagicWE2\selection\Selection;
 class TestAction extends TaskAction
 {
     public $addRevert = false;
+    public $completionString = '{%name} succeed, took {%took}, tested {%changed} blocks';
 
     public function __construct()
     {
@@ -31,10 +32,11 @@ class TestAction extends TaskAction
      * @param Block[] $newBlocks
      * @param Block[] $blockFilter
      * @param Block[] $oldBlocks blocks before the change
+     * @param string[] $messages
      * @return \Generator|Progress[]
      * @throws \Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = []): \Generator
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = [], array &$messages = []): \Generator
     {
         $changed = 0;
         $oldBlocks = [];
@@ -43,7 +45,7 @@ class TestAction extends TaskAction
         if (!BlockFactory::isInit()) BlockFactory::init();
         foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
             $changed++;
-            $this->completionMessages[] = $block->asVector3()->__toString() . BlockFactory::get($block->getId(), $block->getDamage())->getName();
+            $messages[] = $block->asVector3()->__toString() . " " . $block->getName();
             $progress = new Progress($changed / $count, "$changed/$count");
             if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
                 yield $progress;
