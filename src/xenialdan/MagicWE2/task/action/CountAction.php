@@ -45,7 +45,7 @@ class CountAction extends TaskAction
         $lastProgress = new Progress(0, "");
         $counts = [];
         if (!BlockFactory::isInit()) BlockFactory::init();
-        foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
+        foreach ($selection->getShape()->getBlocks($manager, $newBlocks) as $block) {
             $block1 = $manager->getBlockArrayAt($block->x, $block->y, $block->z);
             $tostring = (BlockFactory::get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;

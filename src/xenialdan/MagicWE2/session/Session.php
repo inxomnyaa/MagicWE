@@ -276,7 +276,6 @@ abstract class Session
      * TODO list:
      * session storing/recovering from file/cleanup if too old
      * session items
-     * session brushes
      * recover session items + commands to get back already created/configured items/tool/brushes
      * proper multi-selection-usage
      * setState/getState on big actions, status bar/boss bar/texts/titles/popups
@@ -284,7 +283,5 @@ abstract class Session
      * destroy session if owning player lost permission/gets banned
      * optimise destroySession/__destruct of sessions
      * clipboard selection (renaming?)
-     *
-     * ask users what else they want
      */
 }

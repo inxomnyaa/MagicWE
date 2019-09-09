@@ -11,7 +11,6 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class SetBlockAction extends TaskAction
 {
-    public $addRevert = false;
 
     public function __construct()
     {
@@ -41,7 +40,7 @@ class SetBlockAction extends TaskAction
         $oldBlocks = [];
         $count = $selection->getShape()->getTotalCount();
         $lastProgress = new Progress(0, "");
-        foreach ($selection->getShape()->getBlocks($manager) as $block) {
+        foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
             /** @var Block $new */
             if (count($newBlocks) === 1)
                 $new = clone $newBlocks[0];

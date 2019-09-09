@@ -53,7 +53,10 @@ class AsyncActionTask extends MWEAsyncTask
         $this->blockFilter = $blockFilter;
 
         $session = API::getSessionByUUID($sessionUUID);
-        if ($session instanceof UserSession) $session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
+        if ($session instanceof UserSession) {
+            $session->getBossBar()->showTo([$session->getPlayer()]);
+            $session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
+        }
     }
 
     /**

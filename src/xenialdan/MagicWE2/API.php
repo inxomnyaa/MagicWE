@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
@@ -85,14 +86,19 @@ class API
      */
     public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
     {
+        if (empty($newBlocks)) {
+            $session->sendMessage(TF::RED . "New blocks is empty!");
+            return false;
+        }
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $newblocks, $flags));
         } catch (\Exception $e) {
+            $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
         }
@@ -110,14 +116,18 @@ class API
      */
     public static function replaceAsync(Selection $selection, Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
     {
+        if (empty($oldBlocks)) $session->sendMessage(TF::RED . "Old blocks is empty!");
+        if (empty($newBlocks)) $session->sendMessage(TF::RED . "New blocks is empty!");
+        if (empty($oldBlocks) || empty($newBlocks)) return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $oldBlocks, $newBlocks, $flags));
         } catch (\Exception $e) {
+            $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
         }
@@ -137,7 +147,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             //TODO check/edit how relative position works
             $offset = new Vector3();
@@ -146,6 +156,7 @@ class API
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getLevel()), $flags));
         } catch (\Exception $e) {
+            $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
         }
@@ -167,13 +178,14 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($clipboard->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($session->getUUID(), $clipboard, $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
         } catch (\Exception $e) {
+            $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
         }
@@ -193,10 +205,11 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::PREFIX . "You are trying to count too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException("You are trying to count too many blocks at once. Reduce the selection or raise the limit");
             }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $filterBlocks, $flags));
         } catch (\Exception $e) {
+            $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
         }
@@ -214,11 +227,12 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::PREFIX . "You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getLevel())));
         } catch (\Exception $e) {
+            $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
         }
@@ -242,9 +256,10 @@ class API
         $actionClass = $brush->properties->action;
         /** @var TaskAction $action */
         $action = new $actionClass(...array_values($brush->properties->actionProperties));
+        //TODO remove hack
+        if ($action instanceof SetBiomeAction) $brush->properties->actionProperties["biomeId"] = $brush->properties->biomeId;
         $action->prefix = "Brush";
-        if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-        Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getLevel()), $brush->properties->blocks));
+        Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getLevel()), $brush->properties->blocks, $brush->properties->filter));
     }
 
     /**
@@ -430,6 +445,10 @@ class API
     public static function blockParser(string $fullstring, array &$messages, bool &$error)
     {
         $blocks = [];
+        if (empty(array_filter(explode(",", trim($fullstring)), function ($value): bool {
+            return !empty(trim($value));
+        }))) return $blocks;
+        if (!BlockFactory::isInit()) BlockFactory::init();
         foreach (self::fromString($fullstring, true) as [$name, $item]) {
             if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)) {
                 $block = $item->getBlock();

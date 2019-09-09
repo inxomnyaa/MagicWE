@@ -138,7 +138,6 @@ class Brush extends WETool
                 //prepare data
                 $blocks = trim(TF::clean($blocks));
                 $filter = trim(TF::clean($filter));
-                if (empty($filter)) $filter = "air";
 
                 $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
                 $biomeNames = array_flip($biomeNames);
@@ -155,6 +154,7 @@ class Brush extends WETool
                     $e = false;
                     API::blockParser($blocks, $m, $e);
                     if ($e) throw new \Exception(implode(TF::EOL, $m));
+                    if (empty($blocks)) throw new \Exception("Blocks cannot be empty!");
                 } catch (\Exception $ex) {
                     $error['blocks'] = $ex->getMessage();
                 }
