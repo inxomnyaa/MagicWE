@@ -45,7 +45,7 @@ class SetCommand extends BaseCommand
         try {
             $messages = [];
             $error = false;
-            $newblocks = API::blockParser(strval($args["blocks"]), $messages, $error);
+            $replaceBlocks = API::blockParser(strval($args["blocks"]), $messages, $error);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }
@@ -64,7 +64,7 @@ class SetCommand extends BaseCommand
                 if ($selection->getLevel() !== $sender->getLevel()) {
                     $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
                 }
-                API::fillAsync($selection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));
+                API::fillAsync($selection, $session, $replaceBlocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
                 throw new \InvalidArgumentException("Could not fill with the selected blocks");
             }

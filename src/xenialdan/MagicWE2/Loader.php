@@ -114,6 +114,7 @@ class Loader extends PluginBase
         Enchantment::registerEnchantment($ench);
         self::$shapeRegistry = new ShapeRegistry();
         self::$actionRegistry = new ActionRegistry();
+        SessionHelper::init();
     }
 
     /**

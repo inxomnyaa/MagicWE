@@ -8,8 +8,10 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncRevertTask extends MWEAsyncTask
@@ -98,9 +100,14 @@ class AsyncRevertTask extends MWEAsyncTask
      */
     public function onCompletion(Server $server)
     {
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            $session = null;
+        }
         $result = $this->getResult();
-        $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
         /** @var RevertClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
         $clipboard->chunks = $result["chunks"];
@@ -112,19 +119,21 @@ class AsyncRevertTask extends MWEAsyncTask
         foreach ($clipboard->chunks as $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        switch ($this->type) {
-            case self::TYPE_UNDO:
-                {
-                    $session->sendMessage(TF::GREEN . "Async Undo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
-                    $session->redoHistory->push($clipboard);
-                    break;
-                }
-            case self::TYPE_REDO:
-                {
-                    $session->sendMessage(TF::GREEN . "Async Redo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
-                    $session->undoHistory->push($clipboard);
-                    break;
-                }
+        if (!is_null($session)) {
+            switch ($this->type) {
+                case self::TYPE_UNDO:
+                    {
+                        $session->sendMessage(TF::GREEN . "Async Undo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+                        $session->redoHistory->push($clipboard);
+                        break;
+                    }
+                case self::TYPE_REDO:
+                    {
+                        $session->sendMessage(TF::GREEN . "Async Redo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+                        $session->undoHistory->push($clipboard);
+                        break;
+                    }
+            }
         }
     }
 }

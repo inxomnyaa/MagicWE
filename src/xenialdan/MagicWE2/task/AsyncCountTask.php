@@ -8,8 +8,10 @@ use pocketmine\level\format\Chunk;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
@@ -111,19 +113,23 @@ class AsyncCountTask extends MWEAsyncTask
      */
     public function onCompletion(Server $server)
     {
-        $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        $result = $this->getResult();
-        $counts = $result["counts"];
-        $totalCount = $result["totalCount"];
-        $session->sendMessage(TF::GREEN . "Async analyzing succeed, took " . $this->generateTookString());
-        $session->sendMessage(TF::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
-        uasort($counts, function ($a, $b) {
-            if ($a === $b) return 0;
-            return ($a > $b) ? -1 : 1;
-        });
-        foreach ($counts as $block => $count) {
-            $session->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+            $result = $this->getResult();
+            $counts = $result["counts"];
+            $totalCount = $result["totalCount"];
+            $session->sendMessage(TF::GREEN . "Async analyzing succeed, took " . $this->generateTookString());
+            $session->sendMessage(TF::DARK_AQUA . count($counts) . " blocks found in a total of $totalCount blocks");
+            uasort($counts, function ($a, $b) {
+                if ($a === $b) return 0;
+                return ($a > $b) ? -1 : 1;
+            });
+            foreach ($counts as $block => $count) {
+                $session->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
+            }
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
         }
     }
 }

@@ -14,3 +14,4 @@ TODO and bug list
 - [ ] Session destructs upon re-login instead upon logout
 - [ ] Undo "steals" blocks that were changed manually later
 - [ ] Rewrite CopyClipboard to be similar to RevertClipboard
+- [ ] Undo is incredibly slow - probably getAABB()

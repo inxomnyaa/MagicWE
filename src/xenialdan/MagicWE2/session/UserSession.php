@@ -36,12 +36,12 @@ class UserSession extends Session
         $this->bossBar->hideFrom([$player]);
         $this->undoHistory = new \Ds\Deque();
         $this->redoHistory = new \Ds\Deque();
-        Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $this->getUUID() . "} for player {" . $player->getName() . "}");
+        Loader::getInstance()->getLogger()->debug("Created new session with UUID {$this->getUUID()} for player {$player->getName()}");
     }
 
     public function __destruct()
     {
-        Loader::getInstance()->getLogger()->debug("Destructing session " . $this->getUUID()->__toString() . " for user " . $this->getPlayer()->getName());
+        Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
         $this->bossBar->removeAllPlayers();
     }
 

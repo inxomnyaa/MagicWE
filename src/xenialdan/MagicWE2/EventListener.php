@@ -10,6 +10,7 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\plugin\Plugin;
+use pocketmine\scheduler\Task;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
@@ -33,11 +34,25 @@ class EventListener implements Listener
     public function onLogin(PlayerLoginEvent $event)
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
-            if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
+            if (SessionHelper::hasSession($event->getPlayer()) && ($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
                 Loader::getInstance()->getLogger()->debug("Restored cached session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
-            } else if (SessionHelper::createUserSession($event->getPlayer()) instanceof UserSession) {
-                Loader::getInstance()->getLogger()->debug("Created new session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
-            }
+            } else ($session = SessionHelper::createUserSession($event->getPlayer()));
+            //TODO remove this hack. Boss bar won't show without this .-.
+            Loader::getInstance()->getScheduler()->scheduleDelayedTask(new class($session) extends Task
+            {
+                private $s;
+
+                public function __construct(UserSession $session)
+                {
+                    $this->s = $session;
+                }
+
+                public function onRun(int $currentTick)
+                {
+                    $this->s->getBossBar()->removePlayer($this->s->getPlayer());
+                    $this->s->getBossBar()->addPlayer($this->s->getPlayer());
+                }
+            }, 20);
         }
     }
 
@@ -48,6 +63,7 @@ class EventListener implements Listener
      */
     public function onLogout(PlayerQuitEvent $event)
     {
+        //TODO Its annoying having to create a new selection even after disconnect
         if ($event->getPlayer()->hasPermission("we.session")) {
             if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
                 SessionHelper::destroySession($session);
@@ -62,10 +78,10 @@ class EventListener implements Listener
     public function onInteract(PlayerInteractEvent $event)
     {
         try {
-            $this->onRightClickBlock($event);
             switch ($event->getAction()) {
                 case PlayerInteractEvent::RIGHT_CLICK_BLOCK:
                     {
+                        $this->onRightClickBlock($event);
                         break;
                     }
                 case PlayerInteractEvent::LEFT_CLICK_BLOCK:

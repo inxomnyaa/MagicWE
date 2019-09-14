@@ -9,6 +9,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -134,8 +135,13 @@ class AsyncReplaceTask extends MWEAsyncTask
      */
     public function onCompletion(Server $server)
     {
-        $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            $session = null;
+        }
         $result = $this->getResult();
         /** @var Chunk[] $resultChunks */
         $resultChunks = $result["resultChunks"];
@@ -152,7 +158,9 @@ class AsyncReplaceTask extends MWEAsyncTask
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async Replace succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
-        $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+        if (!is_null($session)) {
+            $session->sendMessage(TF::GREEN . "Async Replace succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+            $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+        }
     }
 }

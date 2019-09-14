@@ -46,8 +46,8 @@ class ReplaceCommand extends BaseCommand
         try {
             $messages = [];
             $error = false;
-            $blocks1 = API::blockParser(strval($args["findblocks"]), $messages, $error);
-            $blocks2 = API::blockParser(strval($args["replaceblocks"]), $messages, $error);
+            $findBlocks = API::blockParser(strval($args["findblocks"]), $messages, $error);
+            $replaceBlocks = API::blockParser(strval($args["replaceblocks"]), $messages, $error);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }
@@ -67,7 +67,7 @@ class ReplaceCommand extends BaseCommand
                 if ($selection->getLevel() !== $sender->getLevel()) {
                     $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
                 }
-                API::replaceAsync($selection, $session, $blocks1, $blocks2, API::flagParser(explode(" ", strval($args["flags"]))));
+                API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
                 throw new \InvalidArgumentException("Could not replace with the selected blocks");
             }

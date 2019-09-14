@@ -79,7 +79,7 @@ class API
      */
     public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
     {
-        if (empty($newBlocks)) {
+        if (empty($newblocks)) {
             $session->sendMessage(TF::RED . "New blocks is empty!");
             return false;
         }
@@ -243,10 +243,10 @@ class API
         $selection = new Selection($session->getUUID(), $target->getLevel());
         $selection->setShape($shape);
         $actionClass = $brush->properties->action;
+        //TODO remove hack
+        if ($actionClass === SetBiomeAction::class) $brush->properties->actionProperties["biomeId"] = $brush->properties->biomeId;
         /** @var TaskAction $action */
         $action = new $actionClass(...array_values($brush->properties->actionProperties));
-        //TODO remove hack
-        if ($action instanceof SetBiomeAction) $brush->properties->actionProperties["biomeId"] = $brush->properties->biomeId;
         $action->prefix = "Brush";
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getLevel()), $brush->properties->blocks, $brush->properties->filter));
     }

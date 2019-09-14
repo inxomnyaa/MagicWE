@@ -16,9 +16,15 @@ use xenialdan\MagicWE2\session\UserSession;
 class SessionHelper
 {
     /** @var \Ds\Map */
-    private static $userSessions = [];
+    private static $userSessions;
     /** @var \Ds\Map */
-    private static $pluginSessions = [];
+    private static $pluginSessions;
+
+    public static function init()
+    {
+        self::$userSessions = new \Ds\Map();
+        self::$pluginSessions = new \Ds\Map();
+    }
 
     public static function addSession(Session $session): void
     {
@@ -92,20 +98,45 @@ class SessionHelper
      */
     public static function getUserSession(Player $player): ?UserSession
     {
-        $filtered = self::$userSessions->filter(function (Session $session) use ($player) {
+        if (self::$userSessions->isEmpty()) return null;
+        $filtered = self::$userSessions->filter(function (UUID $uuid, Session $session) use ($player) {
             return $session instanceof UserSession && $session->getPlayer() === $player;
         });
+        if ($filtered->isEmpty()) return null;
         if (count($filtered) > 1) throw new SessionException("Multiple sessions found for player {$player->getName()}. This should never happen!");
-        return current($filtered) ?? null;
+        return $filtered->values()->first();
     }
 
     /**
+     * TODO cleanup or optimize
      * @param UUID $uuid
      * @return null|Session
+     * @throws SessionException
      */
     public static function getSessionByUUID(UUID $uuid): ?Session
     {
-        return self::$userSessions->get($uuid->toString(), null) ?? self::$pluginSessions->get($uuid->toString(), null) ?? null;
+        $v = null;
+        if (self::$userSessions->hasKey($uuid)) {
+            $v = self::$userSessions->get($uuid, null);
+        } else if (self::$pluginSessions->hasKey($uuid)) {
+            $v = self::$pluginSessions->get($uuid, null);
+        } else {
+            /*
+             * Sadly, this part is necessary. If you use UUID::fromString, the object "id" in the map does not match anymore
+             */
+            $userFiltered = self::$userSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
+                return $uuid2->equals($uuid);
+            });
+            if (!$userFiltered->isEmpty()) $v = $userFiltered->values()->first();
+            else {
+                $pluginFiltered = self::$pluginSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
+                    return $uuid2->equals($uuid);
+                });
+                if (!$pluginFiltered->isEmpty()) $v = $pluginFiltered->values()->first();
+            }
+        }
+        if (!$v instanceof Session) throw new SessionException("Session with uuid {$uuid->toString()} not found");
+        return $v;
     }
 
     /**

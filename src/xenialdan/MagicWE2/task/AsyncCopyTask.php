@@ -10,6 +10,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -101,14 +102,18 @@ class AsyncCopyTask extends MWEAsyncTask
 
     public function onCompletion(Server $server)
     {
-        $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        $result = $this->getResult();
-        $copied = $result["copied"];
-        /** @var CopyClipboard $clipboard */
-        $clipboard = $result["clipboard"];
-        $totalCount = $result["totalCount"];
-        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async Copy succeed, took " . $this->generateTookString() . ", copied $copied blocks out of $totalCount.");
-        $session->addClipboard($clipboard);
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+            $result = $this->getResult();
+            $copied = $result["copied"];
+            /** @var CopyClipboard $clipboard */
+            $clipboard = $result["clipboard"];
+            $totalCount = $result["totalCount"];
+            $session->sendMessage(TF::GREEN . "Async Copy succeed, took " . $this->generateTookString() . ", copied $copied blocks out of $totalCount.");
+            $session->addClipboard($clipboard);
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+        }
     }
 }
