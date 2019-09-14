@@ -6,10 +6,12 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerLoginEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
@@ -23,11 +25,32 @@ class EventListener implements Listener
         $this->owner = $plugin;
     }
 
+    /**
+     * @param PlayerLoginEvent $event
+     * @throws \InvalidStateException
+     * @throws exception\SessionException
+     */
     public function onLogin(PlayerLoginEvent $event)
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
-            if (($session = API::findSession($event->getPlayer())) instanceof UserSession) {
-                Loader::getInstance()->getLogger()->debug("Restored session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
+            if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
+                Loader::getInstance()->getLogger()->debug("Restored cached session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
+            } else if (SessionHelper::createUserSession($event->getPlayer()) instanceof UserSession) {
+                Loader::getInstance()->getLogger()->debug("Created new session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
+            }
+        }
+    }
+
+    /**
+     * @param PlayerQuitEvent $event
+     * @throws \InvalidStateException
+     * @throws exception\SessionException
+     */
+    public function onLogout(PlayerQuitEvent $event)
+    {
+        if ($event->getPlayer()->hasPermission("we.session")) {
+            if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
+                SessionHelper::destroySession($session);
             }
         }
     }
@@ -38,43 +61,37 @@ class EventListener implements Listener
      */
     public function onInteract(PlayerInteractEvent $event)
     {
-        switch ($event->getAction()) {
-            case PlayerInteractEvent::RIGHT_CLICK_BLOCK:
-                {
-                    try {
-                        $this->onRightClickBlock($event);
-                    } catch (\Exception $error) {
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+        try {
+            $this->onRightClickBlock($event);
+            switch ($event->getAction()) {
+                case PlayerInteractEvent::RIGHT_CLICK_BLOCK:
+                    {
+                        break;
                     }
-                    break;
-                }
-            case PlayerInteractEvent::LEFT_CLICK_BLOCK:
-                {
-                    try {
+                case PlayerInteractEvent::LEFT_CLICK_BLOCK:
+                    {
                         $this->onLeftClickBlock($event);
-                    } catch (\Exception $error) {
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+                        break;
                     }
-                    break;
-                }
-            case PlayerInteractEvent::RIGHT_CLICK_AIR:
-                {
-                    try {
+                case PlayerInteractEvent::RIGHT_CLICK_AIR:
+                    {
                         $this->onRightClickAir($event);
-                    } catch (\Exception $error) {
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+                        break;
                     }
-                    break;
-                }
+            }
+        } catch (\Exception $error) {
+            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
+            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
     }
 
+    /**
+     * @param BlockBreakEvent $event
+     * @throws \BadMethodCallException
+     */
     public function onBreak(BlockBreakEvent $event)
     {
-        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
+        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
             $event->setCancelled();
         }
         try {
@@ -86,19 +103,20 @@ class EventListener implements Listener
     }
 
     /**
+     * TODO use tool classes
      * @param BlockBreakEvent $event
      * @throws \Exception
      */
     private function onBreakBlock(BlockBreakEvent $event)
     {
         /** @var UserSession $session */
-        $session = API::getSession($event->getPlayer());
+        $session = SessionHelper::getUserSession($event->getPlayer());
         if (is_null($session)) return;
         switch ($event->getItem()->getId()) {
             case ItemIds::WOODEN_AXE:
                 {
                     if (!$session->isWandEnabled()) {
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                        $session->sendMessage(TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
                         break;
                     }
                     $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -121,6 +139,7 @@ class EventListener implements Listener
     }
 
     /**
+     * TODO use tool classes
      * @param PlayerInteractEvent $event
      * @throws \Exception
      */
@@ -129,7 +148,7 @@ class EventListener implements Listener
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
             /** @var UserSession $session */
-            $session = API::getSession($event->getPlayer());
+            $session = SessionHelper::getUserSession($event->getPlayer());
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
@@ -174,7 +193,7 @@ class EventListener implements Listener
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
             /** @var UserSession $session */
-            $session = API::getSession($event->getPlayer());
+            $session = SessionHelper::getUserSession($event->getPlayer());
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
@@ -218,7 +237,7 @@ class EventListener implements Listener
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
             $event->setCancelled();
-            $session = API::getSession($event->getPlayer());
+            $session = SessionHelper::getUserSession($event->getPlayer());
             if (!$session instanceof UserSession) return;
             $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
             $brush = $session->getBrushFromItem($event->getItem());

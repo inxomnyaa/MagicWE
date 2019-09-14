@@ -22,6 +22,7 @@ use xenialdan\customui\elements\Toggle;
 use xenialdan\customui\elements\UIElement;
 use xenialdan\customui\windows\CustomForm;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\UserSession;
@@ -49,6 +50,12 @@ class Brush extends WETool
         return $this->properties->getName();
     }
 
+    /**
+     * @return Item
+     * @throws \InvalidArgumentException
+     * @throws \xenialdan\MagicWE2\exception\ActionNotFoundException
+     * @throws \xenialdan\MagicWE2\exception\ShapeNotFoundException
+     */
     public function toItem(): Item
     {
         /** @var Durable $item */
@@ -206,7 +213,7 @@ class Brush extends WETool
                 #print_r($extraData);
                 try {
                     $brush = $this;
-                    $session = API::getSession($player);
+                    $session = SessionHelper::getUserSession($player);
                     if (!$session instanceof UserSession) {
                         throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                     }
@@ -249,7 +256,7 @@ class Brush extends WETool
             $this->properties->shapeProperties = $extraData;
 
             $brush = $this;
-            $session = API::getSession($player);
+            $session = SessionHelper::getUserSession($player);
             if (!$session instanceof UserSession) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }

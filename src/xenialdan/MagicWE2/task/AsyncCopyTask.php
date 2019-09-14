@@ -9,9 +9,9 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
@@ -101,7 +101,7 @@ class AsyncCopyTask extends MWEAsyncTask
 
     public function onCompletion(Server $server)
     {
-        $session = API::getSessions()[$this->sessionUUID];
+        $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
         if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
         $result = $this->getResult();
         $copied = $result["copied"];

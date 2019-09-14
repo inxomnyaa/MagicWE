@@ -10,10 +10,9 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\session\PluginSession;
 use xenialdan\MagicWE2\task\action\TestAction;
 use xenialdan\MagicWE2\task\AsyncActionTask;
 
@@ -38,8 +37,7 @@ class TestCommand extends BaseCommand
         /** @var Player $sender */
         try {
             //TODO REMOVE DEBUG
-            $pluginSession = new PluginSession(Loader::getInstance());
-            API::addSession($pluginSession);
+            $pluginSession = SessionHelper::createPluginSession(Loader::getInstance());
             $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 0, 0, 0);
             $pluginSession->addSelection($selection);
             Server::getInstance()->getAsyncPool()->submitTask(

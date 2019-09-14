@@ -47,8 +47,8 @@ use xenialdan\MagicWE2\commands\utility\CalculateCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
 use xenialdan\MagicWE2\exception\ShapeRegistryException;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
-use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Loader extends PluginBase
@@ -75,6 +75,7 @@ class Loader extends PluginBase
     /**
      * ShapeRegistry
      * @return ShapeRegistry
+     * @throws ShapeRegistryException
      */
     public static function getShapeRegistry(): ShapeRegistry
     {
@@ -85,6 +86,7 @@ class Loader extends PluginBase
     /**
      * ActionRegistry
      * @return ActionRegistry
+     * @throws ActionRegistryException
      */
     public static function getActionRegistry(): ActionRegistry
     {
@@ -98,15 +100,15 @@ class Loader extends PluginBase
         // TODO restore sessions properly / from file
         #$this->getLogger()->debug("Restoring Sessions");
         //This may take longer than 1 second when file sessions are coming. Re-enable messages after!
-        foreach ($this->getServer()->getOnlinePlayers() as $player) { // Restores on /reload for now
+        /*foreach ($this->getServer()->getOnlinePlayers() as $player) { // Restores on /reload for now
             if ($player->hasPermission("we.session")) {
-                $session = API::getSession($player);
+                $session = SessionHelper::getUserSession($player);
                 if ($session instanceof UserSession) {
                     $session->setPlayer($player);
                     Loader::getInstance()->getLogger()->debug("Restored session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
                 }
             }
-        }
+        }*/
         #$this->getLogger()->debug("Sessions successfully restored");
         $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
         Enchantment::registerEnchantment($ench);
@@ -114,6 +116,9 @@ class Loader extends PluginBase
         self::$actionRegistry = new ActionRegistry();
     }
 
+    /**
+     * @throws \pocketmine\plugin\PluginException
+     */
     public function onEnable()
     {
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
@@ -225,9 +230,8 @@ class Loader extends PluginBase
     public function onDisable()
     {
         #$this->getLogger()->debug("Destroying Sessions");
-        foreach (API::getSessions() as $session) {
-            //TODO store sessions
-            API::destroySession($session);
+        foreach (SessionHelper::getUserSessions() as $session) {
+            SessionHelper::destroySession($session);
         }
         #$this->getLogger()->debug("Sessions successfully destroyed");
     }
@@ -246,6 +250,10 @@ class Loader extends PluginBase
         return intval($this->getConfig()->get("tool-range", 100));
     }
 
+    /**
+     * @return array
+     * @throws \RuntimeException
+     */
     public static function getInfo(): array
     {
         return [

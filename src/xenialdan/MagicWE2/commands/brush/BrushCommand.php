@@ -14,7 +14,7 @@ use xenialdan\customui\elements\Label;
 use xenialdan\customui\elements\Toggle;
 use xenialdan\customui\elements\UIElement;
 use xenialdan\customui\windows\SimpleForm;
-use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
@@ -46,7 +46,7 @@ class BrushCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $session = API::getSession($sender);
+            $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }

@@ -235,6 +235,10 @@ abstract class Session
         $this->sendMessage(TF::GREEN . "You have " . count($this->undoHistory) . " undo actions left");
     }
 
+    /**
+     * @throws \InvalidArgumentException
+     * @throws \RuntimeException
+     */
     public function redo()
     {
         if ($this->redoHistory->count() === 0) {

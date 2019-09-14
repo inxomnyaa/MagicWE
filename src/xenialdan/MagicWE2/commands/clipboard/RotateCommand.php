@@ -10,7 +10,7 @@ use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
 class RotateCommand extends BaseCommand
@@ -42,7 +42,7 @@ class RotateCommand extends BaseCommand
         try {
             $rotation = intval($args["degrees"]);
             $sender->sendMessage(Loader::PREFIX . "Trying to rotate clipboard by " . 90 * $rotation . " degrees");
-            $session = API::getSession($sender);
+            $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }

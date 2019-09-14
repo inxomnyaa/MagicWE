@@ -13,6 +13,7 @@ use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncClipboardTask extends MWEAsyncTask
@@ -106,7 +107,7 @@ class AsyncClipboardTask extends MWEAsyncTask
      */
     public function onCompletion(Server $server)
     {
-        $session = API::getSessions()[$this->sessionUUID];
+        $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
         if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
         $result = $this->getResult();
         $undoChunks = array_map(function ($chunk) {

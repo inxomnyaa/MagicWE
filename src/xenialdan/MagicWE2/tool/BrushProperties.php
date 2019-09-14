@@ -6,6 +6,8 @@ namespace xenialdan\MagicWE2\tool;
 
 use pocketmine\level\biome\Biome;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\ActionNotFoundException;
+use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\selection\shape\Sphere;
@@ -54,18 +56,30 @@ class BrushProperties implements \JsonSerializable
 
     public function getName(): string
     {
-        $str = trim(($this->hasCustomName() ? $this->customName : $this->getShapeName()) /*. " " . $this->action->getName() . */);
+        $str = "";
+        try {
+            $str = trim(($this->hasCustomName() ? $this->customName : $this->getShapeName()) /*. " " . $this->action->getName() . */);
+        } catch (ShapeNotFoundException $e) {
+        }
         if (stripos(TF::clean($str), "brush") === false) {
             $str .= " Brush";
         }
         return $str;
     }
 
+    /**
+     * @return string
+     * @throws ShapeNotFoundException
+     */
     public function getShapeName(): string
     {
         return is_subclass_of($this->shape, Shape::class) ? ShapeRegistry::getShapeName($this->shape) : "";
     }
 
+    /**
+     * @return string
+     * @throws ActionNotFoundException
+     */
     public function getActionName(): string
     {
         return is_subclass_of($this->action, TaskAction::class) ? ActionRegistry::getActionName($this->action) : "";
@@ -84,6 +98,11 @@ class BrushProperties implements \JsonSerializable
         $this->customName = $customName;
     }
 
+    /**
+     * @return array
+     * @throws ActionNotFoundException
+     * @throws ShapeNotFoundException
+     */
     public function generateLore(): array
     {
         $shapeProperties = array_map(function ($k, $v): string {

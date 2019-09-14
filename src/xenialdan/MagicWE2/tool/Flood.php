@@ -1,4 +1,6 @@
-<?php
+<?php /** @noinspection PhpUnusedParameterInspection */
+
+/** @noinspection PhpUndefinedMethodInspection */
 
 namespace xenialdan\MagicWE2\tool;
 

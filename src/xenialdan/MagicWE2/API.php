@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnusedParameterInspection */
 
 declare(strict_types=1);
 
@@ -15,11 +15,8 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\NamedTag;
-use pocketmine\Player;
-use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\exception\CalculationException;
@@ -69,9 +66,6 @@ class API
     const TAG_MAGIC_WE = "MagicWE";
     const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
 
-    //TODO Split into seperate Class (SessionStorage?)
-    /** @var Session[] */
-    private static $sessions = [];
     //TODO Split into seperate Class (SchematicStorage?)
     /** @var CopyClipboard[] *///TODO
     private static $schematics = [];
@@ -82,7 +76,6 @@ class API
      * @param Block[] $newblocks
      * @param int $flags
      * @return bool
-     * @throws LimitExceededException
      */
     public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
     {
@@ -112,7 +105,6 @@ class API
      * @param Block[] $newBlocks
      * @param int $flags
      * @return bool
-     * @throws LimitExceededException
      */
     public static function replaceAsync(Selection $selection, Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE)
     {
@@ -139,7 +131,6 @@ class API
      * @param Session $session
      * @param int $flags
      * @return bool
-     * @throws LimitExceededException
      */
     public static function copyAsync(Selection $selection, Session $session, int $flags = self::FLAG_BASE)
     {
@@ -170,7 +161,6 @@ class API
      * @param Position $target
      * @param int $flags
      * @return bool
-     * @throws LimitExceededException
      */
     public static function pasteAsync(CopyClipboard $clipboard, ?Session $session, Position $target, int $flags = self::FLAG_BASE)
     {
@@ -198,7 +188,6 @@ class API
      * @param Block[] $filterBlocks
      * @param int $flags
      * @return bool
-     * @throws LimitExceededException
      */
     public static function countAsync(Selection $selection, Session $session, array $filterBlocks, int $flags = self::FLAG_BASE)
     {
@@ -268,7 +257,6 @@ class API
      * @param Session $session
      * @param int $flags
      * @return bool
-     * @throws LimitExceededException
      */
     public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE)
     { //TODO
@@ -280,84 +268,6 @@ class API
         $messages = [];
         $error = false;
         return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flags);*/
-    }
-
-    /// SESSION RELATED API PART
-
-    public static function addSession(Session $session)
-    {
-        return (self::$sessions[$session->getUUID()->toString()] = $session);
-    }
-
-    public static function destroySession(Session $session)
-    {
-        unset(self::$sessions[$session->getUUID()->toString()]);
-    }
-
-    /**
-     * @param Player $player
-     * @return UserSession|null
-     * @throws \Error
-     */
-    public static function getSession(Player $player): ?UserSession
-    {
-        $session = self::findSession($player);
-        if (is_null($session)) {
-            if ($player->hasPermission("we.session")) {
-                $session = new UserSession($player);
-                API::addSession($session);
-                Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $session->getUUID() . "} for player {" . $session->getPlayer()->getName() . "}");
-                return $session;
-            } else {
-                $player->sendMessage(Loader::PREFIX . TF::RED . "You do not have the permission \"magicwe.session\"");
-            }
-        }
-        if (!$player->hasPermission("we.session")) {
-            if ($session instanceof UserSession)
-                self::destroySession($session);
-            Loader::getInstance()->getLogger()->info("Player " . $player->getName() . " does not have the permission \"magicwe.session\", but tried to use " . Loader::PREFIX);
-        }
-        return $session;
-    }
-
-    /**
-     * @param Player $player
-     * @return bool
-     */
-    public static function hasSession(Player $player): bool
-    {
-        return self::findSession($player) instanceof UserSession;
-    }
-
-    /**
-     * @param Player $player
-     * @return null|UserSession
-     */
-    public static function findSession(Player $player): ?UserSession
-    {
-        $filtered = array_filter(self::$sessions, function (Session $session) use ($player) {
-            return $session instanceof UserSession && $session->getPlayer() === $player;
-        });
-        if (count($filtered) > 1) throw new PluginException("Multiple sessions found for player {$player->getName()}. This should never happen!");
-        if (count($filtered) === 1) return array_values($filtered)[0];
-        return null;
-    }
-
-    /**
-     * @param UUID $uuid
-     * @return null|Session
-     */
-    public static function getSessionByUUID(UUID $uuid): ?Session
-    {
-        return self::$sessions[$uuid->toString()] ?? null;
-    }
-
-    /**
-     * @return Session[]
-     */
-    public static function getSessions(): array
-    {
-        return self::$sessions;
     }
 
     /// SCHEMATIC RELATED API PART
@@ -384,6 +294,7 @@ class API
      * Parses String representations of flags into an integer with flags applied
      * @param string[] $flags An array containing string representations of the flags
      * @return int
+     * @throws \RuntimeException
      */
     public static function flagParser(array $flags)
     {

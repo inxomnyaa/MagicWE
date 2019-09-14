@@ -10,7 +10,7 @@ use CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
@@ -41,7 +41,7 @@ class BrushNameCommand extends BaseSubCommand
         }
         /** @var Player $sender */
         try {
-            $session = API::getSession($sender);
+            $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }

@@ -13,6 +13,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Cylinder;
@@ -56,7 +57,7 @@ class CylinderCommand extends BaseCommand
                 $sender->sendMessage($message);
             }
             if (!$error) {
-                $session = API::getSession($sender);
+                $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {
                     throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                 }

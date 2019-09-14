@@ -31,12 +31,22 @@ class ActionRegistry
         return self::$actions;
     }
 
+    /**
+     * @param string $name
+     * @return string
+     * @throws ActionNotFoundException
+     */
     public static function getAction(string $name): string
     {
         if (isset(self::$actions[$name])) return self::$actions[$name];
         throw new ActionNotFoundException("Action $name not found");
     }
 
+    /**
+     * @param string $actionClass
+     * @return string
+     * @throws ActionNotFoundException
+     */
     public static function getActionName(string $actionClass): string
     {
         $names = array_flip(self::$actions);

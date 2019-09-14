@@ -36,6 +36,7 @@ class UserSession extends Session
         $this->bossBar->hideFrom([$player]);
         $this->undoHistory = new \Ds\Deque();
         $this->redoHistory = new \Ds\Deque();
+        Loader::getInstance()->getLogger()->debug("Created new session with UUID {" . $this->getUUID() . "} for player {" . $player->getName() . "}");
     }
 
     public function __destruct()
@@ -162,6 +163,9 @@ class UserSession extends Session
      * TODO exception for not a brush
      * @param Brush $brush UUID will be set automatically
      * @return void
+     * @throws \InvalidArgumentException
+     * @throws \xenialdan\MagicWE2\exception\ActionNotFoundException
+     * @throws \xenialdan\MagicWE2\exception\ShapeNotFoundException
      */
     public function replaceBrush(Brush $brush): void
     {

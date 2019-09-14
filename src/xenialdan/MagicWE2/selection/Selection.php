@@ -10,7 +10,7 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
-use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
@@ -108,7 +108,7 @@ class Selection implements \Serializable
         $this->setLevel($position->getLevel());
         if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-        $session = API::getSessionByUUID($this->sessionUUID);
+        $session = SessionHelper::getSessionByUUID($this->sessionUUID);
         if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ());
     }
 
@@ -138,7 +138,7 @@ class Selection implements \Serializable
         $this->setLevel($position->getLevel());
         if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-        $session = API::getSessionByUUID($this->sessionUUID);
+        $session = SessionHelper::getSessionByUUID($this->sessionUUID);
         if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ());
     }
 

@@ -13,6 +13,7 @@ use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\task\action\CountAction;
 use xenialdan\MagicWE2\task\AsyncActionTask;
@@ -54,7 +55,7 @@ class CountCommand extends BaseCommand
                 }
             } else $filterBlocks = "";
             if (!$error) {
-                $session = API::getSession($sender);
+                $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {
                     throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
                 }

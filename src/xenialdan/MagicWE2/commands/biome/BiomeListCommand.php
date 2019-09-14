@@ -9,7 +9,7 @@ use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\level\biome\Biome;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
 class BiomeListCommand extends BaseCommand
@@ -31,7 +31,7 @@ class BiomeListCommand extends BaseCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         try {
-            $session = API::getSession($sender);
+            $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
                 throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
             }

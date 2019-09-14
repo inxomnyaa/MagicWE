@@ -44,12 +44,22 @@ class ShapeRegistry
         return self::$shapes;
     }
 
+    /**
+     * @param string $name
+     * @return string
+     * @throws ShapeNotFoundException
+     */
     public static function getShape(string $name): string
     {
         if (isset(self::$shapes[$name])) return self::$shapes[$name];
         throw new ShapeNotFoundException("Shape $name not found");
     }
 
+    /**
+     * @param string $shapeClass
+     * @return string
+     * @throws ShapeNotFoundException
+     */
     public static function getShapeName(string $shapeClass): string
     {
         $names = array_flip(self::$shapes);
