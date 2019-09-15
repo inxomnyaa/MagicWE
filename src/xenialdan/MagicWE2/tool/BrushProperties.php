@@ -140,7 +140,7 @@ class BrushProperties implements \JsonSerializable
                 TF::GOLD . "Filter: {$this->filter}",
                 TF::GOLD . "Biome: {$this->biomeId}",
                 TF::GOLD . "Hollow: " . ($this->hollow ? "Yes" : "No"),
-                TF::GOLD . "UUID: {$this->uuid}",
+                //TF::GOLD . "UUID: {$this->uuid}",
             ]
         );
     }

@@ -49,9 +49,8 @@ class WandCommand extends BaseCommand
             $item->setUnbreakable(true);
             $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . 'Wand');
             $item->setLore([//TODO translation
-                'Left click air or a block to set the position 1 of a selection',
-                'Right click air or a block to set the position 2 of a selection',
-                'If you click in air its set to the block you are looking at',
+                'Left click a block to set the position 1 of a selection',
+                'Right click a block to set the position 2 of a selection',
                 'Use //togglewand to toggle it\'s functionality'
             ]);
             $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));

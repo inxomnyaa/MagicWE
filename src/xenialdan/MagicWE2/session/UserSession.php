@@ -157,17 +157,17 @@ class UserSession extends Session implements \JsonSerializable
     public function addBrush(Brush $brush): void
     {
         $this->brushes[$brush->properties->uuid] = $brush;
-        $this->sendMessage("Added {$brush->getName()} to session (UUID {$brush->properties->uuid})");
+        $this->sendMessage("Added {$brush->getName()} to session");
     }
 
     /**
-     * TODO exception for not a brush
      * @param Brush $brush UUID will be set automatically
+     * @param bool $delete If true, it will be removed from the session brushes
      * @return void
      */
-    public function removeBrush(Brush $brush): void
+    public function removeBrush(Brush $brush, bool $delete = false): void
     {
-        unset($this->brushes[$brush->properties->uuid]);
+        if ($delete) unset($this->brushes[$brush->properties->uuid]);
         foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
             /** @var CompoundTag $entry */
             if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
@@ -176,7 +176,8 @@ class UserSession extends Session implements \JsonSerializable
                 }
             }
         }
-        $this->sendMessage("Deleted {$brush->getName()} (UUID {$brush->properties->uuid})");
+        if ($delete) $this->sendMessage("Deleted {$brush->getName()} (UUID {$brush->properties->uuid})");
+        else $this->sendMessage("Removed {$brush->getName()} (UUID {$brush->properties->uuid})");
     }
 
     /**

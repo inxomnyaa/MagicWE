@@ -4,14 +4,17 @@ namespace xenialdan\MagicWE2;
 
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
+use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\scheduler\Task;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\customui\windows\ModalForm;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
@@ -262,6 +265,34 @@ class EventListener implements Listener
             if (!is_null($target) && $brush instanceof Brush) {// && has perms
                 API::createBrush($target, $brush, $session);
             }
+        }
+    }
+
+    /**
+     * @param PlayerDropItemEvent $event
+     */
+    public function onDropItem(PlayerDropItemEvent $event)
+    {
+        try {
+            if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
+                $event->setCancelled();
+                $session = SessionHelper::getUserSession($event->getPlayer());
+                if (!$session instanceof UserSession) return;
+                $brush = $session->getBrushFromItem($event->getItem());
+                if ($brush instanceof Brush) {
+                    $form = new ModalForm(TF::BOLD . $brush->getName(), TF::RED .
+                        "Delete" . TF::WHITE . " brush from session or " . TF::GREEN . "remove" . TF::WHITE . " from Inventory?" . TF::EOL .
+                        implode(TF::EOL, $event->getItem()->getLore()), TF::BOLD . TF::DARK_RED . "Delete", TF::BOLD . TF::DARK_GREEN . "Remove");
+                    $form->setCallable(function (Player $player, $data) use ($session, $brush) {
+                        $session->removeBrush($brush, $data);
+                    });
+                    $event->getPlayer()->sendForm($form);
+                }
+            } else if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
+                $event->setCancelled();
+                $event->getPlayer()->getInventory()->remove($event->getItem());
+            }
+        } catch (\Exception $e) {
         }
     }
 }
