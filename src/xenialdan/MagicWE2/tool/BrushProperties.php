@@ -54,6 +54,21 @@ class BrushProperties implements \JsonSerializable
         return (array)$this;
     }
 
+    /**
+     * @param array $json
+     * @return BrushProperties
+     * @throws \InvalidArgumentException
+     */
+    public static function fromJson(array $json): BrushProperties
+    {
+        if (($json["version"] ?? 0) !== self::VERSION) throw new \InvalidArgumentException("Version mismatch");
+        $properties = new self;
+        foreach ($json as $key => $value) {
+            $properties->$key = $value;
+        }
+        return $properties;
+    }
+
     public function getName(): string
     {
         $str = "";

@@ -15,7 +15,7 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
-class UserSession extends Session
+class UserSession extends Session implements \JsonSerializable
 {
     /** @var Player|null */
     private $player = null;
@@ -36,7 +36,7 @@ class UserSession extends Session
         $this->bossBar->hideFrom([$player]);
         $this->undoHistory = new \Ds\Deque();
         $this->redoHistory = new \Ds\Deque();
-        Loader::getInstance()->getLogger()->debug("Created new session with UUID {$this->getUUID()} for player {$player->getName()}");
+        Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
     }
 
     public function __destruct()
@@ -201,5 +201,32 @@ class UserSession extends Session
     public function sendMessage(string $message)
     {
         $this->player->sendMessage(Loader::PREFIX . $message);
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return [
+            "uuid" => $this->getUUID()->toString(),
+            "wandEnabled" => $this->wandEnabled,
+            "debugStickEnabled" => $this->debugStickEnabled,
+            "brushes" => $this->brushes,
+            "latestSelection" => $this->getLatestSelection(),
+            "currentClipboard" => $this->getCurrentClipboard()
+        ];
+    }
+
+    public function save(): void
+    {
+        file_put_contents(Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
+            $this->getPlayer()->getName() . ".json",
+            json_encode($this, JSON_PRETTY_PRINT)
+        );
     }
 }

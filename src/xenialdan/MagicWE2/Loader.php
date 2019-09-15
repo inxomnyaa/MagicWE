@@ -97,19 +97,6 @@ class Loader extends PluginBase
     public function onLoad()
     {
         self::$instance = $this;
-        // TODO restore sessions properly / from file
-        #$this->getLogger()->debug("Restoring Sessions");
-        //This may take longer than 1 second when file sessions are coming. Re-enable messages after!
-        /*foreach ($this->getServer()->getOnlinePlayers() as $player) { // Restores on /reload for now
-            if ($player->hasPermission("we.session")) {
-                $session = SessionHelper::getUserSession($player);
-                if ($session instanceof UserSession) {
-                    $session->setPlayer($player);
-                    Loader::getInstance()->getLogger()->debug("Restored session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
-                }
-            }
-        }*/
-        #$this->getLogger()->debug("Sessions successfully restored");
         $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
         Enchantment::registerEnchantment($ench);
         self::$shapeRegistry = new ShapeRegistry();
@@ -231,6 +218,9 @@ class Loader extends PluginBase
     public function onDisable()
     {
         #$this->getLogger()->debug("Destroying Sessions");
+        foreach (SessionHelper::getPluginSessions() as $session) {
+            SessionHelper::destroySession($session, false);
+        }
         foreach (SessionHelper::getUserSessions() as $session) {
             SessionHelper::destroySession($session);
         }

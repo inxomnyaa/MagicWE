@@ -20,7 +20,7 @@ use xenialdan\MagicWE2\session\Session;
  * Class Selection
  * @package xenialdan\MagicWE2
  */
-class Selection implements \Serializable
+class Selection implements \Serializable, \JsonSerializable
 {
     /** @var int */
     public $levelid;
@@ -268,5 +268,20 @@ class Selection implements \Serializable
             $this->sessionUUID,
             $this->shape
         ] = unserialize($serialized);
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        $arr = (array)$this;
+        if (!is_null($this->shape))
+            $arr["shapeClass"] = get_class($this->shape);
+        return $arr;
     }
 }

@@ -35,7 +35,9 @@ class EventListener implements Listener
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
             if (SessionHelper::hasSession($event->getPlayer()) && ($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
-                Loader::getInstance()->getLogger()->debug("Restored cached session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
+                Loader::getInstance()->getLogger()->debug("Restored cached session for player {$session->getPlayer()->getName()}");
+            } else if (($session = SessionHelper::loadUserSession($event->getPlayer())) instanceof UserSession) {
+                Loader::getInstance()->getLogger()->debug("Restored session from file for player {$session->getPlayer()->getName()}");
             } else ($session = SessionHelper::createUserSession($event->getPlayer()));
             //TODO remove this hack. Boss bar won't show without this .-.
             Loader::getInstance()->getScheduler()->scheduleDelayedTask(new class($session) extends Task
@@ -63,7 +65,6 @@ class EventListener implements Listener
      */
     public function onLogout(PlayerQuitEvent $event)
     {
-        //TODO Its annoying having to create a new selection even after disconnect
         if ($event->getPlayer()->hasPermission("we.session")) {
             if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
                 SessionHelper::destroySession($session);

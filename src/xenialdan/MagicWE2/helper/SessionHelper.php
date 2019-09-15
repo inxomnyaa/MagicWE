@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\session\PluginSession;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\tool\Brush;
+use xenialdan\MagicWE2\tool\BrushProperties;
 
 class SessionHelper
 {
@@ -22,6 +29,7 @@ class SessionHelper
 
     public static function init()
     {
+        @mkdir(Loader::getInstance()->getDataFolder() . "sessions");
         self::$userSessions = new \Ds\Map();
         self::$pluginSessions = new \Ds\Map();
     }
@@ -43,8 +51,8 @@ class SessionHelper
         else if ($session instanceof PluginSession) self::$pluginSessions->remove($session->getUUID());
         //TODO save
         /** @noinspection PhpStatementHasEmptyBodyInspection */
-        if ($save) {
-
+        if ($save && $session instanceof UserSession) {
+            $session->save();
         }
         unset($session);
     }
@@ -140,11 +148,76 @@ class SessionHelper
     }
 
     /**
-     * @return \Ds\Map
+     * @return array|UserSession[]
      */
-    public static function getUserSessions(): \Ds\Map
+    public static function getUserSessions(): array
     {
-        return self::$userSessions;
+        return self::$userSessions->values()->toArray();
+    }
+
+    /**
+     * @return array|PluginSession[]
+     */
+    public static function getPluginSessions(): array
+    {
+        return self::$pluginSessions->values()->toArray();
+    }
+
+    public static function loadUserSession(Player $player): ?UserSession
+    {
+        $path = Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
+            $player->getName() . ".json";
+        if (!file_exists($path)) return null;
+        $contents = file_get_contents($path);
+        if ($contents === false) return null;
+        $data = json_decode($contents, true);
+        if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
+            Loader::getInstance()->getLogger()->error("Could not load user session from json file {$path}: " . json_last_error_msg());
+            #unlink($path);//TODO make safe
+            return null;
+        }
+        $session = new UserSession($player);
+        try {
+            $session->setUUID(UUID::fromString($data["uuid"]));
+            $session->setWandEnabled($data["wandEnabled"]);
+            $session->setDebugStickEnabled($data["debugStickEnabled"]);
+            foreach ($data["brushes"] as $brushUUID => $brushJson) {
+                try {
+                    $properties = BrushProperties::fromJson($brushJson["properties"]);
+                    $brush = new Brush($properties);
+                    $session->addBrush($brush);
+                } catch (\InvalidArgumentException $e) {
+                    continue;
+                }
+            };
+            if (!is_null(($latestSelection = $data["latestSelection"] ?? null))) {
+                try {
+                    $selection = new Selection(
+                        $session->getUUID(),
+                        Server::getInstance()->getLevel($latestSelection["levelid"]),
+                        $latestSelection["pos1"]["x"],
+                        $latestSelection["pos1"]["y"],
+                        $latestSelection["pos1"]["z"],
+                        $latestSelection["pos2"]["x"],
+                        $latestSelection["pos2"]["y"],
+                        $latestSelection["pos2"]["z"]
+                    );
+                    $shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
+                    $pasteVector = $latestSelection["shape"]["pasteVector"];
+                    unset($latestSelection["shape"]["pasteVector"]);
+                    $pasteV = new Vector3(...array_values($pasteVector));
+                    $shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
+                    $selection->setShape($shape);
+                    $session->addSelection($selection);
+                } catch (\RuntimeException $e) {
+                }
+            }
+            //TODO clipboard
+        } catch (\Exception $exception) {
+            return null;
+        }
+        self::addSession($session);
+        return $session;
     }
 
 }
