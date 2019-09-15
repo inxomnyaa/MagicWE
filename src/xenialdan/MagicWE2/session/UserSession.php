@@ -31,6 +31,7 @@ class UserSession extends Session implements \JsonSerializable
     public function __construct(Player $player)
     {
         $this->setPlayer($player);
+        $this->cleanupInventory();
         $this->setUUID($player->getUniqueId());
         $this->bossBar = (new BossBar())->addPlayer($player);
         $this->bossBar->hideFrom([$player]);
@@ -163,6 +164,25 @@ class UserSession extends Session implements \JsonSerializable
      * TODO exception for not a brush
      * @param Brush $brush UUID will be set automatically
      * @return void
+     */
+    public function removeBrush(Brush $brush): void
+    {
+        unset($this->brushes[$brush->properties->uuid]);
+        foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
+            /** @var CompoundTag $entry */
+            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
+                if ($entry->getString("id") === $brush->properties->uuid) {
+                    $this->getPlayer()->getInventory()->clear($slot);
+                }
+            }
+        }
+        $this->sendMessage("Deleted {$brush->getName()} (UUID {$brush->properties->uuid})");
+    }
+
+    /**
+     * TODO exception for not a brush
+     * @param Brush $brush UUID will be set automatically
+     * @return void
      * @throws \InvalidArgumentException
      * @throws \xenialdan\MagicWE2\exception\ActionNotFoundException
      * @throws \xenialdan\MagicWE2\exception\ShapeNotFoundException
@@ -177,6 +197,27 @@ class UserSession extends Session implements \JsonSerializable
                 if ($entry->getString("id") === $brush->properties->uuid) {
                     $this->getPlayer()->getInventory()->setItem($slot, $new);
                 }
+            }
+        }
+    }
+
+    /**
+     * @return Brush[]
+     */
+    public function getBrushes(): array
+    {
+        return $this->brushes;
+    }
+
+    public function cleanupInventory(): void
+    {
+        foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
+            /** @var CompoundTag $entry */
+            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
+                $this->getPlayer()->getInventory()->clear($slot);
+            }
+            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE)))) {
+                $this->getPlayer()->getInventory()->clear($slot);
             }
         }
     }

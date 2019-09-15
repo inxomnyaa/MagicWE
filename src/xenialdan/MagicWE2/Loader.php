@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
@@ -113,6 +114,7 @@ class Loader extends PluginBase
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
         if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
         $this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
+        if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
             /* -- selection -- */

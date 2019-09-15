@@ -47,8 +47,10 @@ class SessionHelper
      */
     public static function destroySession(Session $session, bool $save = true)
     {
-        if ($session instanceof UserSession) self::$userSessions->remove($session->getUUID());
-        else if ($session instanceof PluginSession) self::$pluginSessions->remove($session->getUUID());
+        if ($session instanceof UserSession) {
+            $session->cleanupInventory();
+            self::$userSessions->remove($session->getUUID());
+        } else if ($session instanceof PluginSession) self::$pluginSessions->remove($session->getUUID());
         /** @noinspection PhpStatementHasEmptyBodyInspection */
         if ($save && $session instanceof UserSession) {
             $session->save();

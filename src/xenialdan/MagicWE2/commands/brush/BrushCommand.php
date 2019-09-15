@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\commands\brush;
 
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
+use muqsit\invmenu\InvMenu;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -52,18 +53,26 @@ class BrushCommand extends BaseCommand
             }
             $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('Brush main menu'));
             $form->addButton(new Button($lang->translateString('Create new')));
+            $form->addButton(new Button($lang->translateString('Get session brush')));
             $form->addButton(new Button($lang->translateString('Edit brush in hand')));
-            $form->addButton(new Button($lang->translateString('Edit session brush')));
             $form->setCallable(function (Player $player, $data) use ($lang, $form, $session) {
                 try {
                     switch ($data) {
                         case $lang->translateString('Create new'):
                             {
                                 $brush = new Brush(new BrushProperties());
-                                #$session->addBrush($brush);
                                 if ($brush instanceof Brush) {
                                     $player->sendForm($brush->getForm());
                                 }
+                                break;
+                            }
+                        case $lang->translateString('Get session brush'):
+                            {
+                                $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST)->readonly(false);
+                                foreach ($session->getBrushes() as $brush) {
+                                    $menu->getInventory()->addItem($brush->toItem());
+                                }
+                                $menu->send($player, "Session brushes");
                                 break;
                             }
                         case $lang->translateString('Edit brush in hand'):
@@ -72,11 +81,6 @@ class BrushCommand extends BaseCommand
                                 if ($brush instanceof Brush) {
                                     $player->sendForm($brush->getForm(false));
                                 }
-                                break;
-                            }
-                        case $lang->translateString('Edit session brush'):
-                            {
-                                $session->sendMessage(TF::RED . "TODO");
                                 break;
                             }
                     }
