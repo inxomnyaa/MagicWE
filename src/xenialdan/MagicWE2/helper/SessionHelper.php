@@ -182,6 +182,7 @@ class SessionHelper
             $session->setUUID(UUID::fromString($data["uuid"]));
             $session->setWandEnabled($data["wandEnabled"]);
             $session->setDebugToolEnabled($data["debugToolEnabled"]);
+            $session->setLanguage($data["language"]);
             foreach ($data["brushes"] as $brushUUID => $brushJson) {
                 try {
                     $properties = BrushProperties::fromJson($brushJson["properties"]);
@@ -206,10 +207,12 @@ class SessionHelper
                     $shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
                     $pasteVector = $latestSelection["shape"]["pasteVector"];
                     unset($latestSelection["shape"]["pasteVector"]);
-                    $pasteV = new Vector3(...array_values($pasteVector));
-                    $shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
-                    $selection->setShape($shape);
-                    $session->addSelection($selection);
+                    if (!is_null($pasteVector)) {
+                        $pasteV = new Vector3(...array_values($pasteVector));
+                        $shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
+                        $selection->setShape($shape);
+                        $session->addSelection($selection);
+                    }
                 } catch (\RuntimeException $e) {
                 }
             }

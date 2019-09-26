@@ -17,6 +17,8 @@ permissions:
     children:
       we.command.donate:
         default: true
+      we.command.language:
+        default: op
       we.command.help:
         default: op
       we.command.info:

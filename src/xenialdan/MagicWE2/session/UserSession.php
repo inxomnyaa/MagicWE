@@ -28,6 +28,8 @@ class UserSession extends Session implements \JsonSerializable
     private $debugToolEnabled = true;
     /** @var Brush[] */
     private $brushes = [];
+    /** @var BaseLang */
+    private $lang;
 
     public function __construct(Player $player)
     {
@@ -38,6 +40,7 @@ class UserSession extends Session implements \JsonSerializable
         $this->bossBar->hideFrom([$player]);
         $this->undoHistory = new \Ds\Deque();
         $this->redoHistory = new \Ds\Deque();
+        if (is_null($this->lang)) $this->setLanguage(BaseLang::FALLBACK_LANGUAGE);
         Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
     }
 
@@ -48,12 +51,28 @@ class UserSession extends Session implements \JsonSerializable
     }
 
     /**
-     * TODO per-user language
      * @return BaseLang
      */
     public function getLanguage(): BaseLang
     {
-        return Loader::getInstance()->getLanguage();
+        return $this->lang;
+    }
+
+    /**
+     * Set the language for the user. Uses iso639-2 language code
+     * @param string $langShort iso639-2 conform language code (3 letter)
+     */
+    public function setLanguage(string $langShort): void
+    {
+        $langShort = strtolower($langShort);
+        if (isset(Loader::getInstance()->getLanguageList()[$langShort])) {
+            $this->lang = new BaseLang($langShort, Loader::getInstance()->getLanguageFolder());
+            var_dump($langShort, $this->lang->getName());
+            $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString("session.language.set", [$this->getLanguage()->getName()]));
+        } else {
+            $this->lang = new BaseLang(BaseLang::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
+            $this->sendMessage(TF::RED . $this->getLanguage()->translateString("session.language.notfound", [$langShort]));
+        }
     }
 
     /**
@@ -270,7 +289,8 @@ class UserSession extends Session implements \JsonSerializable
             "debugToolEnabled" => $this->debugToolEnabled,
             "brushes" => $this->brushes,
             "latestSelection" => $this->getLatestSelection(),
-            "currentClipboard" => $this->getCurrentClipboard()
+            "currentClipboard" => $this->getCurrentClipboard(),
+            "language" => $this->getLanguage()->getLang()
         ];
     }
 

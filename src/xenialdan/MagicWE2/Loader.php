@@ -25,6 +25,7 @@ use xenialdan\MagicWE2\commands\history\ClearhistoryCommand;
 use xenialdan\MagicWE2\commands\history\RedoCommand;
 use xenialdan\MagicWE2\commands\history\UndoCommand;
 use xenialdan\MagicWE2\commands\InfoCommand;
+use xenialdan\MagicWE2\commands\LanguageCommand;
 use xenialdan\MagicWE2\commands\LimitCommand;
 use xenialdan\MagicWE2\commands\region\ReplaceCommand;
 use xenialdan\MagicWE2\commands\region\SetCommand;
@@ -111,7 +112,7 @@ class Loader extends PluginBase
     public function onEnable()
     {
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
-        $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
+        $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
         if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
         $this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
         if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
@@ -192,6 +193,7 @@ class Loader extends PluginBase
             new InfoCommand("/info", "Information about MagicWE"),
             new ReportCommand("/report", "Report a bug to GitHub", ["/bug", "/github"]),
             new DonateCommand("/donate", "Donate to support development of MagicWE!", ["/support", "/paypal"]),
+            new LanguageCommand("/language", "Set your language", ["/lang"]),
             /* -- biome -- */
             new BiomeListCommand("/biomelist", "Gets all biomes available", ["/biomels"]),
             new BiomeInfoCommand("/biomeinfo", "Get the biome of the targeted block"),
@@ -297,5 +299,24 @@ class Loader extends PluginBase
             );
         }, $axe) as $axeMsg)
             $this->getLogger()->info($axeMsg);
+    }
+
+    /**
+     * Returns the path to the language files folder.
+     *
+     * @return string
+     */
+    public function getLanguageFolder(): string
+    {
+        return $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Get a list of available languages
+     * @return array
+     */
+    public function getLanguageList(): array
+    {
+        return BaseLang::getLanguageList($this->getLanguageFolder());
     }
 }
