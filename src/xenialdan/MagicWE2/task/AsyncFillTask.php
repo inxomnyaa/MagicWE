@@ -156,7 +156,7 @@ class AsyncFillTask extends MWEAsyncTask
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
         if (!is_null($session)) {
-            $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));
             $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
         }
     }

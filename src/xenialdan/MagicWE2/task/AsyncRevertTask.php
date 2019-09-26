@@ -123,13 +123,13 @@ class AsyncRevertTask extends MWEAsyncTask
             switch ($this->type) {
                 case self::TYPE_UNDO:
                     {
-                        $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
+                        $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
                         $session->redoHistory->push($clipboard);
                         break;
                     }
                 case self::TYPE_REDO:
                     {
-                        $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
+                        $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
                         $session->undoHistory->push($clipboard);
                         break;
                     }

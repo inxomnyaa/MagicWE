@@ -10,6 +10,7 @@ use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
@@ -34,6 +35,12 @@ class RotateCommand extends BaseCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
@@ -41,23 +48,23 @@ class RotateCommand extends BaseCommand
         /** @var Player $sender */
         try {
             $rotation = intval($args["degrees"]);
-            $sender->sendMessage(Loader::PREFIX . Loader::getInstance()->getLanguage()->translateString('command.rotate.try', [90 * $rotation]));
+            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [90 * $rotation]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $clipboard = $session->getCurrentClipboard();
             if (is_null($clipboard)) {
-                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.noclipboard'));
+                throw new \Exception($lang->translateString('error.noclipboard'));
             }
             $clipboard->rotate($rotation);//TODO add back
-            $sender->sendMessage(Loader::PREFIX . Loader::getInstance()->getLanguage()->translateString('command.rotate.success'));
+            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.success'));
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

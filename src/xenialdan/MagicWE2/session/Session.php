@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
+use pocketmine\lang\BaseLang;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
@@ -233,7 +234,7 @@ abstract class Session
             $revertClipboard->chunks[$hash] = $level->getChunk($chunk->getX(), $chunk->getZ(), false);
         }
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
-        $this->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
+        $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
     }
 
     /**
@@ -248,7 +249,7 @@ abstract class Session
         }
         $revertClipboard = $this->redoHistory->pop();
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
-        $this->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
+        $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
     }
 
     public function clearHistory()
@@ -261,6 +262,14 @@ abstract class Session
     {
         $this->setClipboards([]);
         $this->currentClipboard = -1;
+    }
+
+    /**
+     * @return BaseLang
+     */
+    public function getLanguage(): BaseLang
+    {
+        return Loader::getInstance()->getLanguage();
     }
 
     public abstract function sendMessage(string $message);

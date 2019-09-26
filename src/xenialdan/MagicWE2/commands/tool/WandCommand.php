@@ -16,6 +16,8 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
 class WandCommand extends BaseCommand
@@ -37,6 +39,12 @@ class WandCommand extends BaseCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
@@ -56,11 +64,11 @@ class WandCommand extends BaseCommand
             $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));
             if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

@@ -8,7 +8,10 @@ use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
+use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
 class LimitCommand extends BaseCommand
@@ -32,20 +35,27 @@ class LimitCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
+        $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         try {
             if (empty($args["limit"])) {
                 $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-                $sender->sendMessage(Loader::PREFIX . TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.limit.current', [($limit < 0 ? ucfirst(Loader::getInstance()->getLanguage()->translateString('disabled')) : $limit)]));
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.limit.current', [($limit < 0 ? ucfirst(Loader::getInstance()->getLanguage()->translateString('disabled')) : $limit)]));
             } else {
                 Loader::getInstance()->getConfig()->set("limit", intval($args["limit"]));
-                $sender->sendMessage(Loader::PREFIX . TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.limit.set', [intval($args["limit"])]));
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.limit.set', [intval($args["limit"])]));
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

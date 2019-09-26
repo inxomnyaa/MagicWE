@@ -9,6 +9,7 @@ use CortexPE\Commando\BaseCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -33,6 +34,12 @@ class Pos2Command extends BaseCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
@@ -42,7 +49,7 @@ class Pos2Command extends BaseCommand
             /** @var Session $session */
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
@@ -50,11 +57,11 @@ class Pos2Command extends BaseCommand
             }
             $selection->setPos2($sender->getPosition());
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

@@ -136,7 +136,7 @@ class EventListener implements Listener
             case ItemIds::WOODEN_AXE:
                 {
                     if (!$session->isWandEnabled()) {
-                        $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.wand.disabled"));
+                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                         break;
                     }
                     $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -149,7 +149,7 @@ class EventListener implements Listener
             case ItemIds::STICK:
                 {
                     if (!$session->isDebugToolEnabled()) {
-                        $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.debug.disabled"));
+                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                         break;
                     }
                     $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
@@ -174,7 +174,7 @@ class EventListener implements Listener
                 case ItemIds::WOODEN_AXE:
                     {
                         if (!$session->isWandEnabled()) {
-                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.wand.disabled"));
+                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -187,7 +187,7 @@ class EventListener implements Listener
                 case ItemIds::STICK:
                     {
                         if (!$session->isDebugToolEnabled()) {
-                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.debug.disabled"));
+                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                             break;
                         }
                         $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
@@ -219,7 +219,7 @@ class EventListener implements Listener
                 case ItemIds::WOODEN_AXE:
                     {
                         if (!$session->isWandEnabled()) {
-                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.wand.disabled"));
+                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -232,7 +232,7 @@ class EventListener implements Listener
                 case ItemIds::STICK:
                     {
                         if (!$session->isDebugToolEnabled()) {
-                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.debug.disabled"));
+                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                             break;
                         }
                         $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());

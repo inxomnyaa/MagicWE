@@ -133,7 +133,7 @@ class AsyncActionTask extends MWEAsyncTask
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
         if (!is_null($session)) {
-            $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
             foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
             if ($this->action->addRevert)
                 $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));

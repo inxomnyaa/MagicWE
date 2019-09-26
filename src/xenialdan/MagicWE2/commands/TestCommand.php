@@ -10,6 +10,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -34,7 +35,13 @@ class TestCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        /** @var Player $sender */
+        $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         try {
             //TODO REMOVE DEBUG
             $pluginSession = SessionHelper::createPluginSession(Loader::getInstance());
@@ -85,11 +92,11 @@ class TestCommand extends BaseCommand
             );
         } catch (\Exception $error) {
             Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

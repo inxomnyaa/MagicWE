@@ -12,6 +12,8 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\CalculationException;
+use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
 class CalculateCommand extends BaseCommand
@@ -34,18 +36,24 @@ class CalculateCommand extends BaseCommand
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
-        /** @var Player $sender */
+        $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         try {
             $sender->sendMessage(strval($args["expression"]) . " = " . API::evalAsMath(strval($args["expression"])));
         } catch (CalculationException $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage(Loader::PREFIX . TF::RED . strval($args["expression"]));
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

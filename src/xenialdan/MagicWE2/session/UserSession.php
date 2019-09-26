@@ -67,7 +67,6 @@ class UserSession extends Session implements \JsonSerializable
         $langShort = strtolower($langShort);
         if (isset(Loader::getInstance()->getLanguageList()[$langShort])) {
             $this->lang = new BaseLang($langShort, Loader::getInstance()->getLanguageFolder());
-            var_dump($langShort, $this->lang->getName());
             $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString("session.language.set", [$this->getLanguage()->getName()]));
         } else {
             $this->lang = new BaseLang(BaseLang::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
@@ -186,7 +185,7 @@ class UserSession extends Session implements \JsonSerializable
     public function addBrush(Brush $brush): void
     {
         $this->brushes[$brush->properties->uuid] = $brush;
-        $this->sendMessage(Loader::getInstance()->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
+        $this->sendMessage($this->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
     }
 
     /**
@@ -205,8 +204,8 @@ class UserSession extends Session implements \JsonSerializable
                 }
             }
         }
-        if ($delete) $this->sendMessage(Loader::getInstance()->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
-        else $this->sendMessage(Loader::getInstance()->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
+        if ($delete) $this->sendMessage($this->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
+        else $this->sendMessage($this->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
     }
 
     /**

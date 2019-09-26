@@ -86,7 +86,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
+                throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $newblocks, $flags));
@@ -114,7 +114,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
+                throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $oldBlocks, $newBlocks, $flags));
@@ -138,7 +138,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
+                throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             //TODO check/edit how relative position works
             $offset = new Vector3();
@@ -157,18 +157,18 @@ class API
     /**
      * TODO: flag parsing, Position to paste at
      * @param CopyClipboard $clipboard
-     * @param null|Session $session
+     * @param Session $session
      * @param Position $target
      * @param int $flags
      * @return bool
      */
-    public static function pasteAsync(CopyClipboard $clipboard, ?Session $session, Position $target, int $flags = self::FLAG_BASE)
+    public static function pasteAsync(CopyClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE)
     {
         #return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($clipboard->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
+                throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
@@ -216,7 +216,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
+                throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getLevel())));

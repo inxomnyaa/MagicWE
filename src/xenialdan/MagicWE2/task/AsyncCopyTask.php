@@ -110,7 +110,7 @@ class AsyncCopyTask extends MWEAsyncTask
             /** @var CopyClipboard $clipboard */
             $clipboard = $result["clipboard"];
             $totalCount = $result["totalCount"];
-            $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
             $session->addClipboard($clipboard);
         } catch (SessionException $e) {
             Loader::getInstance()->getLogger()->logException($e);

@@ -119,8 +119,8 @@ class AsyncCountTask extends MWEAsyncTask
             $result = $this->getResult();
             $counts = $result["counts"];
             $totalCount = $result["totalCount"];
-            $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('task.count.success', [$this->generateTookString()]));
-            $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('task.count.result', [count($counts), $totalCount]));
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.count.success', [$this->generateTookString()]));
+            $session->sendMessage(TF::DARK_AQUA . $session->getLanguage()->translateString('task.count.result', [count($counts), $totalCount]));
             uasort($counts, function ($a, $b) {
                 if ($a === $b) return 0;
                 return ($a > $b) ? -1 : 1;

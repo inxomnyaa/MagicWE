@@ -10,6 +10,7 @@ use CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
@@ -35,6 +36,12 @@ class BrushNameCommand extends BaseSubCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
@@ -43,7 +50,7 @@ class BrushNameCommand extends BaseSubCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
             if ($brush instanceof Brush) {
@@ -53,15 +60,15 @@ class BrushNameCommand extends BaseSubCommand
                 }
                 $name = strval($args["name"]);
                 $brush->properties->setCustomName($name);
-                $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.brushname.set', [$brush->getName()]));
+                $session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
                 $session->replaceBrush($brush);
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsageMessage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsageMessage());
         } catch (\Error $error) {

@@ -12,6 +12,7 @@ use pocketmine\level\biome\Biome;
 use pocketmine\level\format\Chunk;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
@@ -38,6 +39,12 @@ class BiomeInfoCommand extends BaseCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
@@ -46,7 +53,7 @@ class BiomeInfoCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
             $biomeNames = array_flip($biomeNames);
@@ -59,29 +66,29 @@ class BiomeInfoCommand extends BaseCommand
                 if (in_array(self::FLAG_T, $flagArray)) {
                     $target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
                     if ($target === null) {
-                        $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.notarget'));
+                        $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
                         return;
                     }
                     $biomeId = $target->getLevel()->getChunkAtPosition($target)->getBiomeId($target->getX() % 16, $target->getZ() % 16);
-                    $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.attarget'));
+                    $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
                     $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
                 if (in_array(self::FLAG_P, $flagArray)) {
                     $biomeId = $sender->getLevel()->getChunkAtPosition($sender)->getBiomeId($sender->getX() % 16, $sender->getZ() % 16);
-                    $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.atposition'));
+                    $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
                     $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
                 return;
             }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.noselection'));
+                throw new \Exception($lang->translateString('error.noselection'));
             }
             if (!$selection->isValid()) {
-                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.selectioninvalid'));
+                throw new \Exception($lang->translateString('error.selectioninvalid'));
             }
             if ($selection->getLevel() !== $sender->getLevel()) {
-                $sender->sendMessage(Loader::PREFIX . TF::GOLD . Loader::getInstance()->getLanguage()->translateString('warning.differentlevel'));
+                $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
             }
             $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getLevel());
             $biomes = [];
@@ -91,16 +98,16 @@ class BiomeInfoCommand extends BaseCommand
                         $biomes[] = (Chunk::fastDeserialize($touchedChunk)->getBiomeId($x, $z));
             }
             $biomes = array_unique($biomes);
-            $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.result', [count($biomes)]));
+            $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.result', [count($biomes)]));
             foreach ($biomes as $biomeId) {
-                $session->sendMessage(TF::AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.result.line', [$biomeId, $biomeNames[$biomeId]]));
+                $session->sendMessage(TF::AQUA . $lang->translateString('command.biomeinfo.result.line', [$biomeId, $biomeNames[$biomeId]]));
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

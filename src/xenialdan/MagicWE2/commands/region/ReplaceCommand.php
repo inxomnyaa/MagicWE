@@ -12,6 +12,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
@@ -38,6 +39,12 @@ class ReplaceCommand extends BaseCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
         if (!$sender instanceof Player) {
             $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
@@ -55,28 +62,28 @@ class ReplaceCommand extends BaseCommand
             if ($return) {
                 $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {
-                    throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                    throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
                 $selection = $session->getLatestSelection();
                 if (is_null($selection)) {
-                    throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.noselection'));
+                    throw new \Exception($lang->translateString('error.noselection'));
                 }
                 if (!$selection->isValid()) {
-                    throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.selectioninvalid'));
+                    throw new \Exception($lang->translateString('error.selectioninvalid'));
                 }
                 if ($selection->getLevel() !== $sender->getLevel()) {
-                    $sender->sendMessage(Loader::PREFIX . TF::GOLD . Loader::getInstance()->getLanguage()->translateString('warning.differentlevel'));
+                    $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
                 }
                 API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
                 throw new \InvalidArgumentException("Could not replace with the selected blocks");
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
