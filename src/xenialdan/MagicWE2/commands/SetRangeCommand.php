@@ -35,17 +35,17 @@ class SetRangeCommand extends BaseCommand
         try {
             if (empty($args["range"])) {
                 $range = Loader::getInstance()->getToolDistance();
-                $sender->sendMessage(Loader::PREFIX . TF::GREEN . "Current range: $range");
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.setrange.current', [$range]));
             } else {
                 Loader::getInstance()->getConfig()->set("tool-range", intval($args["range"]));
-                $sender->sendMessage(Loader::PREFIX . TF::GREEN . "Tool range was set to " . intval($args["range"]));
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.setrange.set', [intval($args["range"])]));
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

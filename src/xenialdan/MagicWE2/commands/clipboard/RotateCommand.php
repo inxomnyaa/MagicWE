@@ -35,29 +35,29 @@ class RotateCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
         try {
             $rotation = intval($args["degrees"]);
-            $sender->sendMessage(Loader::PREFIX . "Trying to rotate clipboard by " . 90 * $rotation . " degrees");
+            $sender->sendMessage(Loader::PREFIX . Loader::getInstance()->getLanguage()->translateString('command.rotate.try', [90 * $rotation]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $clipboard = $session->getCurrentClipboard();
             if (is_null($clipboard)) {
-                throw new \Exception("No clipboard found - create a clipboard first");
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.noclipboard'));
             }
             $clipboard->rotate($rotation);//TODO add back
-            $sender->sendMessage(Loader::PREFIX . "Successfully rotated clipboard");
+            $sender->sendMessage(Loader::PREFIX . Loader::getInstance()->getLanguage()->translateString('command.rotate.success'));
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

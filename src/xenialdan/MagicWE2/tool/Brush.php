@@ -215,7 +215,7 @@ class Brush extends WETool
                     $brush = $this;
                     $session = SessionHelper::getUserSession($player);
                     if (!$session instanceof UserSession) {
-                        throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                        throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
                     }
                     if (!$new) {
                         $session->replaceBrush($brush);
@@ -258,7 +258,7 @@ class Brush extends WETool
             $brush = $this;
             $session = SessionHelper::getUserSession($player);
             if (!$session instanceof UserSession) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $this->properties->uuid = UUID::fromRandom()->toString();
             $session->addBrush($brush);

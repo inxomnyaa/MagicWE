@@ -9,6 +9,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\task\AsyncRevertTask;
 
@@ -232,7 +233,7 @@ abstract class Session
             $revertClipboard->chunks[$hash] = $level->getChunk($chunk->getX(), $chunk->getZ(), false);
         }
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
-        $this->sendMessage(TF::GREEN . "You have " . count($this->undoHistory) . " undo actions left");
+        $this->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
     }
 
     /**
@@ -247,7 +248,7 @@ abstract class Session
         }
         $revertClipboard = $this->redoHistory->pop();
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
-        $this->sendMessage(TF::GREEN . "You have " . count($this->redoHistory) . " redo actions left");
+        $this->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
     }
 
     public function clearHistory()

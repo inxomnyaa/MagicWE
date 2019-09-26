@@ -86,7 +86,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $newblocks, $flags));
@@ -114,7 +114,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $oldBlocks, $newBlocks, $flags));
@@ -138,7 +138,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
             }
             //TODO check/edit how relative position works
             $offset = new Vector3();
@@ -168,7 +168,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($clipboard->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
             }
             $c = $clipboard->getCenter();
             $clipboard->setCenter($target);//TODO check
@@ -216,7 +216,7 @@ class API
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
             if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
-                throw new LimitExceededException("You are trying to edit too many blocks at once. Reduce the selection or raise the limit");
+                throw new LimitExceededException(Loader::getInstance()->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getLevel())));

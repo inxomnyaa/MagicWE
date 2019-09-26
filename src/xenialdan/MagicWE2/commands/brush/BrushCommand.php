@@ -42,23 +42,23 @@ class BrushCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
-            $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('Brush main menu'));
-            $form->addButton(new Button($lang->translateString('Create new')));
-            $form->addButton(new Button($lang->translateString('Get session brush')));
-            $form->addButton(new Button($lang->translateString('Edit brush in hand')));
+            $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.content'));
+            $form->addButton(new Button($lang->translateString('ui.brush.create')));
+            $form->addButton(new Button($lang->translateString('ui.brush.getsession')));
+            $form->addButton(new Button($lang->translateString('ui.brush.edithand')));
             $form->setCallable(function (Player $player, $data) use ($lang, $form, $session) {
                 try {
                     switch ($data) {
-                        case $lang->translateString('Create new'):
+                        case $lang->translateString('ui.brush.create'):
                             {
                                 $brush = new Brush(new BrushProperties());
                                 if ($brush instanceof Brush) {
@@ -66,7 +66,7 @@ class BrushCommand extends BaseCommand
                                 }
                                 break;
                             }
-                        case $lang->translateString('Get session brush'):
+                        case $lang->translateString('ui.brush.getsession'):
                             {
                                 $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST)->readonly(false);
                                 foreach ($session->getBrushes() as $brush) {
@@ -75,7 +75,7 @@ class BrushCommand extends BaseCommand
                                 $menu->send($player, "Session brushes");
                                 break;
                             }
-                        case $lang->translateString('Edit brush in hand'):
+                        case $lang->translateString('ui.brush.edithand'):
                             {
                                 $brush = $session->getBrushFromItem($player->getInventory()->getItemInHand());
                                 if ($brush instanceof Brush) {
@@ -86,17 +86,17 @@ class BrushCommand extends BaseCommand
                     }
                     return null;
                 } catch (\Exception $error) {
-                    $session->sendMessage(TF::RED . "An error occurred");
+                    $session->sendMessage(TF::RED . $lang->translateString('error'));
                     $session->sendMessage(TF::RED . $error->getMessage());
                 }
             });
             $sender->sendForm($form);
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

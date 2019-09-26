@@ -35,17 +35,17 @@ class LimitCommand extends BaseCommand
         try {
             if (empty($args["limit"])) {
                 $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-                $sender->sendMessage(Loader::PREFIX . TF::GREEN . "Current limit: " . ($limit < 0 ? "Disabled" : $limit));
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.limit.current', [($limit < 0 ? ucfirst(Loader::getInstance()->getLanguage()->translateString('disabled')) : $limit)]));
             } else {
                 Loader::getInstance()->getConfig()->set("limit", intval($args["limit"]));
-                $sender->sendMessage(Loader::PREFIX . TF::GREEN . "Block change limit was set to " . intval($args["limit"]));
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.limit.set', [intval($args["limit"])]));
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

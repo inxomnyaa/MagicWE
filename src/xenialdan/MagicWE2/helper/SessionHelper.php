@@ -181,7 +181,7 @@ class SessionHelper
         try {
             $session->setUUID(UUID::fromString($data["uuid"]));
             $session->setWandEnabled($data["wandEnabled"]);
-            $session->setDebugStickEnabled($data["debugStickEnabled"]);
+            $session->setDebugToolEnabled($data["debugToolEnabled"]);
             foreach ($data["brushes"] as $brushUUID => $brushJson) {
                 try {
                     $properties = BrushProperties::fromJson($brushJson["properties"]);

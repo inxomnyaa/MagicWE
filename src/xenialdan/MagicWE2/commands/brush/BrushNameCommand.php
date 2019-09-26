@@ -36,14 +36,14 @@ class BrushNameCommand extends BaseSubCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
             if ($brush instanceof Brush) {
@@ -53,15 +53,15 @@ class BrushNameCommand extends BaseSubCommand
                 }
                 $name = strval($args["name"]);
                 $brush->properties->setCustomName($name);
-                $session->sendMessage(TF::GREEN . "Brush name set to \"{$brush->getName()}\"");
+                $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.brushname.set', [$brush->getName()]));
                 $session->replaceBrush($brush);
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsageMessage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsageMessage());
         } catch (\Error $error) {

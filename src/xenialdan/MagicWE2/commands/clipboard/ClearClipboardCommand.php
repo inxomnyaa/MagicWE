@@ -33,7 +33,7 @@ class ClearClipboardCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
@@ -41,16 +41,16 @@ class ClearClipboardCommand extends BaseCommand
             /** @var UserSession $session */
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $session->clearClipboard();
-            $sender->sendMessage(Loader::PREFIX . TF::GREEN . "Clipboards cleared");
+            $sender->sendMessage(Loader::PREFIX . TF::GREEN . Loader::getInstance()->getLanguage()->translateString('command.clearclipboard.cleared'));
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

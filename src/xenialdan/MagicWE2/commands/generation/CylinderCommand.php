@@ -42,7 +42,7 @@ class CylinderCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
@@ -59,7 +59,7 @@ class CylinderCommand extends BaseCommand
             if (!$error) {
                 $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {
-                    throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                    throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
                 $cyl = new Cylinder($sender->asVector3()->floor(), $height, $diameter);
                 $cylSelection = new Selection($session->getUUID(), $sender->getLevel());
@@ -69,11 +69,11 @@ class CylinderCommand extends BaseCommand
                 throw new \InvalidArgumentException("Could not fill with the selected blocks");
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

@@ -12,6 +12,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
@@ -111,7 +112,7 @@ class Selection implements \Serializable, \JsonSerializable
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
             $session = SessionHelper::getSessionByUUID($this->sessionUUID);
-            if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ());
+            if ($session instanceof Session) $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('selection.pos1.set', [$this->pos1->getX(), $this->pos1->getY(), $this->pos1->getZ()]));
         } catch (SessionException $e) {
             //TODO log? kick?
         }
@@ -145,7 +146,7 @@ class Selection implements \Serializable, \JsonSerializable
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
             $session = SessionHelper::getSessionByUUID($this->sessionUUID);
-            if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ());
+            if ($session instanceof Session) $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('selection.pos2.set', [$this->pos2->getX(), $this->pos2->getY(), $this->pos2->getZ()]));
         } catch (SessionException $e) {
             //TODO log? kick?
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\session;
 
 use pocketmine\item\Item;
+use pocketmine\lang\BaseLang;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -24,7 +25,7 @@ class UserSession extends Session implements \JsonSerializable
     /** @var bool */
     private $wandEnabled = true;
     /** @var bool */
-    private $debugStickEnabled = true;
+    private $debugToolEnabled = true;
     /** @var Brush[] */
     private $brushes = [];
 
@@ -44,6 +45,15 @@ class UserSession extends Session implements \JsonSerializable
     {
         Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
         $this->bossBar->removeAllPlayers();
+    }
+
+    /**
+     * TODO per-user language
+     * @return BaseLang
+     */
+    public function getLanguage(): BaseLang
+    {
+        return Loader::getInstance()->getLanguage();
     }
 
     /**
@@ -77,25 +87,25 @@ class UserSession extends Session implements \JsonSerializable
     public function setWandEnabled(bool $wandEnabled)
     {
         $this->wandEnabled = $wandEnabled;
-        return Loader::PREFIX . "The wand tool is now " . ($wandEnabled ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
+        return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
     }
 
     /**
      * @return bool
      */
-    public function isDebugStickEnabled(): bool
+    public function isDebugToolEnabled(): bool
     {
-        return $this->debugStickEnabled;
+        return $this->debugToolEnabled;
     }
 
     /**
-     * @param bool $debugStick
+     * @param bool $debugToolEnabled
      * @return string
      */
-    public function setDebugStickEnabled(bool $debugStick)
+    public function setDebugToolEnabled(bool $debugToolEnabled)
     {
-        $this->debugStickEnabled = $debugStick;
-        return Loader::PREFIX . "The debug stick is now " . ($debugStick ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
+        $this->debugToolEnabled = $debugToolEnabled;
+        return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
     }
 
     /**
@@ -157,7 +167,7 @@ class UserSession extends Session implements \JsonSerializable
     public function addBrush(Brush $brush): void
     {
         $this->brushes[$brush->properties->uuid] = $brush;
-        $this->sendMessage("Added {$brush->getName()} to session");
+        $this->sendMessage(Loader::getInstance()->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
     }
 
     /**
@@ -176,8 +186,8 @@ class UserSession extends Session implements \JsonSerializable
                 }
             }
         }
-        if ($delete) $this->sendMessage("Deleted {$brush->getName()} (UUID {$brush->properties->uuid})");
-        else $this->sendMessage("Removed {$brush->getName()} (UUID {$brush->properties->uuid})");
+        if ($delete) $this->sendMessage(Loader::getInstance()->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
+        else $this->sendMessage(Loader::getInstance()->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
     }
 
     /**
@@ -229,7 +239,7 @@ class UserSession extends Session implements \JsonSerializable
             " UUID: " . $this->getUUID()->__toString() .
             " Player: " . $this->getPlayer()->getName() .
             " Wand tool enabled: " . ($this->isWandEnabled() ? "enabled" : "disabled") .
-            " Debug tool enabled: " . ($this->isDebugStickEnabled() ? "enabled" : "disabled") .
+            " Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
             " BossBar: " . $this->getBossBar()->entityId .
             " Selections: " . count($this->getSelections()) .
             " Latest: " . $this->getLatestSelectionUUID() .
@@ -257,7 +267,7 @@ class UserSession extends Session implements \JsonSerializable
         return [
             "uuid" => $this->getUUID()->toString(),
             "wandEnabled" => $this->wandEnabled,
-            "debugStickEnabled" => $this->debugStickEnabled,
+            "debugToolEnabled" => $this->debugToolEnabled,
             "brushes" => $this->brushes,
             "latestSelection" => $this->getLatestSelection(),
             "currentClipboard" => $this->getCurrentClipboard()

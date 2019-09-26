@@ -159,7 +159,7 @@ class AsyncReplaceTask extends MWEAsyncTask
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
         if (!is_null($session)) {
-            $session->sendMessage(TF::GREEN . "Async Replace succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+            $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString('task.replace.success', [$this->generateTookString(), $changed, $totalCount]));
             $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
         }
     }

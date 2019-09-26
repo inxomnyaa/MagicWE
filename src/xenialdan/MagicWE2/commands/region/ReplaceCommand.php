@@ -39,7 +39,7 @@ class ReplaceCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
@@ -55,28 +55,28 @@ class ReplaceCommand extends BaseCommand
             if ($return) {
                 $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {
-                    throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                    throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
                 $selection = $session->getLatestSelection();
                 if (is_null($selection)) {
-                    throw new \Exception("No selection found - select an area first");
+                    throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.noselection'));
                 }
                 if (!$selection->isValid()) {
-                    throw new \Exception("The selection is not valid! Check if all positions are set!");
+                    throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.selectioninvalid'));
                 }
                 if ($selection->getLevel() !== $sender->getLevel()) {
-                    $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
+                    $sender->sendMessage(Loader::PREFIX . TF::GOLD . Loader::getInstance()->getLanguage()->translateString('warning.differentlevel'));
                 }
                 API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {
                 throw new \InvalidArgumentException("Could not replace with the selected blocks");
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

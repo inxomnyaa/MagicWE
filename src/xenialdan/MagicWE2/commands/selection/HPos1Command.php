@@ -34,7 +34,7 @@ class HPos1Command extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
@@ -42,7 +42,7 @@ class HPos1Command extends BaseCommand
             /** @var Session $session */
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
@@ -50,16 +50,16 @@ class HPos1Command extends BaseCommand
             }
             $target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
             if ($target === null) {
-                $sender->sendMessage(Loader::PREFIX . TF::RED . "No target block found. Increase tool range with //setrange if needed");
+                $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.notarget'));
                 return;
             }
             $selection->setPos1($target);
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

@@ -33,20 +33,20 @@ class BiomeListCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
-            $session->sendMessage(TF::DARK_AQUA . "Biome list");
+            $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomelist.title'));
             foreach ((new \ReflectionClass(Biome::class))->getConstants() as $name => $value) {
                 if ($value === Biome::MAX_BIOMES) continue;
                 $name = Biome::getBiome($value)->getName();
-                $session->sendMessage(TF::AQUA . "ID: $value Name: $name");
+                $session->sendMessage(TF::AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomelist.result.line', [$value, $name]));
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

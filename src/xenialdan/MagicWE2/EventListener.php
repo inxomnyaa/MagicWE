@@ -136,7 +136,7 @@ class EventListener implements Listener
             case ItemIds::WOODEN_AXE:
                 {
                     if (!$session->isWandEnabled()) {
-                        $session->sendMessage(TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                        $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.wand.disabled"));
                         break;
                     }
                     $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -148,8 +148,8 @@ class EventListener implements Listener
                 }
             case ItemIds::STICK:
                 {
-                    if (!$session->isDebugStickEnabled()) {
-                        $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+                    if (!$session->isDebugToolEnabled()) {
+                        $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.debug.disabled"));
                         break;
                     }
                     $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
@@ -174,7 +174,7 @@ class EventListener implements Listener
                 case ItemIds::WOODEN_AXE:
                     {
                         if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.wand.disabled"));
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -186,8 +186,8 @@ class EventListener implements Listener
                     }
                 case ItemIds::STICK:
                     {
-                        if (!$session->isDebugStickEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+                        if (!$session->isDebugToolEnabled()) {
+                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.debug.disabled"));
                             break;
                         }
                         $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
@@ -219,7 +219,7 @@ class EventListener implements Listener
                 case ItemIds::WOODEN_AXE:
                     {
                         if (!$session->isWandEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The wand tool is disabled. Use //togglewand to re-enable it");//TODO #translation
+                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.wand.disabled"));
                             break;
                         }
                         $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
@@ -231,8 +231,8 @@ class EventListener implements Listener
                     }
                 case ItemIds::STICK:
                     {
-                        if (!$session->isDebugStickEnabled()) {
-                            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "The debug stick is disabled. Use //toggledebug to re-enable it");//TODO #translation
+                        if (!$session->isDebugToolEnabled()) {
+                            $session->sendMessage(TF::RED . Loader::getInstance()->getLanguage()->translateString("tool.debug.disabled"));
                             break;
                         }
                         $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());

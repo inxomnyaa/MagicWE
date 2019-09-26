@@ -38,7 +38,7 @@ class WandCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
@@ -47,20 +47,20 @@ class WandCommand extends BaseCommand
             $item = ItemFactory::get(ItemIds::WOODEN_AXE);
             $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
             $item->setUnbreakable(true);
-            $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . 'Wand');
-            $item->setLore([//TODO translation
-                'Left click a block to set the position 1 of a selection',
-                'Right click a block to set the position 2 of a selection',
-                'Use //togglewand to toggle it\'s functionality'
+            $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.wand'));
+            $item->setLore([
+                $lang->translateString('tool.wand.lore.1'),
+                $lang->translateString('tool.wand.lore.2'),
+                $lang->translateString('tool.wand.lore.3')
             ]);
             $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));
             if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {

@@ -39,14 +39,14 @@ class BiomeInfoCommand extends BaseCommand
     {
         $lang = Loader::getInstance()->getLanguage();
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('runingame'));
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
             return;
         }
         /** @var Player $sender */
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception("No session was created - probably no permission to use " . Loader::getInstance()->getName());
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
             $biomeNames = array_flip($biomeNames);
@@ -59,29 +59,29 @@ class BiomeInfoCommand extends BaseCommand
                 if (in_array(self::FLAG_T, $flagArray)) {
                     $target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
                     if ($target === null) {
-                        $sender->sendMessage(Loader::PREFIX . TF::RED . "No target block found. Increase tool range with //setrange if needed");
+                        $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.notarget'));
                         return;
                     }
                     $biomeId = $target->getLevel()->getChunkAtPosition($target)->getBiomeId($target->getX() % 16, $target->getZ() % 16);
-                    $session->sendMessage(TF::DARK_AQUA . "Biome at target");
+                    $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.attarget'));
                     $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
                 if (in_array(self::FLAG_P, $flagArray)) {
                     $biomeId = $sender->getLevel()->getChunkAtPosition($sender)->getBiomeId($sender->getX() % 16, $sender->getZ() % 16);
-                    $session->sendMessage(TF::DARK_AQUA . "Biome at position");
+                    $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.atposition'));
                     $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
                 return;
             }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-                throw new \Exception("No selection found - select an area first");
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.noselection'));
             }
             if (!$selection->isValid()) {
-                throw new \Exception("The selection is not valid! Check if all positions are set!");
+                throw new \Exception(Loader::getInstance()->getLanguage()->translateString('error.selectioninvalid'));
             }
             if ($selection->getLevel() !== $sender->getLevel()) {
-                $sender->sendMessage(Loader::PREFIX . TF::GOLD . "[WARNING] You are editing in a level which you are currently not in!");
+                $sender->sendMessage(Loader::PREFIX . TF::GOLD . Loader::getInstance()->getLanguage()->translateString('warning.differentlevel'));
             }
             $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getLevel());
             $biomes = [];
@@ -91,16 +91,16 @@ class BiomeInfoCommand extends BaseCommand
                         $biomes[] = (Chunk::fastDeserialize($touchedChunk)->getBiomeId($x, $z));
             }
             $biomes = array_unique($biomes);
-            $session->sendMessage(TF::DARK_AQUA . count($biomes) . " biomes found in selection");
+            $session->sendMessage(TF::DARK_AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.result', [count($biomes)]));
             foreach ($biomes as $biomeId) {
-                $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
+                $session->sendMessage(TF::AQUA . Loader::getInstance()->getLanguage()->translateString('command.biomeinfo.result.line', [$biomeId, $biomeNames[$biomeId]]));
             }
         } catch (\Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . "Looks like you are missing an argument or used the command wrong!");
+            $sender->sendMessage(Loader::PREFIX . TF::RED . Loader::getInstance()->getLanguage()->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
         } catch (\Error $error) {
