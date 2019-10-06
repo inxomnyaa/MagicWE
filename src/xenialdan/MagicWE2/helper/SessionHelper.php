@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
+use pocketmine\entity\Skin;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
@@ -36,8 +37,15 @@ class SessionHelper
 
     public static function addSession(Session $session): void
     {
-        if ($session instanceof UserSession) self::$userSessions->put($session->getUUID(), $session);
-        else if ($session instanceof PluginSession) self::$pluginSessions->put($session->getUUID(), $session);
+        if ($session instanceof UserSession) {
+            self::$userSessions->put($session->getUUID(), $session);
+            if (!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))) {
+                $oldSkin = $player->getSkin();
+                $newSkin = new Skin($oldSkin->getSkinId(), $oldSkin->getSkinData(), Loader::getInstance()->donatorData, $oldSkin->getGeometryName(), $oldSkin->getGeometryData());
+                $player->setSkin($newSkin);
+                $player->sendSkin();
+            }
+        } else if ($session instanceof PluginSession) self::$pluginSessions->put($session->getUUID(), $session);
     }
 
     /**
