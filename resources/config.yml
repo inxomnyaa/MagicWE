@@ -1,9 +1,8 @@
 ---
 # The language that should be used in the plugin
-# Available languages (ISO639-3): 
-# ara, cat, ces, deu, ell, eng, esp, fre, hin, ita, jpn, kor, lit, mas, nld, nor, pol, por, rom, slo, spa, swe, swh, tgl, zho
+# Available languages (ISO639-3):
+# ara, cat, ces, deu, ell, eng, esp, fre, hin, ita, jpn, kor, lit, mas, nld, nor, pol, por, rom, slo, spa, swe, swh, tgl, tha, zho
 language: eng
 show-startup-icon: false
 limit: -1
 tool-range: 100
-...
