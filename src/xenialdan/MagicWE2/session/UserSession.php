@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
+use Ds\Deque;
+use Exception;
+use InvalidArgumentException;
+use JsonSerializable;
 use pocketmine\item\Item;
 use pocketmine\lang\BaseLang;
 use pocketmine\nbt\tag\CompoundTag;
@@ -12,11 +16,13 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\exception\ActionNotFoundException;
+use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
-class UserSession extends Session implements \JsonSerializable
+class UserSession extends Session implements JsonSerializable
 {
     /** @var Player|null */
     private $player = null;
@@ -38,8 +44,8 @@ class UserSession extends Session implements \JsonSerializable
         $this->setUUID($player->getUniqueId());
         $this->bossBar = (new BossBar())->addPlayer($player);
         $this->bossBar->hideFrom([$player]);
-        $this->undoHistory = new \Ds\Deque();
-        $this->redoHistory = new \Ds\Deque();
+        $this->undoHistory = new Deque();
+        $this->redoHistory = new Deque();
         if (is_null($this->lang)) $this->setLanguage(BaseLang::FALLBACK_LANGUAGE);
         Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
     }
@@ -138,7 +144,7 @@ class UserSession extends Session implements \JsonSerializable
      * TODO exception for not a brush
      * @param Item $item
      * @return null|Brush
-     * @throws \Exception
+     * @throws Exception
      */
     public function getBrushFromItem(Item $item): ?Brush
     {
@@ -147,7 +153,7 @@ class UserSession extends Session implements \JsonSerializable
             #var_dump(API::compoundToArray($entry));
             $version = $entry->getInt("version", 0);
             if ($version !== BrushProperties::VERSION) {
-                throw new \Exception("Brush can not be restored - version mismatch");
+                throw new Exception("Brush can not be restored - version mismatch");
             }
             /** @var BrushProperties $properties */
             $properties = json_decode($entry->getString("properties"));
@@ -162,7 +168,7 @@ class UserSession extends Session implements \JsonSerializable
                 return $brush;
             }
         } else {
-            throw new \Exception("The item is not a valid brush!");
+            throw new Exception("The item is not a valid brush!");
         }
         return null;
     }
@@ -212,9 +218,9 @@ class UserSession extends Session implements \JsonSerializable
      * TODO exception for not a brush
      * @param Brush $brush UUID will be set automatically
      * @return void
-     * @throws \InvalidArgumentException
-     * @throws \xenialdan\MagicWE2\exception\ActionNotFoundException
-     * @throws \xenialdan\MagicWE2\exception\ShapeNotFoundException
+     * @throws InvalidArgumentException
+     * @throws ActionNotFoundException
+     * @throws ShapeNotFoundException
      */
     public function replaceBrush(Brush $brush): void
     {

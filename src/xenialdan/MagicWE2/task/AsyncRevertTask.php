@@ -2,6 +2,8 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\Server;
@@ -41,7 +43,7 @@ class AsyncRevertTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -61,9 +63,9 @@ class AsyncRevertTask extends MWEAsyncTask
     /**
      * @param AsyncChunkManager $manager
      * @param RevertClipboard $clipboard
-     * @return \Generator|Block[]
+     * @return Generator|Block[]
      */
-    private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): \Generator
+    private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
     {
         $count = count($clipboard->blocksAfter);
         $changed = 0;
@@ -79,9 +81,9 @@ class AsyncRevertTask extends MWEAsyncTask
     /**
      * @param AsyncChunkManager $manager
      * @param RevertClipboard $clipboard
-     * @return \Generator|Block[]
+     * @return Generator|Block[]
      */
-    private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): \Generator
+    private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
     {
         $count = count($clipboard->blocksAfter);
         $changed = 0;
@@ -96,7 +98,7 @@ class AsyncRevertTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {
@@ -122,17 +124,17 @@ class AsyncRevertTask extends MWEAsyncTask
         if (!is_null($session)) {
             switch ($this->type) {
                 case self::TYPE_UNDO:
-                    {
-                        $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
-                        $session->redoHistory->push($clipboard);
-                        break;
-                    }
+                {
+                    $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
+                    $session->redoHistory->push($clipboard);
+                    break;
+                }
                 case self::TYPE_REDO:
-                    {
-                        $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
-                        $session->undoHistory->push($clipboard);
-                        break;
-                    }
+                {
+                    $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
+                    $session->undoHistory->push($clipboard);
+                    break;
+                }
             }
         }
     }

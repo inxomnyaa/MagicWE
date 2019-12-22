@@ -2,6 +2,8 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
@@ -53,7 +55,7 @@ class AsyncClipboardTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -79,10 +81,10 @@ class AsyncClipboardTask extends MWEAsyncTask
      * @param CopyClipboard $clipboard
      * @param AsyncChunkManager $pasteChunkManager
      * @param null|int $changed
-     * @return \Generator|Block[] blocks before the change
-     * @throws \Exception
+     * @return Generator|Block[] blocks before the change
+     * @throws Exception
      */
-    private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, ?int &$changed): \Generator
+    private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, ?int &$changed): Generator
     {
         $blockCount = $clipboard->getShape()->getTotalCount();
         $chunkManager = Clipboard::getChunkManager($clipboard->chunks);
@@ -105,7 +107,7 @@ class AsyncClipboardTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {
@@ -135,11 +137,11 @@ class AsyncClipboardTask extends MWEAsyncTask
         if (is_null($session)) return;
         switch ($this->type) {
             case self::TYPE_PASTE:
-                {
-                    $session->sendMessage(TF::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
-                    $session->addRevert(new RevertClipboard($clipboard->levelid, $undoChunks, $oldBlocks));
-                    break;
-                }
+            {
+                $session->sendMessage(TF::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+                $session->addRevert(new RevertClipboard($clipboard->levelid, $undoChunks, $oldBlocks));
+                break;
+            }
         }
     }
 }

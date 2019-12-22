@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\tool;
 
+use InvalidArgumentException;
+use JsonSerializable;
 use pocketmine\level\biome\Biome;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
@@ -15,7 +17,7 @@ use xenialdan\MagicWE2\task\action\ActionRegistry;
 use xenialdan\MagicWE2\task\action\SetBlockAction;
 use xenialdan\MagicWE2\task\action\TaskAction;
 
-class BrushProperties implements \JsonSerializable
+class BrushProperties implements JsonSerializable
 {
 
     public const VERSION = 1;
@@ -57,11 +59,11 @@ class BrushProperties implements \JsonSerializable
     /**
      * @param array $json
      * @return BrushProperties
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public static function fromJson(array $json): BrushProperties
     {
-        if (($json["version"] ?? 0) !== self::VERSION) throw new \InvalidArgumentException("Version mismatch");
+        if (($json["version"] ?? 0) !== self::VERSION) throw new InvalidArgumentException("Version mismatch");
         $properties = new self;
         foreach ($json as $key => $value) {
             $properties->$key = $value;

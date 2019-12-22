@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use Exception;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
@@ -17,6 +18,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\NamedTag;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
+use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\exception\CalculationException;
@@ -90,7 +92,7 @@ class API
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $newblocks, $flags));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -118,7 +120,7 @@ class API
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $oldBlocks, $newBlocks, $flags));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -146,7 +148,7 @@ class API
                 $offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer())->floor();
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getLevel()), $flags));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -174,7 +176,7 @@ class API
             $clipboard->setCenter($target);//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($session->getUUID(), $clipboard, $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -197,7 +199,7 @@ class API
                 throw new LimitExceededException("You are trying to count too many blocks at once. Reduce the selection or raise the limit");
             }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $filterBlocks, $flags));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -220,7 +222,7 @@ class API
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getLevel())));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -233,7 +235,7 @@ class API
      * @param Block $target
      * @param Brush $brush
      * @param Session $session
-     * @throws \Exception
+     * @throws Exception
      */
     public static function createBrush(Block $target, Brush $brush, Session $session)
     {
@@ -294,7 +296,7 @@ class API
      * Parses String representations of flags into an integer with flags applied
      * @param string[] $flags An array containing string representations of the flags
      * @return int
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public static function flagParser(array $flags)
     {

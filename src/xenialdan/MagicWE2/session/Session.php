@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
+use Ds\Deque;
+use Exception;
+use InvalidArgumentException;
 use pocketmine\lang\BaseLang;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
+use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\Loader;
@@ -30,9 +34,9 @@ abstract class Session
     private $clipboards = [];
     /** @var int */
     private $currentClipboard = -1;
-    /** @var \Ds\Deque */
+    /** @var Deque */
     public $undoHistory;
-    /** @var \Ds\Deque */
+    /** @var Deque */
     public $redoHistory;
 
     /**
@@ -219,7 +223,7 @@ abstract class Session
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function undo()
     {
@@ -238,8 +242,8 @@ abstract class Session
     }
 
     /**
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function redo()
     {

@@ -2,6 +2,8 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
@@ -32,7 +34,7 @@ class AsyncFillTask extends MWEAsyncTask
      * @param Chunk[] $touchedChunks
      * @param Block[] $newBlocks
      * @param int $flags
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
     {
@@ -48,7 +50,7 @@ class AsyncFillTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -80,10 +82,10 @@ class AsyncFillTask extends MWEAsyncTask
      * @param AsyncChunkManager $manager
      * @param Block[] $newBlocks
      * @param null|int $changed
-     * @return \Generator|Block[]
-     * @throws \Exception
+     * @return Generator|Block[]
+     * @throws Exception
      */
-    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): \Generator
+    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): Generator
     {
         $blockCount = $selection->getShape()->getTotalCount();
         $lastchunkx = $lastchunkz = null;
@@ -128,7 +130,7 @@ class AsyncFillTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {

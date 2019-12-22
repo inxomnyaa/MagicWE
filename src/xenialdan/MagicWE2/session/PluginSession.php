@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
+use Ds\Deque;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\Loader;
@@ -17,8 +18,8 @@ class PluginSession extends Session
     {
         $this->plugin = $plugin;
         $this->setUUID(UUID::fromRandom());
-        $this->undoHistory = new \Ds\Deque();
-        $this->redoHistory = new \Ds\Deque();
+        $this->undoHistory = new Deque();
+        $this->redoHistory = new Deque();
     }
 
     public function getPlugin(): Plugin

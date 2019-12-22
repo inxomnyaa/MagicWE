@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\selection;
 
+use Exception;
+use JsonSerializable;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
+use Serializable;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
@@ -20,7 +23,7 @@ use xenialdan\MagicWE2\session\Session;
  * Class Selection
  * @package xenialdan\MagicWE2
  */
-class Selection implements \Serializable, \JsonSerializable
+class Selection implements Serializable, JsonSerializable
 {
     /** @var int */
     public $levelid;
@@ -61,16 +64,16 @@ class Selection implements \Serializable, \JsonSerializable
 
     /**
      * @return Level
-     * @throws \Exception
+     * @throws Exception
      */
     public function getLevel(): Level
     {
         if (is_null($this->levelid)) {
-            throw new \Exception("Level is not set!");
+            throw new Exception("Level is not set!");
         }
         $level = Server::getInstance()->getLevel($this->levelid);
         if (is_null($level)) {
-            throw new \Exception("Level is not found!");
+            throw new Exception("Level is not found!");
         }
         return $level;
     }
@@ -85,12 +88,12 @@ class Selection implements \Serializable, \JsonSerializable
 
     /**
      * @return Position
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPos1(): Position
     {
         if (is_null($this->pos1)) {
-            throw new \Exception("Position 1 is not set!");
+            throw new Exception("Position 1 is not set!");
         }
         return Position::fromObject($this->pos1, $this->getLevel());
     }
@@ -119,12 +122,12 @@ class Selection implements \Serializable, \JsonSerializable
 
     /**
      * @return Position
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPos2(): Position
     {
         if (is_null($this->pos2)) {
-            throw new \Exception("Position 2 is not set!");
+            throw new Exception("Position 2 is not set!");
         }
         return Position::fromObject($this->pos2, $this->getLevel());
     }
@@ -153,11 +156,11 @@ class Selection implements \Serializable, \JsonSerializable
 
     /**
      * @return Shape
-     * @throws \Exception
+     * @throws Exception
      */
     public function getShape(): Shape
     {
-        if (!$this->shape instanceof Shape) throw new \Exception("Shape is not valid");
+        if (!$this->shape instanceof Shape) throw new Exception("Shape is not valid");
         return $this->shape;
     }
 
@@ -184,7 +187,7 @@ class Selection implements \Serializable, \JsonSerializable
             $this->getLevel();
             $this->getPos1();
             $this->getPos2();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
         return true;

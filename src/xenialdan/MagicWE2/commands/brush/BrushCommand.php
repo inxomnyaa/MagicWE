@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\brush;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
+use CortexPE\Commando\exception\SubCommandCollision;
+use Error;
+use Exception;
 use muqsit\invmenu\InvMenu;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
@@ -26,7 +30,7 @@ class BrushCommand extends BaseCommand
 {
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\SubCommandCollision
+     * @throws SubCommandCollision
      */
     protected function prepare(): void
     {
@@ -56,7 +60,7 @@ class BrushCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.content'));
             $form->addButton(new Button($lang->translateString('ui.brush.create')));
@@ -66,47 +70,47 @@ class BrushCommand extends BaseCommand
                 try {
                     switch ($data) {
                         case $lang->translateString('ui.brush.create'):
-                            {
-                                $brush = new Brush(new BrushProperties());
-                                if ($brush instanceof Brush) {
-                                    $player->sendForm($brush->getForm());
-                                }
-                                break;
+                        {
+                            $brush = new Brush(new BrushProperties());
+                            if ($brush instanceof Brush) {
+                                $player->sendForm($brush->getForm());
                             }
+                            break;
+                        }
                         case $lang->translateString('ui.brush.getsession'):
-                            {
-                                $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST)->readonly(false);
-                                foreach ($session->getBrushes() as $brush) {
-                                    $menu->getInventory()->addItem($brush->toItem());
-                                }
-                                $menu->send($player, "Session brushes");
-                                break;
+                        {
+                            $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST)->readonly(false);
+                            foreach ($session->getBrushes() as $brush) {
+                                $menu->getInventory()->addItem($brush->toItem());
                             }
+                            $menu->send($player, "Session brushes");
+                            break;
+                        }
                         case $lang->translateString('ui.brush.edithand'):
-                            {
-                                $brush = $session->getBrushFromItem($player->getInventory()->getItemInHand());
-                                if ($brush instanceof Brush) {
-                                    $player->sendForm($brush->getForm(false));
-                                }
-                                break;
+                        {
+                            $brush = $session->getBrushFromItem($player->getInventory()->getItemInHand());
+                            if ($brush instanceof Brush) {
+                                $player->sendForm($brush->getForm(false));
                             }
+                            break;
+                        }
                     }
                     return null;
-                } catch (\Exception $error) {
+                } catch (Exception $error) {
                     $session->sendMessage(TF::RED . $lang->translateString('error'));
                     $session->sendMessage(TF::RED . $error->getMessage());
                 }
             });
             $sender->sendForm($form);
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

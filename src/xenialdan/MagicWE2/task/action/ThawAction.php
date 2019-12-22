@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\task\action;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -31,10 +33,10 @@ class ThawAction extends SetBlockAction
      * @param Block[] $blockFilter
      * @param Block[] $oldBlocks blocks before the change
      * @param string[] $messages
-     * @return \Generator|Progress
-     * @throws \Exception
+     * @return Generator|Progress
+     * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = [], array &$messages = []): \Generator
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = [], array &$messages = []): Generator
     {
         $changed = 0;
         $i = 0;

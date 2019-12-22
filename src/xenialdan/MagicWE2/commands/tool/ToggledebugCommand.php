@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\tool;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
+use Error;
+use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -45,18 +48,18 @@ class ToggledebugCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $sender->sendMessage($session->setDebugToolEnabled(!$session->isDebugToolEnabled()));
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

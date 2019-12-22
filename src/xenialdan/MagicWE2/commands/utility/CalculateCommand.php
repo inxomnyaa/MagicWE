@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\utility;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
+use CortexPE\Commando\exception\ArgumentOrderException;
+use Error;
+use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -21,7 +25,7 @@ class CalculateCommand extends BaseCommand
 
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\ArgumentOrderException
+     * @throws ArgumentOrderException
      */
     protected function prepare(): void
     {
@@ -48,15 +52,15 @@ class CalculateCommand extends BaseCommand
         } catch (CalculationException $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage(Loader::PREFIX . TF::RED . strval($args["expression"]));
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

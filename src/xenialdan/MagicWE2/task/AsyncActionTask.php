@@ -2,6 +2,7 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\Server;
@@ -69,7 +70,7 @@ class AsyncActionTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -105,7 +106,7 @@ class AsyncActionTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {

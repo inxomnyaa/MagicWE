@@ -2,6 +2,7 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\level\format\Chunk;
@@ -31,7 +32,7 @@ class AsyncCountTask extends MWEAsyncTask
      * @param Chunk[] $touchedChunks
      * @param Block[] $newBlocks
      * @param int $flags
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
     {
@@ -47,7 +48,7 @@ class AsyncCountTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -72,7 +73,7 @@ class AsyncCountTask extends MWEAsyncTask
      * @param AsyncChunkManager $manager
      * @param Block[] $newBlocks
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function countBlocks(Selection $selection, AsyncChunkManager $manager, array $newBlocks): array
     {
@@ -109,7 +110,7 @@ class AsyncCountTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {

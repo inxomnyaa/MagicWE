@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\tool;
 
+use Exception;
+use InvalidArgumentException;
 use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -15,6 +17,7 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
+use ReflectionClass;
 use xenialdan\customui\elements\Dropdown;
 use xenialdan\customui\elements\Input;
 use xenialdan\customui\elements\Label;
@@ -22,6 +25,8 @@ use xenialdan\customui\elements\Toggle;
 use xenialdan\customui\elements\UIElement;
 use xenialdan\customui\windows\CustomForm;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\exception\ActionNotFoundException;
+use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
@@ -53,9 +58,9 @@ class Brush extends WETool
 
     /**
      * @return Item
-     * @throws \InvalidArgumentException
-     * @throws \xenialdan\MagicWE2\exception\ActionNotFoundException
-     * @throws \xenialdan\MagicWE2\exception\ShapeNotFoundException
+     * @throws InvalidArgumentException
+     * @throws ActionNotFoundException
+     * @throws ShapeNotFoundException
      */
     public function toItem(): Item
     {
@@ -79,7 +84,7 @@ class Brush extends WETool
      * @param bool $new true if creating new brush
      * @param array $errors
      * @return CustomForm
-     * @throws \Exception
+     * @throws Exception
      */
     public function getForm(bool $new = true, array $errors = []): CustomForm
     {
@@ -115,7 +120,7 @@ class Brush extends WETool
             $form->addElement(new Input((isset($errors['filter']) ? TF::RED : "") . "Filter" . ($errors['filter'] ?? ""), "air", $brushProperties->filter));
             // Biome
             $dropdownBiome = new Dropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""));
-            foreach ((new \ReflectionClass(Biome::class))->getConstants() as $name => $value) {
+            foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
                 if ($value === Biome::MAX_BIOMES || $value === Biome::HELL) continue;
                 $dropdownBiome->addOption(Biome::getBiome($value)->getName(), $value === $brushProperties->biomeId);
             }
@@ -147,7 +152,7 @@ class Brush extends WETool
                 $blocks = trim(TF::clean($blocks));
                 $filter = trim(TF::clean($filter));
 
-                $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
+                $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
                 $biomeNames = array_flip($biomeNames);
                 unset($biomeNames[Biome::MAX_BIOMES], $biomeNames[Biome::HELL]);
                 array_walk($biomeNames, function (&$value, $key) {
@@ -161,32 +166,32 @@ class Brush extends WETool
                     $m = [];
                     $e = false;
                     API::blockParser($blocks, $m, $e);
-                    if ($e) throw new \Exception(implode(TF::EOL, $m));
-                    if (empty($blocks)) throw new \Exception("Blocks cannot be empty!");
-                } catch (\Exception $ex) {
+                    if ($e) throw new Exception(implode(TF::EOL, $m));
+                    if (empty($blocks)) throw new Exception("Blocks cannot be empty!");
+                } catch (Exception $ex) {
                     $error['blocks'] = $ex->getMessage();
                 }
                 try {
                     $m = [];
                     $e = false;
                     API::blockParser($filter, $m, $e);
-                    if ($e) throw new \Exception(implode(TF::EOL, $m));
-                } catch (\Exception $ex) {
+                    if ($e) throw new Exception(implode(TF::EOL, $m));
+                } catch (Exception $ex) {
                     $error['filter'] = $ex->getMessage();
                 }
                 try {
                     $shape = Loader::getShapeRegistry()::getShape($shape);
-                } catch (\Exception $ex) {
+                } catch (Exception $ex) {
                     $error['shape'] = $ex->getMessage();
                 }
                 try {
                     $action = Loader::getActionRegistry()::getAction($action);
-                } catch (\Exception $ex) {
+                } catch (Exception $ex) {
                     $error['action'] = $ex->getMessage();
                 }
                 try {
-                    if (!is_int($biomeId)) throw new \Exception("Biome not found");
-                } catch (\Exception $ex) {
+                    if (!is_int($biomeId)) throw new Exception("Biome not found");
+                } catch (Exception $ex) {
                     $error['biome'] = $ex->getMessage();
                 }
 
@@ -218,21 +223,21 @@ class Brush extends WETool
                     if (!$session instanceof UserSession) {
                         if ($session instanceof Session) $lang = $session->getLanguage();
                         else $lang = Loader::getInstance()->getLanguage();
-                        throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                        throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
                     }
                     if (!$new) {
                         $session->replaceBrush($brush);
                     } else {
                         $player->sendForm($this->getExtradataForm($this->properties->shape));
                     }
-                } catch (\Exception $ex) {
+                } catch (Exception $ex) {
                     $player->sendMessage($ex->getMessage());
                     Loader::getInstance()->getLogger()->logException($ex);
                 }
             });
             return $form;
-        } catch (\Exception $e) {
-            throw new \Exception("Could not create brush form");
+        } catch (Exception $e) {
+            throw new Exception("Could not create brush form");
         }
     }
 
@@ -263,7 +268,7 @@ class Brush extends WETool
             if (!$session instanceof UserSession) {
                 if ($session instanceof Session) $lang = $session->getLanguage();
                 else $lang = Loader::getInstance()->getLanguage();
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $this->properties->uuid = UUID::fromRandom()->toString();
             $session->addBrush($brush);

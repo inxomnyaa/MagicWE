@@ -2,6 +2,9 @@
 
 namespace xenialdan\MagicWE2;
 
+use Error;
+use Exception;
+use InvalidStateException;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
@@ -14,6 +17,7 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\customui\windows\ModalForm;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
@@ -30,8 +34,8 @@ class EventListener implements Listener
 
     /**
      * @param PlayerJoinEvent $event
-     * @throws \InvalidStateException
-     * @throws exception\SessionException
+     * @throws InvalidStateException
+     * @throws SessionException
      */
     public function onLogin(PlayerJoinEvent $event)
     {
@@ -48,8 +52,8 @@ class EventListener implements Listener
 
     /**
      * @param PlayerQuitEvent $event
-     * @throws \InvalidStateException
-     * @throws exception\SessionException
+     * @throws InvalidStateException
+     * @throws SessionException
      */
     public function onLogout(PlayerQuitEvent $event)
     {
@@ -62,29 +66,29 @@ class EventListener implements Listener
 
     /**
      * @param PlayerInteractEvent $event
-     * @throws \Exception
+     * @throws Exception
      */
     public function onInteract(PlayerInteractEvent $event)
     {
         try {
             switch ($event->getAction()) {
                 case PlayerInteractEvent::RIGHT_CLICK_BLOCK:
-                    {
-                        $this->onRightClickBlock($event);
-                        break;
-                    }
+                {
+                    $this->onRightClickBlock($event);
+                    break;
+                }
                 case PlayerInteractEvent::LEFT_CLICK_BLOCK:
-                    {
-                        $this->onLeftClickBlock($event);
-                        break;
-                    }
+                {
+                    $this->onLeftClickBlock($event);
+                    break;
+                }
                 case PlayerInteractEvent::RIGHT_CLICK_AIR:
-                    {
-                        $this->onRightClickAir($event);
-                        break;
-                    }
+                {
+                    $this->onRightClickAir($event);
+                    break;
+                }
             }
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
@@ -92,7 +96,6 @@ class EventListener implements Listener
 
     /**
      * @param BlockBreakEvent $event
-     * @throws \BadMethodCallException
      */
     public function onBreak(BlockBreakEvent $event)
     {
@@ -101,7 +104,7 @@ class EventListener implements Listener
         }
         try {
             $this->onBreakBlock($event);
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
             $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
@@ -110,7 +113,7 @@ class EventListener implements Listener
     /**
      * TODO use tool classes
      * @param BlockBreakEvent $event
-     * @throws \Exception
+     * @throws Exception
      */
     private function onBreakBlock(BlockBreakEvent $event)
     {
@@ -119,34 +122,34 @@ class EventListener implements Listener
         if (is_null($session)) return;
         switch ($event->getItem()->getId()) {
             case ItemIds::WOODEN_AXE:
-                {
-                    if (!$session->isWandEnabled()) {
-                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
-                        break;
-                    }
-                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
-                    if (is_null($selection)) {
-                        throw new \Error("No selection created - Check the console for errors");
-                    }
-                    $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+            {
+                if (!$session->isWandEnabled()) {
+                    $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                     break;
                 }
+                $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+                if (is_null($selection)) {
+                    throw new Error("No selection created - Check the console for errors");
+                }
+                $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                break;
+            }
             case ItemIds::STICK:
-                {
-                    if (!$session->isDebugToolEnabled()) {
-                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
-                        break;
-                    }
-                    $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+            {
+                if (!$session->isDebugToolEnabled()) {
+                    $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                     break;
                 }
+                $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+                break;
+            }
         }
     }
 
     /**
      * TODO use tool classes
      * @param PlayerInteractEvent $event
-     * @throws \Exception
+     * @throws Exception
      */
     private function onRightClickBlock(PlayerInteractEvent $event)
     {
@@ -157,41 +160,41 @@ class EventListener implements Listener
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
-                    {
-                        if (!$session->isWandEnabled()) {
-                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
-                            break;
-                        }
-                        $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
-                        if (is_null($selection)) {
-                            throw new \Error("No selection created - Check the console for errors");
-                        }
-                        $selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                {
+                    if (!$session->isWandEnabled()) {
+                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                         break;
                     }
+                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+                    if (is_null($selection)) {
+                        throw new Error("No selection created - Check the console for errors");
+                    }
+                    $selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                    break;
+                }
                 case ItemIds::STICK:
-                    {
-                        if (!$session->isDebugToolEnabled()) {
-                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
-                            break;
-                        }
-                        $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+                {
+                    if (!$session->isDebugToolEnabled()) {
+                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                         break;
                     }
+                    $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+                    break;
+                }
                 case ItemIds::BUCKET:
-                    {
-                        #if (){// && has perms
-                        API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
-                        #}
-                        break;
-                    }
+                {
+                    #if (){// && has perms
+                    API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
+                    #}
+                    break;
+                }
             }
         }
     }
 
     /**
      * @param PlayerInteractEvent $event
-     * @throws \Exception
+     * @throws Exception
      */
     private function onLeftClickBlock(PlayerInteractEvent $event)
     {
@@ -202,41 +205,41 @@ class EventListener implements Listener
             if (is_null($session)) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
-                    {
-                        if (!$session->isWandEnabled()) {
-                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
-                            break;
-                        }
-                        $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
-                        if (is_null($selection)) {
-                            throw new \Error("No selection created - Check the console for errors");
-                        }
-                        $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                {
+                    if (!$session->isWandEnabled()) {
+                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                         break;
                     }
+                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+                    if (is_null($selection)) {
+                        throw new Error("No selection created - Check the console for errors");
+                    }
+                    $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                    break;
+                }
                 case ItemIds::STICK:
-                    {
-                        if (!$session->isDebugToolEnabled()) {
-                            $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
-                            break;
-                        }
-                        $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+                {
+                    if (!$session->isDebugToolEnabled()) {
+                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                         break;
                     }
+                    $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+                    break;
+                }
                 case ItemIds::BUCKET:
-                    {
-                        #if (){// && has perms
-                        API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
-                        #}
-                        break;
-                    }
+                {
+                    #if (){// && has perms
+                    API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
+                    #}
+                    break;
+                }
             }
         }
     }
 
     /**
      * @param PlayerInteractEvent $event
-     * @throws \Exception
+     * @throws Exception
      */
     private function onRightClickAir(PlayerInteractEvent $event)
     {
@@ -277,7 +280,7 @@ class EventListener implements Listener
                 $event->setCancelled();
                 $event->getPlayer()->getInventory()->remove($event->getItem());
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
     }
 }

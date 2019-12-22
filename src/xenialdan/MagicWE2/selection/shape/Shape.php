@@ -2,6 +2,8 @@
 
 namespace xenialdan\MagicWE2\selection\shape;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\format\Chunk;
@@ -9,10 +11,11 @@ use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use Serializable;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
-abstract class Shape implements \Serializable
+abstract class Shape implements Serializable
 {
     /** @var null|Vector3 */
     public $pasteVector = null;
@@ -43,11 +46,11 @@ abstract class Shape implements \Serializable
 
     /**
      * @param ChunkManager $manager
-     * @throws \Exception
+     * @throws Exception
      */
     public function validateChunkManager(ChunkManager $manager): void
     {
-        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
     }
 
     abstract public function getTotalCount(): int;
@@ -57,24 +60,24 @@ abstract class Shape implements \Serializable
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
-     * @return \Generator|Block[]
-     * @throws \Exception
+     * @return Generator|Block[]
+     * @throws Exception
      */
-    abstract public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator;
+    abstract public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator;
 
     /**
      * Returns a flat layer of all included x z positions in selection
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
-     * @return \Generator|Vector2[]
-     * @throws \Exception
+     * @return Generator|Vector2[]
+     * @throws Exception
      */
-    abstract public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator;
+    abstract public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): Generator;
 
     /**
      * @param ChunkManager $manager
      * @return string[] fastSerialized chunks
-     * @throws \Exception
+     * @throws Exception
      */
     abstract public function getTouchedChunks(ChunkManager $manager): array;
 

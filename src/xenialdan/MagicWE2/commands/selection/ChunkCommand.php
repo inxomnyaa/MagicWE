@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\selection;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
+use Error;
+use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -52,27 +55,27 @@ class ChunkCommand extends BaseCommand
             /** @var Session $session */
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
-                throw new \Error("No selection created - Check the console for errors");
+                throw new Error("No selection created - Check the console for errors");
             }
             $chunk = $sender->getLevel()->getChunkAtPosition($sender);
             if (is_null($chunk)) {
-                throw new \Error("Could not find a chunk at your position");
+                throw new Error("Could not find a chunk at your position");
             }
             $selection->setPos1(Position::fromObject(new Vector3($chunk->getX() * 16, 0, $chunk->getZ() * 16), $sender->getLevel()));
             $selection->setPos2(Position::fromObject(new Vector3($chunk->getX() * 16 + 15, Level::Y_MAX, $chunk->getZ() * 16 + 15), $sender->getLevel()));
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\brush;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseSubCommand;
+use CortexPE\Commando\exception\ArgumentOrderException;
+use Error;
+use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -20,7 +24,7 @@ class BrushNameCommand extends BaseSubCommand
 {
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\ArgumentOrderException
+     * @throws ArgumentOrderException
      */
     protected function prepare(): void
     {
@@ -50,7 +54,7 @@ class BrushNameCommand extends BaseSubCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
             if ($brush instanceof Brush) {
@@ -63,15 +67,15 @@ class BrushNameCommand extends BaseSubCommand
                 $session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
                 $session->replaceBrush($brush);
             }
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsageMessage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsageMessage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

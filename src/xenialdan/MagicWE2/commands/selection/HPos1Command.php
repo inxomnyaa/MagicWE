@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\selection;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
+use Error;
+use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -49,11 +52,11 @@ class HPos1Command extends BaseCommand
             /** @var Session $session */
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
-                throw new \Error("No selection created - Check the console for errors");
+                throw new Error("No selection created - Check the console for errors");
             }
             $target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
             if ($target === null) {
@@ -61,15 +64,15 @@ class HPos1Command extends BaseCommand
                 return;
             }
             $selection->setPos1($target);
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

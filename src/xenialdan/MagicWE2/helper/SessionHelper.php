@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
+use Ds\Map;
+use Exception;
+use InvalidArgumentException;
+use InvalidStateException;
 use pocketmine\entity\Skin;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -11,6 +15,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
+use RuntimeException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -23,18 +28,22 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 
 class SessionHelper
 {
-    /** @var \Ds\Map */
+    /** @var Map */
     private static $userSessions;
-    /** @var \Ds\Map */
+    /** @var Map */
     private static $pluginSessions;
 
     public static function init()
     {
         @mkdir(Loader::getInstance()->getDataFolder() . "sessions");
-        self::$userSessions = new \Ds\Map();
-        self::$pluginSessions = new \Ds\Map();
+        self::$userSessions = new Map();
+        self::$pluginSessions = new Map();
     }
 
+    /**
+     * @param Session $session
+     * @throws InvalidStateException
+     */
     public static function addSession(Session $session): void
     {
         if ($session instanceof UserSession) {
@@ -71,7 +80,7 @@ class SessionHelper
      * @param Player $player
      * @param bool $add If true, the session will be cached in SessionHelper
      * @return UserSession
-     * @throws \InvalidStateException
+     * @throws InvalidStateException
      * @throws SessionException
      */
     public static function createUserSession(Player $player, bool $add = true): UserSession
@@ -87,6 +96,7 @@ class SessionHelper
      * @param Plugin $plugin
      * @param bool $add If true, the session will be cached in SessionHelper
      * @return PluginSession
+     * @throws InvalidStateException
      */
     public static function createPluginSession(Plugin $plugin, bool $add = true): PluginSession
     {
@@ -172,6 +182,11 @@ class SessionHelper
         return self::$pluginSessions->values()->toArray();
     }
 
+    /**
+     * @param Player $player
+     * @return UserSession|null
+     * @throws InvalidStateException
+     */
     public static function loadUserSession(Player $player): ?UserSession
     {
         $path = Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
@@ -196,7 +211,7 @@ class SessionHelper
                     $properties = BrushProperties::fromJson($brushJson["properties"]);
                     $brush = new Brush($properties);
                     $session->addBrush($brush);
-                } catch (\InvalidArgumentException $e) {
+                } catch (InvalidArgumentException $e) {
                     continue;
                 }
             };
@@ -221,11 +236,11 @@ class SessionHelper
                         $selection->setShape($shape);
                         $session->addSelection($selection);
                     }
-                } catch (\RuntimeException $e) {
+                } catch (RuntimeException $e) {
                 }
             }
             //TODO clipboard
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return null;
         }
         self::addSession($session);

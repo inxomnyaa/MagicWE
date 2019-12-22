@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\clipboard;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
+use CortexPE\Commando\exception\ArgumentOrderException;
+use Error;
+use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -18,7 +22,7 @@ class RotateCommand extends BaseCommand
 {
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\ArgumentOrderException
+     * @throws ArgumentOrderException
      */
     protected function prepare(): void
     {
@@ -51,23 +55,23 @@ class RotateCommand extends BaseCommand
             $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [90 * $rotation]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $clipboard = $session->getCurrentClipboard();
             if (is_null($clipboard)) {
-                throw new \Exception($lang->translateString('error.noclipboard'));
+                throw new Exception($lang->translateString('error.noclipboard'));
             }
             $clipboard->rotate($rotation);//TODO add back
             $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.success'));
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

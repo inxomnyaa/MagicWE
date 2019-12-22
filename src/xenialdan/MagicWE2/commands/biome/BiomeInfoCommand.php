@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\biome;
 
+use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
+use CortexPE\Commando\exception\ArgumentOrderException;
+use Error;
+use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\level\biome\Biome;
 use pocketmine\level\format\Chunk;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
+use ReflectionClass;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -23,7 +28,7 @@ class BiomeInfoCommand extends BaseCommand
 
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws \CortexPE\Commando\exception\ArgumentOrderException
+     * @throws ArgumentOrderException
      */
     protected function prepare(): void
     {
@@ -53,9 +58,9 @@ class BiomeInfoCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new \Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
-            $biomeNames = (new \ReflectionClass(Biome::class))->getConstants();
+            $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
             $biomeNames = array_flip($biomeNames);
             unset($biomeNames[Biome::MAX_BIOMES]);
             array_walk($biomeNames, function (&$value, $key) {
@@ -82,10 +87,10 @@ class BiomeInfoCommand extends BaseCommand
             }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-                throw new \Exception($lang->translateString('error.noselection'));
+                throw new Exception($lang->translateString('error.noselection'));
             }
             if (!$selection->isValid()) {
-                throw new \Exception($lang->translateString('error.selectioninvalid'));
+                throw new Exception($lang->translateString('error.selectioninvalid'));
             }
             if ($selection->getLevel() !== $sender->getLevel()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
@@ -102,15 +107,15 @@ class BiomeInfoCommand extends BaseCommand
             foreach ($biomes as $biomeId) {
                 $session->sendMessage(TF::AQUA . $lang->translateString('command.biomeinfo.result.line', [$biomeId, $biomeNames[$biomeId]]));
             }
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\ArgumentCountError $error) {
+        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());
-        } catch (\Error $error) {
+        } catch (Error $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }

@@ -2,6 +2,7 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
@@ -33,7 +34,7 @@ class AsyncCopyTask extends MWEAsyncTask
      * @param UUID $sessionUUID
      * @param Chunk[] $chunks
      * @param int $flags
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
     {
@@ -49,7 +50,7 @@ class AsyncCopyTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -74,7 +75,7 @@ class AsyncCopyTask extends MWEAsyncTask
      * @param AsyncChunkManager $manager
      * @param CopyClipboard $clipboard
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     private function copyBlocks(Selection $selection, AsyncChunkManager $manager, CopyClipboard &$clipboard): int
     {
