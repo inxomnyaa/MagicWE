@@ -1,7 +1,7 @@
 TODO and bug list
 - [x] Redo does not apply changes
 - [ ] Setbiome does not send the changes, but //biomeinfo returns that it was set
-- [ ] Count returns no messages
+- [x] Count returns no messages
 - [x] Wand left click does not work without breaking blocks
 - [x] Brush command needs rework
 - [x] Undo seems to execute the action offset by 1
@@ -14,3 +14,4 @@ TODO and bug list
 - [ ] Session destructs upon re-login instead upon logout
 - [ ] Undo "steals" blocks that were changed manually later
 - [ ] Rewrite CopyClipboard to be similar to RevertClipboard
+- [ ] Undo is incredibly slow - probably getAABB()

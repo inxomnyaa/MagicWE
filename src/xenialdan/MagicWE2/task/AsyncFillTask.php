@@ -2,15 +2,19 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
@@ -30,7 +34,7 @@ class AsyncFillTask extends MWEAsyncTask
      * @param Chunk[] $touchedChunks
      * @param Block[] $newBlocks
      * @param int $flags
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
     {
@@ -46,7 +50,7 @@ class AsyncFillTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -78,10 +82,10 @@ class AsyncFillTask extends MWEAsyncTask
      * @param AsyncChunkManager $manager
      * @param Block[] $newBlocks
      * @param null|int $changed
-     * @return \Generator|Block[]
-     * @throws \Exception
+     * @return Generator|Block[]
+     * @throws Exception
      */
-    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): \Generator
+    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): Generator
     {
         $blockCount = $selection->getShape()->getTotalCount();
         $lastchunkx = $lastchunkz = null;
@@ -126,12 +130,17 @@ class AsyncFillTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {
-        $session = API::getSessions()[$this->sessionUUID];
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            $session = null;
+        }
         $result = $this->getResult();
         /** @var Chunk[] $resultChunks */
         $resultChunks = $result["resultChunks"];
@@ -148,7 +157,9 @@ class AsyncFillTask extends MWEAsyncTask
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        $session->sendMessage(TF::GREEN . "Async Fill succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
-        $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+        if (!is_null($session)) {
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));
+            $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+        }
     }
 }

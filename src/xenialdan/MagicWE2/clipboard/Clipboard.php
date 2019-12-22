@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\clipboard;
 
+use Exception;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\Server;
+use Serializable;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
-abstract class Clipboard implements \Serializable
+abstract class Clipboard implements Serializable
 {
     const DIRECTION_DEFAULT = 1;
 
@@ -46,16 +48,16 @@ abstract class Clipboard implements \Serializable
 
     /**
      * @return Level
-     * @throws \Exception
+     * @throws Exception
      */
     public function getLevel()
     {
         if (is_null($this->levelid)) {
-            throw new \Exception("Level is not set!");
+            throw new Exception("Level is not set!");
         }
         $level = Server::getInstance()->getLevel($this->levelid);
         if (is_null($level)) {
-            throw new \Exception("Level is not found!");
+            throw new Exception("Level is not found!");
         }
         return $level;
     }

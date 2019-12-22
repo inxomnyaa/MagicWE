@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\selection;
 
+use Exception;
+use JsonSerializable;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
-use xenialdan\MagicWE2\API;
+use Serializable;
+use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
@@ -19,7 +23,7 @@ use xenialdan\MagicWE2\session\Session;
  * Class Selection
  * @package xenialdan\MagicWE2
  */
-class Selection implements \Serializable
+class Selection implements Serializable, JsonSerializable
 {
     /** @var int */
     public $levelid;
@@ -60,16 +64,16 @@ class Selection implements \Serializable
 
     /**
      * @return Level
-     * @throws \Exception
+     * @throws Exception
      */
     public function getLevel(): Level
     {
         if (is_null($this->levelid)) {
-            throw new \Exception("Level is not set!");
+            throw new Exception("Level is not set!");
         }
         $level = Server::getInstance()->getLevel($this->levelid);
         if (is_null($level)) {
-            throw new \Exception("Level is not found!");
+            throw new Exception("Level is not found!");
         }
         return $level;
     }
@@ -84,12 +88,12 @@ class Selection implements \Serializable
 
     /**
      * @return Position
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPos1(): Position
     {
         if (is_null($this->pos1)) {
-            throw new \Exception("Position 1 is not set!");
+            throw new Exception("Position 1 is not set!");
         }
         return Position::fromObject($this->pos1, $this->getLevel());
     }
@@ -108,18 +112,22 @@ class Selection implements \Serializable
         $this->setLevel($position->getLevel());
         if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-        $session = API::getSessionByUUID($this->sessionUUID);
-        if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 1 set to X: " . $this->pos1->getX() . " Y: " . $this->pos1->getY() . " Z: " . $this->pos1->getZ());
+        try {
+            $session = SessionHelper::getSessionByUUID($this->sessionUUID);
+            if ($session instanceof Session) $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos1.set', [$this->pos1->getX(), $this->pos1->getY(), $this->pos1->getZ()]));
+        } catch (SessionException $e) {
+            //TODO log? kick?
+        }
     }
 
     /**
      * @return Position
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPos2(): Position
     {
         if (is_null($this->pos2)) {
-            throw new \Exception("Position 2 is not set!");
+            throw new Exception("Position 2 is not set!");
         }
         return Position::fromObject($this->pos2, $this->getLevel());
     }
@@ -138,17 +146,21 @@ class Selection implements \Serializable
         $this->setLevel($position->getLevel());
         if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-        $session = API::getSessionByUUID($this->sessionUUID);
-        if ($session instanceof Session) $session->sendMessage(TF::GREEN . "Position 2 set to X: " . $this->pos2->getX() . " Y: " . $this->pos2->getY() . " Z: " . $this->pos2->getZ());
+        try {
+            $session = SessionHelper::getSessionByUUID($this->sessionUUID);
+            if ($session instanceof Session) $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos2.set', [$this->pos2->getX(), $this->pos2->getY(), $this->pos2->getZ()]));
+        } catch (SessionException $e) {
+            //TODO log? kick?
+        }
     }
 
     /**
      * @return Shape
-     * @throws \Exception
+     * @throws Exception
      */
     public function getShape(): Shape
     {
-        if (!$this->shape instanceof Shape) throw new \Exception("Shape is not valid");
+        if (!$this->shape instanceof Shape) throw new Exception("Shape is not valid");
         return $this->shape;
     }
 
@@ -175,7 +187,7 @@ class Selection implements \Serializable
             $this->getLevel();
             $this->getPos1();
             $this->getPos2();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
         return true;
@@ -259,5 +271,20 @@ class Selection implements \Serializable
             $this->sessionUUID,
             $this->shape
         ] = unserialize($serialized);
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        $arr = (array)$this;
+        if (!is_null($this->shape))
+            $arr["shapeClass"] = get_class($this->shape);
+        return $arr;
     }
 }

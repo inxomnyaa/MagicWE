@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
 use pocketmine\plugin\PluginBase;
+use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
+use RuntimeException;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -24,6 +27,7 @@ use xenialdan\MagicWE2\commands\history\ClearhistoryCommand;
 use xenialdan\MagicWE2\commands\history\RedoCommand;
 use xenialdan\MagicWE2\commands\history\UndoCommand;
 use xenialdan\MagicWE2\commands\InfoCommand;
+use xenialdan\MagicWE2\commands\LanguageCommand;
 use xenialdan\MagicWE2\commands\LimitCommand;
 use xenialdan\MagicWE2\commands\region\ReplaceCommand;
 use xenialdan\MagicWE2\commands\region\SetCommand;
@@ -47,8 +51,8 @@ use xenialdan\MagicWE2\commands\utility\CalculateCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
 use xenialdan\MagicWE2\exception\ShapeRegistryException;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
-use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Loader extends PluginBase
@@ -62,6 +66,10 @@ class Loader extends PluginBase
     /** @var null|ActionRegistry */
     public static $actionRegistry = null;
     private $baseLang;
+    /** @var string[] Donator names */
+    public $donators = [];
+    /** @var string */
+    public $donatorData = "";
 
     /**
      * Returns an instance of the plugin
@@ -75,6 +83,7 @@ class Loader extends PluginBase
     /**
      * ShapeRegistry
      * @return ShapeRegistry
+     * @throws ShapeRegistryException
      */
     public static function getShapeRegistry(): ShapeRegistry
     {
@@ -85,6 +94,7 @@ class Loader extends PluginBase
     /**
      * ActionRegistry
      * @return ActionRegistry
+     * @throws ActionRegistryException
      */
     public static function getActionRegistry(): ActionRegistry
     {
@@ -95,31 +105,24 @@ class Loader extends PluginBase
     public function onLoad()
     {
         self::$instance = $this;
-        // TODO restore sessions properly / from file
-        #$this->getLogger()->debug("Restoring Sessions");
-        //This may take longer than 1 second when file sessions are coming. Re-enable messages after!
-        foreach ($this->getServer()->getOnlinePlayers() as $player) { // Restores on /reload for now
-            if ($player->hasPermission("we.session")) {
-                $session = API::getSession($player);
-                if ($session instanceof UserSession) {
-                    $session->setPlayer($player);
-                    Loader::getInstance()->getLogger()->debug("Restored session with UUID {$session->getUUID()} for player {$session->getPlayer()->getName()}");
-                }
-            }
-        }
-        #$this->getLogger()->debug("Sessions successfully restored");
         $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
         Enchantment::registerEnchantment($ench);
         self::$shapeRegistry = new ShapeRegistry();
         self::$actionRegistry = new ActionRegistry();
+        SessionHelper::init();
     }
 
+    /**
+     * @throws PluginException
+     */
     public function onEnable()
     {
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
-        $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources/");
+        $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
         if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
+        //$this->loadDonator();
         $this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
+        if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
             /* -- selection -- */
@@ -197,6 +200,8 @@ class Loader extends PluginBase
             new InfoCommand("/info", "Information about MagicWE"),
             new ReportCommand("/report", "Report a bug to GitHub", ["/bug", "/github"]),
             new DonateCommand("/donate", "Donate to support development of MagicWE!", ["/support", "/paypal"]),
+            new LanguageCommand("/language", "Set your language", ["/lang"]),
+            new DonateCommand("/donate", "Support the development of MagicWE and get a cape!", ["/support", "/paypal"]),
             /* -- biome -- */
             new BiomeListCommand("/biomelist", "Gets all biomes available", ["/biomels"]),
             new BiomeInfoCommand("/biomeinfo", "Get the biome of the targeted block"),
@@ -225,9 +230,11 @@ class Loader extends PluginBase
     public function onDisable()
     {
         #$this->getLogger()->debug("Destroying Sessions");
-        foreach (API::getSessions() as $session) {
-            //TODO store sessions
-            API::destroySession($session);
+        foreach (SessionHelper::getPluginSessions() as $session) {
+            SessionHelper::destroySession($session, false);
+        }
+        foreach (SessionHelper::getUserSessions() as $session) {
+            SessionHelper::destroySession($session);
         }
         #$this->getLogger()->debug("Sessions successfully destroyed");
     }
@@ -246,6 +253,10 @@ class Loader extends PluginBase
         return intval($this->getConfig()->get("tool-range", 100));
     }
 
+    /**
+     * @return array
+     * @throws RuntimeException
+     */
     public static function getInfo(): array
     {
         return [
@@ -296,5 +307,24 @@ class Loader extends PluginBase
             );
         }, $axe) as $axeMsg)
             $this->getLogger()->info($axeMsg);
+    }
+
+    /**
+     * Returns the path to the language files folder.
+     *
+     * @return string
+     */
+    public function getLanguageFolder(): string
+    {
+        return $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Get a list of available languages
+     * @return array
+     */
+    public function getLanguageList(): array
+    {
+        return BaseLang::getLanguageList($this->getLanguageFolder());
     }
 }

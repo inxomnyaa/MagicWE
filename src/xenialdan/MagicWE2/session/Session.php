@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
+use Ds\Deque;
+use Exception;
+use InvalidArgumentException;
+use pocketmine\lang\BaseLang;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
+use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\task\AsyncRevertTask;
 
@@ -28,9 +34,9 @@ abstract class Session
     private $clipboards = [];
     /** @var int */
     private $currentClipboard = -1;
-    /** @var \Ds\Deque */
+    /** @var Deque */
     public $undoHistory;
-    /** @var \Ds\Deque */
+    /** @var Deque */
     public $redoHistory;
 
     /**
@@ -217,12 +223,12 @@ abstract class Session
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function undo()
     {
         if ($this->undoHistory->count() === 0) {
-            $this->sendMessage(TF::RED . "Nothing to undo");
+            $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.undo.none'));
             return;
         }
         /** @var RevertClipboard $revertClipboard */
@@ -232,18 +238,22 @@ abstract class Session
             $revertClipboard->chunks[$hash] = $level->getChunk($chunk->getX(), $chunk->getZ(), false);
         }
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
-        $this->sendMessage(TF::GREEN . "You have " . count($this->undoHistory) . " undo actions left");
+        $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
     }
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     */
     public function redo()
     {
         if ($this->redoHistory->count() === 0) {
-            $this->sendMessage(TF::RED . "Nothing to redo");
+            $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.redo.none'));
             return;
         }
         $revertClipboard = $this->redoHistory->pop();
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
-        $this->sendMessage(TF::GREEN . "You have " . count($this->redoHistory) . " redo actions left");
+        $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
     }
 
     public function clearHistory()
@@ -256,6 +266,14 @@ abstract class Session
     {
         $this->setClipboards([]);
         $this->currentClipboard = -1;
+    }
+
+    /**
+     * @return BaseLang
+     */
+    public function getLanguage(): BaseLang
+    {
+        return Loader::getInstance()->getLanguage();
     }
 
     public abstract function sendMessage(string $message);

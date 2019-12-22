@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
+use Ds\Deque;
+use Exception;
+use InvalidArgumentException;
+use JsonSerializable;
 use pocketmine\item\Item;
+use pocketmine\lang\BaseLang;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\exception\ActionNotFoundException;
+use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
-class UserSession extends Session
+class UserSession extends Session implements JsonSerializable
 {
     /** @var Player|null */
     private $player = null;
@@ -24,24 +31,53 @@ class UserSession extends Session
     /** @var bool */
     private $wandEnabled = true;
     /** @var bool */
-    private $debugStickEnabled = true;
+    private $debugToolEnabled = true;
     /** @var Brush[] */
     private $brushes = [];
+    /** @var BaseLang */
+    private $lang;
 
     public function __construct(Player $player)
     {
         $this->setPlayer($player);
+        $this->cleanupInventory();
         $this->setUUID($player->getUniqueId());
         $this->bossBar = (new BossBar())->addPlayer($player);
         $this->bossBar->hideFrom([$player]);
-        $this->undoHistory = new \Ds\Deque();
-        $this->redoHistory = new \Ds\Deque();
+        $this->undoHistory = new Deque();
+        $this->redoHistory = new Deque();
+        if (is_null($this->lang)) $this->setLanguage(BaseLang::FALLBACK_LANGUAGE);
+        Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
     }
 
     public function __destruct()
     {
-        Loader::getInstance()->getLogger()->debug("Destructing session " . $this->getUUID()->__toString() . " for user " . $this->getPlayer()->getName());
+        Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
         $this->bossBar->removeAllPlayers();
+    }
+
+    /**
+     * @return BaseLang
+     */
+    public function getLanguage(): BaseLang
+    {
+        return $this->lang;
+    }
+
+    /**
+     * Set the language for the user. Uses iso639-2 language code
+     * @param string $langShort iso639-2 conform language code (3 letter)
+     */
+    public function setLanguage(string $langShort): void
+    {
+        $langShort = strtolower($langShort);
+        if (isset(Loader::getInstance()->getLanguageList()[$langShort])) {
+            $this->lang = new BaseLang($langShort, Loader::getInstance()->getLanguageFolder());
+            $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString("session.language.set", [$this->getLanguage()->getName()]));
+        } else {
+            $this->lang = new BaseLang(BaseLang::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
+            $this->sendMessage(TF::RED . $this->getLanguage()->translateString("session.language.notfound", [$langShort]));
+        }
     }
 
     /**
@@ -75,25 +111,25 @@ class UserSession extends Session
     public function setWandEnabled(bool $wandEnabled)
     {
         $this->wandEnabled = $wandEnabled;
-        return Loader::PREFIX . "The wand tool is now " . ($wandEnabled ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
+        return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
     }
 
     /**
      * @return bool
      */
-    public function isDebugStickEnabled(): bool
+    public function isDebugToolEnabled(): bool
     {
-        return $this->debugStickEnabled;
+        return $this->debugToolEnabled;
     }
 
     /**
-     * @param bool $debugStick
+     * @param bool $debugToolEnabled
      * @return string
      */
-    public function setDebugStickEnabled(bool $debugStick)
+    public function setDebugToolEnabled(bool $debugToolEnabled)
     {
-        $this->debugStickEnabled = $debugStick;
-        return Loader::PREFIX . "The debug stick is now " . ($debugStick ? TF::GREEN . "enabled" : TF::RED . "disabled") . TF::RESET . "!";//TODO #translation
+        $this->debugToolEnabled = $debugToolEnabled;
+        return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
     }
 
     /**
@@ -108,7 +144,7 @@ class UserSession extends Session
      * TODO exception for not a brush
      * @param Item $item
      * @return null|Brush
-     * @throws \Exception
+     * @throws Exception
      */
     public function getBrushFromItem(Item $item): ?Brush
     {
@@ -117,7 +153,7 @@ class UserSession extends Session
             #var_dump(API::compoundToArray($entry));
             $version = $entry->getInt("version", 0);
             if ($version !== BrushProperties::VERSION) {
-                throw new \Exception("Brush can not be restored - version mismatch");
+                throw new Exception("Brush can not be restored - version mismatch");
             }
             /** @var BrushProperties $properties */
             $properties = json_decode($entry->getString("properties"));
@@ -132,7 +168,7 @@ class UserSession extends Session
                 return $brush;
             }
         } else {
-            throw new \Exception("The item is not a valid brush!");
+            throw new Exception("The item is not a valid brush!");
         }
         return null;
     }
@@ -155,13 +191,36 @@ class UserSession extends Session
     public function addBrush(Brush $brush): void
     {
         $this->brushes[$brush->properties->uuid] = $brush;
-        $this->sendMessage("Added {$brush->getName()} to session (UUID {$brush->properties->uuid})");
+        $this->sendMessage($this->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
+    }
+
+    /**
+     * @param Brush $brush UUID will be set automatically
+     * @param bool $delete If true, it will be removed from the session brushes
+     * @return void
+     */
+    public function removeBrush(Brush $brush, bool $delete = false): void
+    {
+        if ($delete) unset($this->brushes[$brush->properties->uuid]);
+        foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
+            /** @var CompoundTag $entry */
+            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
+                if ($entry->getString("id") === $brush->properties->uuid) {
+                    $this->getPlayer()->getInventory()->clear($slot);
+                }
+            }
+        }
+        if ($delete) $this->sendMessage($this->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
+        else $this->sendMessage($this->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
     }
 
     /**
      * TODO exception for not a brush
      * @param Brush $brush UUID will be set automatically
      * @return void
+     * @throws InvalidArgumentException
+     * @throws ActionNotFoundException
+     * @throws ShapeNotFoundException
      */
     public function replaceBrush(Brush $brush): void
     {
@@ -177,13 +236,34 @@ class UserSession extends Session
         }
     }
 
+    /**
+     * @return Brush[]
+     */
+    public function getBrushes(): array
+    {
+        return $this->brushes;
+    }
+
+    public function cleanupInventory(): void
+    {
+        foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
+            /** @var CompoundTag $entry */
+            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
+                $this->getPlayer()->getInventory()->clear($slot);
+            }
+            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE)))) {
+                $this->getPlayer()->getInventory()->clear($slot);
+            }
+        }
+    }
+
     public function __toString()
     {
         return __CLASS__ .
             " UUID: " . $this->getUUID()->__toString() .
             " Player: " . $this->getPlayer()->getName() .
             " Wand tool enabled: " . ($this->isWandEnabled() ? "enabled" : "disabled") .
-            " Debug tool enabled: " . ($this->isDebugStickEnabled() ? "enabled" : "disabled") .
+            " Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
             " BossBar: " . $this->getBossBar()->entityId .
             " Selections: " . count($this->getSelections()) .
             " Latest: " . $this->getLatestSelectionUUID() .
@@ -197,5 +277,33 @@ class UserSession extends Session
     public function sendMessage(string $message)
     {
         $this->player->sendMessage(Loader::PREFIX . $message);
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return [
+            "uuid" => $this->getUUID()->toString(),
+            "wandEnabled" => $this->wandEnabled,
+            "debugToolEnabled" => $this->debugToolEnabled,
+            "brushes" => $this->brushes,
+            "latestSelection" => $this->getLatestSelection(),
+            "currentClipboard" => $this->getCurrentClipboard(),
+            "language" => $this->getLanguage()->getLang()
+        ];
+    }
+
+    public function save(): void
+    {
+        file_put_contents(Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
+            $this->getPlayer()->getName() . ".json",
+            json_encode($this, JSON_PRETTY_PRINT)
+        );
     }
 }

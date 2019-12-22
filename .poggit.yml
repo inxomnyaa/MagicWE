@@ -15,5 +15,7 @@ projects:
     - src: thebigsmilexd/apibossbar/apibossbar
       version: ^0.0.3
     - src: CortexPE/Commando/Commando
-      version: ^0.3.1
+      version: ^0.4.0
+    - src: muqsit/invmenu/InvMenu
+      version: ^2.0.0
 ...

@@ -2,6 +2,8 @@
 
 namespace xenialdan\MagicWE2\selection\shape;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
@@ -37,10 +39,10 @@ class Cone extends Shape
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
-     * @return \Generator|Block
-     * @throws \Exception
+     * @return Generator|Block
+     * @throws Exception
      */
-    public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): \Generator
+    public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         $reducePerLayer = ($this->diameter / $this->height);
@@ -77,10 +79,10 @@ class Cone extends Shape
      * Returns a flat layer of all included x z positions in selection
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
-     * @return \Generator|Vector2
-     * @throws \Exception
+     * @return Generator|Vector2
+     * @throws Exception
      */
-    public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
+    public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -97,7 +99,7 @@ class Cone extends Shape
     /**
      * @param ChunkManager $manager
      * @return string[] fastSerialized chunks
-     * @throws \Exception
+     * @throws Exception
      */
     public function getTouchedChunks(ChunkManager $manager): array
     {//TODO optimize to remove "corner" chunks

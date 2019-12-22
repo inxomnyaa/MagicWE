@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\tool;
 
+use InvalidArgumentException;
+use JsonSerializable;
 use pocketmine\level\biome\Biome;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\ActionNotFoundException;
+use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\selection\shape\Sphere;
@@ -13,7 +17,7 @@ use xenialdan\MagicWE2\task\action\ActionRegistry;
 use xenialdan\MagicWE2\task\action\SetBlockAction;
 use xenialdan\MagicWE2\task\action\TaskAction;
 
-class BrushProperties implements \JsonSerializable
+class BrushProperties implements JsonSerializable
 {
 
     public const VERSION = 1;
@@ -52,20 +56,47 @@ class BrushProperties implements \JsonSerializable
         return (array)$this;
     }
 
+    /**
+     * @param array $json
+     * @return BrushProperties
+     * @throws InvalidArgumentException
+     */
+    public static function fromJson(array $json): BrushProperties
+    {
+        if (($json["version"] ?? 0) !== self::VERSION) throw new InvalidArgumentException("Version mismatch");
+        $properties = new self;
+        foreach ($json as $key => $value) {
+            $properties->$key = $value;
+        }
+        return $properties;
+    }
+
     public function getName(): string
     {
-        $str = trim(($this->hasCustomName() ? $this->customName : $this->getShapeName()) /*. " " . $this->action->getName() . */);
+        $str = "";
+        try {
+            $str = trim(($this->hasCustomName() ? $this->customName : $this->getShapeName()) /*. " " . $this->action->getName() . */);
+        } catch (ShapeNotFoundException $e) {
+        }
         if (stripos(TF::clean($str), "brush") === false) {
             $str .= " Brush";
         }
         return $str;
     }
 
+    /**
+     * @return string
+     * @throws ShapeNotFoundException
+     */
     public function getShapeName(): string
     {
         return is_subclass_of($this->shape, Shape::class) ? ShapeRegistry::getShapeName($this->shape) : "";
     }
 
+    /**
+     * @return string
+     * @throws ActionNotFoundException
+     */
     public function getActionName(): string
     {
         return is_subclass_of($this->action, TaskAction::class) ? ActionRegistry::getActionName($this->action) : "";
@@ -84,6 +115,11 @@ class BrushProperties implements \JsonSerializable
         $this->customName = $customName;
     }
 
+    /**
+     * @return array
+     * @throws ActionNotFoundException
+     * @throws ShapeNotFoundException
+     */
     public function generateLore(): array
     {
         $shapeProperties = array_map(function ($k, $v): string {
@@ -106,7 +142,7 @@ class BrushProperties implements \JsonSerializable
                 TF::GOLD . "Filter: {$this->filter}",
                 TF::GOLD . "Biome: {$this->biomeId}",
                 TF::GOLD . "Hollow: " . ($this->hollow ? "Yes" : "No"),
-                TF::GOLD . "UUID: {$this->uuid}",
+                //TF::GOLD . "UUID: {$this->uuid}",
             ]
         );
     }

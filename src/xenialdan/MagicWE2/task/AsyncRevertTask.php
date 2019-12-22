@@ -2,14 +2,18 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncRevertTask extends MWEAsyncTask
@@ -39,7 +43,7 @@ class AsyncRevertTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -59,9 +63,9 @@ class AsyncRevertTask extends MWEAsyncTask
     /**
      * @param AsyncChunkManager $manager
      * @param RevertClipboard $clipboard
-     * @return \Generator|Block[]
+     * @return Generator|Block[]
      */
-    private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): \Generator
+    private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
     {
         $count = count($clipboard->blocksAfter);
         $changed = 0;
@@ -77,9 +81,9 @@ class AsyncRevertTask extends MWEAsyncTask
     /**
      * @param AsyncChunkManager $manager
      * @param RevertClipboard $clipboard
-     * @return \Generator|Block[]
+     * @return Generator|Block[]
      */
-    private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): \Generator
+    private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
     {
         $count = count($clipboard->blocksAfter);
         $changed = 0;
@@ -94,13 +98,18 @@ class AsyncRevertTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            $session = null;
+        }
         $result = $this->getResult();
-        $session = API::getSessions()[$this->sessionUUID];
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
         /** @var RevertClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
         $clipboard->chunks = $result["chunks"];
@@ -112,19 +121,21 @@ class AsyncRevertTask extends MWEAsyncTask
         foreach ($clipboard->chunks as $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        switch ($this->type) {
-            case self::TYPE_UNDO:
+        if (!is_null($session)) {
+            switch ($this->type) {
+                case self::TYPE_UNDO:
                 {
-                    $session->sendMessage(TF::GREEN . "Async Undo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+                    $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
                     $session->redoHistory->push($clipboard);
                     break;
                 }
-            case self::TYPE_REDO:
+                case self::TYPE_REDO:
                 {
-                    $session->sendMessage(TF::GREEN . "Async Redo succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+                    $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
                     $session->undoHistory->push($clipboard);
                     break;
                 }
+            }
         }
     }
 }

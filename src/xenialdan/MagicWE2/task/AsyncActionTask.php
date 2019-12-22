@@ -2,6 +2,7 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\Server;
@@ -9,7 +10,9 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\Progress;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
@@ -52,10 +55,14 @@ class AsyncActionTask extends MWEAsyncTask
         $this->newBlocks = $newBlocks;
         $this->blockFilter = $blockFilter;
 
-        $session = API::getSessionByUUID($sessionUUID);
-        if ($session instanceof UserSession) {
-            $session->getBossBar()->showTo([$session->getPlayer()]);
-            $session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
+        try {
+            $session = SessionHelper::getSessionByUUID($sessionUUID);
+            if ($session instanceof UserSession) {
+                $session->getBossBar()->showTo([$session->getPlayer()]);
+                $session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
+            }
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
         }
     }
 
@@ -63,7 +70,7 @@ class AsyncActionTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -99,12 +106,17 @@ class AsyncActionTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {
-        $session = API::getSessions()[$this->sessionUUID];
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            $session = null;
+        }
         $result = $this->getResult();
         /** @var Chunk[] $resultChunks */
         $resultChunks = $result["resultChunks"];
@@ -121,9 +133,11 @@ class AsyncActionTask extends MWEAsyncTask
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }
-        $session->sendMessage(TF::GREEN . Loader::getInstance()->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
-        foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
-        if ($this->action->addRevert)
-            $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+        if (!is_null($session)) {
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
+            foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
+            if ($this->action->addRevert)
+                $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+        }
     }
 }

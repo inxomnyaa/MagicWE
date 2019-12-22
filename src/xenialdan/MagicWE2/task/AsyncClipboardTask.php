@@ -2,6 +2,8 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
@@ -12,7 +14,10 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncClipboardTask extends MWEAsyncTask
@@ -50,7 +55,7 @@ class AsyncClipboardTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -76,10 +81,10 @@ class AsyncClipboardTask extends MWEAsyncTask
      * @param CopyClipboard $clipboard
      * @param AsyncChunkManager $pasteChunkManager
      * @param null|int $changed
-     * @return \Generator|Block[] blocks before the change
-     * @throws \Exception
+     * @return Generator|Block[] blocks before the change
+     * @throws Exception
      */
-    private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, ?int &$changed): \Generator
+    private function execute(CopyClipboard $clipboard, AsyncChunkManager $pasteChunkManager, ?int &$changed): Generator
     {
         $blockCount = $clipboard->getShape()->getTotalCount();
         $chunkManager = Clipboard::getChunkManager($clipboard->chunks);
@@ -102,12 +107,17 @@ class AsyncClipboardTask extends MWEAsyncTask
 
     /**
      * @param Server $server
-     * @throws \Exception
+     * @throws Exception
      */
     public function onCompletion(Server $server)
     {
-        $session = API::getSessions()[$this->sessionUUID];
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+            $session = null;
+        }
         $result = $this->getResult();
         $undoChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
@@ -127,11 +137,11 @@ class AsyncClipboardTask extends MWEAsyncTask
         if (is_null($session)) return;
         switch ($this->type) {
             case self::TYPE_PASTE:
-                {
-                    $session->sendMessage(TF::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
-                    $session->addRevert(new RevertClipboard($clipboard->levelid, $undoChunks, $oldBlocks));
-                    break;
-                }
+            {
+                $session->sendMessage(TF::GREEN . "Async " . (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE) ? "relative" : "absolute") . " Clipboard pasting succeed, took " . $this->generateTookString() . ", $changed blocks out of $totalCount changed.");
+                $session->addRevert(new RevertClipboard($clipboard->levelid, $undoChunks, $oldBlocks));
+                break;
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace xenialdan\MagicWE2\task;
 
+use Exception;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
@@ -9,9 +10,10 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\CopyClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
@@ -32,7 +34,7 @@ class AsyncCopyTask extends MWEAsyncTask
      * @param UUID $sessionUUID
      * @param Chunk[] $chunks
      * @param int $flags
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
     {
@@ -48,7 +50,7 @@ class AsyncCopyTask extends MWEAsyncTask
      * Actions to execute when run
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function onRun()
     {
@@ -73,7 +75,7 @@ class AsyncCopyTask extends MWEAsyncTask
      * @param AsyncChunkManager $manager
      * @param CopyClipboard $clipboard
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
     private function copyBlocks(Selection $selection, AsyncChunkManager $manager, CopyClipboard &$clipboard): int
     {
@@ -101,14 +103,18 @@ class AsyncCopyTask extends MWEAsyncTask
 
     public function onCompletion(Server $server)
     {
-        $session = API::getSessions()[$this->sessionUUID];
-        if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        $result = $this->getResult();
-        $copied = $result["copied"];
-        /** @var CopyClipboard $clipboard */
-        $clipboard = $result["clipboard"];
-        $totalCount = $result["totalCount"];
-        $session->sendMessage(Loader::PREFIX . TF::GREEN . "Async Copy succeed, took " . $this->generateTookString() . ", copied $copied blocks out of $totalCount.");
-        $session->addClipboard($clipboard);
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+            $result = $this->getResult();
+            $copied = $result["copied"];
+            /** @var CopyClipboard $clipboard */
+            $clipboard = $result["clipboard"];
+            $totalCount = $result["totalCount"];
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
+            $session->addClipboard($clipboard);
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+        }
     }
 }

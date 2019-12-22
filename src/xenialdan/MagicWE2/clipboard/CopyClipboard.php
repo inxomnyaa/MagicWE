@@ -1,9 +1,11 @@
-<?php
+<?php /** @noinspection PhpUnusedParameterInspection */
 
 declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\clipboard;
 
+use Exception;
+use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\format\Chunk;
@@ -60,11 +62,11 @@ class CopyClipboard extends Clipboard
 
     /**
      * @return Shape
-     * @throws \Exception
+     * @throws Exception
      */
     public function getShape(): Shape
     {
-        if (!$this->shape instanceof Shape) throw new \Exception("Shape is not valid");
+        if (!$this->shape instanceof Shape) throw new Exception("Shape is not valid");
         return $this->shape;
     }
 
@@ -78,7 +80,7 @@ class CopyClipboard extends Clipboard
 
     /**
      * @return AxisAlignedBB
-     * @throws \Exception
+     * @throws Exception
      * @deprecated
      */
     public function getAxisAlignedBB(): AxisAlignedBB
@@ -89,7 +91,7 @@ class CopyClipboard extends Clipboard
     /**
      * @param Vector3 $center
      * @return array of fastSerialized chunks
-     * @throws \Exception
+     * @throws Exception
      */
     public function getTouchedChunks(Vector3 $center): array
     {
@@ -102,11 +104,11 @@ class CopyClipboard extends Clipboard
      * Returns the blocks by their actual position
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
-     * @return \Generator|Block
-     * @throws \Exception
+     * @return Generator|Block
+     * @throws Exception
      * @deprecated
      */
-    public function getBlocks(ChunkManager $manager, int $flags = API::FLAG_BASE): \Generator
+    public function getBlocks(ChunkManager $manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         yield $this->getShape()->getBlocks($manager);
@@ -114,17 +116,17 @@ class CopyClipboard extends Clipboard
 
     /**
      * @param ChunkManager $manager
-     * @throws \Exception
+     * @throws Exception
      */
     public function validateChunkManager(ChunkManager $manager): void
     {
-        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new \Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
     }
 
     /**
      * Approximated count of blocks
      * @return int
-     * @throws \Exception
+     * @throws Exception
      * @deprecated
      */
     public function getTotalCount()
