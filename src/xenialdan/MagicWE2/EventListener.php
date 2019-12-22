@@ -6,13 +6,12 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\event\player\PlayerLoginEvent;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
-use pocketmine\scheduler\Task;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\customui\windows\ModalForm;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -30,11 +29,11 @@ class EventListener implements Listener
     }
 
     /**
-     * @param PlayerLoginEvent $event
+     * @param PlayerJoinEvent $event
      * @throws \InvalidStateException
      * @throws exception\SessionException
      */
-    public function onLogin(PlayerLoginEvent $event)
+    public function onLogin(PlayerJoinEvent $event)
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
             if (SessionHelper::hasSession($event->getPlayer()) && ($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
@@ -42,22 +41,8 @@ class EventListener implements Listener
             } else if (($session = SessionHelper::loadUserSession($event->getPlayer())) instanceof UserSession) {
                 Loader::getInstance()->getLogger()->debug("Restored session from file for player {$session->getPlayer()->getName()}");
             } else ($session = SessionHelper::createUserSession($event->getPlayer()));
-            //TODO remove this hack. Boss bar won't show without this .-.
-            Loader::getInstance()->getScheduler()->scheduleDelayedTask(new class($session) extends Task
-            {
-                private $s;
-
-                public function __construct(UserSession $session)
-                {
-                    $this->s = $session;
-                }
-
-                public function onRun(int $currentTick)
-                {
-                    $this->s->getBossBar()->removePlayer($this->s->getPlayer());
-                    $this->s->getBossBar()->addPlayer($this->s->getPlayer());
-                }
-            }, 20);
+            //TODO remove this hack. Boss bar won't show without this .-. //TODO test if fixed
+            $session->getBossBar()->addPlayer($session->getPlayer());
         }
     }
 
