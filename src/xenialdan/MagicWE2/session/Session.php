@@ -224,7 +224,7 @@ abstract class Session
     public function undo()
     {
         if ($this->undoHistory->count() === 0) {
-            $this->sendMessage(TF::RED . "Nothing to undo");
+            $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.undo.none'));
             return;
         }
         /** @var RevertClipboard $revertClipboard */
@@ -244,7 +244,7 @@ abstract class Session
     public function redo()
     {
         if ($this->redoHistory->count() === 0) {
-            $this->sendMessage(TF::RED . "Nothing to redo");
+            $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.redo.none'));
             return;
         }
         $revertClipboard = $this->redoHistory->pop();
