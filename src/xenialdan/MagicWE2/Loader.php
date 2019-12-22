@@ -64,6 +64,10 @@ class Loader extends PluginBase
     /** @var null|ActionRegistry */
     public static $actionRegistry = null;
     private $baseLang;
+    /** @var string[] Donator names */
+    public $donators = [];
+    /** @var string */
+    public $donatorData = "";
 
     /**
      * Returns an instance of the plugin
@@ -114,6 +118,7 @@ class Loader extends PluginBase
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
         if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
+        $this->loadDonator();
         $this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
         if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
@@ -192,8 +197,12 @@ class Loader extends PluginBase
             new VersionCommand("/version", "MagicWE version", ["/ver"]),
             new InfoCommand("/info", "Information about MagicWE"),
             new ReportCommand("/report", "Report a bug to GitHub", ["/bug", "/github"]),
+<<<<<<< .merge_file_a15520
             new DonateCommand("/donate", "Donate to support development of MagicWE!", ["/support", "/paypal"]),
             new LanguageCommand("/language", "Set your language", ["/lang"]),
+=======
+            new DonateCommand("/donate", "Support the development of MagicWE and get a cape!", ["/support", "/paypal"]),
+>>>>>>> .merge_file_a06764
             /* -- biome -- */
             new BiomeListCommand("/biomelist", "Gets all biomes available", ["/biomels"]),
             new BiomeInfoCommand("/biomeinfo", "Get the biome of the targeted block"),
@@ -301,6 +310,7 @@ class Loader extends PluginBase
             $this->getLogger()->info($axeMsg);
     }
 
+<<<<<<< .merge_file_a15520
     /**
      * Returns the path to the language files folder.
      *
@@ -318,5 +328,29 @@ class Loader extends PluginBase
     public function getLanguageList(): array
     {
         return BaseLang::getLanguageList($this->getLanguageFolder());
+=======
+    private function loadDonator()
+    {
+        if (!extension_loaded("gd")) return;
+        $base = $this->getFile() . "resources" . DIRECTORY_SEPARATOR;
+        $this->donators = explode(",", file_get_contents($base . "donator.txt"));
+        $this->donators = array_merge($this->donators, ["XenialDan"], $this->getDescription()->getAuthors());
+        $rgba = "";
+        $img = @imagecreatefrompng($base . "donator.png");
+        for ($y = 0; $y < @imagesy($img); $y++) {
+            for ($x = 0; $x < @imagesx($img); $x++) {
+                $rgb = @imagecolorat($img, $x, $y);
+                $r = ($rgb >> 16) & 0xFF;
+                $g = ($rgb >> 8) & 0xFF;
+                $b = $rgb & 0xFF;
+                $rgba .= chr($r) . chr($g) . chr($b) . chr(255);
+            }
+        }
+        if (strlen($rgba) !== 8192) {
+            $this->donators = [];
+            $this->donatorData = "";
+        }
+        $this->donatorData = $rgba;
+>>>>>>> .merge_file_a06764
     }
 }

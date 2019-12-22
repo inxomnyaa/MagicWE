@@ -12,6 +12,8 @@ website: https://github.com/thebigsmileXD/MagicWE2
 permissions:
   we.session:
     default: op
+  we.donator:
+    default: false
   we.command:
     default: op
     children:
