@@ -1,0 +1,21 @@
+parameters:
+    level: 1
+
+    checkMissingIterableValueType: false
+
+    ignoreErrors:
+        - '#Trying to invoke (callable(): mixed)|null but it might not be a callable.#'
+
+    paths:
+        - /src
+    autoload_files:
+        - phar:///PocketMine-MP.phar/vendor/autoload.php
+    autoload_directories:
+        - /src
+        - phar:///customui_dev-31.phar/src
+        - phar:///apibossbar_dev-2.phar/src
+        - phar:///Commando_dev-27.phar/src
+        - phar:///libschematic_dev-25.phar/src
+        - phar:///InvMenu_dev-78.phar/src
+    excludes_analyse:
+        - vendor
