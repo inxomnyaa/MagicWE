@@ -45,8 +45,6 @@ class EventListener implements Listener
             } else if (($session = SessionHelper::loadUserSession($event->getPlayer())) instanceof UserSession) {
                 Loader::getInstance()->getLogger()->debug("Restored session from file for player {$session->getPlayer()->getName()}");
             } else ($session = SessionHelper::createUserSession($event->getPlayer()));
-            //TODO remove this hack. Boss bar won't show without this .-. //TODO test if fixed
-            $session->getBossBar()->addPlayer($session->getPlayer());
         }
     }
 
