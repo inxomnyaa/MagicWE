@@ -43,7 +43,10 @@ class AsyncClipboardTask extends MWEAsyncTask
     public function __construct(UUID $sessionUUID, CopyClipboard $clipboard, array $touchedChunks, $type = self::TYPE_PASTE, int $flags = API::FLAG_BASE)
     {
         $this->start = microtime(true);
-        $clipboard->pasteChunks = $touchedChunks;
+        #$clipboard->pasteChunks = $touchedChunks;
+        $clipboard->pasteChunks = array_map(function ($chunk) {
+            return Chunk::fastDeserialize($chunk);
+        }, $touchedChunks);
         $this->touchedChunks = serialize($touchedChunks);
         $this->sessionUUID = $sessionUUID->toString();
         $this->clipboard = serialize($clipboard);
