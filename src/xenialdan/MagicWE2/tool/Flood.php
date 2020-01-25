@@ -6,7 +6,6 @@ use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
-use pocketmine\level\ChunkManager;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\math\Vector2;
@@ -35,13 +34,13 @@ class Flood extends WETool
 
     /**
      * Returns the blocks by their actual position
-     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
      * @return Generator|Block[]
      * @throws Exception
      */
-    public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
+    public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         $this->y = $this->getCenter()->getY();
@@ -59,7 +58,7 @@ class Flood extends WETool
      * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
      * @return Generator|Vector2[]
-     * @throws InvalidArgumentException
+     * @throws Exception
      */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
     {
@@ -153,7 +152,7 @@ class Flood extends WETool
     }
 
     /**
-     * @param $manager
+     * @param mixed $manager
      * @throws InvalidArgumentException
      */
     public function validateChunkManager($manager): void
