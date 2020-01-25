@@ -9,6 +9,11 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.ref }}
+    - name: Create Vendor Directory
+      run: |
+        echo Making directory...
+        mkdir vendor
+        echo Directory made.
     - name: wget virions, customui
       uses: wei/wget@v1
       with:
