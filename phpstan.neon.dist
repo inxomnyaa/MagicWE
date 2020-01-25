@@ -9,9 +9,9 @@ parameters:
     paths:
         - /source/src
     autoload_files:
-        - phar:///PocketMine-MP.phar/vendor/autoload.php
+        - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
     autoload_directories:
-        - /src
+        - /source/src
         - phar:///source/customui_dev-31.phar/src
         - phar:///source/apibossbar_dev-2.phar/src
         - phar:///source/Commando_dev-27.phar/src
