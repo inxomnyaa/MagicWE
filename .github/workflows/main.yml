@@ -16,7 +16,7 @@ jobs:
     - name: wget virions, apibossbar
       uses: wei/wget@v1
       with:
-        args: -O apibossbar https://poggit.pmmp.io/r/64017/apibossbar_dev-2.phar
+        args: -O apibossbar.phar https://poggit.pmmp.io/r/64017/apibossbar_dev-2.phar
     - name: wget virions, libschematic
       uses: wei/wget@v1
       with:
