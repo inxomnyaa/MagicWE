@@ -12,23 +12,23 @@ jobs:
     - name: wget virions, customui
       uses: wei/wget@v1
       with:
-        args: -O customui.phar https://poggit.pmmp.io/r/44509/customui_dev-31.phar
+        args: -O vendor/customui.phar https://poggit.pmmp.io/r/44509/customui_dev-31.phar
     - name: wget virions, apibossbar
       uses: wei/wget@v1
       with:
-        args: -O apibossbar.phar https://poggit.pmmp.io/r/64017/apibossbar_dev-2.phar
+        args: -O vendor/apibossbar.phar https://poggit.pmmp.io/r/64017/apibossbar_dev-2.phar
     - name: wget virions, libschematic
       uses: wei/wget@v1
       with:
-        args: -O libschematic.phar https://poggit.pmmp.io/r/64630/libschematic_dev-25.phar
+        args: -O vendor/libschematic.phar https://poggit.pmmp.io/r/64630/libschematic_dev-25.phar
     - name: wget virions, Commando
       uses: wei/wget@v1
       with:
-        args: -O Commando.phar https://poggit.pmmp.io/r/67875/Commando_dev-27.phar
+        args: -O vendor/Commando.phar https://poggit.pmmp.io/r/67875/Commando_dev-27.phar
     - name: wget virions, InvMenu
       uses: wei/wget@v1
       with:
-        args: -O InvMenu.phar https://poggit.pmmp.io/r/70989/InvMenu_dev-78.phar
+        args: -O vendor/InvMenu.phar https://poggit.pmmp.io/r/70989/InvMenu_dev-78.phar
     - name: Run PHPStan
       uses: nxtlvlsoftware/pmmp-phpstan-action@3
       with:
