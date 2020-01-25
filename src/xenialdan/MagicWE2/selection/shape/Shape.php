@@ -47,7 +47,7 @@ abstract class Shape implements Serializable
 
     /**
      * @param $manager
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function validateChunkManager($manager): void
     {
