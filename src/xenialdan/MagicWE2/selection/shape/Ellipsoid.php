@@ -155,7 +155,7 @@ class Ellipsoid extends Shape
 
     public function getTotalCount(): int
     {
-        return floor(4 * pi() * (($this->width / 2) + 1) * (($this->height / 2) + 1) * (($this->depth / 2) + 1) / 3);
+        return (int)floor(4 * pi() * (($this->width / 2) + 1) * (($this->height / 2) + 1) * (($this->depth / 2) + 1) / 3);
     }
 
     public static function getName(): string

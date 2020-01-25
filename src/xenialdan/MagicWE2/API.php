@@ -260,9 +260,9 @@ class API
      * @param int $flags
      * @return bool
      */
-    public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE)
+    public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE): bool
     { //TODO
-        if (!$settings instanceof CompoundTag) return null;
+        if (!$settings instanceof CompoundTag) return false;
         $session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
         return false;/*
         $shape = ShapeRegistry::getShape($target->getLevel(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));

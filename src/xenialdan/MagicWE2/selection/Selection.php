@@ -27,9 +27,9 @@ class Selection implements Serializable, JsonSerializable
 {
     /** @var int */
     public $levelid;
-    /** @var Vector3 */
+    /** @var Vector3|null */
     public $pos1;
-    /** @var Vector3 */
+    /** @var Vector3|null */
     public $pos2;
     /** @var UUID */
     public $uuid;

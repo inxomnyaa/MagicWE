@@ -111,7 +111,7 @@ class CopyClipboard extends Clipboard
     public function getBlocks(ChunkManager $manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
-        yield $this->getShape()->getBlocks($manager);
+        foreach ($this->getShape()->getBlocks($manager) as $block) yield $block;
     }
 
     /**
