@@ -11,7 +11,7 @@ parameters:
     autoload_files:
         - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
     autoload_directories:
-        - /source/src
+        - /src
         - phar:///source/customui_dev-31.phar/src
         - phar:///source/apibossbar_dev-2.phar/src
         - phar:///source/Commando_dev-27.phar/src
