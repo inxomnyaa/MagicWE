@@ -12,7 +12,7 @@ parameters:
         - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
     autoload_directories:
         - /source/src
-        - phar:///customui.phar/src
+        - phar:///source/customui.phar/src
         - phar:///apibossbar.phar/src
         - phar:///Commando.phar/src
         - phar:///libschematic.phar/src
