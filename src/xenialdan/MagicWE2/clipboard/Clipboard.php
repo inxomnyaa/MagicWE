@@ -27,7 +27,7 @@ abstract class Clipboard implements Serializable
 
     /** @var Chunk[] */
     public $chunks = [];
-    /** @var int */
+    /** @var int|null */
     public $levelid;
     /** @var string */
     public $customName = "";

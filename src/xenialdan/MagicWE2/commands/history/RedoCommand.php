@@ -48,9 +48,8 @@ class RedoCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            /** @var UserSession $session */
             $session = SessionHelper::getUserSession($sender);
-            if (is_null($session)) {
+            if (!$session instanceof UserSession) {
                 throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $session->redo();

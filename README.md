@@ -8,6 +8,7 @@ Try the new MagicWE, now way more powerful, with more support, more commands, ne
 [![Poggit-CI](https://poggit.pmmp.io/ci.badge/thebigsmileXD/MagicWE2/MagicWE2/master)](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2)
 [![](https://poggit.pmmp.io/shield.state/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)
 [![](https://poggit.pmmp.io/shield.api/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)
+![PHPStan](https://github.com/thebigsmileXD/MagicWE2/workflows/PHPStan/badge.svg)
 ## Why MagicWE2?
 _Rainbow sprinkles!_
 

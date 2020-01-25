@@ -19,7 +19,7 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\session\Session;
+use xenialdan\MagicWE2\session\UserSession;
 
 class ChunkCommand extends BaseCommand
 {
@@ -52,9 +52,8 @@ class ChunkCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            /** @var Session $session */
             $session = SessionHelper::getUserSession($sender);
-            if (is_null($session)) {
+            if (!$session instanceof UserSession) {
                 throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates

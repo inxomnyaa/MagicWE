@@ -115,9 +115,8 @@ class EventListener implements Listener
      */
     private function onBreakBlock(BlockBreakEvent $event)
     {
-        /** @var UserSession $session */
         $session = SessionHelper::getUserSession($event->getPlayer());
-        if (is_null($session)) return;
+        if (!$session instanceof UserSession) return;
         switch ($event->getItem()->getId()) {
             case ItemIds::WOODEN_AXE:
             {
@@ -153,9 +152,8 @@ class EventListener implements Listener
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
-            /** @var UserSession $session */
             $session = SessionHelper::getUserSession($event->getPlayer());
-            if (is_null($session)) return;
+            if (!$session instanceof UserSession) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                 {
@@ -198,9 +196,8 @@ class EventListener implements Listener
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
-            /** @var UserSession $session */
             $session = SessionHelper::getUserSession($event->getPlayer());
-            if (is_null($session)) return;
+            if (!$session instanceof UserSession) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
                 {

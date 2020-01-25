@@ -87,7 +87,7 @@ class API
         }
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
@@ -115,7 +115,7 @@ class API
         if (empty($oldBlocks) || empty($newBlocks)) return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
@@ -139,7 +139,7 @@ class API
         #return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             //TODO check/edit how relative position works
@@ -169,7 +169,7 @@ class API
         #return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($clipboard->getShape()->getTotalCount() > $limit && !$limit === -1) {
+            if ($clipboard->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             $c = $clipboard->getCenter();
@@ -195,7 +195,7 @@ class API
     {
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException("You are trying to count too many blocks at once. Reduce the selection or raise the limit");
             }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $filterBlocks, $flags));
@@ -217,7 +217,7 @@ class API
     {
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($selection->getShape()->getTotalCount() > $limit && !$limit === -1) {
+            if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
@@ -450,7 +450,7 @@ class API
         if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
             $div_mul = true;
             $operators = ['*', '/'];
-            while (!$error && $operators) {
+            while (!$error && !empty($operators)) {
                 $operator = array_pop($operators);
                 while ($operator && strpos($str, $operator) !== false) {
                     if ($error) {

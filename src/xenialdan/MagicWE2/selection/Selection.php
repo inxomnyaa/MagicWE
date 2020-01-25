@@ -25,7 +25,7 @@ use xenialdan\MagicWE2\session\Session;
  */
 class Selection implements Serializable, JsonSerializable
 {
-    /** @var int */
+    /** @var int|null */
     public $levelid;
     /** @var Vector3|null */
     public $pos1;
@@ -35,7 +35,7 @@ class Selection implements Serializable, JsonSerializable
     public $uuid;
     /** @var UUID */
     public $sessionUUID;
-    /** @var Shape */
+    /** @var Shape|null */
     public $shape;
 
     /**

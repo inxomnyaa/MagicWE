@@ -34,7 +34,7 @@ class UserSession extends Session implements JsonSerializable
     private $debugToolEnabled = true;
     /** @var Brush[] */
     private $brushes = [];
-    /** @var BaseLang */
+    /** @var BaseLang|null */
     private $lang;
 
     public function __construct(Player $player)
@@ -143,10 +143,10 @@ class UserSession extends Session implements JsonSerializable
     /**
      * TODO exception for not a brush
      * @param Item $item
-     * @return null|Brush
+     * @return Brush
      * @throws Exception
      */
-    public function getBrushFromItem(Item $item): ?Brush
+    public function getBrushFromItem(Item $item): Brush
     {
         if ((($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) instanceof CompoundTag) {
             $version = $entry->getInt("version", 0);
@@ -165,10 +165,8 @@ class UserSession extends Session implements JsonSerializable
             if ($brush instanceof Brush) {
                 return $brush;
             }
-        } else {
-            throw new Exception("The item is not a valid brush!");
         }
-        return null;
+        throw new Exception("The item is not a valid brush!");
     }
 
     /**
