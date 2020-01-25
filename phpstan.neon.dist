@@ -13,9 +13,9 @@ parameters:
     autoload_directories:
         - /source/src
         - phar:///source/customui.phar/src
-        - phar:///apibossbar.phar/src
-        - phar:///Commando.phar/src
-        - phar:///libschematic.phar/src
-        - phar:///InvMenu.phar/src
+        - phar:///source/apibossbar.phar/src
+        - phar:///source/Commando.phar/src
+        - phar:///source/libschematic.phar/src
+        - phar:///source/InvMenu.phar/src
     excludes_analyse:
         - vendor
