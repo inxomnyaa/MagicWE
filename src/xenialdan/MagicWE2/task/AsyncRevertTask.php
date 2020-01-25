@@ -52,6 +52,7 @@ class AsyncRevertTask extends MWEAsyncTask
         $clipboard = unserialize($this->clipboard);
         $totalCount = count($clipboard->blocksAfter);
         $manager = $clipboard::getChunkManager($clipboard->chunks);
+        $oldBlocks = [];
         if ($this->type === self::TYPE_UNDO)
             $oldBlocks = iterator_to_array($this->undoChunks($manager, $clipboard));
         if ($this->type === self::TYPE_REDO)

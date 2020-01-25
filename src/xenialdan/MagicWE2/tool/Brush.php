@@ -253,7 +253,7 @@ class Brush extends WETool
         #var_dump($this->properties->shapeProperties);
         #var_dump('Base', $base);
         #var_dump('Default Replaced', $defaultReplaced);
-        $form->setCallable(function (Player $player, $data) use ($form, $defaultReplaced, $base) {
+        $form->setCallable(function (Player $player, $data) use ($defaultReplaced, $base) {
             //TODO validation, resending etc.
             $extraData = [];
             $names = array_keys($defaultReplaced);

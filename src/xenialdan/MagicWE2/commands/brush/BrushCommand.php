@@ -66,7 +66,7 @@ class BrushCommand extends BaseCommand
             $form->addButton(new Button($lang->translateString('ui.brush.create')));
             $form->addButton(new Button($lang->translateString('ui.brush.getsession')));
             $form->addButton(new Button($lang->translateString('ui.brush.edithand')));
-            $form->setCallable(function (Player $player, $data) use ($lang, $form, $session) {
+            $form->setCallable(function (Player $player, $data) use ($lang, $session) {
                 try {
                     switch ($data) {
                         case $lang->translateString('ui.brush.create'):
