@@ -1,6 +1,4 @@
-<?php /** @noinspection PhpUnusedParameterInspection */
-
-/** @noinspection PhpUndefinedMethodInspection */
+<?php
 
 namespace xenialdan\MagicWE2\tool;
 
@@ -8,6 +6,7 @@ use Exception;
 use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
+use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
@@ -109,7 +108,7 @@ class Flood extends WETool
         return $this->limit;
     }
 
-    public function getTouchedChunks(): array
+    public function getTouchedChunks(ChunkManager $chunkManager): array
     {
         $maxRadius = sqrt($this->limit / pi());
         $v2center = new Vector2($this->getCenter()->x, $this->getCenter()->z);
@@ -124,7 +123,7 @@ class Flood extends WETool
         for ($x = $minX - 1; $x <= $maxX + 1; $x++) {
             for ($z = $minZ - 1; $z <= $maxZ + 1; $z++) {
                 if ($cv2center->distanceSquared($x, $z) > $cmaxRadius) continue;
-                $chunk = $this->getLevel()->getChunk($x, $z, true);
+                $chunk = $chunkManager->getChunk($x, $z);
                 if ($chunk === null) {
                     continue;
                 }
@@ -139,5 +138,34 @@ class Flood extends WETool
     public function getName(): string
     {
         return "Flood Fill";
+    }
+
+    /**
+     * @param ChunkManager $manager
+     * @throws Exception
+     */
+    public function validateChunkManager(ChunkManager $manager): void
+    {
+        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+    }
+
+    private function getCenter()
+    {
+        //UGLY HACK TO IGNORE ERRORS FOR NOW
+        return new Vector3();
+    }
+
+    /**
+     * Creates a chunk manager used for async editing
+     * @param Chunk[] $chunks
+     * @return AsyncChunkManager
+     */
+    public static function getChunkManager(array $chunks): AsyncChunkManager
+    {
+        $manager = new AsyncChunkManager(0);
+        foreach ($chunks as $chunk) {
+            $manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
+        }
+        return $manager;
     }
 }
