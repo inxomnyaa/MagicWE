@@ -12,10 +12,10 @@ parameters:
         - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
     autoload_directories:
         - /source/src
-        - phar:///source/customui_dev-31.phar/src
-        - phar:///source/apibossbar_dev-2.phar/src
-        - phar:///source/Commando_dev-27.phar/src
-        - phar:///source/libschematic_dev-25.phar/src
-        - phar:///source/InvMenu_dev-78.phar/src
+        - phar:///source/vendor/customui.phar/src
+        - phar:///source/vendor/apibossbar.phar/src
+        - phar:///source/vendor/Commando.phar/src
+        - phar:///source/vendor/libschematic.phar/src
+        - phar:///source/vendor/InvMenu.phar/src
     excludes_analyse:
-        - vendor
+        - source/vendor
