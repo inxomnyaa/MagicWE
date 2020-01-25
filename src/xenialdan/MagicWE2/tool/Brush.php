@@ -220,7 +220,8 @@ class Brush extends WETool
                     $brush = $this;
                     $session = SessionHelper::getUserSession($player);
                     if (!$session instanceof UserSession) {
-                        throw new Exception($session->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                        $language = ($session ? $session->getLanguage() : Loader::getInstance()->getLanguage());
+                        throw new Exception($language->translateString('error.nosession', [Loader::getInstance()->getName()]));
                     }
                     if (!$new) {
                         $session->replaceBrush($brush);
@@ -263,7 +264,8 @@ class Brush extends WETool
             $brush = $this;
             $session = SessionHelper::getUserSession($player);
             if (!$session instanceof UserSession) {
-                throw new Exception($session->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                $language = ($session ? $session->getLanguage() : Loader::getInstance()->getLanguage());
+                throw new Exception($language->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $this->properties->uuid = UUID::fromRandom()->toString();
             $session->addBrush($brush);
