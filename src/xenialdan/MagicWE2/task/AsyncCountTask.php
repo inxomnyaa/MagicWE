@@ -29,7 +29,7 @@ class AsyncCountTask extends MWEAsyncTask
      * AsyncFillTask constructor.
      * @param Selection $selection
      * @param UUID $sessionUUID
-     * @param Chunk[] $touchedChunks
+     * @param string[] $touchedChunks serialized chunks
      * @param Block[] $newBlocks
      * @param int $flags
      * @throws Exception

@@ -32,7 +32,7 @@ class AsyncCopyTask extends MWEAsyncTask
      * @param Selection $selection
      * @param Vector3 $offset
      * @param UUID $sessionUUID
-     * @param Chunk[] $chunks
+     * @param string[] $chunks serialized chunks
      * @param int $flags
      * @throws Exception
      */

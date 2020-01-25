@@ -40,32 +40,30 @@ class BiomeListCommand extends BaseCommand
         if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
             try {
                 $lang = SessionHelper::getUserSession($sender)->getLanguage();
+                /** @var Player $sender */
+                $session = SessionHelper::getUserSession($sender);
+                if (is_null($session)) {
+                    throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                }
+                $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomelist.title'));
+                foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
+                    if ($value === Biome::MAX_BIOMES) continue;
+                    $name = Biome::getBiome($value)->getName();
+                    $session->sendMessage(TF::AQUA . $lang->translateString('command.biomelist.result.line', [$value, $name]));
+                }
             } catch (SessionException $e) {
+            } catch (Exception $error) {
+                $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+                $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+                $sender->sendMessage($this->getUsage());
+            } catch (ArgumentCountError $error) {
+                $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+                $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+                $sender->sendMessage($this->getUsage());
+            } catch (Error $error) {
+                Loader::getInstance()->getLogger()->logException($error);
+                $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             }
-        }
-        /** @var Player $sender */
-        try {
-            $session = SessionHelper::getUserSession($sender);
-            if (is_null($session)) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomelist.title'));
-            foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
-                if ($value === Biome::MAX_BIOMES) continue;
-                $name = Biome::getBiome($value)->getName();
-                $session->sendMessage(TF::AQUA . $lang->translateString('command.biomelist.result.line', [$value, $name]));
-            }
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
         }
     }
 }

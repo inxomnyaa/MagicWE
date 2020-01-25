@@ -34,6 +34,6 @@ abstract class MWEAsyncTask extends AsyncTask
 
     public function generateTookString(): string
     {
-        return date("i:s:", microtime(true) - $this->start) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN));
+        return date("i:s:", (int)(microtime(true) - $this->start)) . strval(round(microtime(true) - $this->start, 1, PHP_ROUND_HALF_DOWN));
     }
 }

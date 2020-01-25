@@ -31,7 +31,7 @@ class AsyncFillTask extends MWEAsyncTask
      * AsyncFillTask constructor.
      * @param UUID $sessionUUID
      * @param Selection $selection
-     * @param Chunk[] $touchedChunks
+     * @param string[] $touchedChunks serialized chunks
      * @param Block[] $newBlocks
      * @param int $flags
      * @throws Exception

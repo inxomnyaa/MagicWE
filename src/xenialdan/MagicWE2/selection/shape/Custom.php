@@ -5,7 +5,6 @@ namespace xenialdan\MagicWE2\selection\shape;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -67,12 +66,13 @@ class Custom extends Shape
     }
 
     /**
-     * @param ChunkManager $manager
+     * @param Level|AsyncChunkManager $manager
      * @return string[] fastSerialized chunks
      * @throws Exception
      */
-    public function getTouchedChunks(ChunkManager $manager): array
+    public function getTouchedChunks($manager): array
     {
+        $this->validateChunkManager($manager);
         $touchedChunks = [];
         foreach ($this->getLayer($manager) as $vector2) {
             $x = $vector2->getFloorX() >> 4;

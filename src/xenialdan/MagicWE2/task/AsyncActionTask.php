@@ -41,7 +41,7 @@ class AsyncActionTask extends MWEAsyncTask
      * @param UUID $sessionUUID
      * @param Selection $selection
      * @param TaskAction $action
-     * @param Chunk[] $touchedChunks
+     * @param string[] $touchedChunks serialized chunks
      * @param string $newBlocks
      * @param string $blockFilter
      */

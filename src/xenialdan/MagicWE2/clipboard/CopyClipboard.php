@@ -7,7 +7,6 @@ namespace xenialdan\MagicWE2\clipboard;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\level\ChunkManager;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -102,23 +101,23 @@ class CopyClipboard extends Clipboard
 
     /**
      * Returns the blocks by their actual position
-     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
      * @return Generator|Block[]
      * @throws Exception
      * @deprecated
      */
-    public function getBlocks(ChunkManager $manager, int $flags = API::FLAG_BASE): Generator
+    public function getBlocks($manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         foreach ($this->getShape()->getBlocks($manager) as $block) yield $block;
     }
 
     /**
-     * @param ChunkManager $manager
+     * @param mixed $manager
      * @throws Exception
      */
-    public function validateChunkManager(ChunkManager $manager): void
+    public function validateChunkManager($manager): void
     {
         if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
     }
@@ -143,13 +142,16 @@ class CopyClipboard extends Clipboard
     public function serialize()
     {
         $chunks = [];
+        $pasteChunks = [];
         foreach ($this->chunks as $hash => $chunk)
             $chunks[$hash] = $chunk->fastSerialize();
+        foreach ($this->pasteChunks as $hash => $pasteChunk)
+            $pasteChunks[$hash] = $pasteChunk->fastSerialize();
         return serialize([
             $this->levelid,
             $this->center->asVector3(),
             $chunks,
-            $this->pasteChunks
+            $pasteChunks
         ]);
     }
 
@@ -169,10 +171,12 @@ class CopyClipboard extends Clipboard
             $this->levelid,
             $this->center,
             $chunks,
-            $this->pasteChunks
+            $pasteChunks
         ] = unserialize($serialized);
         foreach ($chunks as $hash => $chunk)//TODO save serialized chunks instead?
             $this->chunks[$hash] = Chunk::fastDeserialize($chunk);
+        foreach ($pasteChunks as $hash => $pasteChunk)//TODO save serialized chunks instead?
+            $this->pasteChunks[$hash] = Chunk::fastDeserialize($pasteChunk);
         #print "Touched chunks unserialize count: " . count($this->chunks) . PHP_EOL;
     }
 

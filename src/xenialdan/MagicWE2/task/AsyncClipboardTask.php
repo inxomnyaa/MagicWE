@@ -36,7 +36,7 @@ class AsyncClipboardTask extends MWEAsyncTask
      * AsyncClipboardTask constructor.
      * @param CopyClipboard $clipboard
      * @param UUID $sessionUUID
-     * @param Chunk[] $touchedChunks
+     * @param string[] $touchedChunks serialized chunks
      * @param int $type The type of clipboard pasting.
      * @param int $flags
      */
@@ -63,9 +63,9 @@ class AsyncClipboardTask extends MWEAsyncTask
 
         /** @var CopyClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
-        $clipboard->pasteChunks = array_map(function ($chunk) {
-            return Chunk::fastDeserialize($chunk);
-        }, $clipboard->pasteChunks);
+        #$clipboard->pasteChunks = array_map(function ($chunk) {
+        #    return Chunk::fastDeserialize($chunk);
+        #}, $clipboard->pasteChunks);
         $pasteChunkManager = Clipboard::getChunkManager($clipboard->pasteChunks);
 
         $oldBlocks = iterator_to_array($this->execute($clipboard, $pasteChunkManager, $changed));
@@ -128,7 +128,7 @@ class AsyncClipboardTask extends MWEAsyncTask
         $resultChunks = $result["resultChunks"];
         /** @var CopyClipboard $clipboard */
         $clipboard = unserialize($this->clipboard);
-        $totalCount = count($clipboard->getShape()->getTotalCount());
+        $totalCount = $clipboard->getShape()->getTotalCount();
         /** @var Level $level */
         $level = $clipboard->getLevel();
         foreach ($resultChunks as $hash => $chunk) {

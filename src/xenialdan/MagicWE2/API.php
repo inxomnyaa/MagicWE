@@ -158,7 +158,7 @@ class API
 
     /**
      * TODO: flag parsing, Position to paste at
-     * @param CopyClipboard $clipboard
+     * @param CopyClipboard $clipboard TODO should this be Clipboard?
      * @param Session $session
      * @param Position $target
      * @param int $flags
@@ -469,7 +469,7 @@ class API
                                 $error = true;
                             }
                         }
-                        $str = preg_replace($regex, $result, $str, 1);
+                        $str = preg_replace($regex, (string)$result, $str, 1);
                         $str = str_replace(['++', '--', '-+', '+-'], ['+', '+', '-', '-'], $str);
                     } else {
                         $error = true;
