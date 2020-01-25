@@ -30,6 +30,7 @@ use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
+use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
@@ -220,7 +221,7 @@ class Brush extends WETool
                     $brush = $this;
                     $session = SessionHelper::getUserSession($player);
                     if (!$session instanceof UserSession) {
-                        $language = ($session ? $session->getLanguage() : Loader::getInstance()->getLanguage());
+                        $language = ($session instanceof Session ? $session->getLanguage() : Loader::getInstance()->getLanguage());
                         throw new Exception($language->translateString('error.nosession', [Loader::getInstance()->getName()]));
                     }
                     if (!$new) {
@@ -264,7 +265,7 @@ class Brush extends WETool
             $brush = $this;
             $session = SessionHelper::getUserSession($player);
             if (!$session instanceof UserSession) {
-                $language = ($session ? $session->getLanguage() : Loader::getInstance()->getLanguage());
+                $language = ($session instanceof Session ? $session->getLanguage() : Loader::getInstance()->getLanguage());
                 throw new Exception($language->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $this->properties->uuid = UUID::fromRandom()->toString();
