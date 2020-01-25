@@ -48,15 +48,15 @@ class HelpCommand extends BaseCommand
         try {
             $cmds = [];
             if (empty($args["command"])) {
-                /** @var Command $cmd */
                 foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), function (Command $command) use ($sender) {
                     return strpos($command->getName(), "/") !== false && $command->testPermissionSilent($sender);
                 }) as $cmd) {
+                    /** @var Command $cmd */
                     $cmds[$cmd->getName()] = $cmd;
                 }
             } else {
-                /** @var Command $cmd */
                 if (($cmd = Loader::getInstance()->getServer()->getCommandMap()->getCommand("/" . str_replace("/", "", TF::clean(strval($args["command"]))))) instanceof Command) {
+                    /** @var Command $cmd */
                     $cmds[$cmd->getName()] = $cmd;
                 } else {
                     $sender->sendMessage(TF::RED . str_replace("/", "//", $lang->translateString("%commands.generic.notFound")));

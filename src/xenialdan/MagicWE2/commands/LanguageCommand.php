@@ -59,7 +59,9 @@ class LanguageCommand extends BaseCommand
                 throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             if (isset($args["language"])) {
-                $session->setLanguage((string)$args["language"]);
+                /** @var LanguageArgument $languageArgument */
+                $languageArgument = $args["language"];
+                $session->setLanguage(strval($languageArgument));
                 return;
             }
             $languages = Loader::getInstance()->getLanguageList();

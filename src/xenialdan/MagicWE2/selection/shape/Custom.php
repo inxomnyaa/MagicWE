@@ -31,13 +31,13 @@ class Custom extends Shape
 
     /**
      * Returns the blocks by their actual position
-     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
      * @return Generator|Block[]
      * @throws Exception
      */
-    public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
+    public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         foreach ($this->positions as $position) {
@@ -48,12 +48,12 @@ class Custom extends Shape
 
     /**
      * Returns a flat layer of all included x z positions in selection
-     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
      * @return Generator|Vector2[]
      * @throws Exception
      */
-    public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): Generator
+    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         /* Mapping: $walked[$hash]=true */

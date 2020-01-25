@@ -148,9 +148,7 @@ class UserSession extends Session implements JsonSerializable
      */
     public function getBrushFromItem(Item $item): ?Brush
     {
-        if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
-            #var_dump(API::compoundToArray($entry));
-            /** @var CompoundTag $entry */
+        if ((($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) instanceof CompoundTag) {
             $version = $entry->getInt("version", 0);
             if ($version !== BrushProperties::VERSION) {
                 throw new Exception("Brush can not be restored - version mismatch");
@@ -203,8 +201,7 @@ class UserSession extends Session implements JsonSerializable
     {
         if ($delete) unset($this->brushes[$brush->properties->uuid]);
         foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-            /** @var CompoundTag $entry */
-            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
+            if (($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
                 if ($entry->getString("id") === $brush->properties->uuid) {
                     $this->getPlayer()->getInventory()->clear($slot);
                 }
@@ -227,8 +224,7 @@ class UserSession extends Session implements JsonSerializable
         $this->brushes[$brush->properties->uuid] = $brush;
         $new = $brush->toItem();
         foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-            /** @var CompoundTag $entry */
-            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
+            if (($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
                 if ($entry->getString("id") === $brush->properties->uuid) {
                     $this->getPlayer()->getInventory()->setItem($slot, $new);
                 }

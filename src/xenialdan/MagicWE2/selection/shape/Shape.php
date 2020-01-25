@@ -4,6 +4,7 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use Exception;
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\format\Chunk;
@@ -45,34 +46,34 @@ abstract class Shape implements Serializable
     }
 
     /**
-     * @param ChunkManager $manager
+     * @param $manager
      * @throws Exception
      */
-    public function validateChunkManager(ChunkManager $manager): void
+    public function validateChunkManager($manager): void
     {
-        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new Exception(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
     }
 
     abstract public function getTotalCount(): int;
 
     /**
      * Returns the blocks by their actual position
-     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
      * @return Generator|Block[]
      * @throws Exception
      */
-    abstract public function getBlocks(ChunkManager $manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator;
+    abstract public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator;
 
     /**
      * Returns a flat layer of all included x z positions in selection
-     * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
+     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
      * @return Generator|Vector2[]
      * @throws Exception
      */
-    abstract public function getLayer(ChunkManager $manager, int $flags = API::FLAG_BASE): Generator;
+    abstract public function getLayer($manager, int $flags = API::FLAG_BASE): Generator;
 
     /**
      * @param ChunkManager $manager
