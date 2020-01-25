@@ -9,7 +9,7 @@ parameters:
     paths:
         - /source/src
     autoload_files:
-        - phar:///source/PocketMine-MP.phar/vendor/autoload.php
+        - phar:///PocketMine-MP.phar/vendor/autoload.php
     autoload_directories:
         - /src
         - phar:///source/customui_dev-31.phar/src
