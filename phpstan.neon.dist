@@ -3,8 +3,7 @@ parameters:
 
     checkMissingIterableValueType: false
 
-    ignoreErrors:
-        - '#Trying to invoke (callable(): mixed)|null but it might not be a callable.#'
+    ignoreErrors: []
 
     paths:
         - /source/src
