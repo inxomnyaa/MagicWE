@@ -35,7 +35,7 @@ class SetBiomeAction extends TaskAction
      * @param Block[] $blockFilter
      * @param Block[] $oldBlocks blocks before the change
      * @param string[] $messages
-     * @return Generator|Progress
+     * @return Generator|Progress[]
      * @throws Exception
      */
     public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = [], array &$messages = []): Generator

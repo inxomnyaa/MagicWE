@@ -61,7 +61,7 @@ class RotateCommand extends BaseCommand
             if (is_null($clipboard)) {
                 throw new Exception($lang->translateString('error.noclipboard'));
             }
-            $clipboard->rotate($rotation);//TODO add back
+            //$clipboard->rotate($rotation);//TODO add back
             $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.success'));
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

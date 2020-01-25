@@ -104,7 +104,7 @@ class CopyClipboard extends Clipboard
      * Returns the blocks by their actual position
      * @param Level|AsyncChunkManager|ChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
-     * @return Generator|Block
+     * @return Generator|Block[]
      * @throws Exception
      * @deprecated
      */

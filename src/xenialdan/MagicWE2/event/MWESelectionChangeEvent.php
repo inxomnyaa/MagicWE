@@ -67,8 +67,9 @@ class MWESelectionChangeEvent extends MWEEvent
      */
     public function getPlayer(): ?Player
     {
-        /** @var UserSession $session */
-        if (($session = $this->getSession()) instanceof UserSession) $session->getPlayer();
+        if (($session = $this->getSession()) instanceof UserSession)
+            /** @var UserSession $session */
+            $session->getPlayer();
         return null;
     }
 
@@ -77,7 +78,8 @@ class MWESelectionChangeEvent extends MWEEvent
      */
     public function setPlayer(?Player $player)
     {
-        /** @var UserSession $session */
-        if (($session = $this->getSession()) instanceof UserSession) $session->setPlayer($player);
+        if (($session = $this->getSession()) instanceof UserSession)
+            /** @var UserSession $session */
+            $session->setPlayer($player);
     }
 }

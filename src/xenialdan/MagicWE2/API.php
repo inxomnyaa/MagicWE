@@ -186,7 +186,7 @@ class API
 
     /**
      * @param Selection $selection
-     * @param null|Session $session
+     * @param Session $session
      * @param Block[] $filterBlocks
      * @param int $flags
      * @return bool
@@ -412,7 +412,7 @@ class API
             if (!isset($b[1])) {
                 $meta = 0;
             } else {
-                $meta = $b[1] & 0xFFFF;
+                $meta = intval($b[1]) & 0xFFFF;
             }
 
             if (is_numeric($b[0])) {

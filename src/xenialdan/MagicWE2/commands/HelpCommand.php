@@ -47,14 +47,15 @@ class HelpCommand extends BaseCommand
         }
         try {
             $cmds = [];
-            /** @var Command $cmd */
             if (empty($args["command"])) {
+                /** @var Command $cmd */
                 foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), function (Command $command) use ($sender) {
                     return strpos($command->getName(), "/") !== false && $command->testPermissionSilent($sender);
                 }) as $cmd) {
                     $cmds[$cmd->getName()] = $cmd;
                 }
             } else {
+                /** @var Command $cmd */
                 if (($cmd = Loader::getInstance()->getServer()->getCommandMap()->getCommand("/" . str_replace("/", "", TF::clean(strval($args["command"]))))) instanceof Command) {
                     $cmds[$cmd->getName()] = $cmd;
                 } else {

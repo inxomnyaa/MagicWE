@@ -108,7 +108,7 @@ class BrushProperties implements JsonSerializable
     }
 
     /**
-     * @param null|string $customName If null, the name will be reset
+     * @param string $customName If empty, the name will be reset
      */
     public function setCustomName(string $customName = ""): void
     {

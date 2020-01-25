@@ -148,9 +148,9 @@ class UserSession extends Session implements JsonSerializable
      */
     public function getBrushFromItem(Item $item): ?Brush
     {
-        /** @var CompoundTag $entry */
         if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
             #var_dump(API::compoundToArray($entry));
+            /** @var CompoundTag $entry */
             $version = $entry->getInt("version", 0);
             if ($version !== BrushProperties::VERSION) {
                 throw new Exception("Brush can not be restored - version mismatch");

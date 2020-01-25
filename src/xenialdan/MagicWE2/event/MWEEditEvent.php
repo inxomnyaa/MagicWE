@@ -40,8 +40,9 @@ class MWEEditEvent extends MWEEvent implements Cancellable
      */
     public function getPlayer(): ?Player
     {
-        /** @var UserSession $session */
-        if (($session = $this->getSession()) instanceof UserSession) $session->getPlayer();
+        if (($session = $this->getSession()) instanceof UserSession)
+            /** @var UserSession $session */
+            $session->getPlayer();
         return null;
     }
 
@@ -50,8 +51,9 @@ class MWEEditEvent extends MWEEvent implements Cancellable
      */
     public function setPlayer(?Player $player)
     {
-        /** @var UserSession $session */
-        if (($session = $this->getSession()) instanceof UserSession) $session->setPlayer($player);
+        if (($session = $this->getSession()) instanceof UserSession)
+            /** @var UserSession $session */
+            $session->setPlayer($player);
     }
 
     /**

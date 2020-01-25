@@ -76,7 +76,7 @@ class FlipCommand extends BaseCommand
                 throw new Exception($lang->translateString('error.noclipboard'));
             }
             /** @noinspection PhpUndefinedMethodInspection */
-            $clipboard->flip($flags);
+            //$clipboard->flip($flags);
             $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.success'));
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
