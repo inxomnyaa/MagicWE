@@ -162,9 +162,7 @@ class UserSession extends Session implements JsonSerializable
             }
             $brush = new Brush($properties);
             $this->addBrush($brush);
-            if ($brush instanceof Brush) {
-                return $brush;
-            }
+            return $brush;
         }
         throw new Exception("The item is not a valid brush!");
     }
