@@ -69,7 +69,7 @@ class API
     const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
 
     //TODO Split into seperate Class (SchematicStorage?)
-    /** @var CopyClipboard[] */
+    /** @var Clipboard[] */
     private static $schematics = [];//TODO
 
     /**
