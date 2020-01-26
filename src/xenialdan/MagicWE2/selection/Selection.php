@@ -198,7 +198,7 @@ class Selection implements Serializable, JsonSerializable
      */
     public function getSizeX(): int
     {
-        return abs($this->pos1->x - $this->pos2->x) + 1;
+        return intval(abs($this->pos1->x - $this->pos2->x) + 1);
     }
 
     /**
@@ -206,7 +206,7 @@ class Selection implements Serializable, JsonSerializable
      */
     public function getSizeY(): int
     {
-        return abs($this->pos1->y - $this->pos2->y) + 1;
+        return intval(abs($this->pos1->y - $this->pos2->y) + 1);
     }
 
     /**
@@ -214,7 +214,7 @@ class Selection implements Serializable, JsonSerializable
      */
     public function getSizeZ(): int
     {
-        return abs($this->pos1->z - $this->pos2->z) + 1;
+        return intval(abs($this->pos1->z - $this->pos2->z) + 1);
     }
 
     /**

@@ -45,8 +45,8 @@ class Flood extends WETool
     {
         $this->validateChunkManager($manager);
         $this->y = $this->getCenter()->getY();
-        $block = $manager->getBlockAt($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
-        $block->setComponents($this->getCenter()->x, $this->getCenter()->y, $this->getCenter()->z);
+        $block = $manager->getBlockAt($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
+        $block->setComponents($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
         $this->walked[] = $block;
         $this->nextToCheck = $this->walked;
         foreach ($this->walk($manager) as $block) {

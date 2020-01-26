@@ -10,6 +10,7 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -71,7 +72,9 @@ class LanguageCommand extends BaseCommand
             $dropdown->setOptionAsDefault($session->getLanguage()->getName());
             $form->addElement($dropdown);
             $form->setCallable(function (Player $player, $data) use ($session, $languages) {
-                $session->setLanguage(array_search($data[1], $languages));
+                $langShort = array_search($data[1], $languages);
+                if (!is_string($langShort)) throw new InvalidArgumentException("Invalid data received");
+                $session->setLanguage($langShort);
             });
             $sender->sendForm($form);
         } catch (Exception $error) {

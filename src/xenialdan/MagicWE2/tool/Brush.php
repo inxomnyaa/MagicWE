@@ -68,10 +68,12 @@ class Brush extends WETool
         $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
         $uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
         $this->properties->uuid = $uuid;
+        $properties = json_encode($this->properties);
+        if (!is_string($properties)) throw new InvalidArgumentException("Brush properties could not be decoded");
         $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE_BRUSH, [
             new StringTag("id", $uuid),
             new IntTag("version", $this->properties->version),
-            new StringTag("properties", json_encode($this->properties))
+            new StringTag("properties", $properties)
         ]));
         $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $this->getName());
         $item->setLore($this->properties->generateLore());

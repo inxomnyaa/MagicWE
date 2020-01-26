@@ -41,7 +41,7 @@ class Custom extends Shape
         $this->validateChunkManager($manager);
         foreach ($this->positions as $position) {
             //TODO filterblocks
-            yield $manager->getBlockAt($position->x, $position->y, $position->z)->setComponents($position->x, $position->y, $position->z);
+            yield $manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ())->setComponents($position->x, $position->y, $position->z);
         }
     }
 
@@ -58,7 +58,7 @@ class Custom extends Shape
         /* Mapping: $walked[$hash]=true */
         $walked = [];
         foreach ($this->positions as $position) {
-            $hash = Level::chunkHash($position->x, $position->z);
+            $hash = Level::chunkHash($position->getFloorX(), $position->getFloorZ());
             if (isset($walked[$hash])) continue;
             $walked[$hash] = true;
             yield new Vector2($position->x, $position->z);

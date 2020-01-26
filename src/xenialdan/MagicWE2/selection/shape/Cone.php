@@ -60,7 +60,7 @@ class Cone extends Shape
                         $radiusLayer = ($this->diameter - $reducePerLayer * $ry) / 2;
                     if ($vec2->distanceSquared($centerVec2) > ($radiusLayer ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
                         continue;
-                    $block = $manager->getBlockAt($vec3->x, $vec3->y, $vec3->z)->setComponents($vec3->x, $vec3->y, $vec3->z);
+                    $block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())->setComponents($vec3->x, $vec3->y, $vec3->z);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
 
@@ -139,7 +139,7 @@ class Cone extends Shape
 
     public function getTotalCount(): int
     {
-        return ceil((pi() * (($this->diameter / 2) ** 2) * $this->height) / 3);
+        return (int)ceil((pi() * (($this->diameter / 2) ** 2) * $this->height) / 3);
     }
 
     public static function getName(): string

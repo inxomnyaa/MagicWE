@@ -114,11 +114,11 @@ class AsyncFillTask extends MWEAsyncTask
             if (count($newBlocks) === 1)
                 $new = clone $newBlocks[0];
             else
-                $new = clone $newBlocks[array_rand($newBlocks, 1)];
+                $new = clone $newBlocks[(int)array_rand($newBlocks, 1)];
             if ($new->getId() === $block->getId() && $new->getDamage() === $block->getDamage()) continue;//skip same blocks
-            yield $manager->getBlockAt($block->x, $block->y, $block->z)->setComponents($block->x, $block->y, $block->z);
-            $manager->setBlockAt($block->x, $block->y, $block->z, $new);
-            if ($manager->getBlockArrayAt($block->x, $block->y, $block->z) !== [$block->getId(), $block->getDamage()]) {
+            yield $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
+            $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
+            if ($manager->getBlockArrayAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== [$block->getId(), $block->getDamage()]) {
                 $changed++;
             }
             ///

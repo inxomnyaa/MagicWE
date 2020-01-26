@@ -96,8 +96,8 @@ class AsyncCopyTask extends MWEAsyncTask
                 $chunk = $manager->getChunk($block->x >> 4, $block->z >> 4);
                 $clipboard->chunks[Level::chunkHash($block->x >> 4, $block->z >> 4)] = $chunk;
             }
-            $manager->setBlockAt($block->x, $block->y, $block->z, $block);
-            var_dump("copied manager block", $manager->getBlockAt($block->x, $block->y, $block->z));
+            $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $block);
+            var_dump("copied manager block", $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()));
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets

@@ -52,9 +52,9 @@ class ThawAction extends SetBlockAction
             foreach ($selection->getShape()->getBlocks($manager, [$blockF]) as $block) {
                 /** @var Block $new */
                 $new = clone $newBlocks[$ib];
-                $oldBlocks[] = $manager->getBlockAt($block->x, $block->y, $block->z)->setComponents($block->x, $block->y, $block->z);
-                $manager->setBlockAt($block->x, $block->y, $block->z, $new);
-                if ($manager->getBlockIdAt($block->x, $block->y, $block->z) !== $block->getId()) {
+                $oldBlocks[] = $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
+                $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
+                if ($manager->getBlockIdAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== $block->getId()) {
                     $changed++;
                 }
                 $i++;

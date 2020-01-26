@@ -103,10 +103,10 @@ class AsyncClipboardTask extends MWEAsyncTask
         /** @var Block $block */
         foreach ($clipboard->getShape()->getBlocks($chunkManager, [], $this->flags) as $block) {
             var_dump("Block clipboard used", $block);
-            $block1 = $pasteChunkManager->getBlockAt($block->x, $block->y, $block->z)->setComponents($block->x, $block->y, $block->z);
+            $block1 = $pasteChunkManager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
             var_dump("Block pastechunk had", $block);
             yield $block1;//TODO check
-            $pasteChunkManager->setBlockAt($block->x, $block->y, $block->z, $block);
+            $pasteChunkManager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $block);
             var_dump("Block clipboard pasted", $block);
             $changed++;
             $progress = floor($changed / $blockCount * 100);
