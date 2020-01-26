@@ -103,7 +103,7 @@ class Flood extends WETool
         foreach ([Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH, Vector3::SIDE_WEST, Vector3::SIDE_EAST] as $vSide) {
             $side = $vector3->getSide($vSide);
             if ($manager->getChunk($side->x >> 4, $side->z >> 4) === null) continue;
-            $block = $manager->getBlockAt($side->x, $side->y, $side->z);
+            $block = $manager->getBlockAt($side->getFloorX(), $side->getFloorY(), $side->getFloorZ());
             $block->setComponents($side->x, $side->y, $side->z);
             yield $block;
         }
