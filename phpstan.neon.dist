@@ -1,7 +1,7 @@
 parameters:
     level: 6
 
-    checkMissingIterableValueType: true
+    checkMissingIterableValueType: false
 
     ignoreErrors: []
 
