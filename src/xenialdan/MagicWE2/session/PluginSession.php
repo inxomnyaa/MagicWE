@@ -40,7 +40,7 @@ class PluginSession extends Session
             " Redos: " . count($this->redoHistory);
     }
 
-    public function sendMessage(string $message)
+    public function sendMessage(string $message): void
     {
         $this->plugin->getLogger()->info(Loader::PREFIX . $message);
     }

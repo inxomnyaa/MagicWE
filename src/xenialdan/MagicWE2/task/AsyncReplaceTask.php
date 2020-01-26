@@ -21,11 +21,15 @@ use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncReplaceTask extends MWEAsyncTask
 {
-
+    /** @var string */
     private $touchedChunks;
+    /** @var string */
     private $selection;
+    /** @var int */
     private $flags;
+    /** @var string */
     private $replaceBlocks;
+    /** @var string */
     private $newBlocks;
 
     /**
@@ -135,7 +139,7 @@ class AsyncReplaceTask extends MWEAsyncTask
      * @param Server $server
      * @throws Exception
      */
-    public function onCompletion(Server $server)
+    public function onCompletion(Server $server): void
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));

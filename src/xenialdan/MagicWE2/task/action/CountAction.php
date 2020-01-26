@@ -15,7 +15,9 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class CountAction extends TaskAction
 {
+    /** @var bool */
     public $addRevert = false;
+    /** @var string */
     public $completionString = '{%name} succeed, took {%took}, analyzed {%changed} blocks';
 
     public function __construct()

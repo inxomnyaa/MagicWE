@@ -50,7 +50,7 @@ abstract class Session
     /**
      * @param UUID $uuid
      */
-    public function setUUID(UUID $uuid)
+    public function setUUID(UUID $uuid): void
     {
         $this->uuid = $uuid;
     }
@@ -104,7 +104,7 @@ abstract class Session
     /**
      * @return Selection[]
      */
-    public function getSelections()
+    public function getSelections(): array
     {
         return $this->selections;
     }
@@ -112,7 +112,7 @@ abstract class Session
     /**
      * @param mixed $selections
      */
-    public function setSelections($selections)
+    public function setSelections($selections): void
     {
         $this->selections = $selections;
     }
@@ -128,7 +128,7 @@ abstract class Session
     /**
      * @param UUID $latestselection
      */
-    public function setLatestSelectionUUID(UUID $latestselection)
+    public function setLatestSelectionUUID(UUID $latestselection): void
     {
         $this->latestselection = $latestselection;
     }
@@ -184,7 +184,7 @@ abstract class Session
      * @param Clipboard[] $clipboards
      * @return bool
      */
-    public function setClipboards(array $clipboards)
+    public function setClipboards(array $clipboards): bool
     {
         $this->clipboards = $clipboards;
         return true;
@@ -213,7 +213,7 @@ abstract class Session
     /**
      * @param RevertClipboard $revertClipboard
      */
-    public function addRevert(RevertClipboard $revertClipboard)
+    public function addRevert(RevertClipboard $revertClipboard): void
     {
         $this->redoHistory->clear();
         $this->undoHistory->push($revertClipboard);
@@ -225,7 +225,7 @@ abstract class Session
     /**
      * @throws Exception
      */
-    public function undo()
+    public function undo(): void
     {
         if ($this->undoHistory->count() === 0) {
             $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.undo.none'));
@@ -245,7 +245,7 @@ abstract class Session
      * @throws InvalidArgumentException
      * @throws RuntimeException
      */
-    public function redo()
+    public function redo(): void
     {
         if ($this->redoHistory->count() === 0) {
             $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.redo.none'));
@@ -256,13 +256,13 @@ abstract class Session
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
     }
 
-    public function clearHistory()
+    public function clearHistory(): void
     {
         $this->undoHistory->clear();
         $this->redoHistory->clear();
     }
 
-    public function clearClipboard()
+    public function clearClipboard(): void
     {
         $this->setClipboards([]);
         $this->currentClipboard = -1;
@@ -276,7 +276,7 @@ abstract class Session
         return Loader::getInstance()->getLanguage();
     }
 
-    public abstract function sendMessage(string $message);
+    public abstract function sendMessage(string $message): void;
 
     public function __toString()
     {

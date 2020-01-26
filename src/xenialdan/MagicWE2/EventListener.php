@@ -25,6 +25,7 @@ use xenialdan\MagicWE2\tool\Brush;
 
 class EventListener implements Listener
 {
+    /** @var Plugin */
     public $owner;
 
     public function __construct(Plugin $plugin)
@@ -37,7 +38,7 @@ class EventListener implements Listener
      * @throws InvalidStateException
      * @throws SessionException
      */
-    public function onLogin(PlayerJoinEvent $event)
+    public function onLogin(PlayerJoinEvent $event): void
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
             if (SessionHelper::hasSession($event->getPlayer()) && ($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
@@ -53,7 +54,7 @@ class EventListener implements Listener
      * @throws InvalidStateException
      * @throws SessionException
      */
-    public function onLogout(PlayerQuitEvent $event)
+    public function onLogout(PlayerQuitEvent $event): void
     {
         if ($event->getPlayer()->hasPermission("we.session")) {
             if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
@@ -66,7 +67,7 @@ class EventListener implements Listener
      * @param PlayerInteractEvent $event
      * @throws Exception
      */
-    public function onInteract(PlayerInteractEvent $event)
+    public function onInteract(PlayerInteractEvent $event): void
     {
         try {
             switch ($event->getAction()) {
@@ -95,7 +96,7 @@ class EventListener implements Listener
     /**
      * @param BlockBreakEvent $event
      */
-    public function onBreak(BlockBreakEvent $event)
+    public function onBreak(BlockBreakEvent $event): void
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
             $event->setCancelled();
@@ -113,7 +114,7 @@ class EventListener implements Listener
      * @param BlockBreakEvent $event
      * @throws Exception
      */
-    private function onBreakBlock(BlockBreakEvent $event)
+    private function onBreakBlock(BlockBreakEvent $event): void
     {
         $session = SessionHelper::getUserSession($event->getPlayer());
         if (!$session instanceof UserSession) return;
@@ -148,7 +149,7 @@ class EventListener implements Listener
      * @param PlayerInteractEvent $event
      * @throws Exception
      */
-    private function onRightClickBlock(PlayerInteractEvent $event)
+    private function onRightClickBlock(PlayerInteractEvent $event): void
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
@@ -192,7 +193,7 @@ class EventListener implements Listener
      * @param PlayerInteractEvent $event
      * @throws Exception
      */
-    private function onLeftClickBlock(PlayerInteractEvent $event)
+    private function onLeftClickBlock(PlayerInteractEvent $event): void
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
@@ -236,7 +237,7 @@ class EventListener implements Listener
      * @param PlayerInteractEvent $event
      * @throws Exception
      */
-    private function onRightClickAir(PlayerInteractEvent $event)
+    private function onRightClickAir(PlayerInteractEvent $event): void
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
             $event->setCancelled();
@@ -254,7 +255,7 @@ class EventListener implements Listener
     /**
      * @param PlayerDropItemEvent $event
      */
-    public function onDropItem(PlayerDropItemEvent $event)
+    public function onDropItem(PlayerDropItemEvent $event): void
     {
         try {
             if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {

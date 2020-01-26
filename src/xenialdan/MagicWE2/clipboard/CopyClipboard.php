@@ -56,7 +56,7 @@ class CopyClipboard extends Clipboard
         if ($center instanceof Position && $center->getLevel() !== null) {
             $this->levelid = $center->getLevel()->getId();
         }
-        $this->center = $center;
+        $this->center = $center->asVector3();
     }
 
     /**
@@ -138,6 +138,7 @@ class CopyClipboard extends Clipboard
      * @link http://php.net/manual/en/serializable.serialize.php
      * @return string the string representation of the object or null
      * @since 5.1.0
+     * @throws Exception
      */
     public function serialize()
     {
@@ -151,7 +152,8 @@ class CopyClipboard extends Clipboard
             $this->levelid,
             $this->center->asVector3(),
             $chunks,
-            $pasteChunks
+            $pasteChunks,
+            $this->getShape()
         ]);
     }
 
@@ -171,7 +173,8 @@ class CopyClipboard extends Clipboard
             $this->levelid,
             $this->center,
             $chunks,
-            $pasteChunks
+            $pasteChunks,
+            $this->shape
         ] = unserialize($serialized);
         foreach ($chunks as $hash => $chunk)//TODO save serialized chunks instead?
             $this->chunks[$hash] = Chunk::fastDeserialize($chunk);

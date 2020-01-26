@@ -17,7 +17,7 @@ abstract class MWEAsyncTask extends AsyncTask
     /** @var float */
     public $start;
 
-    public function onProgressUpdate(Server $server, $progress)
+    public function onProgressUpdate(Server $server, $progress): void
     {
         if (!$progress instanceof Progress) {//TODO Temp fix until all async tasks are modified
             $progress = new Progress($progress[0] / 100, $progress[1]);

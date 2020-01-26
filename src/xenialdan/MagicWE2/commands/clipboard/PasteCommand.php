@@ -67,7 +67,8 @@ class PasteCommand extends BaseCommand
             /*if (!API::hasFlag(API::flagParser(explode(" ", strval($args["flags"]))), API::FLAG_POSITION_RELATIVE)) {
                 $clipboard->setOffset(new Vector3());//TODO fix? Move to API
             }*/
-            API::pasteAsync($clipboard, $session, $sender->asPosition(), API::flagParser(explode(" ", strval($args["flags"]))));
+            $hasFlags = isset($args["flags"]);
+            API::pasteAsync($clipboard, $session, $sender->asPosition(), $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

@@ -14,8 +14,11 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cone extends Shape
 {
+    /** @var int */
     public $height = 5;
+    /** @var int */
     public $diameter = 5;
+    /** @var bool */
     public $flipped = false;
 
     /**

@@ -12,9 +12,11 @@ use xenialdan\MagicWE2\selection\Selection;
 
 abstract class TaskAction
 {
-
+    /** @var string */
     public $prefix = "";
+    /** @var bool */
     public $addRevert = true;
+    /** @var string */
     public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} changed.';
 
     /**

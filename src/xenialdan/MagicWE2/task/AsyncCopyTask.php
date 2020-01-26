@@ -22,9 +22,13 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncCopyTask extends MWEAsyncTask
 {
 
+    /** @var string */
     private $chunks;
+    /** @var string */
     private $selection;
+    /** @var string */
     private $offset;
+    /** @var int */
     private $flags;
 
     /**
@@ -42,7 +46,7 @@ class AsyncCopyTask extends MWEAsyncTask
         $this->chunks = serialize($chunks);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
-        $this->offset = serialize($offset);
+        $this->offset = serialize($offset->asVector3());
         $this->flags = $flags;
     }
 
@@ -60,12 +64,14 @@ class AsyncCopyTask extends MWEAsyncTask
         }, unserialize($this->chunks));
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
+        var_dump("shape", $selection->getShape());
         $manager = Shape::getChunkManager($chunks);
         unset($chunks);
         $clipboard = new CopyClipboard($selection->levelid);
         $clipboard->setCenter(unserialize($this->offset));
         $totalCount = $selection->getShape()->getTotalCount();
         $copied = $this->copyBlocks($selection, $manager, $clipboard);
+        $clipboard->setShape($selection->getShape());
         $clipboard->chunks = $manager->getChunks();
         $this->setResult(compact("clipboard", "copied", "totalCount"));
     }
@@ -91,6 +97,7 @@ class AsyncCopyTask extends MWEAsyncTask
                 $clipboard->chunks[Level::chunkHash($block->x >> 4, $block->z >> 4)] = $chunk;
             }
             $manager->setBlockAt($block->x, $block->y, $block->z, $block);
+            var_dump("copied manager block", $manager->getBlockAt($block->x, $block->y, $block->z));
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets
@@ -101,7 +108,7 @@ class AsyncCopyTask extends MWEAsyncTask
         return $i;
     }
 
-    public function onCompletion(Server $server)
+    public function onCompletion(Server $server): void
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
@@ -113,6 +120,7 @@ class AsyncCopyTask extends MWEAsyncTask
             $totalCount = $result["totalCount"];
             $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
             $session->addClipboard($clipboard);
+            var_dump("clipboard shape blocks", $clipboard->getBlocks(CopyClipboard::getChunkManager($clipboard->chunks)));
         } catch (SessionException $e) {
             Loader::getInstance()->getLogger()->logException($e);
         }

@@ -14,7 +14,9 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cylinder extends Shape
 {
+    /** @var int */
     public $height = 1;
+    /** @var int */
     public $diameter = 5;
 
     /**

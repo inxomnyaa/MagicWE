@@ -66,7 +66,8 @@ class CopyCommand extends BaseCommand
             if ($selection->getLevel() !== $sender->getLevel()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
             }
-            API::copyAsync($selection, $session, API::flagParser(explode(" ", strval($args["flags"]))));
+            $hasFlags = isset($args["flags"]);
+            API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

@@ -15,6 +15,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Flood extends WETool
 {
+    /** @var int */
     private $limit = 10000;
     /** @var Block[] */
     private $walked = [];
@@ -160,7 +161,7 @@ class Flood extends WETool
         if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
     }
 
-    private function getCenter()
+    private function getCenter(): Vector3
     {
         //UGLY HACK TO IGNORE ERRORS FOR NOW
         return new Vector3();

@@ -22,7 +22,9 @@ class AsyncRevertTask extends MWEAsyncTask
     const TYPE_UNDO = 0;
     const TYPE_REDO = 1;
 
+    /** @var string */
     private $clipboard;
+    /** @var int */
     private $type;
 
     /**
@@ -101,7 +103,7 @@ class AsyncRevertTask extends MWEAsyncTask
      * @param Server $server
      * @throws Exception
      */
-    public function onCompletion(Server $server)
+    public function onCompletion(Server $server): void
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));

@@ -26,9 +26,9 @@ abstract class Shape implements Serializable
         return $this->pasteVector;
     }
 
-    public function setPasteVector(Vector3 $pasteVector)
+    public function setPasteVector(Vector3 $pasteVector): void
     {
-        $this->pasteVector = $pasteVector;
+        $this->pasteVector = $pasteVector->asVector3();
     }
 
     /**

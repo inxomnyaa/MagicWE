@@ -69,8 +69,8 @@ class API
     const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
 
     //TODO Split into seperate Class (SchematicStorage?)
-    /** @var CopyClipboard[] *///TODO
-    private static $schematics = [];
+    /** @var CopyClipboard[] */
+    private static $schematics = [];//TODO
 
     /**
      * @param Selection $selection
@@ -173,7 +173,7 @@ class API
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             $c = $clipboard->getCenter();
-            $clipboard->setCenter($target);//TODO check
+            #$clipboard->setCenter($target->asVector3());//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($session->getUUID(), $clipboard, $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
         } catch (Exception $e) {
@@ -237,7 +237,7 @@ class API
      * @param Session $session
      * @throws Exception
      */
-    public static function createBrush(Block $target, Brush $brush, Session $session)
+    public static function createBrush(Block $target, Brush $brush, Session $session): void
     {
         $shapeClass = $brush->properties->shape;
         /** @var Shape $shape */
@@ -285,7 +285,7 @@ class API
     /**
      * @param Clipboard[] $schematics
      */
-    public static function setSchematics(array $schematics)
+    public static function setSchematics(array $schematics): void
     {
         self::$schematics = $schematics;
     }

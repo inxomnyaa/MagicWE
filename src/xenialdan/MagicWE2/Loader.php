@@ -65,6 +65,7 @@ class Loader extends PluginBase
     public static $shapeRegistry = null;
     /** @var null|ActionRegistry */
     public static $actionRegistry = null;
+    /** @var BaseLang */
     private $baseLang;
     /** @var string[] Donator names */
     public $donators = [];
@@ -75,7 +76,7 @@ class Loader extends PluginBase
      * Returns an instance of the plugin
      * @return Loader
      */
-    public static function getInstance()
+    public static function getInstance(): Loader
     {
         return self::$instance;
     }
@@ -102,7 +103,7 @@ class Loader extends PluginBase
         throw new ActionRegistryException("Action registry is not initialized");
     }
 
-    public function onLoad()
+    public function onLoad(): void
     {
         self::$instance = $this;
         $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
@@ -115,7 +116,7 @@ class Loader extends PluginBase
     /**
      * @throws PluginException
      */
-    public function onEnable()
+    public function onEnable(): void
     {
         $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
         $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
@@ -227,7 +228,7 @@ class Loader extends PluginBase
         }
     }
 
-    public function onDisable()
+    public function onDisable(): void
     {
         #$this->getLogger()->debug("Destroying Sessions");
         foreach (SessionHelper::getPluginSessions() as $session) {
@@ -275,7 +276,7 @@ class Loader extends PluginBase
         ];
     }
 
-    private function showStartupIcon()
+    private function showStartupIcon(): void
     {
         $colorAxe = TF::BOLD . TF::DARK_PURPLE;
         $colorAxeStem = TF::LIGHT_PURPLE;

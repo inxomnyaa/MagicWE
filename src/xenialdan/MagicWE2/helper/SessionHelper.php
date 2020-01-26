@@ -33,7 +33,7 @@ class SessionHelper
     /** @var Map */
     private static $pluginSessions;
 
-    public static function init()
+    public static function init(): void
     {
         @mkdir(Loader::getInstance()->getDataFolder() . "sessions");
         self::$userSessions = new Map();
@@ -62,7 +62,7 @@ class SessionHelper
      * @param Session $session
      * @param bool $save
      */
-    public static function destroySession(Session $session, bool $save = true)
+    public static function destroySession(Session $session, bool $save = true): void
     {
         if ($session instanceof UserSession) {
             $session->cleanupInventory();

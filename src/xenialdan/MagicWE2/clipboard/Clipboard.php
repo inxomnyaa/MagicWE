@@ -50,7 +50,7 @@ abstract class Clipboard implements Serializable
      * @return Level
      * @throws Exception
      */
-    public function getLevel()
+    public function getLevel(): Level
     {
         if (is_null($this->levelid)) {
             throw new Exception("Level is not set!");
@@ -65,7 +65,7 @@ abstract class Clipboard implements Serializable
     /**
      * @param Level $level
      */
-    public function setLevel(Level $level)
+    public function setLevel(Level $level): void
     {
         $this->levelid = $level->getId();
     }

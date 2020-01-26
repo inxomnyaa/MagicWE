@@ -29,9 +29,13 @@ class AsyncActionTask extends MWEAsyncTask
      * Strings: Begin, completion, bossbar, other stuff can be in the action
     */
 
+    /** @var string */
     private $touchedChunks;
+    /** @var string */
     private $selection;
+    /** @var string */
     private $blockFilter;
+    /** @var string */
     private $newBlocks;
     /** @var TaskAction */
     private $action;
@@ -108,7 +112,7 @@ class AsyncActionTask extends MWEAsyncTask
      * @param Server $server
      * @throws Exception
      */
-    public function onCompletion(Server $server)
+    public function onCompletion(Server $server): void
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));

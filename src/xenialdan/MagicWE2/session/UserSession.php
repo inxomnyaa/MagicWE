@@ -83,7 +83,7 @@ class UserSession extends Session implements JsonSerializable
     /**
      * @param null|Player $player
      */
-    public function setPlayer($player)
+    public function setPlayer($player): void
     {
         $this->player = $player;
     }
@@ -266,7 +266,7 @@ class UserSession extends Session implements JsonSerializable
             " Brushes: " . count($this->brushes);
     }
 
-    public function sendMessage(string $message)
+    public function sendMessage(string $message): void
     {
         $this->player->sendMessage(Loader::PREFIX . $message);
     }

@@ -10,8 +10,11 @@ use xenialdan\MagicWE2\session\UserSession;
 
 class MWESelectionChangeEvent extends MWEEvent
 {
+    /** @var Selection */
     private $oldSelection;
+    /** @var Selection */
     private $newSelection;
+    /** @var Session|null */
     private $session;
 
     public function __construct(Plugin $plugin, Selection $oldSelection, Selection $newSelection, ?Session $session)
@@ -76,7 +79,7 @@ class MWESelectionChangeEvent extends MWEEvent
     /**
      * @param null|Player $player
      */
-    public function setPlayer(?Player $player)
+    public function setPlayer(?Player $player): void
     {
         if (($session = $this->getSession()) instanceof UserSession)
             /** @var UserSession $session */

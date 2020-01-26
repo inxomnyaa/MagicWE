@@ -21,10 +21,13 @@ use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncFillTask extends MWEAsyncTask
 {
-
+    /** @var string */
     private $touchedChunks;
+    /** @var string */
     private $selection;
+    /** @var int */
     private $flags;
+    /** @var string */
     private $newBlocks;
 
     /**
@@ -132,7 +135,7 @@ class AsyncFillTask extends MWEAsyncTask
      * @param Server $server
      * @throws Exception
      */
-    public function onCompletion(Server $server)
+    public function onCompletion(Server $server): void
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));

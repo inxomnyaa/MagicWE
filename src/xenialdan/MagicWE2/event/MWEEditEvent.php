@@ -19,7 +19,14 @@ class MWEEditEvent extends MWEEvent implements Cancellable
     /** @var null|Session */
     private $session;
 
-    public function __construct(Plugin $plugin, $oldBlocks, $newBlocks, ?Session $session)
+    /**
+     * MWEEditEvent constructor.
+     * @param Plugin $plugin
+     * @param Block[] $oldBlocks
+     * @param Block[] $newBlocks
+     * @param Session|null $session
+     */
+    public function __construct(Plugin $plugin, array $oldBlocks, array $newBlocks, ?Session $session)
     {
         parent::__construct($plugin);
         $this->oldBlocks = $oldBlocks;
@@ -49,7 +56,7 @@ class MWEEditEvent extends MWEEvent implements Cancellable
     /**
      * @param null|Player $player
      */
-    public function setPlayer(?Player $player)
+    public function setPlayer(?Player $player): void
     {
         if (($session = $this->getSession()) instanceof UserSession)
             /** @var UserSession $session */
