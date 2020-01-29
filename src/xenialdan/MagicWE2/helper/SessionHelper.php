@@ -217,24 +217,29 @@ class SessionHelper
             };
             if (!is_null(($latestSelection = $data["latestSelection"] ?? null))) {
                 try {
-                    $selection = new Selection(
-                        $session->getUUID(),
-                        Server::getInstance()->getLevel($latestSelection["levelid"]),
-                        $latestSelection["pos1"]["x"],
-                        $latestSelection["pos1"]["y"],
-                        $latestSelection["pos1"]["z"],
-                        $latestSelection["pos2"]["x"],
-                        $latestSelection["pos2"]["y"],
-                        $latestSelection["pos2"]["z"]
-                    );
-                    $shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
-                    $pasteVector = $latestSelection["shape"]["pasteVector"];
-                    unset($latestSelection["shape"]["pasteVector"]);
-                    if (!is_null($pasteVector)) {
-                        $pasteV = new Vector3(...array_values($pasteVector));
-                        $shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
-                        $selection->setShape($shape);
-                        $session->addSelection($selection);
+                    $level = Server::getInstance()->getLevel($latestSelection["levelid"]);
+                    if(is_null($level)){
+                        $session->sendMessage(TF::RED."The level of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
+                    } else {
+                        $selection = new Selection(
+                            $session->getUUID(),
+                            Server::getInstance()->getLevel($latestSelection["levelid"]),
+                            $latestSelection["pos1"]["x"],
+                            $latestSelection["pos1"]["y"],
+                            $latestSelection["pos1"]["z"],
+                            $latestSelection["pos2"]["x"],
+                            $latestSelection["pos2"]["y"],
+                            $latestSelection["pos2"]["z"]
+                        );
+                        $shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
+                        $pasteVector = $latestSelection["shape"]["pasteVector"];
+                        unset($latestSelection["shape"]["pasteVector"]);
+                        if (!is_null($pasteVector)) {
+                            $pasteV = new Vector3(...array_values($pasteVector));
+                            $shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
+                            $selection->setShape($shape);
+                            $session->addSelection($selection);
+                        }
                     }
                 } catch (RuntimeException $e) {
                 }
