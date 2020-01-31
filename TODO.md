@@ -15,3 +15,4 @@ TODO and bug list
 - [ ] Undo "steals" blocks that were changed manually later
 - [ ] Rewrite CopyClipboard to be similar to RevertClipboard
 - [ ] Undo is incredibly slow - probably getAABB()
+- [ ] If an async task crashes, the user gets no feedback, and the boss bar gets stuck
