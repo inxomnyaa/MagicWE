@@ -178,7 +178,7 @@ class API
             #$clipboard->setCenter($target->asVector3());//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             $shape = $clipboard->selection->getShape();
-            $shape->setPasteVector($target->asVector3()->floor());
+            $shape->setPasteVector($target->asVector3()->floor());//TODO fix touchedchunks: shape does not know about offset, so it can happen that chunks are missing
             #$clipboard->selection->setShape($shape);
             $touchedChunks = $shape->getTouchedChunks($target->getLevel());//TODO check if this is an ugly hack
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard, $flags));
