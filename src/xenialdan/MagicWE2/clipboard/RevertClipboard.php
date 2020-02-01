@@ -10,6 +10,8 @@ use pocketmine\level\Level;
 
 class RevertClipboard extends Clipboard
 {
+    /** @var Chunk[] */
+    public $chunks = [];
     /** @var Block[] */
     public $blocksAfter;
 

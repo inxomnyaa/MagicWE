@@ -25,8 +25,6 @@ abstract class Clipboard implements Serializable
     const FLIP_NORTH = 0x03;
     const FLIP_SOUTH = 0x03;
 
-    /** @var Chunk[] */
-    public $chunks = [];
     /** @var int|null */
     public $levelid;
     /** @var string */

@@ -20,7 +20,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
-use xenialdan\MagicWE2\clipboard\CopyClipboard;
+use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\CalculationException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
 use xenialdan\MagicWE2\selection\Selection;
@@ -30,10 +30,10 @@ use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\SetBiomeAction;
 use xenialdan\MagicWE2\task\action\TaskAction;
 use xenialdan\MagicWE2\task\AsyncActionTask;
-use xenialdan\MagicWE2\task\AsyncClipboardTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
+use xenialdan\MagicWE2\task\AsyncPasteTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 use xenialdan\MagicWE2\tool\Brush;
 
@@ -158,24 +158,27 @@ class API
 
     /**
      * TODO: flag parsing, Position to paste at
-     * @param CopyClipboard $clipboard TODO should this be Clipboard?
+     * @param SingleClipboard $clipboard TODO should this be Clipboard?
      * @param Session $session
      * @param Position $target
      * @param int $flags
      * @return bool
      */
-    public static function pasteAsync(CopyClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE)
+    public static function pasteAsync(SingleClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE)
     {
         #return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($clipboard->getShape()->getTotalCount() > $limit && $limit !== -1) {
+            if ($clipboard->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
-            $c = $clipboard->getCenter();
+            #$c = $clipboard->getCenter();
             #$clipboard->setCenter($target->asVector3());//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncClipboardTask($session->getUUID(), $clipboard, $clipboard->getTouchedChunks($c), AsyncClipboardTask::TYPE_PASTE, $flags));
+            $shape = $clipboard->selection->getShape();
+            $shape->setPasteVector($target->asVector3());
+            $touchedChunks = $shape->getTouchedChunks($target->getLevel());//TODO check if this is an ugly hack
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
