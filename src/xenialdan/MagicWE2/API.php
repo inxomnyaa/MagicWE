@@ -144,9 +144,11 @@ class API
             }
             //TODO check/edit how relative position works
             $offset = new Vector3();
-            if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE) && $session instanceof UserSession)//TODO relative or not by flags
-                $offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer())->floor();
+            if (/*!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE) && */ $session instanceof UserSession)//TODO relative or not by flags
+                $offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
+            //TODO figure out wrong offset
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getLevel()), $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
@@ -160,7 +162,7 @@ class API
      * TODO: flag parsing, Position to paste at
      * @param SingleClipboard $clipboard TODO should this be Clipboard?
      * @param Session $session
-     * @param Position $target
+     * @param Position $target CURRENTLY SENDER POSITION
      * @param int $flags
      * @return bool
      */
@@ -176,7 +178,8 @@ class API
             #$clipboard->setCenter($target->asVector3());//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
             $shape = $clipboard->selection->getShape();
-            $shape->setPasteVector($target->asVector3());
+            $shape->setPasteVector($target->asVector3()->floor());
+            #$clipboard->selection->setShape($shape);
             $touchedChunks = $shape->getTouchedChunks($target->getLevel());//TODO check if this is an ugly hack
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard, $flags));
         } catch (Exception $e) {

@@ -27,7 +27,7 @@ class AsyncCopyTask extends MWEAsyncTask
     private $chunks;
     /** @var string */
     private $selection;
-    /** @var string */
+    /** @var Vector3 */
     private $offset;
     /** @var int */
     private $flags;
@@ -47,7 +47,7 @@ class AsyncCopyTask extends MWEAsyncTask
         $this->chunks = serialize($chunks);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
-        $this->offset = serialize($offset->asVector3());
+        $this->offset = $offset->asVector3()->floor();
         $this->flags = $flags;
     }
 
@@ -68,7 +68,9 @@ class AsyncCopyTask extends MWEAsyncTask
         var_dump("shape", $selection->getShape());
         $manager = Shape::getChunkManager($chunks);
         unset($chunks);
-        $clipboard = new SingleClipboard();
+        var_dump($this->offset);
+        $clipboard = new SingleClipboard($this->offset);
+        $clipboard->selection = $selection;
         #$clipboard->setCenter(unserialize($this->offset));
         $totalCount = $selection->getShape()->getTotalCount();
         $copied = $this->copyBlocks($selection, $manager, $clipboard);
@@ -90,9 +92,12 @@ class AsyncCopyTask extends MWEAsyncTask
         $i = 0;
         $lastprogress = 0;
         $this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
+        $min = $selection->getShape()->getMinVec3();
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
-            $clipboard->addEntry($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));//TODO test tiles
+            var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
+            $newv3 = $block->subtract($min)->floor();
+            $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));//TODO test tiles
             var_dump("copied selection block", $block);
             $i++;
             $progress = floor($i / $blockCount * 100);
@@ -116,7 +121,6 @@ class AsyncCopyTask extends MWEAsyncTask
             $totalCount = $result["totalCount"];
             $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
             $session->addClipboard($clipboard);
-            var_dump("clipboard shape blocks", iterator_to_array($clipboard->iterateEntries($x, $y, $z)));
         } catch (SessionException $e) {
             Loader::getInstance()->getLogger()->logException($e);
         }

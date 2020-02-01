@@ -7,6 +7,7 @@ use Generator;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
@@ -31,6 +32,8 @@ class AsyncPasteTask extends MWEAsyncTask
     private $flags;
     /** @var string */
     private $clipboard;
+    /** @var Vector3 */
+    private $offset;
 
     /**
      * AsyncFillTask constructor.
@@ -43,6 +46,8 @@ class AsyncPasteTask extends MWEAsyncTask
     public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, SingleClipboard $clipboard, int $flags)
     {
         $this->start = microtime(true);
+        $this->offset = $selection->getShape()->getPasteVector()->add($clipboard->position)->floor();
+        var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
         $this->touchedChunks = serialize($touchedChunks);
@@ -63,6 +68,10 @@ class AsyncPasteTask extends MWEAsyncTask
         $touchedChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
         }, unserialize($this->touchedChunks));
+        foreach ($touchedChunks as $chunk) {
+            /** @var Chunk $chunk */
+            var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
+        }//TODO REMOVE
 
         $manager = Shape::getChunkManager($touchedChunks);
         unset($touchedChunks);
@@ -99,23 +108,30 @@ class AsyncPasteTask extends MWEAsyncTask
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
         /** @var BlockEntry $entry */
         foreach ($clipboard->iterateEntries($x, $y, $z) as $entry) {
-            /*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
-                $rel = $block->subtract($selection->shape->getPasteVector());
-                $block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
-            }*/
+            var_dump("at cb xyz $x $y $z: $entry");
+            $x += $this->offset->getFloorX();
+            $y += $this->offset->getFloorY();
+            $z += $this->offset->getFloorZ();
+            var_dump("add offset xyz $x $y $z");
             if (is_null($lastchunkx) || $x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) {
                 $lastchunkx = $x >> 4;
                 $lastchunkz = $z >> 4;
                 if (is_null($manager->getChunk($x >> 4, $z >> 4))) {
-                    #print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
+                    print PHP_EOL . "Not found: " . strval($x >> 4) . ":" . strval($z >> 4) . PHP_EOL;
                     continue;
                 }
             }
+            /*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
+                $rel = $block->subtract($selection->shape->getPasteVector());
+                $block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
+            }*/
             /** @var Block $new */
             $new = $entry->toBlock()->setComponents($x, $y, $z);
-            yield $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
+            $old = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
+            var_dump("old", $old, "new", $new);
+            yield $old;
             $manager->setBlockAt($x, $y, $z, $new);
-            if ($manager->getBlockArrayAt($x, $y, $z) !== [$new->getId(), $new->getDamage()]) {//TODO remove? Just useless waste imo
+            if ($manager->getBlockArrayAt($x, $y, $z) !== [$old->getId(), $old->getDamage()]) {//TODO remove? Just useless waste imo
                 $changed++;
             }
             ///

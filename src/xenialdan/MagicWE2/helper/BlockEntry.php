@@ -22,7 +22,7 @@ class BlockEntry
      * @param int $runtimeId
      * @param CompoundTag|null $nbt
      */
-    public function __construct(int $runtimeId, ?CompoundTag $nbt)
+    public function __construct(int $runtimeId, ?CompoundTag $nbt = null)
     {
         $this->runtimeId = $runtimeId;
         $this->nbt = $nbt;

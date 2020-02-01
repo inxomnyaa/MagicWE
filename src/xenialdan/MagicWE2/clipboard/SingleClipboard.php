@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\clipboard;
 
 use Generator;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\helper\BlockEntry;
 use xenialdan\MagicWE2\selection\Selection;
 
@@ -15,6 +16,18 @@ class SingleClipboard extends Clipboard
     private $entries = [];
     /** @var Selection */
     public $selection;
+    /** @var Vector3 */
+    public $position;
+
+    /**
+     * SingleClipboard constructor.
+     * @param Vector3 $position
+     */
+    public function __construct(Vector3 $position)
+    {
+        $this->position = $position->asVector3()->floor();
+        var_dump($this->position);
+    }
 
     public function addEntry(int $x, int $y, int $z, BlockEntry $entry): void
     {
@@ -51,7 +64,8 @@ class SingleClipboard extends Clipboard
         // TODO: Implement serialize() method.
         return serialize([
             $this->entries,
-            $this->selection
+            $this->selection,
+            $this->position
         ]);
     }
 
@@ -69,7 +83,8 @@ class SingleClipboard extends Clipboard
         // TODO: Implement unserialize() method.
         [
             $this->entries,
-            $this->selection
+            $this->selection,
+            $this->position
         ] = unserialize($serialized);
     }
 }
