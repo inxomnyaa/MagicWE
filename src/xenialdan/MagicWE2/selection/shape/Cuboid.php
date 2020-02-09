@@ -41,7 +41,7 @@ class Cuboid extends Shape
         $width = (int)abs($pos1->getX() - $pos2->getX()) + 1;
         $height = (int)abs($pos1->getY() - $pos2->getY()) + 1;
         $depth = (int)abs($pos1->getZ() - $pos2->getZ()) + 1;
-        $cuboid = new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, $pos1->y, ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
+        $cuboid = new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, min($pos1->y, $pos2->y), ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
         return $cuboid;
     }
 
