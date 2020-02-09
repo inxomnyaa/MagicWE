@@ -136,6 +136,7 @@ class AsyncActionTask extends MWEAsyncTask
         //TODO Test this new behaviour!
         //TODO so here i turn SingleClipboard entries into the same $oldBlocks as before this commit
         $oldBlocksBlocks = [];
+        $x = $y = $z = null;
         foreach ($oldBlocks->iterateEntries($x, $y, $z) as $entry) {
             $oldBlocksBlocks[] = $entry->toBlock()->setComponents(intval($x), intval($y), intval($z));
         }

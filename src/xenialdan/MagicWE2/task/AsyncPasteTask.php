@@ -101,7 +101,7 @@ class AsyncPasteTask extends MWEAsyncTask
     private function execute(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard, ?int &$changed): Generator
     {
         $blockCount = $clipboard->getTotalCount();
-        $lastchunkx = $lastchunkz = null;
+        $lastchunkx = $lastchunkz = $x = $y = $z = null;
         $lastprogress = 0;
         $i = 0;
         $changed = 0;
