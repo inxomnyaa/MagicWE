@@ -198,11 +198,8 @@ abstract class Session
     public function addClipboard(Clipboard $clipboard, bool $setAsCurrent = true): int
     {
         $amount = array_push($this->clipboards, $clipboard);
-        $i = array_search($clipboard, $this->clipboards, true);
-        if ($i !== false) {
-            if ($setAsCurrent) $this->currentClipboard = $i;
-        }
         if ($amount > self::MAX_CLIPBOARDS) array_shift($this->clipboards);
+        $i = array_search($clipboard, $this->clipboards, true);
         if ($i !== false) {
             if ($setAsCurrent) $this->currentClipboard = $i;
             return $i;
