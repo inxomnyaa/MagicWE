@@ -51,15 +51,13 @@ class EventListener implements Listener
 
     /**
      * @param PlayerQuitEvent $event
-     * @throws InvalidStateException
      * @throws SessionException
      */
     public function onLogout(PlayerQuitEvent $event): void
     {
-        if ($event->getPlayer()->hasPermission("we.session")) {
-            if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
-                SessionHelper::destroySession($session);
-            }
+        if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
+            SessionHelper::destroySession($session);
+            unset($session);
         }
     }
 
@@ -100,12 +98,12 @@ class EventListener implements Listener
     {
         if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
             $event->setCancelled();
-        }
-        try {
-            $this->onBreakBlock($event);
-        } catch (Exception $error) {
-            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
-            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            try {
+                $this->onBreakBlock($event);
+            } catch (Exception $error) {
+                $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
+                $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            }
         }
     }
 

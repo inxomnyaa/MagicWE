@@ -7,12 +7,12 @@ TODO and bug list
 - [x] Undo seems to execute the action offset by 1
 - [x] Shape does not refresh after pos1 and pos2 were set once
 - [x] Cylinder is 1 block too tall
-- [ ] Boss bar title does not always reset
+- [ ] Boss bar title does not always reset //appears to work now
 - [ ] Action with 0 blocks gets stuck (ErrorException: "Division by zero" (EXCEPTION) in "plugins/MagicWE2.phar/src/xenialdan/MagicWE2/task/AsyncFillTask" at line 119)
-- [ ] The flag  is unknown
+- [ ] The flag  is unknown //should be fixed by now
 - [x] "Created new session" string contains { and }
 - [ ] Session destructs upon re-login instead upon logout
-- [ ] Undo "steals" blocks that were changed manually later
-- [ ] Rewrite CopyClipboard to be similar to RevertClipboard
+- [ ] Undo "steals" blocks that were changed manually later - todo test if fixed
+- [x] Rewrite CopyClipboard
 - [ ] Undo is incredibly slow - probably getAABB()
 - [ ] If an async task crashes, the user gets no feedback, and the boss bar gets stuck

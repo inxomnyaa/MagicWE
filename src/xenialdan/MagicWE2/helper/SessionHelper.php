@@ -68,7 +68,6 @@ class SessionHelper
             $session->cleanupInventory();
             self::$userSessions->remove($session->getUUID());
         } else if ($session instanceof PluginSession) self::$pluginSessions->remove($session->getUUID());
-        /** @noinspection PhpStatementHasEmptyBodyInspection */
         if ($save && $session instanceof UserSession) {
             $session->save();
         }
