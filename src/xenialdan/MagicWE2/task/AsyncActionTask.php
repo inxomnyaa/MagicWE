@@ -5,11 +5,13 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
+use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -78,7 +80,7 @@ class AsyncActionTask extends MWEAsyncTask
      */
     public function onRun()
     {
-        $this->publishProgress(new Progress(0, "Preparing"));
+        $this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
         $touchedChunks = unserialize($this->touchedChunks);
         $touchedChunks = array_map(function ($chunk) {
@@ -91,7 +93,9 @@ class AsyncActionTask extends MWEAsyncTask
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
 
-        $oldBlocks = [];
+        $oldBlocks = new SingleClipboard($this->action->clipboardVector ?? new Vector3());//TODO Test if null V3 is ok //TODO test if the vector works
+        $oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
+        #$oldBlocks = [];
         $messages = [];
         $error = false;
         $newBlocks = API::blockParser($this->newBlocks, $messages, $error);//TODO error handling
@@ -127,7 +131,14 @@ class AsyncActionTask extends MWEAsyncTask
         $undoChunks = array_map(function ($chunk) {
             return Chunk::fastDeserialize($chunk);
         }, unserialize($this->touchedChunks));
+        /** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere
         $oldBlocks = $result["oldBlocks"];
+        //TODO Test this new behaviour!
+        //TODO so here i turn SingleClipboard entries into the same $oldBlocks as before this commit
+        $oldBlocksBlocks = [];
+        foreach ($oldBlocks->iterateEntries($x, $y, $z) as $entry) {
+            $oldBlocksBlocks[] = $entry->toBlock()->setComponents(intval($x), intval($y), intval($z));
+        }
         $changed = $result["changed"];
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
@@ -141,7 +152,9 @@ class AsyncActionTask extends MWEAsyncTask
             $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
             foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
             if ($this->action->addRevert)
-                $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+                $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocksBlocks));
+            if ($this->action->addClipboard)
+                $session->addClipboard($oldBlocks);
         }
     }
 }

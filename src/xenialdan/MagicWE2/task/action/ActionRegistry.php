@@ -14,7 +14,7 @@ class ActionRegistry
     public function __construct()
     {
         self::registerAction(SetBlockAction::getName(), SetBlockAction::class);
-        self::registerAction(SetBiomeAction::getName(), SetBiomeAction::class);
+        #self::registerAction(SetBiomeAction::getName(), SetBiomeAction::class);//TODO fix biome sending
         #self::registerAction(ThawAction::getName(), ThawAction::class);//TODO re-implement when i can ignore damage values in Shape::getBlocks
         self::registerAction(CountAction::getName(), CountAction::class);
     }

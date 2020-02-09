@@ -14,8 +14,14 @@ use xenialdan\MagicWE2\helper\BlockEntry;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
 
-class SetBlockAction extends TaskAction
+class CutAction extends TaskAction
 {
+    /** @var string */
+    public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} cut.';
+    /** @var bool */
+    public $addRevert = true;
+    /** @var bool */
+    public $addClipboard = true;
 
     public function __construct()
     {
@@ -23,7 +29,7 @@ class SetBlockAction extends TaskAction
 
     public static function getName(): string
     {
-        return "Set block";
+        return "Cut";
     }
 
     /**
@@ -45,12 +51,14 @@ class SetBlockAction extends TaskAction
         #$oldBlocks = [];
         $count = $selection->getShape()->getTotalCount();
         $lastProgress = new Progress(0, "");
+        $min = $selection->getShape()->getMinVec3();
         foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
             /** @var Block $new */
             $new = clone $newBlocks[array_rand($newBlocks)];
             if ($new->getId() === $block->getId() && $new->getDamage() === $block->getDamage()) continue;//skip same blocks
             #$oldBlocks[] = $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
-            $oldBlocksSingleClipboard->addEntry($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));
+            $newv3 = $block->subtract($min)->floor();//TODO check if only used for clipboard
+            $oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));
             $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
             if ($manager->getBlockArrayAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== [$block->getId(), $block->getDamage()]) {
                 $changed++;

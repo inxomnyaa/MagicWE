@@ -8,6 +8,7 @@ use Exception;
 use Generator;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -35,15 +36,15 @@ class TestAction extends TaskAction
      * @param null|int $changed
      * @param Block[] $newBlocks
      * @param Block[] $blockFilter
-     * @param Block[] $oldBlocks blocks before the change
+     * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
      * @param string[] $messages
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, array &$oldBlocks = [], array &$messages = []): Generator
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard &$oldBlocksSingleClipboard, array &$messages = []): Generator
     {
         $changed = 0;
-        $oldBlocks = [];
+        #$oldBlocks = [];
         $count = $selection->getShape()->getTotalCount();
         $lastProgress = new Progress(0, "");
         if (!BlockFactory::isInit()) BlockFactory::init();

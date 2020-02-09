@@ -18,6 +18,7 @@ use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
 use xenialdan\MagicWE2\commands\brush\BrushCommand;
 use xenialdan\MagicWE2\commands\clipboard\ClearClipboardCommand;
 use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
+use xenialdan\MagicWE2\commands\clipboard\Cut2Command;
 use xenialdan\MagicWE2\commands\clipboard\CutCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
 use xenialdan\MagicWE2\commands\DonateCommand;
@@ -173,6 +174,7 @@ class Loader extends PluginBase
             new CopyCommand("/copy", "Copy the selection to the clipboard"),
             new PasteCommand("/paste", "Paste the clipboard’s contents"),
             new CutCommand("/cut", "Cut the selection to the clipboard"),
+            new Cut2Command("/cut2", "Cut the selection to the clipboard - the new way"),
             new ClearClipboardCommand("/clearclipboard", "Clear your clipboard"),
             //new FlipCommand("/flip","Flip the contents of the clipboard across the origin"),
             //new RotateCommand("/rotate","Rotate the contents of the clipboard around the origin"),
