@@ -65,10 +65,10 @@ class AsyncCopyTask extends MWEAsyncTask
         }, unserialize($this->chunks));
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
-        var_dump("shape", $selection->getShape());
+        #var_dump("shape", $selection->getShape());
         $manager = Shape::getChunkManager($chunks);
         unset($chunks);
-        var_dump($this->offset);
+        #var_dump($this->offset);
         $clipboard = new SingleClipboard($this->offset);
         $clipboard->selection = $selection;
         #$clipboard->setCenter(unserialize($this->offset));
@@ -95,10 +95,10 @@ class AsyncCopyTask extends MWEAsyncTask
         $min = $selection->getShape()->getMinVec3();
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
-            var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
+            #var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
             $newv3 = $block->subtract($min)->floor();
             $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));//TODO test tiles
-            var_dump("copied selection block", $block);
+            #var_dump("copied selection block", $block);
             $i++;
             $progress = floor($i / $blockCount * 100);
             if ($lastprogress < $progress) {//this prevents spamming packets

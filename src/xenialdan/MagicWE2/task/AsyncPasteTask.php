@@ -47,7 +47,7 @@ class AsyncPasteTask extends MWEAsyncTask
     {
         $this->start = microtime(true);
         $this->offset = $selection->getShape()->getPasteVector()->add($clipboard->position)->floor();
-        var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
+        #var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);
         $this->touchedChunks = serialize($touchedChunks);
@@ -70,7 +70,7 @@ class AsyncPasteTask extends MWEAsyncTask
         }, unserialize($this->touchedChunks));
         foreach ($touchedChunks as $chunk) {
             /** @var Chunk $chunk */
-            var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
+            #var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
         }//TODO REMOVE
 
         $manager = Shape::getChunkManager($touchedChunks);
@@ -108,16 +108,16 @@ class AsyncPasteTask extends MWEAsyncTask
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
         /** @var BlockEntry $entry */
         foreach ($clipboard->iterateEntries($x, $y, $z) as $entry) {
-            var_dump("at cb xyz $x $y $z: $entry");
+            #var_dump("at cb xyz $x $y $z: $entry");
             $x += $this->offset->getFloorX();
             $y += $this->offset->getFloorY();
             $z += $this->offset->getFloorZ();
-            var_dump("add offset xyz $x $y $z");
+            #var_dump("add offset xyz $x $y $z");
             if (is_null($lastchunkx) || $x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) {
                 $lastchunkx = $x >> 4;
                 $lastchunkz = $z >> 4;
                 if (is_null($manager->getChunk($x >> 4, $z >> 4))) {
-                    print PHP_EOL . "Not found: " . strval($x >> 4) . ":" . strval($z >> 4) . PHP_EOL;
+                    print PHP_EOL . "Paste chunk not found in async paste manager: " . strval($x >> 4) . ":" . strval($z >> 4) . PHP_EOL;
                     continue;
                 }
             }
@@ -128,7 +128,7 @@ class AsyncPasteTask extends MWEAsyncTask
             /** @var Block $new */
             $new = $entry->toBlock()->setComponents($x, $y, $z);
             $old = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
-            var_dump("old", $old, "new", $new);
+            #var_dump("old", $old, "new", $new);
             yield $old;
             $manager->setBlockAt($x, $y, $z, $new);
             if ($manager->getBlockArrayAt($x, $y, $z) !== [$old->getId(), $old->getDamage()]) {//TODO remove? Just useless waste imo

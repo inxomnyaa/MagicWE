@@ -11,7 +11,10 @@ use pocketmine\block\UnknownBlock;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\ItemFactory;
+use pocketmine\level\ChunkManager;
+use pocketmine\level\Level;
 use pocketmine\level\Position;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
@@ -148,7 +151,7 @@ class API
                 $offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
             //TODO figure out wrong offset
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
+            #var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getLevel()), $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
@@ -177,10 +180,13 @@ class API
             #$c = $clipboard->getCenter();
             #$clipboard->setCenter($target->asVector3());//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            $shape = $clipboard->selection->getShape();
-            $shape->setPasteVector($target->asVector3()->floor());//TODO fix touchedchunks: shape does not know about offset, so it can happen that chunks are missing
-            #$clipboard->selection->setShape($shape);
-            $touchedChunks = $shape->getTouchedChunks($target->getLevel());//TODO check if this is an ugly hack
+            $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste
+            $end = $start->add($clipboard->selection->getShape()->getMaxVec3()->subtract($clipboard->selection->getShape()->getMinVec3()));//add size
+            $aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
+            $shape = clone $clipboard->selection->getShape();//needed
+            $shape->setPasteVector($target->asVector3()->floor());//needed
+            $clipboard->selection->setShape($shape);//needed
+            $touchedChunks = self::getAABBTouchedChunksTemp($target->getLevel(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
@@ -188,6 +194,32 @@ class API
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param ChunkManager $manager
+     * @param AxisAlignedBB $aabb
+     * @return string[]
+     */
+    private static function getAABBTouchedChunksTemp(ChunkManager $manager, AxisAlignedBB $aabb): array
+    {
+        $maxX = $aabb->maxX >> 4;
+        $minX = $aabb->minX >> 4;
+        $maxZ = $aabb->maxZ >> 4;
+        $minZ = $aabb->minZ >> 4;
+        $touchedChunks = [];
+        for ($x = $minX; $x <= $maxX; $x++) {
+            for ($z = $minZ; $z <= $maxZ; $z++) {
+                $chunk = $manager->getChunk($x, $z);
+                if ($chunk === null) {
+                    continue;
+                }
+                print __METHOD__ . " Touched Chunk at: $x:$z" . PHP_EOL;
+                $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+            }
+        }
+        print  __METHOD__ . " Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+        return $touchedChunks;
     }
 
     /**

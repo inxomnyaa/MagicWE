@@ -60,7 +60,7 @@ class Cuboid extends Shape
             for ($y = intval(floor($this->getMinVec3()->y)); $y <= floor($this->getMaxVec3()->y); $y++) {
                 for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
                     $block = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
-                    var_dump("shape getblocks", $block);
+                    #var_dump("shape getblocks", $block);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
 
