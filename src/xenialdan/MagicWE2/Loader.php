@@ -7,9 +7,16 @@ namespace xenialdan\MagicWE2;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
+use pocketmine\nbt\NetworkLittleEndianNBTStream;
+use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
+use pocketmine\utils\MainLogger;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
@@ -112,6 +119,57 @@ class Loader extends PluginBase
         self::$shapeRegistry = new ShapeRegistry();
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
+
+        self::initBlockstates();
+    }
+
+    private static function initBlockstates(): void
+    {
+        $STATES_NBT = file_get_contents(\pocketmine\RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
+        $stream = new NetworkLittleEndianNBTStream();
+        /** @var ListTag $rootListTag */
+        $rootListTag = $stream->read($STATES_NBT);
+        //This is pretty print debug
+        for ($i = 150; $i <= 300; $i++) {
+            /** @var CompoundTag $rootCompound */
+            $rootCompound = $rootListTag->get($i);
+            $oldCompound = $rootCompound->getCompoundTag("old");
+            MainLogger::getLogger()->debug(TF::AQUA . $oldCompound->getString("name") . ":" . TF::BLUE . strval($oldCompound->getShort("val")));
+            $newCompound = $rootCompound->getCompoundTag("new");
+            MainLogger::getLogger()->debug(TF::AQUA . $newCompound->getString("name"));
+            /** @var CompoundTag $statesTag */
+            foreach ($newCompound->getCompoundTag("states") as $statesTagEntry) {
+                if ($statesTagEntry instanceof ByteTag) {
+                    MainLogger::getLogger()->debug(TF::RED . "B: " . TF::AQUA . $statesTagEntry->getName() . ": " . ($statesTagEntry->getValue() ? TF::GREEN . "true" : TF::RED . "false"));
+                } else if ($statesTagEntry instanceof IntTag) {
+                    MainLogger::getLogger()->debug(TF::BLUE . "I: " . TF::AQUA . $statesTagEntry->getName() . ": " . TF::BLUE . strval($statesTagEntry->getValue()));
+                } else if ($statesTagEntry instanceof StringTag) {
+                    MainLogger::getLogger()->debug(TF::LIGHT_PURPLE . "S: " . TF::AQUA . $statesTagEntry->getName() . ": " . TF::LIGHT_PURPLE . strval($statesTagEntry->getValue()));
+                }
+            }
+        }
+        return;
+        foreach ($rootListTag->getAllValues() as $rootCompound) {
+            /** @var CompoundTag $rootCompound */
+            #$rootCompound = $rootListTag->get($i);
+            $oldCompound = $rootCompound->getCompoundTag("old");
+            MainLogger::getLogger()->debug(TF::AQUA . $oldCompound->getString("name") . ":" . strval($oldCompound->getShort("val")));
+            $newCompound = $rootCompound->getCompoundTag("new");
+            $s = [];
+            /** @var CompoundTag $statesTag */
+            foreach ($newCompound->getCompoundTag("states") as $statesTagEntry) {
+                if ($statesTagEntry instanceof ByteTag) {
+                    $s[] = $statesTagEntry->getName() . "=" . ($statesTagEntry->getValue() ? "true" : "false");
+                } else if ($statesTagEntry instanceof IntTag) {
+                    $s[] = $statesTagEntry->getName() . "=" . strval($statesTagEntry->getValue());
+                } else var_dump($statesTagEntry);
+            }
+            if (count($s) === 0) {
+                MainLogger::getLogger()->debug($newCompound->getString("name"));
+            } else {
+                MainLogger::getLogger()->debug($newCompound->getString("name") . "[" . implode(",", $s) . "]");
+            }
+        }
     }
 
     /**
@@ -243,8 +301,8 @@ class Loader extends PluginBase
     }
 
     /**
-     * @api
      * @return BaseLang
+     * @api
      */
     public function getLanguage(): BaseLang
     {
