@@ -129,25 +129,6 @@ class Loader extends PluginBase
         $stream = new NetworkLittleEndianNBTStream();
         /** @var ListTag $rootListTag */
         $rootListTag = $stream->read($STATES_NBT);
-        //This is pretty print debug
-//        for ($i = 150; $i <= 300; $i++) {
-//            /** @var CompoundTag $rootCompound */
-//            $rootCompound = $rootListTag->get($i);
-//            $oldCompound = $rootCompound->getCompoundTag("old");
-//            MainLogger::getLogger()->debug(TF::AQUA . $oldCompound->getString("name") . ":" . TF::BLUE . strval($oldCompound->getShort("val")));
-//            $newCompound = $rootCompound->getCompoundTag("new");
-//            MainLogger::getLogger()->debug(TF::AQUA . $newCompound->getString("name"));
-//            /** @var CompoundTag $statesTag */
-//            foreach ($newCompound->getCompoundTag("states") as $statesTagEntry) {
-//                if ($statesTagEntry instanceof ByteTag) {
-//                    MainLogger::getLogger()->debug(TF::RED . "B: " . TF::AQUA . $statesTagEntry->getName() . ": " . ($statesTagEntry->getValue() ? TF::GREEN . "true" : TF::RED . "false"));
-//                } else if ($statesTagEntry instanceof IntTag) {
-//                    MainLogger::getLogger()->debug(TF::BLUE . "I: " . TF::AQUA . $statesTagEntry->getName() . ": " . TF::BLUE . strval($statesTagEntry->getValue()));
-//                } else if ($statesTagEntry instanceof StringTag) {
-//                    MainLogger::getLogger()->debug(TF::LIGHT_PURPLE . "S: " . TF::AQUA . $statesTagEntry->getName() . ": " . TF::LIGHT_PURPLE . strval($statesTagEntry->getValue()));
-//                }
-//            }
-//        }
         //Load default states
         $defaultStates = new CompoundTag("defaultStates");
         foreach ($rootListTag->getAllValues() as $rootCompound) {
@@ -163,34 +144,33 @@ class Loader extends PluginBase
         //write out all blocknames with states (without default states)
         foreach ($rootListTag->getAllValues() as $rootCompound) {
             /** @var CompoundTag $rootCompound */
-            #$rootCompound = $rootListTag->get($i);
             $oldCompound = $rootCompound->getCompoundTag("old");
             $newCompound = $rootCompound->getCompoundTag("new");
             $currentoldName = $oldCompound->getString("name");
-            #MainLogger::getLogger()->debug(TF::AQUA . $oldCompound->getString("name") . ":" . strval($oldCompound->getShort("val")));
             $s = $failed = [];
             foreach ($newCompound->getCompoundTag("states") as $statesTagEntry) {
                 $defaultStatesNamedTag = $defaultStates->getTag($currentoldName);
                 /** @var ByteTag|IntTag|StringTag $namedTag */
                 $namedTag = $defaultStatesNamedTag->getTag($statesTagEntry->getName());
                 if ($namedTag === null) {
-                    $failed[] = $statesTagEntry;
                     continue 2;
                 }
                 //skip defaults
                 if ($namedTag->getValue() === $statesTagEntry->getValue()) continue;
                 //prepare string
                 if ($statesTagEntry instanceof ByteTag) {
+                    $s[] = TF::RED . $statesTagEntry->getName() . "=" . ($statesTagEntry->getValue() ? TF::GREEN . "true" : TF::RED . "false") . TF::RESET;
+                } else if ($statesTagEntry instanceof IntTag) {
+                    $s[] = TF::BLUE . $statesTagEntry->getName() . "=" . TF::BLUE . strval($statesTagEntry->getValue()) . TF::RESET;
+                } else if ($statesTagEntry instanceof StringTag) {
+                    $s[] = TF::LIGHT_PURPLE . $statesTagEntry->getName() . "=" . TF::LIGHT_PURPLE . strval($statesTagEntry->getValue()) . TF::RESET;
+                }
+                continue;
+                if ($statesTagEntry instanceof ByteTag) {
                     $s[] = $statesTagEntry->getName() . "=" . ($statesTagEntry->getValue() ? "true" : "false");
                 } else if ($statesTagEntry instanceof IntTag || $statesTagEntry instanceof StringTag) {
                     $s[] = $statesTagEntry->getName() . "=" . strval($statesTagEntry->getValue());
                 }
-            }
-            if (!empty($failed)) {
-                #MainLogger::getLogger()->debug(TF::AQUA . $oldCompound->getString("name") . ":" . strval($oldCompound->getShort("val")));
-                #MainLogger::getLogger()->debug($newCompound->getString("name") . "[" . implode(",", $s) . "]");
-                #MainLogger::getLogger()->debug(strval($currentDefaultStates));
-                MainLogger::getLogger()->debug("failed:" . "[" . implode(",", $failed) . "]");
             }
             if (count($s) === 0) {
                 MainLogger::getLogger()->debug($newCompound->getString("name"));
