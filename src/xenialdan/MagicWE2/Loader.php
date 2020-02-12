@@ -6,18 +6,10 @@ namespace xenialdan\MagicWE2;
 
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\Item;
 use pocketmine\lang\BaseLang;
-use pocketmine\nbt\NetworkLittleEndianNBTStream;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
-use pocketmine\utils\MainLogger;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
@@ -60,10 +52,10 @@ use xenialdan\MagicWE2\commands\utility\CalculateCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
 use xenialdan\MagicWE2\exception\ShapeRegistryException;
+use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
-use const pocketmine\RESOURCE_PATH;
 
 class Loader extends PluginBase
 {
@@ -110,179 +102,7 @@ class Loader extends PluginBase
         self::$shapeRegistry = new ShapeRegistry();
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
-
-        self::initBlockstates();
-    }
-
-    private static function initBlockstates(): void
-    {
-        $STATES_NBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
-        $stream = new NetworkLittleEndianNBTStream();
-        /** @var ListTag $rootListTag */
-        $rootListTag = $stream->read($STATES_NBT);
-        //Load default states
-        $defaultStates = new CompoundTag("defaultStates");
-        foreach ($rootListTag->getAllValues() as $rootCompound) {
-            /** @var CompoundTag $rootCompound */
-            $oldCompound = $rootCompound->getCompoundTag("old");
-            $newCompound = $rootCompound->getCompoundTag("new");
-            $states = clone $newCompound->getCompoundTag("states");
-            if ($oldCompound->getShort("val") === 0) {
-                $states->setName($oldCompound->getString("name"));
-                $defaultStates->setTag($states);
-            }
-        }
-        //write out all blocknames with states (without default states)
-        foreach ($rootListTag->getAllValues() as $rootCompound) {
-            /** @var CompoundTag $rootCompound */
-            $oldCompound = $rootCompound->getCompoundTag("old");
-            $newCompound = $rootCompound->getCompoundTag("new");
-            $currentoldName = $oldCompound->getString("name");
-            if (in_array($currentoldName, [
-                    "minecraft:wood",
-                    "minecraft:wooden_slab",
-                ]) && in_array($oldCompound->getShort("val"), [
-                    12,
-                    0,
-                    6,
-                    7,
-                ]))
-                self::printStates($newCompound->getTag("states"), $defaultStates, $currentoldName, false);//disable printing for now
-        }
-        //testing cases
-        $tests = [
-            #"minecraft:tnt",
-            "minecraft:wood",
-            #"minecraft:log",
-            "minecraft:wooden_slab",
-            #"minecraft:wooden_slab_wrongname",
-            #"minecraft:wooden_slab[foo=bar]",
-            #"minecraft:wooden_slab[top_slot_bit=]",
-            "minecraft:wooden_slab[top_slot_bit=true]",
-            "minecraft:wooden_slab[top_slot_bit=false]",
-            "minecraft:wooden_slab[wood_type=oak]",
-            #"minecraft:wooden_slab[wood_type=spruce]",
-            #"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]",
-            #"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
-            #"minecraft:end_rod[]",
-            #"minecraft:end_rod[facing_direction=1]",
-            #"minecraft:end_rod[block_light_level=14]",
-            #"minecraft:end_rod[block_light_level=13]",
-            #"minecraft:light_block[block_light_level=14]",
-            "minecraft:stone[]",
-            "minecraft:stone[stone_type=granite]",
-            "minecraft:stone[stone_type=andesite]",
-            "minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
-        ];
-        foreach ($tests as $test) {
-            MainLogger::getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
-            $blockData = strtolower(str_replace("minecraft:", "", $test ?? "air"));
-            $re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
-            preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
-            $selectedBlockName = "minecraft:" . ($matches[0][1] ?? "air");
-            $defaultStatesNamedTag = $defaultStates->getTag($selectedBlockName);
-            if (!$defaultStatesNamedTag instanceof CompoundTag) {
-                var_dump("Not found: $selectedBlockName");
-                continue;
-            }
-            $extraData = $matches[0][2] ?? "";
-            $explode = explode(",", $extraData);
-            #$finalStatesList = new CompoundTag("states");
-            $finalStatesList = clone $defaultStatesNamedTag;
-            $finalStatesList->setName("states");
-            foreach ($explode as $boom) {
-                if (strpos($boom, "=") === false) continue;
-                [$k, $v] = explode("=", $boom);
-                $v = strtolower(trim($v));
-                if (empty($v)) {
-                    var_dump("Empty value for state $k");
-                    continue 2;
-                }
-                //TODO add state alias here
-                #$tag = $defaultStatesNamedTag->getTag($k);
-                $tag = $finalStatesList->getTag($k);
-                if ($tag === null) {
-                    var_dump("Invalid state $k");
-                    continue 2;
-                }
-                if ($tag instanceof StringTag) {
-                    $finalStatesList->setString($tag->getName(), $v);
-                } else if ($tag instanceof IntTag) {
-                    $finalStatesList->setInt($tag->getName(), intval($v));
-                } else if ($tag instanceof ByteTag) {
-                    if ($v !== "true" && $v !== "false") {
-                        var_dump("Invalid value $v for state $k");
-                        continue 2;
-                    }
-                    $val = ($v === "true" ? 1 : 0);
-                    $finalStatesList->setByte($tag->getName(), $val);
-                } else {//never happens
-                    continue 2;
-                }
-            }
-            //print final list
-            self::printStates($finalStatesList, $defaultStates, $selectedBlockName, false);
-            //print found block(s)
-            $blocks = [];
-            foreach ($rootListTag->getAllValues() as $rootCompound) {
-                /** @var CompoundTag $rootCompound */
-                $oldCompound = $rootCompound->getCompoundTag("old");
-                $newCompound = $rootCompound->getCompoundTag("new");
-                $states = $newCompound->getCompoundTag("states");
-                if (($oldCompound->getString("name") === $selectedBlockName || $newCompound->getString("name") === $selectedBlockName) && $states->equals($finalStatesList)) {
-                    $block = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"))->getBlock();
-                    $blocks[] = $block;
-                    MainLogger::getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
-                }
-            }
-            if (empty($blocks)) continue;//no block found
-            //"Hack" to get just one block if multiple results have been found. Most times this results in the default one (meta:0)
-            $smallestMeta = PHP_INT_MAX;
-            $result = null;
-            foreach ($blocks as $block) {
-                if ($block->getDamage() < $smallestMeta) {
-                    $smallestMeta = $block->getDamage();
-                    $result = $block;
-                }
-            }
-            MainLogger::getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $result);
-        }
-    }
-
-    /**
-     * @param CompoundTag $printedCompound
-     * @param CompoundTag $defaultStates
-     * @param string $blockIdentifier
-     * @param bool $skipDefaults
-     * @return void
-     * @throws RuntimeException
-     */
-    private static function printStates(CompoundTag $printedCompound, CompoundTag $defaultStates, string $blockIdentifier, bool $skipDefaults): void
-    {
-        $s = $failed = [];
-        foreach ($printedCompound as $statesTagEntry) {
-            $defaultStatesNamedTag = $defaultStates->getTag($blockIdentifier);
-            /** @var ByteTag|IntTag|StringTag $namedTag */
-            $namedTag = $defaultStatesNamedTag->getTag($statesTagEntry->getName());
-            if ($namedTag === null) {
-                continue;
-            }
-            //skip defaults
-            if ($skipDefaults && $namedTag->getValue() === $statesTagEntry->getValue()) continue;
-            //prepare string
-            if ($statesTagEntry instanceof ByteTag) {
-                $s[] = TF::RED . $statesTagEntry->getName() . "=" . ($statesTagEntry->getValue() ? TF::GREEN . "true" : TF::RED . "false") . TF::RESET;
-            } else if ($statesTagEntry instanceof IntTag) {
-                $s[] = TF::BLUE . $statesTagEntry->getName() . "=" . TF::BLUE . strval($statesTagEntry->getValue()) . TF::RESET;
-            } else if ($statesTagEntry instanceof StringTag) {
-                $s[] = TF::LIGHT_PURPLE . $statesTagEntry->getName() . "=" . TF::LIGHT_PURPLE . strval($statesTagEntry->getValue()) . TF::RESET;
-            }
-        }
-        if (count($s) === 0) {
-            MainLogger::getLogger()->debug($blockIdentifier);
-        } else {
-            MainLogger::getLogger()->debug($blockIdentifier . "[" . implode(",", $s) . "]");
-        }
+        BlockStatesParser::init();
     }
 
     /**
