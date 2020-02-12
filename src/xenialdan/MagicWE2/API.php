@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use Exception;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
-use pocketmine\item\Item;
-use pocketmine\item\ItemBlock;
-use pocketmine\item\ItemFactory;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -25,7 +23,9 @@ use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\CalculationException;
+use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
+use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
@@ -392,80 +392,31 @@ class API
      * @param array $messages
      * @param bool $error
      * @return Block[]
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws InvalidBlockStateException
      */
     public static function blockParser(string $fullstring, array &$messages, bool &$error)
     {
         $blocks = [];
-        if (empty(array_filter(explode(",", trim($fullstring)), function ($value): bool {
-            return !empty(trim($value));
-        }))) return $blocks;
         if (!BlockFactory::isInit()) BlockFactory::init();
-        foreach (self::fromString($fullstring, true) as [$name, $item]) {
-            if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)) {
+        BlockStatesParser::init();
+        foreach (BlockStatesParser::fromString($fullstring, true) as $block) {
+            $blocks[] = $block;
+            /*if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)) {
                 $block = $item->getBlock();
                 $blocks[] = $block;
             } else {
                 $error = true;
                 $messages[] = TF::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
                 continue;
-            }
+            }*/
             if ($block instanceof UnknownBlock) {
                 $messages[] = TF::GOLD . $block . " is an unknown block";
             }
         }
 
         return $blocks;
-    }
-
-    /**
-     * TODO: remove when ItemFactory::fromString() is fully supporting air aka "air","0","0:0","minecraft:air"
-     * Replacement function for ItemFactory::fromString() with more fail-proof AIR support
-     *
-     * Tries to parse the specified string into Item ID/meta identifiers, and returns Item instances it created.
-     *
-     * Example accepted formats:
-     * - `diamond_pickaxe:5`
-     * - `minecraft:string`
-     * - `351:4 (lapis lazuli ID:meta)`
-     *
-     * If multiple item instances are to be created, their identifiers must be comma-separated, for example:
-     * `diamond_pickaxe,wooden_shovel:18,iron_ingot`
-     *
-     * @param string $str
-     * @param bool $multiple
-     *
-     * @return array
-     */
-    public static function fromString(string $str, bool $multiple = false)
-    {
-        if ($multiple === true) {
-            $blocks = [];
-            foreach (explode(",", $str) as $b) {
-                $blocks[] = self::fromString($b, false);
-            }
-
-            return $blocks;
-        } else {
-            $b = explode(":", str_replace([" ", "minecraft:"], ["_", ""], trim($str)));
-            if (!isset($b[1])) {
-                $meta = 0;
-            } else {
-                $meta = intval($b[1]) & 0xFFFF;
-            }
-
-            if (is_numeric($b[0])) {
-                $item = ItemFactory::get(((int)$b[0]) & 0xFFFF, $meta);
-            } else if (defined(Item::class . "::" . strtoupper($b[0]))) {
-                $item = ItemFactory::get(constant(Item::class . "::" . strtoupper($b[0])), $meta);
-                if ($item->getId() === Item::AIR and strtoupper($b[0]) !== "AIR") {
-                    $item = null;
-                }
-            } else {
-                $item = null;
-            }
-
-            return [$b[0], $item];
-        }
     }
 
     /**

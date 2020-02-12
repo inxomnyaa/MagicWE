@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
 use pocketmine\nbt\NetworkLittleEndianNBTStream;
@@ -24,6 +25,8 @@ class BlockStatesParser
     private static $rootListTag;
     /** @var CompoundTag */
     private static $defaultStates;
+    /** @var string */
+    private static $regex = "/,(?![^\[]*\])/";
 
     public static function init(): void
     {
@@ -48,82 +51,93 @@ class BlockStatesParser
 
     /**
      * @param string $query
-     * @return Block|null
+     * @param bool $multiple
+     * @return Block[]
+     * @throws InvalidArgumentException
      * @throws InvalidBlockStateException
      * @throws RuntimeException
      */
-    private static function parseBlockStates(string $query): ?Block
+    public static function fromString(string $query, bool $multiple = false): array
     {
-        Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $query);
-        $blockData = strtolower(str_replace("minecraft:", "", $query));
-        $re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
-        preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
-        $selectedBlockName = "minecraft:" . ($matches[0][1] ?? "air");
-        $defaultStatesNamedTag = self::$defaultStates->getTag($selectedBlockName);
-        if (!$defaultStatesNamedTag instanceof CompoundTag) {
-            throw new InvalidBlockStateException("Could not find default block states for $selectedBlockName");
-        }
-        $extraData = $matches[0][2] ?? "";
-        $explode = explode(",", $extraData);
-        $finalStatesList = clone $defaultStatesNamedTag;
-        $finalStatesList->setName("states");
-        foreach ($explode as $boom) {
-            if (strpos($boom, "=") === false) continue;
-            [$k, $v] = explode("=", $boom);
-            $v = strtolower(trim($v));
-            if (empty($v)) {
-                throw new InvalidBlockStateException("Empty value for state $k");
-                continue;
+        $blocks = [];
+        if ($multiple) {
+            foreach (preg_split(self::$regex, trim($query), -1, PREG_SPLIT_NO_EMPTY) as $b) {
+                $blocks = array_merge($blocks, self::fromString($b, false));
             }
-            //TODO add state alias here by mapping alias => blockstate name
-            $tag = $finalStatesList->getTag($k);
-            if ($tag === null) {
-                throw new InvalidBlockStateException("Invalid state $k");
-                continue;
+            return $blocks;
+        } else {
+            Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $query);
+            $blockData = strtolower(str_replace("minecraft:", "", $query));
+            $re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
+            preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
+            $selectedBlockName = "minecraft:" . ($matches[0][1] ?? "air");
+            if (count($matches[0]) < 3) return [Item::fromString($query)->getBlock()];
+            $defaultStatesNamedTag = self::$defaultStates->getTag($selectedBlockName);
+            if (!$defaultStatesNamedTag instanceof CompoundTag) {
+                throw new InvalidArgumentException("Could not find default block states for $selectedBlockName");
             }
-            if ($tag instanceof StringTag) {
-                $finalStatesList->setString($tag->getName(), $v);
-            } else if ($tag instanceof IntTag) {
-                $finalStatesList->setInt($tag->getName(), intval($v));
-            } else if ($tag instanceof ByteTag) {
-                if ($v !== "true" && $v !== "false") {
-                    throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+            $extraData = $matches[0][2] ?? "";
+            $explode = explode(",", $extraData);
+            $finalStatesList = clone $defaultStatesNamedTag;
+            $finalStatesList->setName("states");
+            foreach ($explode as $boom) {
+                if (strpos($boom, "=") === false) continue;
+                [$k, $v] = explode("=", $boom);
+                $v = strtolower(trim($v));
+                if (empty($v)) {
+                    throw new InvalidBlockStateException("Empty value for state $k");
                     continue;
                 }
-                $val = ($v === "true" ? 1 : 0);
-                $finalStatesList->setByte($tag->getName(), $val);
-            } else {
-                throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
+                //TODO add state alias here by mapping alias => blockstate name
+                $tag = $finalStatesList->getTag($k);
+                if ($tag === null) {
+                    throw new InvalidBlockStateException("Invalid state $k");
+                    continue;
+                }
+                if ($tag instanceof StringTag) {
+                    $finalStatesList->setString($tag->getName(), $v);
+                } else if ($tag instanceof IntTag) {
+                    $finalStatesList->setInt($tag->getName(), intval($v));
+                } else if ($tag instanceof ByteTag) {
+                    if ($v !== "true" && $v !== "false") {
+                        throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+                        continue;
+                    }
+                    $val = ($v === "true" ? 1 : 0);
+                    $finalStatesList->setByte($tag->getName(), $val);
+                } else {
+                    throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
+                }
             }
-        }
-        //print final list
-        self::printStates($finalStatesList, self::$defaultStates, $selectedBlockName, false);
-        //print found block(s)
-        $blocks = [];
-        //TODO there must be a more efficient way to do this
-        foreach (self::$rootListTag->getAllValues() as $rootCompound) {
-            /** @var CompoundTag $rootCompound */
-            $oldCompound = $rootCompound->getCompoundTag("old");
-            $newCompound = $rootCompound->getCompoundTag("new");
-            $states = $newCompound->getCompoundTag("states");
-            if (($oldCompound->getString("name") === $selectedBlockName || $newCompound->getString("name") === $selectedBlockName) && $states->equals($finalStatesList)) {
-                $block = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"))->getBlock();
-                $blocks[] = $block;
-                Loader::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
+            //print final list
+            self::printStates($finalStatesList, self::$defaultStates, $selectedBlockName, false);
+            //print found block(s)
+            $blocks = [];
+            //TODO there must be a more efficient way to do this
+            foreach (self::$rootListTag->getAllValues() as $rootCompound) {
+                /** @var CompoundTag $rootCompound */
+                $oldCompound = $rootCompound->getCompoundTag("old");
+                $newCompound = $rootCompound->getCompoundTag("new");
+                $states = $newCompound->getCompoundTag("states");
+                if (($oldCompound->getString("name") === $selectedBlockName || $newCompound->getString("name") === $selectedBlockName) && $states->equals($finalStatesList)) {
+                    $block = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"))->getBlock();
+                    $blocks[] = $block;
+                    Loader::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
+                }
             }
-        }
-        if (empty($blocks)) return null;//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
-        //"Hack" to get just one block if multiple results have been found. Most times this results in the default one (meta:0)
-        $smallestMeta = PHP_INT_MAX;
-        $result = null;
-        foreach ($blocks as $block) {
-            if ($block->getDamage() < $smallestMeta) {
-                $smallestMeta = $block->getDamage();
-                $result = $block;
+            if (empty($blocks)) return [];//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
+            //"Hack" to get just one block if multiple results have been found. Most times this results in the default one (meta:0)
+            $smallestMeta = PHP_INT_MAX;
+            $result = null;
+            foreach ($blocks as $block) {
+                if ($block->getDamage() < $smallestMeta) {
+                    $smallestMeta = $block->getDamage();
+                    $result = $block;
+                }
             }
+            Loader::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $result);
+            return [$result];
         }
-        Loader::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $result);
-        return $result;
     }
 
     /**
@@ -205,7 +219,7 @@ class BlockStatesParser
             "minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
         ];
         foreach ($tests as $test) {
-            assert(self::parseBlockStates($test) instanceof Block);
+            assert(self::fromString($test) instanceof Block);
         }
     }
 
