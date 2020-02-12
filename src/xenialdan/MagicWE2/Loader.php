@@ -138,28 +138,41 @@ class Loader extends PluginBase
             $oldCompound = $rootCompound->getCompoundTag("old");
             $newCompound = $rootCompound->getCompoundTag("new");
             $currentoldName = $oldCompound->getString("name");
-            //self::printStates($newCompound->getTag("states"), $defaultStates, $currentoldName, true);//disable printing for now
+            if (in_array($currentoldName, [
+                    "minecraft:wood",
+                    "minecraft:wooden_slab",
+                ]) && in_array($oldCompound->getShort("val"), [
+                    12,
+                    0,
+                    6,
+                    7,
+                ]))
+                self::printStates($newCompound->getTag("states"), $defaultStates, $currentoldName, false);//disable printing for now
         }
         //testing cases
         $tests = [
-            "minecraft:tnt",
+            #"minecraft:tnt",
             "minecraft:wood",
-            "minecraft:log",
+            #"minecraft:log",
             "minecraft:wooden_slab",
-            "minecraft:wooden_slab_wrongname",
-            "minecraft:wooden_slab[foo=bar]",
-            "minecraft:wooden_slab[top_slot_bit=]",
+            #"minecraft:wooden_slab_wrongname",
+            #"minecraft:wooden_slab[foo=bar]",
+            #"minecraft:wooden_slab[top_slot_bit=]",
             "minecraft:wooden_slab[top_slot_bit=true]",
             "minecraft:wooden_slab[top_slot_bit=false]",
             "minecraft:wooden_slab[wood_type=oak]",
-            "minecraft:wooden_slab[wood_type=spruce]",
-            "minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]",
-            "minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
-            "minecraft:end_rod[]",
-            "minecraft:end_rod[facing_direction=1]",
-            "minecraft:end_rod[block_light_level=14]",
-            "minecraft:end_rod[block_light_level=13]",
-            "minecraft:light_block[block_light_level=14]",
+            #"minecraft:wooden_slab[wood_type=spruce]",
+            #"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]",
+            #"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
+            #"minecraft:end_rod[]",
+            #"minecraft:end_rod[facing_direction=1]",
+            #"minecraft:end_rod[block_light_level=14]",
+            #"minecraft:end_rod[block_light_level=13]",
+            #"minecraft:light_block[block_light_level=14]",
+            "minecraft:stone[]",
+            "minecraft:stone[stone_type=granite]",
+            "minecraft:stone[stone_type=andesite]",
+            "minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
         ];
         foreach ($tests as $test) {
             MainLogger::getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
@@ -210,6 +223,7 @@ class Loader extends PluginBase
             //print final list
             self::printStates($finalStatesList, $defaultStates, $selectedBlockName, false);
             //print found block(s)
+            $blocks = [];
             foreach ($rootListTag->getAllValues() as $rootCompound) {
                 /** @var CompoundTag $rootCompound */
                 $oldCompound = $rootCompound->getCompoundTag("old");
@@ -217,9 +231,21 @@ class Loader extends PluginBase
                 $states = $newCompound->getCompoundTag("states");
                 if (($oldCompound->getString("name") === $selectedBlockName || $newCompound->getString("name") === $selectedBlockName) && $states->equals($finalStatesList)) {
                     $block = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"))->getBlock();
+                    $blocks[] = $block;
                     MainLogger::getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
                 }
             }
+            if (empty($blocks)) continue;//no block found
+            //"Hack" to get just one block if multiple results have been found. Most times this results in the default one (meta:0)
+            $smallestMeta = PHP_INT_MAX;
+            $result = null;
+            foreach ($blocks as $block) {
+                if ($block->getDamage() < $smallestMeta) {
+                    $smallestMeta = $block->getDamage();
+                    $result = $block;
+                }
+            }
+            MainLogger::getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $result);
         }
     }
 
