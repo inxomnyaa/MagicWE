@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\helper;
 
 use InvalidArgumentException;
+use InvalidStateException;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
 use pocketmine\nbt\NetworkLittleEndianNBTStream;
@@ -15,9 +16,11 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
+use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
+use xenialdan\MagicWE2\Loader;
 use const pocketmine\RESOURCE_PATH;
 
 class BlockStatesParser
@@ -28,6 +31,8 @@ class BlockStatesParser
     private static $defaultStates = null;
     /** @var string */
     private static $regex = "/,(?![^\[]*\])/";
+    /** @var array */
+    private static $aliasMap = [];
 
     /**
      * @throws InvalidArgumentException
@@ -55,6 +60,100 @@ class BlockStatesParser
                 self::$defaultStates->setTag($states);
             }
         }
+        //self::runTests();
+    }
+
+    /**
+     * Generates an alias map for blockstates
+     * Only call from main thread!
+     * @throws InvalidStateException
+     */
+    private static function generateBlockStateAliasMapJson(): void
+    {
+        Loader::getInstance()->saveResource("blockstate_alias_map.json");
+        $config = new Config(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
+        $config->setAll([]);
+        $config->save();
+        foreach (self::$rootListTag->getAllValues() as $rootCompound) {
+            /** @var CompoundTag $rootCompound */
+            $oldCompound = $rootCompound->getCompoundTag("old");
+            $newCompound = $rootCompound->getCompoundTag("new");
+            $states = clone $newCompound->getCompoundTag("states");
+            foreach ($states as $state) {
+                if (!$config->exists($state->getName())) {
+                    $alias = $state->getName();
+                    $fullReplace = [
+                        "top" => "top",
+                        "type" => "type",
+                        "_age" => "age",
+                        "age_" => "age",
+                        "directions" => "vine_b",//hack for vine_directions => directions
+                        "direction" => "direction",
+                        "vine_b" => "directions",//hack for vine_directions => directions
+                        "axis" => "axis",
+                        "delay" => "delay",
+                        "bite_counter" => "bites",
+                        "count" => "count",
+                        "pressed" => "pressed",
+                        "upper_block" => "top",
+                        "data" => "data",
+                        "extinguished" => "off",
+                        "color" => "color",
+                        "block_light" => "light",
+                        #"_lit"=>"lit",
+                        #"lit_"=>"lit",
+                        "liquid_depth" => "depth",
+                        "upside_down" => "flipped",
+                        "infiniburn" => "burn",
+                    ];
+                    $partReplace = [
+                        "_bit",
+                        "piece",
+                        "output_",
+                        "level",
+                        "amount",
+                        "cauldron",
+                        "allow",
+                        "state",
+                        "door",
+                        "redstone",
+                        "bamboo",
+                        #"head",
+                        "brewing_stand",
+                        "item_frame",
+                        "mushrooms",
+                        "composter",
+                        "coral",
+                        "_2",
+                        "_3",
+                        "_4",
+                        "end_portal",
+                    ];
+                    foreach ($fullReplace as $stateAlias => $setTo)
+                        if (strpos($alias, $stateAlias) !== false) {
+                            $alias = $setTo;
+                        }
+                    foreach ($partReplace as $replace)
+                        $alias = trim(trim(str_replace($replace, "", $alias), "_"));
+                    $config->set($state->getName(), [
+                        "alias" => [$alias],
+                    ]);
+                }
+            }
+        }
+        $all = $config->getAll();
+        ksort($all);
+        $config->setAll($all);
+        $config->save();
+        unset($config);
+    }
+
+    /**
+     * @param array $aliasMap
+     */
+    public static function setAliasMap(array $aliasMap): void
+    {
+        self::$aliasMap = $aliasMap;
     }
 
     /**
@@ -94,6 +193,15 @@ class BlockStatesParser
             $explode = explode(",", $extraData);
             $finalStatesList = clone $defaultStatesNamedTag;
             $finalStatesList->setName("states");
+            $availableAliases = [];//TODO map in init() if too slow
+            foreach ($finalStatesList as $state) {
+                if (array_key_exists($state->getName(), self::$aliasMap)) {
+                    foreach (self::$aliasMap[$state->getName()]["alias"] as $alias) {
+                        //todo maybe check for duplicated alias here? "block state mapping invalid: duplicated alias detected"
+                        $availableAliases[$alias] = $state->getName();
+                    }
+                }
+            }
             foreach ($explode as $boom) {
                 if (strpos($boom, "=") === false) continue;
                 [$k, $v] = explode("=", $boom);
@@ -101,7 +209,8 @@ class BlockStatesParser
                 if (empty($v)) {
                     throw new InvalidBlockStateException("Empty value for state $k");
                 }
-                //TODO add state alias here by mapping alias => blockstate name
+                //change blockstate alias to blockstate name
+                $k = $availableAliases[$k] ?? $k;
                 $tag = $finalStatesList->getTag($k);
                 if ($tag === null) {
                     throw new InvalidBlockStateException("Invalid state $k");
@@ -121,8 +230,8 @@ class BlockStatesParser
                 }
             }
             //print final list
-            self::printStates($finalStatesList, self::$defaultStates, $selectedBlockName, false);
-            //print found block(s)
+            self::printStates($finalStatesList, $selectedBlockName, false);
+            //return found block(s)
             $blocks = [];
             //TODO there must be a more efficient way to do this
             foreach (self::$rootListTag->getAllValues() as $rootCompound) {
@@ -155,13 +264,12 @@ class BlockStatesParser
 
     /**
      * @param CompoundTag $printedCompound
-     * @param CompoundTag $defaultStates
      * @param string $blockIdentifier
      * @param bool $skipDefaults
      * @return void
      * @throws RuntimeException
      */
-    private static function printStates(CompoundTag $printedCompound, CompoundTag $defaultStates, string $blockIdentifier, bool $skipDefaults): void
+    private static function printStates(CompoundTag $printedCompound, string $blockIdentifier, bool $skipDefaults): void
     {
         $s = $failed = [];
         foreach ($printedCompound as $statesTagEntry) {
@@ -202,12 +310,13 @@ class BlockStatesParser
             $newCompound = $rootCompound->getCompoundTag("new");
             $currentoldName = $oldCompound->getString("name");
             $printedCompound = $newCompound->getCompoundTag("states");
-            self::printStates($printedCompound, self::$defaultStates, $currentoldName, true);
+            self::printStates($printedCompound, $currentoldName, true);
         }
     }
 
     public static function runTests(): void
     {
+        self::setAliasMap(json_decode(file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json"), true));
         //testing cases
         $tests = [
             "minecraft:tnt",
@@ -232,10 +341,32 @@ class BlockStatesParser
             "minecraft:stone[stone_type=granite]",
             "minecraft:stone[stone_type=andesite]",
             "minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
+            //alias testing
+            "minecraft:wooden_slab[top=true]",
+            "minecraft:wooden_slab[top=true,type=spruce]",
+            "minecraft:stone[type=granite]",
+            "minecraft:bedrock[burn=true]",
+            "minecraft:lever[direction=1]",
+            "minecraft:wheat[growth=3]",
+            "minecraft:stone_button[direction=1,pressed=true]",
         ];
         foreach ($tests as $test) {
-            foreach (self::fromString($test) as $block)
-                assert($block instanceof Block);
+            try {
+                Server::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
+                foreach (self::fromString($test) as $block) {
+                    assert($block instanceof Block);
+                    Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
+                }
+            } catch (InvalidBlockStateException $e) {
+                Server::getInstance()->getLogger()->debug($e->getMessage());
+                continue;
+            } catch (InvalidArgumentException $e) {
+                Server::getInstance()->getLogger()->debug($e->getMessage());
+                continue;
+            } catch (RuntimeException $e) {
+                Server::getInstance()->getLogger()->debug($e->getMessage());
+                continue;
+            }
         }
     }
 
