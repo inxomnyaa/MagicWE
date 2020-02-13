@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use InvalidArgumentException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\BaseLang;
@@ -94,6 +95,11 @@ class Loader extends PluginBase
         throw new ShapeRegistryException("Shape registry is not initialized");
     }
 
+    /**
+     * @throws PluginException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     */
     public function onLoad(): void
     {
         self::$instance = $this;
@@ -103,7 +109,11 @@ class Loader extends PluginBase
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
         BlockStatesParser::init();
-        BlockStatesParser::setAliasMap(json_decode(file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json"), true));
+        $fileGetContents = file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
+        if ($fileGetContents === false) {
+            throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
+        }
+        BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
         BlockStatesParser::runTests();
     }
 

@@ -142,6 +142,7 @@ class BlockStatesParser
             }
         }
         $all = $config->getAll();
+        /** @var array<string, mixed> $all */
         ksort($all);
         $config->setAll($all);
         $config->save();
