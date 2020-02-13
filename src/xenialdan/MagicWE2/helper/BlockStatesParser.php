@@ -21,10 +21,10 @@ use const pocketmine\RESOURCE_PATH;
 
 class BlockStatesParser
 {
-    /** @var ListTag */
-    private static $rootListTag;
-    /** @var CompoundTag */
-    private static $defaultStates;
+    /** @var ListTag|null */
+    private static $rootListTag = null;
+    /** @var CompoundTag|null */
+    private static $defaultStates = null;
     /** @var string */
     private static $regex = "/,(?![^\[]*\])/";
 
@@ -61,7 +61,9 @@ class BlockStatesParser
     {
         $blocks = [];
         if ($multiple) {
-            foreach (preg_split(self::$regex, trim($query), -1, PREG_SPLIT_NO_EMPTY) as $b) {
+            $pregSplit = preg_split(self::$regex, trim($query), -1, PREG_SPLIT_NO_EMPTY);
+            if (!is_array($pregSplit)) throw new InvalidArgumentException("Regex matching failed");
+            foreach ($pregSplit as $b) {
                 $blocks = array_merge($blocks, self::fromString($b, false));
             }
             return $blocks;
@@ -71,7 +73,11 @@ class BlockStatesParser
             $re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
             preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
             $selectedBlockName = "minecraft:" . ($matches[0][1] ?? "air");
-            if (count($matches[0]) < 3) return [Item::fromString($query)->getBlock()];
+            if (count($matches[0]) < 3) {
+                /** @var Item $items */
+                $items = Item::fromString($query);
+                return [$items->getBlock()];
+            }
             $defaultStatesNamedTag = self::$defaultStates->getTag($selectedBlockName);
             if (!$defaultStatesNamedTag instanceof CompoundTag) {
                 throw new InvalidArgumentException("Could not find default block states for $selectedBlockName");
@@ -120,7 +126,9 @@ class BlockStatesParser
                 $newCompound = $rootCompound->getCompoundTag("new");
                 $states = $newCompound->getCompoundTag("states");
                 if (($oldCompound->getString("name") === $selectedBlockName || $newCompound->getString("name") === $selectedBlockName) && $states->equals($finalStatesList)) {
-                    $block = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"))->getBlock();
+                    /** @var Item $items1 */
+                    $items1 = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"));
+                    $block = $items1->getBlock();
                     $blocks[] = $block;
                     Loader::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
                 }
@@ -153,12 +161,12 @@ class BlockStatesParser
         $s = $failed = [];
         foreach ($printedCompound as $statesTagEntry) {
             $defaultStatesNamedTag = self::$defaultStates->getTag($blockIdentifier);
-            /** @var ByteTag|IntTag|StringTag $namedTag */
             $namedTag = $defaultStatesNamedTag->getTag($statesTagEntry->getName());
-            if ($namedTag === null) {
+            if (!$namedTag instanceof ByteTag && !$namedTag instanceof StringTag && !$namedTag instanceof IntTag) {
                 continue;
             }
             //skip defaults
+            /** @var ByteTag|IntTag|StringTag $namedTag */
             if ($skipDefaults && $namedTag->getValue() === $statesTagEntry->getValue()) continue;
             //prepare string
             if ($statesTagEntry instanceof ByteTag) {
@@ -187,7 +195,8 @@ class BlockStatesParser
             $oldCompound = $rootCompound->getCompoundTag("old");
             $newCompound = $rootCompound->getCompoundTag("new");
             $currentoldName = $oldCompound->getString("name");
-            self::printStates($newCompound->getTag("states"), self::$defaultStates, $currentoldName, true);
+            $printedCompound = $newCompound->getCompoundTag("states");
+            self::printStates($printedCompound, self::$defaultStates, $currentoldName, true);
         }
     }
 
@@ -219,7 +228,8 @@ class BlockStatesParser
             "minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
         ];
         foreach ($tests as $test) {
-            assert(self::fromString($test) instanceof Block);
+            foreach (self::fromString($test) as $block)
+                assert($block instanceof Block);
         }
     }
 

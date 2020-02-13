@@ -74,8 +74,8 @@ class AsyncRevertTask extends MWEAsyncTask
         $changed = 0;
         $this->publishProgress([0, "Reverted $changed blocks out of $count"]);
         foreach ($clipboard->blocksAfter as $block) {
-            yield $manager->getBlockAt($block->getX(), $block->getY(), $block->getZ())->setComponents($block->getX(), $block->getY(), $block->getZ());
-            $manager->setBlockAt($block->getX(), $block->getY(), $block->getZ(), $block);
+            yield $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->getFloorX(), $block->getFloorY(), $block->getFloorZ());
+            $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $block);
             $changed++;
             $this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
         }
@@ -92,8 +92,8 @@ class AsyncRevertTask extends MWEAsyncTask
         $changed = 0;
         $this->publishProgress([0, "Redone $changed blocks out of $count"]);
         foreach ($clipboard->blocksAfter as $block) {
-            yield $manager->getBlockAt($block->getX(), $block->getY(), $block->getZ())->setComponents($block->getX(), $block->getY(), $block->getZ());
-            $manager->setBlockAt($block->getX(), $block->getY(), $block->getZ(), $block);
+            yield $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->getFloorX(), $block->getFloorY(), $block->getFloorZ());
+            $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $block);
             $changed++;
             $this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
         }

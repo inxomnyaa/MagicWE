@@ -28,9 +28,9 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 
 class SessionHelper
 {
-    /** @var Map */
+    /** @var Map<UUID,UserSession> */
     private static $userSessions;
-    /** @var Map */
+    /** @var Map<UUID,PluginSession> */
     private static $pluginSessions;
 
     public static function init(): void

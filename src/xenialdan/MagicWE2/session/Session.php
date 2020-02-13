@@ -34,9 +34,9 @@ abstract class Session
     private $clipboards = [];
     /** @var int */
     private $currentClipboard = -1;
-    /** @var Deque */
+    /** @var Deque<RevertClipboard> */
     public $undoHistory;
-    /** @var Deque */
+    /** @var Deque<RevertClipboard> */
     public $redoHistory;
 
     /**

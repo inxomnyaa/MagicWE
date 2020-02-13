@@ -44,7 +44,7 @@ class Flood extends WETool
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
-        $this->y = $this->getCenter()->getY();
+        $this->y = $this->getCenter()->getFloorY();
         $block = $manager->getBlockAt($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
         $block->setComponents($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
         $this->walked[] = $block;
