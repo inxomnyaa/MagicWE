@@ -13,10 +13,11 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\plugin\PluginException;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
-use xenialdan\MagicWE2\Loader;
 use const pocketmine\RESOURCE_PATH;
 
 class BlockStatesParser
@@ -28,13 +29,20 @@ class BlockStatesParser
     /** @var string */
     private static $regex = "/,(?![^\[]*\])/";
 
+    /**
+     * @throws InvalidArgumentException
+     * @throws PluginException
+     * @throws RuntimeException
+     */
     public static function init(): void
     {
         if (self::$defaultStates instanceof CompoundTag && self::$rootListTag instanceof ListTag) return;//Silent return if already initialised
-        $STATES_NBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
-        $stream = new NetworkLittleEndianNBTStream();
-        /** @var ListTag self::$rootListTag */
-        self::$rootListTag = $stream->read($STATES_NBT);
+        $contentsStateNBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
+        if ($contentsStateNBT === false) throw new PluginException("BlockState mapping file (r12_to_current_block_map) could not be loaded!");
+        /** @var string $contentsStateNBT */
+        /** @var ListTag $namedTag */
+        $namedTag = (new NetworkLittleEndianNBTStream())->read($contentsStateNBT);
+        self::$rootListTag = $namedTag;
         //Load default states
         self::$defaultStates = new CompoundTag("defaultStates");
         foreach (self::$rootListTag->getAllValues() as $rootCompound) {
@@ -68,7 +76,7 @@ class BlockStatesParser
             }
             return $blocks;
         } else {
-            Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $query);
+            #Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $query);
             $blockData = strtolower(str_replace("minecraft:", "", $query));
             $re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
             preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
@@ -92,13 +100,11 @@ class BlockStatesParser
                 $v = strtolower(trim($v));
                 if (empty($v)) {
                     throw new InvalidBlockStateException("Empty value for state $k");
-                    continue;
                 }
                 //TODO add state alias here by mapping alias => blockstate name
                 $tag = $finalStatesList->getTag($k);
                 if ($tag === null) {
                     throw new InvalidBlockStateException("Invalid state $k");
-                    continue;
                 }
                 if ($tag instanceof StringTag) {
                     $finalStatesList->setString($tag->getName(), $v);
@@ -107,7 +113,6 @@ class BlockStatesParser
                 } else if ($tag instanceof ByteTag) {
                     if ($v !== "true" && $v !== "false") {
                         throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
-                        continue;
                     }
                     $val = ($v === "true" ? 1 : 0);
                     $finalStatesList->setByte($tag->getName(), $val);
@@ -130,7 +135,7 @@ class BlockStatesParser
                     $items1 = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"));
                     $block = $items1->getBlock();
                     $blocks[] = $block;
-                    Loader::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
+                    #Loader::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
                 }
             }
             if (empty($blocks)) return [];//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
@@ -143,7 +148,7 @@ class BlockStatesParser
                     $result = $block;
                 }
             }
-            Loader::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $result);
+            #Loader::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $result);
             return [$result];
         }
     }
@@ -160,6 +165,7 @@ class BlockStatesParser
     {
         $s = $failed = [];
         foreach ($printedCompound as $statesTagEntry) {
+            /** @var CompoundTag $defaultStatesNamedTag */
             $defaultStatesNamedTag = self::$defaultStates->getTag($blockIdentifier);
             $namedTag = $defaultStatesNamedTag->getTag($statesTagEntry->getName());
             if (!$namedTag instanceof ByteTag && !$namedTag instanceof StringTag && !$namedTag instanceof IntTag) {
@@ -178,9 +184,9 @@ class BlockStatesParser
             }
         }
         if (count($s) === 0) {
-            Loader::getInstance()->getLogger()->debug($blockIdentifier);
+            Server::getInstance()->getLogger()->debug($blockIdentifier);
         } else {
-            Loader::getInstance()->getLogger()->debug($blockIdentifier . "[" . implode(",", $s) . "]");
+            Server::getInstance()->getLogger()->debug($blockIdentifier . "[" . implode(",", $s) . "]");
         }
     }
 
