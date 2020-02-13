@@ -206,7 +206,7 @@ class BlockStatesParser
                 if (strpos($boom, "=") === false) continue;
                 [$k, $v] = explode("=", $boom);
                 $v = strtolower(trim($v));
-                if (empty($v)) {
+                if (strlen($v) < 1) {
                     throw new InvalidBlockStateException("Empty value for state $k");
                 }
                 //change blockstate alias to blockstate name
@@ -316,7 +316,7 @@ class BlockStatesParser
 
     public static function runTests(): void
     {
-        self::setAliasMap(json_decode(file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json"), true));
+        #self::setAliasMap(json_decode(file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json"), true));
         //testing cases
         $tests = [
             "minecraft:tnt",
@@ -349,6 +349,8 @@ class BlockStatesParser
             "minecraft:lever[direction=1]",
             "minecraft:wheat[growth=3]",
             "minecraft:stone_button[direction=1,pressed=true]",
+            "minecraft:stone_button[direction=0]",
+            "minecraft:stone_brick_stairs[direction=0]",
         ];
         foreach ($tests as $test) {
             try {

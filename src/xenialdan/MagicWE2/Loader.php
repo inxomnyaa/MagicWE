@@ -103,6 +103,8 @@ class Loader extends PluginBase
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
         BlockStatesParser::init();
+        BlockStatesParser::setAliasMap(json_decode(file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json"), true));
+        BlockStatesParser::runTests();
     }
 
     /**
