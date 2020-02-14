@@ -1,0 +1,697 @@
+{
+  "age": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "age_bit": [
+    0,
+    1
+  ],
+  "allow_underwater_bit": [
+    0,
+    1
+  ],
+  "attached_bit": [
+    0,
+    1
+  ],
+  "attachment": [
+    "standing",
+    "hanging",
+    "side",
+    "multiple"
+  ],
+  "bamboo_leaf_size": [
+    "no_leaves",
+    "small_leaves",
+    "large_leaves"
+  ],
+  "bamboo_stalk_thickness": [
+    "thin",
+    "thick"
+  ],
+  "bite_counter": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "block_light_level": [
+    14
+  ],
+  "brewing_stand_slot_a_bit": [
+    0,
+    1
+  ],
+  "brewing_stand_slot_b_bit": [
+    0,
+    1
+  ],
+  "brewing_stand_slot_c_bit": [
+    0,
+    1
+  ],
+  "button_pressed_bit": [
+    0,
+    1
+  ],
+  "cauldron_liquid": [
+    "water",
+    "lava"
+  ],
+  "chemistry_table_type": [
+    "compound_creator",
+    "material_reducer",
+    "element_constructor",
+    "lab_table"
+  ],
+  "chisel_type": [
+    "default",
+    "chiseled",
+    "lines",
+    "smooth"
+  ],
+  "cluster_count": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "color": [
+    "white",
+    "orange",
+    "magenta",
+    "light_blue",
+    "yellow",
+    "lime",
+    "pink",
+    "gray",
+    "silver",
+    "cyan",
+    "purple",
+    "blue",
+    "brown",
+    "green",
+    "red",
+    "black"
+  ],
+  "color_bit": [
+    0,
+    1
+  ],
+  "composter_fill_level": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "conditional_bit": [
+    0,
+    1
+  ],
+  "coral_color": [
+    "blue",
+    "pink",
+    "purple",
+    "red",
+    "yellow"
+  ],
+  "coral_direction": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "coral_fan_direction": [
+    0,
+    1
+  ],
+  "coral_hang_type_bit": [
+    0,
+    1
+  ],
+  "covered_bit": [
+    0,
+    1
+  ],
+  "cracked_state": [
+    "no_cracks",
+    "cracked",
+    "max_cracked"
+  ],
+  "damage": [
+    "undamaged",
+    "slightly_damaged",
+    "very_damaged",
+    "broken"
+  ],
+  "dead_bit": [
+    0,
+    1
+  ],
+  "deprecated": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "direction": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "dirt_type": [
+    "normal",
+    "coarse"
+  ],
+  "disarmed_bit": [
+    0,
+    1
+  ],
+  "door_hinge_bit": [
+    0,
+    1
+  ],
+  "double_plant_type": [
+    "sunflower",
+    "syringa",
+    "grass",
+    "fern",
+    "rose",
+    "paeonia"
+  ],
+  "drag_down": [
+    0,
+    1
+  ],
+  "end_portal_eye_bit": [
+    0,
+    1
+  ],
+  "explode_bit": [
+    0,
+    1
+  ],
+  "extinguished": [
+    0,
+    1
+  ],
+  "facing_direction": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "fill_level": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "flower_type": [
+    "poppy",
+    "orchid",
+    "allium",
+    "houstonia",
+    "tulip_red",
+    "tulip_orange",
+    "tulip_white",
+    "tulip_pink",
+    "oxeye",
+    "cornflower",
+    "lily_of_the_valley"
+  ],
+  "ground_sign_direction": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "growth": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "hanging": [
+    0,
+    1
+  ],
+  "head_piece_bit": [
+    0,
+    1
+  ],
+  "height": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "huge_mushroom_bits": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "in_wall_bit": [
+    0,
+    1
+  ],
+  "infiniburn_bit": [
+    0,
+    1
+  ],
+  "item_frame_map_bit": [
+    0,
+    1
+  ],
+  "kelp_age": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "lever_direction": [
+    "down_east_west",
+    "east",
+    "west",
+    "south",
+    "north",
+    "up_north_south",
+    "up_east_west",
+    "down_north_south"
+  ],
+  "liquid_depth": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "moisturized_amount": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "monster_egg_stone_type": [
+    "stone",
+    "cobblestone",
+    "stone_brick",
+    "mossy_stone_brick",
+    "cracked_stone_brick",
+    "chiseled_stone_brick"
+  ],
+  "new_leaf_type": [
+    "acacia",
+    "dark_oak"
+  ],
+  "new_log_type": [
+    "acacia",
+    "dark_oak"
+  ],
+  "no_drop_bit": [
+    0,
+    1
+  ],
+  "occupied_bit": [
+    0,
+    1
+  ],
+  "old_leaf_type": [
+    "oak",
+    "spruce",
+    "birch",
+    "jungle"
+  ],
+  "old_log_type": [
+    "oak",
+    "spruce",
+    "birch",
+    "jungle"
+  ],
+  "open_bit": [
+    0,
+    1
+  ],
+  "output_lit_bit": [
+    0,
+    1
+  ],
+  "output_subtract_bit": [
+    0,
+    1
+  ],
+  "persistent_bit": [
+    0,
+    1
+  ],
+  "pillar_axis": [
+    "y",
+    "x",
+    "z"
+  ],
+  "portal_axis": [
+    "unknown",
+    "x",
+    "z"
+  ],
+  "powered_bit": [
+    0,
+    1
+  ],
+  "prismarine_block_type": [
+    "default",
+    "dark",
+    "bricks"
+  ],
+  "rail_data_bit": [
+    0,
+    1
+  ],
+  "rail_direction": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "redstone_signal": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "repeater_delay": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "sand_stone_type": [
+    "default",
+    "heiroglyphs",
+    "cut",
+    "smooth"
+  ],
+  "sand_type": [
+    "normal",
+    "red"
+  ],
+  "sapling_type": [
+    "oak",
+    "spruce",
+    "birch",
+    "jungle",
+    "acacia",
+    "dark_oak"
+  ],
+  "sea_grass_type": [
+    "default",
+    "double_top",
+    "double_bot"
+  ],
+  "sponge_type": [
+    "dry",
+    "wet"
+  ],
+  "stability": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "stability_check": [
+    0,
+    1
+  ],
+  "stone_brick_type": [
+    "default",
+    "mossy",
+    "cracked",
+    "chiseled",
+    "smooth"
+  ],
+  "stone_slab_type": [
+    "smooth_stone",
+    "sandstone",
+    "wood",
+    "cobblestone",
+    "brick",
+    "stone_brick",
+    "quartz",
+    "nether_brick"
+  ],
+  "stone_slab_type_2": [
+    "red_sandstone",
+    "purpur",
+    "prismarine_rough",
+    "prismarine_dark",
+    "prismarine_brick",
+    "mossy_cobblestone",
+    "smooth_sandstone",
+    "red_nether_brick"
+  ],
+  "stone_slab_type_3": [
+    "end_stone_brick",
+    "smooth_red_sandstone",
+    "polished_andesite",
+    "andesite",
+    "diorite",
+    "polished_diorite",
+    "granite",
+    "polished_granite"
+  ],
+  "stone_slab_type_4": [
+    "mossy_stone_brick",
+    "smooth_quartz",
+    "stone",
+    "cut_sandstone",
+    "cut_red_sandstone"
+  ],
+  "stone_type": [
+    "stone",
+    "granite",
+    "granite_smooth",
+    "diorite",
+    "diorite_smooth",
+    "andesite",
+    "andesite_smooth"
+  ],
+  "stripped_bit": [
+    0,
+    1
+  ],
+  "structure_block_type": [
+    "data",
+    "save",
+    "load",
+    "corner",
+    "invalid",
+    "export"
+  ],
+  "suspended_bit": [
+    0,
+    1
+  ],
+  "tall_grass_type": [
+    "default",
+    "tall",
+    "fern",
+    "snow"
+  ],
+  "toggle_bit": [
+    0,
+    1
+  ],
+  "top_slot_bit": [
+    0,
+    1
+  ],
+  "torch_facing_direction": [
+    "unknown",
+    "west",
+    "east",
+    "north",
+    "south",
+    "top"
+  ],
+  "triggered_bit": [
+    0,
+    1
+  ],
+  "turtle_egg_count": [
+    "one_egg",
+    "two_egg",
+    "three_egg",
+    "four_egg"
+  ],
+  "update_bit": [
+    0,
+    1
+  ],
+  "upper_block_bit": [
+    0,
+    1
+  ],
+  "upside_down_bit": [
+    0,
+    1
+  ],
+  "vine_direction_bits": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "wall_block_type": [
+    "cobblestone",
+    "mossy_cobblestone",
+    "granite",
+    "diorite",
+    "andesite",
+    "sandstone",
+    "brick",
+    "stone_brick",
+    "mossy_stone_brick",
+    "nether_brick",
+    "end_brick",
+    "prismarine",
+    "red_sandstone",
+    "red_nether_brick"
+  ],
+  "weirdo_direction": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "wood_type": [
+    "oak",
+    "spruce",
+    "birch",
+    "jungle",
+    "acacia",
+    "dark_oak"
+  ]
+}

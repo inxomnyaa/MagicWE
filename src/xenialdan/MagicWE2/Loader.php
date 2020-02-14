@@ -22,6 +22,7 @@ use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
 use xenialdan\MagicWE2\commands\clipboard\Cut2Command;
 use xenialdan\MagicWE2\commands\clipboard\CutCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
+use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
 use xenialdan\MagicWE2\commands\DonateCommand;
 use xenialdan\MagicWE2\commands\generation\CylinderCommand;
 use xenialdan\MagicWE2\commands\HelpCommand;
@@ -114,7 +115,9 @@ class Loader extends PluginBase
             throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
         }
         BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
+        #BlockStatesParser::printAllStates();
         BlockStatesParser::runTests();
+        #BlockStatesParser::generatePossibleStatesJson();
     }
 
     /**
@@ -230,6 +233,8 @@ class Loader extends PluginBase
             //new SnowCommand("/snow", "Creates a snow layer cover in the selection"),
             //new ThawCommand("/thaw", "Thaws blocks in the selection"),
             new CalculateCommand("/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
+            /* -- debugging -- */
+            new PlaceAllBlockstatesCommand("/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
         ]);
         if (class_exists("xenialdan\\customui\\API")) {
             $this->getLogger()->notice("CustomUI found, can use ui-based commands");

@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use InvalidStateException;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
+use pocketmine\level\Position;
 use pocketmine\nbt\NetworkLittleEndianNBTStream;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -29,10 +30,14 @@ class BlockStatesParser
     private static $rootListTag = null;
     /** @var CompoundTag|null */
     private static $defaultStates = null;
+    /** @var CompoundTag|null */
+    private static $allStates = null;
     /** @var string */
     private static $regex = "/,(?![^\[]*\])/";
     /** @var array */
     private static $aliasMap = [];
+    /** @var array */
+    private static $blockIdMap = [];
 
     /**
      * @throws InvalidArgumentException
@@ -41,7 +46,7 @@ class BlockStatesParser
      */
     public static function init(): void
     {
-        if (self::$defaultStates instanceof CompoundTag && self::$rootListTag instanceof ListTag) return;//Silent return if already initialised
+        if (self::isInit()) return;//Silent return if already initialised
         $contentsStateNBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
         if ($contentsStateNBT === false) throw new PluginException("BlockState mapping file (r12_to_current_block_map) could not be loaded!");
         /** @var string $contentsStateNBT */
@@ -50,6 +55,8 @@ class BlockStatesParser
         self::$rootListTag = $namedTag;
         //Load default states
         self::$defaultStates = new CompoundTag("defaultStates");
+        //and all states. Mapping: oldname:meta->states
+        self::$allStates = new CompoundTag("allStates");
         foreach (self::$rootListTag->getAllValues() as $rootCompound) {
             /** @var CompoundTag $rootCompound */
             $oldCompound = $rootCompound->getCompoundTag("old");
@@ -59,14 +66,29 @@ class BlockStatesParser
                 $states->setName($oldCompound->getString("name"));
                 self::$defaultStates->setTag($states);
             }
+            $s2 = clone $newCompound->getCompoundTag("states");
+            $s2->setName($oldCompound->getString("name") . ":" . $oldCompound->getShort("val"));
+            self::$allStates->setTag($s2);
         }
+        $blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
+        if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
+        self::$blockIdMap = json_decode($blockIdMap, true);
         //self::runTests();
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isInit(): bool
+    {
+        return self::$defaultStates instanceof CompoundTag && self::$rootListTag instanceof ListTag;
     }
 
     /**
      * Generates an alias map for blockstates
      * Only call from main thread!
      * @throws InvalidStateException
+     * @internal
      */
     private static function generateBlockStateAliasMapJson(): void
     {
@@ -76,7 +98,6 @@ class BlockStatesParser
         $config->save();
         foreach (self::$rootListTag->getAllValues() as $rootCompound) {
             /** @var CompoundTag $rootCompound */
-            $oldCompound = $rootCompound->getCompoundTag("old");
             $newCompound = $rootCompound->getCompoundTag("new");
             $states = clone $newCompound->getCompoundTag("states");
             foreach ($states as $state) {
@@ -231,7 +252,8 @@ class BlockStatesParser
                 }
             }
             //print final list
-            self::printStates($finalStatesList, $selectedBlockName, false);
+            //TODO remove. This crashes in AsyncTasks and is just for debug
+            #Server::getInstance()->getLogger()->debug(self::printStates($finalStatesList, $selectedBlockName, false));
             //return found block(s)
             $blocks = [];
             //TODO there must be a more efficient way to do this
@@ -263,15 +285,27 @@ class BlockStatesParser
         }
     }
 
+    public static function getStateByBlock(Block $block): ?BlockStatesEntry
+    {
+        $name = array_flip(self::$blockIdMap)[$block->getId()] ?? null;
+        if ($name === null) return null;
+        /** @var string $name */
+        $blockStates = self::$allStates->getCompoundTag($name . ":" . $block->getDamage());
+        if ($blockStates === null) return null;
+        return new BlockStatesEntry($name, $blockStates, $block);
+    }
+
     /**
      * @param CompoundTag $printedCompound
      * @param string $blockIdentifier
      * @param bool $skipDefaults
-     * @return void
+     * @return string
      * @throws RuntimeException
      */
-    private static function printStates(CompoundTag $printedCompound, string $blockIdentifier, bool $skipDefaults): void
+    public static function printStates(BlockStatesEntry $entry, bool $skipDefaults): string
     {
+        $printedCompound = $entry->blockStates;
+        $blockIdentifier = $entry->blockIdentifier;
         $s = $failed = [];
         foreach ($printedCompound as $statesTagEntry) {
             /** @var CompoundTag $defaultStatesNamedTag */
@@ -293,9 +327,11 @@ class BlockStatesParser
             }
         }
         if (count($s) === 0) {
-            Server::getInstance()->getLogger()->debug($blockIdentifier);
+            #Server::getInstance()->getLogger()->debug($blockIdentifier);
+            return $blockIdentifier;
         } else {
-            Server::getInstance()->getLogger()->debug($blockIdentifier . "[" . implode(",", $s) . "]");
+            #Server::getInstance()->getLogger()->debug($blockIdentifier . "[" . implode(",", $s) . "]");
+            return $blockIdentifier . "[" . implode(",", $s) . "]";
         }
     }
 
@@ -311,8 +347,51 @@ class BlockStatesParser
             $newCompound = $rootCompound->getCompoundTag("new");
             $currentoldName = $oldCompound->getString("name");
             $printedCompound = $newCompound->getCompoundTag("states");
-            self::printStates($printedCompound, $currentoldName, true);
+            $bs = new BlockStatesEntry($currentoldName, $printedCompound);
+            Server::getInstance()->getLogger()->debug(self::printStates($bs, true));
+            try {
+                Server::getInstance()->getLogger()->debug(strval($bs));
+            } catch (InvalidBlockStateException $e) {
+            } catch (InvalidArgumentException $e) {
+            } catch (RuntimeException $e) {
+                Server::getInstance()->getLogger()->logException($e);
+            }
         }
+    }
+
+    /**
+     * Generates an alias map for blockstates
+     * Only call from main thread!
+     * @throws InvalidStateException
+     * @internal
+     */
+    public static function generatePossibleStatesJson(): void
+    {
+        $config = new Config(Loader::getInstance()->getDataFolder() . "possible_blockstates.json");
+        $config->setAll([]);
+        $config->save();
+        $all = [];
+        foreach (self::$rootListTag->getAllValues() as $rootCompound) {
+            /** @var CompoundTag $rootCompound */
+            $newCompound = $rootCompound->getCompoundTag("new");
+            $states = clone $newCompound->getCompoundTag("states");
+            foreach ($states as $state) {
+                if (!array_key_exists($state->getName(), $all)) {
+                    $all[$state->getName()] = [];
+                }
+                if (!in_array($state->getValue(), $all[$state->getName()])) {
+                    $all[$state->getName()][] = $state->getValue();
+                    if (strpos($state->getName(), "_bit") !== false) {
+                    } else {
+                    }
+                }
+            }
+        }
+        /** @var array<string, mixed> $all */
+        ksort($all);
+        $config->setAll($all);
+        $config->save();
+        unset($config);
     }
 
     public static function runTests(): void
@@ -371,6 +450,96 @@ class BlockStatesParser
                 continue;
             }
         }
+    }
+
+    public static function placeAllBlockstates(Position $position): void
+    {
+        $pasteY = $position->getFloorY();
+        $pasteX = $position->getFloorX();
+        $pasteZ = $position->getFloorZ();
+        $level = $position->getLevel();
+        /** @var array<int,Block> $sorted */
+        $sorted = [];
+        foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
+            /** @var CompoundTag $rootCompound */
+            #$oldCompound = $rootCompound->getCompoundTag("old");
+            #$newCompound = $rootCompound->getCompoundTag("new");
+            #$currentoldName = $oldCompound->getString("name");
+            #$printedCompound = $newCompound->getCompoundTag("states");
+            $currentoldName = rtrim(preg_replace("/([0-9]+)/", "", $oldNameAndMeta), ":");
+            $bs = new BlockStatesEntry($currentoldName, $printedCompound);
+            try {
+                /** @var Block $block */
+                #$block = array_values(self::fromString(TF::clean(strval($bs))))[0];
+                $sorted[($bs->toBlock()->getId() << 4) | $bs->toBlock()->getDamage()] = $bs;
+            } catch (\Exception $e) {
+                //skip blocks that pm does not know about
+                #$level->getServer()->broadcastMessage($e->getMessage());
+            }
+        }
+        var_dump(count($sorted));
+//        usort($sorted, function (BlockStatesEntry $bs1, BlockStatesEntry $bs2): int {
+//            try {
+//                /** @var Block $block1 */
+//                $block1 = $bs1->toBlock();
+//                /** @var Block $block2 */
+//                $block2 = $bs2->toBlock();
+//            } catch (\Exception $e) {
+//                return 0;
+//            }
+//            if ($block1->getId() < $block2->getId()) return -1;
+//            if ($block1->getId() > $block2->getId()) return 1;
+//            if ($block1->getDamage() < $block2->getDamage()) return -1;
+//            if ($block1->getDamage() > $block2->getDamage()) return 1;
+//            return 0;
+//        });
+//        usort($sorted, function (BlockStatesEntry $bs1, BlockStatesEntry $bs2): int {
+//            print $bs1->blockFull." vs ".$bs2->blockFull.PHP_EOL;
+//                $currentoldName1 = rtrim(preg_replace("/([0-9]+)/", "", $bs1->blockFull), ":");
+//                preg_match_all("/([0-9]+)/", $bs1->blockFull, $matches);
+//                $meta1=$matches[1][0]??null;
+//                $id1 = self::$blockIdMap[$currentoldName1] ?? null;
+//                var_dump($bs1->blockIdentifier,$id1,$meta1);
+//                if ($id1 === null || $meta1 === null) return 0;
+//                $currentoldName2 = rtrim(preg_replace("/([0-9]+)/", "", $bs2->blockFull), ":");
+//                preg_match_all("/([0-9]+)/", $bs2->blockFull, $matches);
+//                $meta2=$matches[1][0]??null;
+//                $id2 = self::$blockIdMap[$currentoldName2] ?? null;
+//            var_dump($bs2->blockIdentifier,$id2,$meta2);
+//                if ($id2 === null || $meta2 === null) return 0;
+//            $id1 = intval($id1);
+//            $id2 = intval($id2);
+//            $meta1 = intval($meta1);
+//            $meta2 = intval($meta2);
+//            if ($id1 < $id2) return -1;
+//            if ($id1 > $id2) return 1;
+//            if ($meta1 < $meta2) return -1;
+//            if ($meta1 > $meta2) return 1;
+//            return 0;
+//        });
+        var_dump(array_keys($sorted));
+        ksort($sorted);
+        var_dump(count($sorted));
+        $i = 0;
+        $limit = 50;
+        foreach ($sorted as $blockStatesEntry) {
+            /** @var BlockStatesEntry $blockStatesEntry */
+            $x = ($i % $limit) * 2;
+            $z = ($i - ($i % $limit)) / $limit * 2;
+            try {
+                /** @var Block $block1 */
+                $block = $blockStatesEntry->toBlock();
+                #if($block->getId() !== $id || $block->getDamage() !== $meta) var_dump("error, $id:$meta does not match {$block->getId()}:{$block->getDamage()}");
+                #$level->setBlock(new Vector3($pasteX + $x, $pasteY, $pasteZ + $z), $block);
+                $level->setBlockIdAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getId());
+                $level->setBlockDataAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getDamage());
+            } catch (\Exception $e) {
+                $i++;
+                continue;
+            }
+            $i++;
+        }
+        var_dump("DONE");
     }
 
 }
