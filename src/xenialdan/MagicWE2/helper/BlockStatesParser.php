@@ -296,8 +296,7 @@ class BlockStatesParser
     }
 
     /**
-     * @param CompoundTag $printedCompound
-     * @param string $blockIdentifier
+     * @param BlockStatesEntry $entry
      * @param bool $skipDefaults
      * @return string
      * @throws RuntimeException
@@ -527,7 +526,7 @@ class BlockStatesParser
             $x = ($i % $limit) * 2;
             $z = ($i - ($i % $limit)) / $limit * 2;
             try {
-                /** @var Block $block1 */
+                /** @var Block $block */
                 $block = $blockStatesEntry->toBlock();
                 #if($block->getId() !== $id || $block->getDamage() !== $meta) var_dump("error, $id:$meta does not match {$block->getId()}:{$block->getDamage()}");
                 #$level->setBlock(new Vector3($pasteX + $x, $pasteY, $pasteZ + $z), $block);

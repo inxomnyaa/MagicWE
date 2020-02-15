@@ -12,6 +12,7 @@ class FlipHelper
     const AXIS_Y = 1;
     const AXIS_Z = 2;
 
+    /** @var array */
     private static $flippedMap = [
 
     ];
