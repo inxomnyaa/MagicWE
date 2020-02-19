@@ -110,14 +110,21 @@ class Loader extends PluginBase
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
         BlockStatesParser::init();
-        $fileGetContents = file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
+        $fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
         if ($fileGetContents === false) {
             throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
-        }
-        BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
+        } else
+            BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
+
+        $fileGetContents = file_get_contents($this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json");
+        if ($fileGetContents === false) {
+            throw new PluginException("rotation_flip_data.json could not be loaded! Rotation and flip support has been disabled!");
+        } else
+            BlockStatesParser::setRotationFlipMap(json_decode($fileGetContents, true));
         #BlockStatesParser::printAllStates();
         BlockStatesParser::runTests();
         #BlockStatesParser::generatePossibleStatesJson();
+        #BlockStatesParser::placeAllBlockstates(new Position());
     }
 
     /**

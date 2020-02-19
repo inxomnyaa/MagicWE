@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
+use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use pocketmine\block\Block;
@@ -36,6 +37,8 @@ class BlockStatesParser
     private static $regex = "/,(?![^\[]*\])/";
     /** @var array */
     private static $aliasMap = [];
+    /** @var array */
+    private static $rotationFlipMap = [];
     /** @var array */
     private static $blockIdMap = [];
 
@@ -82,6 +85,23 @@ class BlockStatesParser
     public static function isInit(): bool
     {
         return self::$defaultStates instanceof CompoundTag && self::$rootListTag instanceof ListTag;
+    }
+
+    /**
+     * @param Block $block
+     * @return string|null
+     */
+    public static function getBlockIdMapName(Block $block)
+    {
+        return array_flip(self::$blockIdMap)[$block->getId()] ?? null;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getRotationFlipMap(): array
+    {
+        return self::$rotationFlipMap;
     }
 
     /**
@@ -176,6 +196,14 @@ class BlockStatesParser
     public static function setAliasMap(array $aliasMap): void
     {
         self::$aliasMap = $aliasMap;
+    }
+
+    /**
+     * @param array $map
+     */
+    public static function setRotationFlipMap(array $map): void
+    {
+        self::$rotationFlipMap = $map;
     }
 
     /**
@@ -287,7 +315,7 @@ class BlockStatesParser
 
     public static function getStateByBlock(Block $block): ?BlockStatesEntry
     {
-        $name = array_flip(self::$blockIdMap)[$block->getId()] ?? null;
+        $name = self::getBlockIdMapName($block);
         if ($name === null) return null;
         /** @var string $name */
         $blockStates = self::$allStates->getCompoundTag($name . ":" . $block->getDamage());
@@ -395,7 +423,6 @@ class BlockStatesParser
 
     public static function runTests(): void
     {
-        #self::setAliasMap(json_decode(file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json"), true));
         //testing cases
         $tests = [
             "minecraft:tnt",
@@ -438,13 +465,30 @@ class BlockStatesParser
                     assert($block instanceof Block);
                     Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
                 }
-            } catch (InvalidBlockStateException $e) {
+            } catch (Exception $e) {
                 Server::getInstance()->getLogger()->debug($e->getMessage());
                 continue;
-            } catch (InvalidArgumentException $e) {
-                Server::getInstance()->getLogger()->debug($e->getMessage());
-                continue;
-            } catch (RuntimeException $e) {
+            }
+        }
+        $tests2 = [
+            "minecraft:wooden_slab[wood_type=oak]",
+            "minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
+            "minecraft:end_rod[]",
+            "minecraft:end_rod[facing_direction=1]",
+            "minecraft:end_rod[facing_direction=2]",
+            "minecraft:stone_brick_stairs[direction=0]",
+            "minecraft:stone_brick_stairs[direction=1]",
+            "minecraft:stone_brick_stairs[direction=1,upside_down_bit=true]",
+        ];
+        foreach ($tests2 as $test) {
+            try {
+                Server::getInstance()->getLogger()->debug(TF::GOLD . "Rotation query: " . TF::LIGHT_PURPLE . $test);
+                $block = self::fromString($test)[0];
+                $state = self::getStateByBlock($block)->rotate(90);
+                assert($block instanceof Block);
+                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $state->toBlock());
+                #Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
+            } catch (Exception $e) {
                 Server::getInstance()->getLogger()->debug($e->getMessage());
                 continue;
             }
@@ -461,64 +505,18 @@ class BlockStatesParser
         $sorted = [];
         foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
             /** @var CompoundTag $rootCompound */
-            #$oldCompound = $rootCompound->getCompoundTag("old");
-            #$newCompound = $rootCompound->getCompoundTag("new");
-            #$currentoldName = $oldCompound->getString("name");
-            #$printedCompound = $newCompound->getCompoundTag("states");
             $currentoldName = rtrim(preg_replace("/([0-9]+)/", "", $oldNameAndMeta), ":");
             $bs = new BlockStatesEntry($currentoldName, $printedCompound);
             try {
                 /** @var Block $block */
                 #$block = array_values(self::fromString(TF::clean(strval($bs))))[0];
                 $sorted[($bs->toBlock()->getId() << 4) | $bs->toBlock()->getDamage()] = $bs;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 //skip blocks that pm does not know about
                 #$level->getServer()->broadcastMessage($e->getMessage());
             }
         }
-        var_dump(count($sorted));
-//        usort($sorted, function (BlockStatesEntry $bs1, BlockStatesEntry $bs2): int {
-//            try {
-//                /** @var Block $block1 */
-//                $block1 = $bs1->toBlock();
-//                /** @var Block $block2 */
-//                $block2 = $bs2->toBlock();
-//            } catch (\Exception $e) {
-//                return 0;
-//            }
-//            if ($block1->getId() < $block2->getId()) return -1;
-//            if ($block1->getId() > $block2->getId()) return 1;
-//            if ($block1->getDamage() < $block2->getDamage()) return -1;
-//            if ($block1->getDamage() > $block2->getDamage()) return 1;
-//            return 0;
-//        });
-//        usort($sorted, function (BlockStatesEntry $bs1, BlockStatesEntry $bs2): int {
-//            print $bs1->blockFull." vs ".$bs2->blockFull.PHP_EOL;
-//                $currentoldName1 = rtrim(preg_replace("/([0-9]+)/", "", $bs1->blockFull), ":");
-//                preg_match_all("/([0-9]+)/", $bs1->blockFull, $matches);
-//                $meta1=$matches[1][0]??null;
-//                $id1 = self::$blockIdMap[$currentoldName1] ?? null;
-//                var_dump($bs1->blockIdentifier,$id1,$meta1);
-//                if ($id1 === null || $meta1 === null) return 0;
-//                $currentoldName2 = rtrim(preg_replace("/([0-9]+)/", "", $bs2->blockFull), ":");
-//                preg_match_all("/([0-9]+)/", $bs2->blockFull, $matches);
-//                $meta2=$matches[1][0]??null;
-//                $id2 = self::$blockIdMap[$currentoldName2] ?? null;
-//            var_dump($bs2->blockIdentifier,$id2,$meta2);
-//                if ($id2 === null || $meta2 === null) return 0;
-//            $id1 = intval($id1);
-//            $id2 = intval($id2);
-//            $meta1 = intval($meta1);
-//            $meta2 = intval($meta2);
-//            if ($id1 < $id2) return -1;
-//            if ($id1 > $id2) return 1;
-//            if ($meta1 < $meta2) return -1;
-//            if ($meta1 > $meta2) return 1;
-//            return 0;
-//        });
-        var_dump(array_keys($sorted));
         ksort($sorted);
-        var_dump(count($sorted));
         $i = 0;
         $limit = 50;
         foreach ($sorted as $blockStatesEntry) {
@@ -532,7 +530,7 @@ class BlockStatesParser
                 #$level->setBlock(new Vector3($pasteX + $x, $pasteY, $pasteZ + $z), $block);
                 $level->setBlockIdAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getId());
                 $level->setBlockDataAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getDamage());
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $i++;
                 continue;
             }
