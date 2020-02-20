@@ -7,7 +7,10 @@ namespace xenialdan\MagicWE2\helper;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginException;
 use pocketmine\utils\TextFormat;
 use RuntimeException;
@@ -84,20 +87,47 @@ class BlockStatesEntry
     public function rotate(int $amount): BlockStatesEntry
     {
         //TODO validate $amount
-        $block = $this->toBlock();
-        $idMapName = BlockStatesParser::getBlockIdMapName($block);
-        $key = str_replace("minecraft:", "", $idMapName . ":" . $block->getDamage());
+        $clone = clone $this;
+        $block = $clone->toBlock();
+        $idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
+        $key = $idMapName . ":" . $block->getDamage();
         $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
-        if ($fromMap === null) return $this;
+        if ($fromMap === null) return $clone;
         $rotatedStates = $fromMap[$amount] ?? null;
-        if ($rotatedStates === null) return $this;
-        var_dump($rotatedStates);
-        $s = [];
+        if ($rotatedStates === null) return $clone;
+        //ugly hack to keep current ones
+        //TODO use the states compound tag
+        $bsCompound = $clone->blockStates;
+        $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same
+        var_dump($bsCompound);
         foreach ($rotatedStates as $k => $v) {
-            $s[] = "$k=$v";
+            //TODO clean up.. new method?
+            $tag = $bsCompound->getTag($k);
+            if ($tag === null) {
+                throw new InvalidBlockStateException("Invalid state $k");
+            }
+            if ($tag instanceof StringTag) {
+                $bsCompound->setString($tag->getName(), $v);
+            } else if ($tag instanceof IntTag) {
+                $bsCompound->setInt($tag->getName(), intval($v));
+            } else if ($tag instanceof ByteTag) {
+                if ($v !== "true" && $v !== "false") {
+                    throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+                }
+                $val = ($v === "true" ? 1 : 0);
+                $bsCompound->setByte($tag->getName(), $val);
+            } else {
+                throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
+            }
         }
-        $blockFull = $idMapName . "[" . implode(",", $s) . "]";
-        return BlockStatesParser::getStateByBlock(BlockStatesParser::fromString($blockFull)[0]);
+        var_dump($bsCompound);
+        $clone->blockStates = $bsCompound;
+        $clone->block = null;
+        $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
+        return $clone;
+        //TODO reduce useless calls. BSP::fromStates?
+        #$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
+        #return BlockStatesParser::getStateByBlock(BlockStatesParser::fromString($blockFull)[0]);
     }
 
 }
