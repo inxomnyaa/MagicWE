@@ -508,7 +508,6 @@ class BlockStatesParser
         /** @var array<int,Block> $sorted */
         $sorted = [];
         foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
-            /** @var CompoundTag $rootCompound */
             $currentoldName = rtrim(preg_replace("/([0-9]+)/", "", $oldNameAndMeta), ":");
             $bs = new BlockStatesEntry($currentoldName, $printedCompound);
             try {
