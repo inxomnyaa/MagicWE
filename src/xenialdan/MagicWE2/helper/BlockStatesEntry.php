@@ -98,8 +98,7 @@ class BlockStatesEntry
         //ugly hack to keep current ones
         //TODO use the states compound tag
         $bsCompound = $clone->blockStates;
-        $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same
-        var_dump($bsCompound);
+        $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
         foreach ($rotatedStates as $k => $v) {
             //TODO clean up.. new method?
             $tag = $bsCompound->getTag($k);
@@ -120,7 +119,59 @@ class BlockStatesEntry
                 throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
             }
         }
-        var_dump($bsCompound);
+        $clone->blockStates = $bsCompound;
+        $clone->block = null;
+        $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
+        return $clone;
+        //TODO reduce useless calls. BSP::fromStates?
+        #$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
+        #return BlockStatesParser::getStateByBlock(BlockStatesParser::fromString($blockFull)[0]);
+    }
+
+    /**
+     * TODO Optimize (reduce getStateByBlock/fromString calls)
+     * @param string $axis any of ["x","z","xz"]
+     * @return BlockStatesEntry
+     * @throws InvalidArgumentException
+     * @throws InvalidBlockStateException
+     * @throws PluginException
+     * @throws RuntimeException
+     */
+    public function mirror(string $axis): BlockStatesEntry
+    {
+        //TODO validate $axis
+        $clone = clone $this;
+        $block = $clone->toBlock();
+        $idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
+        $key = $idMapName . ":" . $block->getDamage();
+        $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
+        if ($fromMap === null) return $clone;
+        $rotatedStates = $fromMap[$axis] ?? null;
+        if ($rotatedStates === null) return $clone;
+        //ugly hack to keep current ones
+        //TODO use the states compound tag
+        $bsCompound = $clone->blockStates;
+        $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
+        foreach ($rotatedStates as $k => $v) {
+            //TODO clean up.. new method?
+            $tag = $bsCompound->getTag($k);
+            if ($tag === null) {
+                throw new InvalidBlockStateException("Invalid state $k");
+            }
+            if ($tag instanceof StringTag) {
+                $bsCompound->setString($tag->getName(), $v);
+            } else if ($tag instanceof IntTag) {
+                $bsCompound->setInt($tag->getName(), intval($v));
+            } else if ($tag instanceof ByteTag) {
+                if ($v !== "true" && $v !== "false") {
+                    throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+                }
+                $val = ($v === "true" ? 1 : 0);
+                $bsCompound->setByte($tag->getName(), $val);
+            } else {
+                throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
+            }
+        }
         $clone->blockStates = $bsCompound;
         $clone->block = null;
         $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));

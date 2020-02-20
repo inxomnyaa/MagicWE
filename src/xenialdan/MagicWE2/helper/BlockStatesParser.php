@@ -485,9 +485,13 @@ class BlockStatesParser
                 Server::getInstance()->getLogger()->debug(TF::GOLD . "Rotation query: " . TF::LIGHT_PURPLE . $test);
                 $block = self::fromString($test)[0];
                 $state = self::getStateByBlock($block)->rotate(90);
-                assert($block instanceof Block);
+                assert($state->toBlock() instanceof Block);
                 Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $state->toBlock());
-                #Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
+
+                Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query: " . TF::LIGHT_PURPLE . $test);
+                $state = self::getStateByBlock($block)->mirror("x");
+                assert($state->toBlock() instanceof Block);
+                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $state->toBlock());
             } catch (Exception $e) {
                 Server::getInstance()->getLogger()->debug($e->getMessage());
                 continue;
