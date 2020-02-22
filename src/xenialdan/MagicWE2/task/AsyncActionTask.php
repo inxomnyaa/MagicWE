@@ -43,7 +43,7 @@ class AsyncActionTask extends MWEAsyncTask
     private $action;
 
     /**
-     * AsyncFillTask constructor.
+     * AsyncActionTask constructor.
      * @param UUID $sessionUUID
      * @param Selection $selection
      * @param TaskAction $action

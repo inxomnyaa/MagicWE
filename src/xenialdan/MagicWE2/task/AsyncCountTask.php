@@ -29,7 +29,7 @@ class AsyncCountTask extends MWEAsyncTask
     private $newBlocks;
 
     /**
-     * AsyncFillTask constructor.
+     * AsyncCountTask constructor.
      * @param Selection $selection
      * @param UUID $sessionUUID
      * @param string[] $touchedChunks serialized chunks
