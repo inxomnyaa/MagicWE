@@ -149,16 +149,16 @@ class BlockStatesEntry
             var_dump("block not in mirror map");
             return $clone;
         }
-        $rotatedStates = $fromMap[$axis] ?? null;
-        if ($rotatedStates === null) {
+        $flippedStates = $fromMap[$axis] ?? null;
+        if ($flippedStates === null) {
             var_dump("axis not in mirror map");
             return $clone;
         }
         //ugly hack to keep current ones
         //TODO use the states compound tag
-        $bsCompound = $clone->blockStates;
+        $bsCompound = clone $clone->blockStates;//TODO check if clone is necessary
         $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
-        foreach ($rotatedStates as $k => $v) {
+        foreach ($flippedStates as $k => $v) {
             //TODO clean up.. new method?
             $tag = $bsCompound->getTag($k);
             if ($tag === null) {
