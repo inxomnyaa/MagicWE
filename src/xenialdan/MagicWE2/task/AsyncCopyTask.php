@@ -6,7 +6,6 @@ use Exception;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\types\RuntimeBlockMapping;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
@@ -97,7 +96,7 @@ class AsyncCopyTask extends MWEAsyncTask
         foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
             #var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
             $newv3 = $block->subtract($min)->floor();
-            $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));//TODO test tiles
+            $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));//TODO test tiles
             #var_dump("copied selection block", $block);
             $i++;
             $progress = floor($i / $blockCount * 100);

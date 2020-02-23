@@ -3,12 +3,12 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -20,34 +20,29 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 {
 
     /** @var string */
-    private $touchedChunks;
-    /** @var string */
     private $selection;
-    /** @var string */
-    private $blockFilter;
-    /** @var string */
-    private $newBlocks;
     /** @var ClipboardAction */
     private $action;
+    /** @var string */
+    private $clipboard;
+    /** @var string */
+    private $rotFlipMapPath;
 
     /**
      * AsyncClipboardActionTask constructor.
      * @param UUID $sessionUUID
      * @param Selection $selection
      * @param ClipboardAction $action
-     * @param string[] $touchedChunks serialized chunks
-     * @param string $newBlocks
-     * @param string $blockFilter
+     * @param SingleClipboard $clipboard
      */
-    public function __construct(UUID $sessionUUID, Selection $selection, ClipboardAction $action, array $touchedChunks, string $newBlocks = "", string $blockFilter = "")
+    public function __construct(UUID $sessionUUID, Selection $selection, ClipboardAction $action, SingleClipboard $clipboard)
     {
         $this->start = microtime(true);
         $this->sessionUUID = $sessionUUID->toString();
-        $this->selection = serialize($selection);
+        $this->selection = serialize($selection);//TODO check if needed, $clipboard already holds the selection
+        $this->clipboard = serialize($clipboard);//TODO check if this even needs to be serialized
         $this->action = $action;
-        $this->touchedChunks = serialize($touchedChunks);
-        $this->newBlocks = $newBlocks;
-        $this->blockFilter = $blockFilter;
+        $this->rotFlipMapPath = Loader::getRotFlipFolder();
 
         try {
             $session = SessionHelper::getSessionByUUID($sessionUUID);
@@ -70,18 +65,19 @@ class AsyncClipboardActionTask extends MWEAsyncTask
     {
         $this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
+        if (!BlockStatesParser::isInit()) BlockStatesParser::init($this->rotFlipMapPath);
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
-
-        $newSingleClipboard = new SingleClipboard($this->action->clipboardVector ?? new Vector3());//TODO Test if null V3 is ok //TODO test if the vector works
-        $newSingleClipboard->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
+        /** @var SingleClipboard $clipboard */
+        $clipboard = unserialize($this->clipboard);
+        $clipboard->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
         $messages = [];
         /** @var Progress $progress */
-        foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $newSingleClipboard, $messages) as $progress) {
+        foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $clipboard, $messages) as $progress) {
             $this->publishProgress($progress);
         }
 
-        $this->setResult(compact("newSingleClipboard", "changed", "messages"));
+        $this->setResult(compact("clipboard", "changed", "messages"));
     }
 
     /**
@@ -98,8 +94,8 @@ class AsyncClipboardActionTask extends MWEAsyncTask
             $session = null;
         }
         $result = $this->getResult();
-        /** @var SingleClipboard $newSingleClipboard */
-        $newSingleClipboard = $result["newSingleClipboard"];
+        /** @var SingleClipboard $clipboard */
+        $clipboard = $result["clipboard"];
         $changed = $result["changed"];
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
@@ -108,7 +104,7 @@ class AsyncClipboardActionTask extends MWEAsyncTask
             $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
             foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
             if ($this->action->addClipboard)
-                $session->addClipboard($newSingleClipboard);
+                $session->addClipboard($clipboard);
         }
     }
 }

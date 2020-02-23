@@ -43,11 +43,12 @@ class BlockStatesParser
     private static $blockIdMap = [];
 
     /**
+     * @param string|null $rotFlipMapPath
      * @throws InvalidArgumentException
      * @throws PluginException
      * @throws RuntimeException
      */
-    public static function init(): void
+    public static function init(?string $rotFlipMapPath): void
     {
         if (self::isInit()) return;//Silent return if already initialised
         $contentsStateNBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
@@ -77,6 +78,15 @@ class BlockStatesParser
         if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
         self::$blockIdMap = json_decode($blockIdMap, true);
         //self::runTests();
+        if ($rotFlipMapPath !== null) {
+            $fileGetContents = file_get_contents($rotFlipMapPath);
+            if ($fileGetContents === false) {
+                throw new PluginException("rotation_flip_data.json could not be loaded! Rotation and flip support has been disabled!");
+            } else {
+                self::setRotationFlipMap(json_decode($fileGetContents, true));
+                var_dump("Successfully loaded");
+            }
+        }
     }
 
     /**
@@ -97,11 +107,27 @@ class BlockStatesParser
     }
 
     /**
+     * @param array $aliasMap
+     */
+    public static function setAliasMap(array $aliasMap): void
+    {
+        self::$aliasMap = $aliasMap;
+    }
+
+    /**
      * @return array
      */
     public static function getRotationFlipMap(): array
     {
         return self::$rotationFlipMap;
+    }
+
+    /**
+     * @param array $map
+     */
+    public static function setRotationFlipMap(array $map): void
+    {
+        self::$rotationFlipMap = $map;
     }
 
     /**
@@ -188,22 +214,6 @@ class BlockStatesParser
         $config->setAll($all);
         $config->save();
         unset($config);
-    }
-
-    /**
-     * @param array $aliasMap
-     */
-    public static function setAliasMap(array $aliasMap): void
-    {
-        self::$aliasMap = $aliasMap;
-    }
-
-    /**
-     * @param array $map
-     */
-    public static function setRotationFlipMap(array $map): void
-    {
-        self::$rotationFlipMap = $map;
     }
 
     /**
@@ -298,7 +308,7 @@ class BlockStatesParser
                     #Loader::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
                 }
             }
-            if (empty($blocks)) return [];//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
+            if (empty($blocks)) return [Block::get(0)];//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
             //"Hack" to get just one block if multiple results have been found. Most times this results in the default one (meta:0)
             $smallestMeta = PHP_INT_MAX;
             $result = null;
@@ -479,19 +489,24 @@ class BlockStatesParser
             "minecraft:stone_brick_stairs[direction=0]",
             "minecraft:stone_brick_stairs[direction=1]",
             "minecraft:stone_brick_stairs[direction=1,upside_down_bit=true]",
+            "stone_brick_stairs[direction=1,upside_down_bit=true]",
+            "minecraft:ladder[facing_direction=3]",
+            "minecraft:magenta_glazed_terracotta[facing_direction=2]",
+            "minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]"
         ];
         foreach ($tests2 as $test) {
             try {
                 Server::getInstance()->getLogger()->debug(TF::GOLD . "Rotation query: " . TF::LIGHT_PURPLE . $test);
                 $block = self::fromString($test)[0];
+                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "From block: " . TF::AQUA . $block);
                 $state = self::getStateByBlock($block)->rotate(90);
                 assert($state->toBlock() instanceof Block);
-                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $state->toBlock());
+                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Rotated block: " . TF::AQUA . $state->toBlock());
 
                 Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query: " . TF::LIGHT_PURPLE . $test);
                 $state = self::getStateByBlock($block)->mirror("x");
                 assert($state->toBlock() instanceof Block);
-                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $state->toBlock());
+                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block: " . TF::AQUA . $state->toBlock());
             } catch (Exception $e) {
                 Server::getInstance()->getLogger()->debug($e->getMessage());
                 continue;

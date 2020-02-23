@@ -26,12 +26,16 @@ class SingleClipboard extends Clipboard
     public function __construct(Vector3 $position)
     {
         $this->position = $position->asVector3()->floor();
-        var_dump($this->position);
     }
 
     public function addEntry(int $x, int $y, int $z, BlockEntry $entry): void
     {
         $this->entries[Level::blockHash($x, $y, $z)] = $entry;
+    }
+
+    public function clear(): void
+    {
+        $this->entries = [];
     }
 
     /**

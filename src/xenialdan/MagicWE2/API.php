@@ -398,19 +398,10 @@ class API
      */
     public static function blockParser(string $fullstring, array &$messages, bool &$error)
     {
-        $blocks = [];
         if (!BlockFactory::isInit()) BlockFactory::init();
-        BlockStatesParser::init();
-        foreach (BlockStatesParser::fromString($fullstring, true) as $block) {
-            $blocks[] = $block;
-            /*if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)) {
-                $block = $item->getBlock();
-                $blocks[] = $block;
-            } else {
-                $error = true;
-                $messages[] = TF::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
-                continue;
-            }*/
+        BlockStatesParser::init(Loader::getRotFlipFolder());
+        $blocks = BlockStatesParser::fromString($fullstring, true);
+        foreach ($blocks as $block) {
             if ($block instanceof UnknownBlock) {
                 $messages[] = TF::GOLD . $block . " is an unknown block";
             }

@@ -145,9 +145,15 @@ class BlockStatesEntry
         $idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
         $key = $idMapName . ":" . $block->getDamage();
         $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
-        if ($fromMap === null) return $clone;
+        if ($fromMap === null) {
+            var_dump("block not in mirror map");
+            return $clone;
+        }
         $rotatedStates = $fromMap[$axis] ?? null;
-        if ($rotatedStates === null) return $clone;
+        if ($rotatedStates === null) {
+            var_dump("axis not in mirror map");
+            return $clone;
+        }
         //ugly hack to keep current ones
         //TODO use the states compound tag
         $bsCompound = $clone->blockStates;

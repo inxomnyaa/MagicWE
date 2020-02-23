@@ -53,4 +53,10 @@ class BlockEntry
         return BlockFactory::get($id, $meta);
     }
 
+    public static function fromBlock(Block $block): self
+    {
+        if (!BlockFactory::isInit()) BlockFactory::init();
+        return new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage()));
+    }
+
 }

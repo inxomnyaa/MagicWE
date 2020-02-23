@@ -7,7 +7,6 @@ namespace xenialdan\MagicWE2\task\action;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\network\mcpe\protocol\types\RuntimeBlockMapping;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockEntry;
@@ -58,7 +57,7 @@ class CutAction extends TaskAction
             if ($new->getId() === $block->getId() && $new->getDamage() === $block->getDamage()) continue;//skip same blocks
             #$oldBlocks[] = $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
             $newv3 = $block->subtract($min)->floor();//TODO check if only used for clipboard
-            $oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));
+            $oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));
             $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
             if ($manager->getBlockArrayAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== [$block->getId(), $block->getDamage()]) {
                 $changed++;

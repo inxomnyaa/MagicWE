@@ -25,11 +25,11 @@ abstract class ClipboardAction
      * @param string $sessionUUID
      * @param Selection $selection
      * @param null|int $changed
-     * @param SingleClipboard $newSingleClipboard
+     * @param SingleClipboard $clipboard
      * @param string[] $messages
      * @return Generator|Progress[]
      */
-    public abstract function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$newSingleClipboard, array &$messages = []): Generator;
+    public abstract function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []): Generator;
 
     public static abstract function getName(): string;
 

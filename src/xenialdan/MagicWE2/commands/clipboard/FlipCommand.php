@@ -6,20 +6,21 @@ namespace xenialdan\MagicWE2\commands\clipboard;
 
 use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
-use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
-use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use ReflectionClass;
-use xenialdan\MagicWE2\clipboard\Clipboard;
+use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\commands\args\MirrorAxisArgument;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\task\action\FlipAction;
+use xenialdan\MagicWE2\task\AsyncClipboardActionTask;
 
 class FlipCommand extends BaseCommand
 {
@@ -30,9 +31,9 @@ class FlipCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->registerArgument(0, new TextArgument("direction", false));
+        $this->registerArgument(0, new MirrorAxisArgument("axis", false));
         $this->setPermission("we.command.clipboard.flip");
-        $this->setUsage("//flip <direction: X|Y|Z|UP|DOWN|WEST|EAST|NORTH|SOUTH...>");
+        //$this->setUsage("//flip <axis: X|Z|XZ>");
     }
 
     /**
@@ -55,29 +56,27 @@ class FlipCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $reflectionClass = new ReflectionClass(Clipboard::class);
-            $constants = $reflectionClass->getConstants();
-            $args2 = array_flip(array_change_key_case(array_flip(explode(" ", strval($args["direction"]))), CASE_UPPER));
-            $flags = Clipboard::DIRECTION_DEFAULT;
-            foreach ($args2 as $arg) {
-                if (array_key_exists("FLIP_" . $arg, $constants)) {
-                    $flags ^= 1 << $constants["FLIP_" . $arg];
-                } else {
-                    throw new InvalidArgumentException('"' . $arg . '" is not a valid input');
-                }
-            }
-            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [implode("|", $args2)]));
+            $axis = strval($args["axis"]);
+            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [$axis]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
                 throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $clipboard = $session->getCurrentClipboard();
-            if (is_null($clipboard)) {
+            if (!$clipboard instanceof SingleClipboard) {
                 throw new Exception($lang->translateString('error.noclipboard'));
             }
-            /** @noinspection PhpUndefinedMethodInspection */
-            //$clipboard->flip($flags);
-            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.success'));
+            $action = new FlipAction($axis);
+            #$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
+            #$action->setClipboardVector($offset);
+            Server::getInstance()->getAsyncPool()->submitTask(
+                new AsyncClipboardActionTask(
+                    $session->getUUID(),
+                    $clipboard->selection,
+                    $action,
+                    $clipboard
+                )
+            );
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

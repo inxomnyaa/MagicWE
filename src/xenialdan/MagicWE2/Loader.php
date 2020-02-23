@@ -21,7 +21,9 @@ use xenialdan\MagicWE2\commands\clipboard\ClearClipboardCommand;
 use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
 use xenialdan\MagicWE2\commands\clipboard\Cut2Command;
 use xenialdan\MagicWE2\commands\clipboard\CutCommand;
+use xenialdan\MagicWE2\commands\clipboard\FlipCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
+use xenialdan\MagicWE2\commands\clipboard\RotateCommand;
 use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
 use xenialdan\MagicWE2\commands\DonateCommand;
 use xenialdan\MagicWE2\commands\generation\CylinderCommand;
@@ -96,6 +98,11 @@ class Loader extends PluginBase
         throw new ShapeRegistryException("Shape registry is not initialized");
     }
 
+    public static function getRotFlipFolder(): string
+    {
+        return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+    }
+
     /**
      * @throws PluginException
      * @throws RuntimeException
@@ -109,18 +116,16 @@ class Loader extends PluginBase
         self::$shapeRegistry = new ShapeRegistry();
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
-        BlockStatesParser::init();
+        #$this->saveResource("rotation_flip_data.json", true);
+        $this->saveResource("blockstate_alias_map.json", true);
+
+        BlockStatesParser::init(self::getRotFlipFolder());
         $fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
         if ($fileGetContents === false) {
             throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
-        } else
+        } else {
             BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
-
-        $fileGetContents = file_get_contents($this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json");
-        if ($fileGetContents === false) {
-            throw new PluginException("rotation_flip_data.json could not be loaded! Rotation and flip support has been disabled!");
-        } else
-            BlockStatesParser::setRotationFlipMap(json_decode($fileGetContents, true));
+        }
         #BlockStatesParser::printAllStates();
         BlockStatesParser::runTests();
         #BlockStatesParser::generatePossibleStatesJson();
@@ -200,8 +205,8 @@ class Loader extends PluginBase
             new CutCommand("/cut", "Cut the selection to the clipboard"),
             new Cut2Command("/cut2", "Cut the selection to the clipboard - the new way"),
             new ClearClipboardCommand("/clearclipboard", "Clear your clipboard"),
-            //new FlipCommand("/flip","Flip the contents of the clipboard across the origin"),
-            //new RotateCommand("/rotate","Rotate the contents of the clipboard around the origin"),
+            new FlipCommand("/flip", "Flip the contents of the clipboard across the origin", ["/mirror"]),
+            new RotateCommand("/rotate", "Rotate the contents of the clipboard around the origin"),
             /* -- history -- */
             new UndoCommand("/undo", "Rolls back the last action"),
             new RedoCommand("/redo", "Applies the last undo action again"),
