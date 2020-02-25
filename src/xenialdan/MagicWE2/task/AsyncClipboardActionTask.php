@@ -76,6 +76,7 @@ class AsyncClipboardActionTask extends MWEAsyncTask
         foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $clipboard, $messages) as $progress) {
             $this->publishProgress($progress);
         }
+        //TODO $clipboard->selection shape might change when using rotate. Fix this, so //paste chunks are correct
 
         $this->setResult(compact("clipboard", "changed", "messages"));
     }

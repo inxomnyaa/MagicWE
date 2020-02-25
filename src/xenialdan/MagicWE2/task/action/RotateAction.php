@@ -67,13 +67,12 @@ class RotateAction extends ClipboardAction
         $clonedClipboard->clear();
         $x = $y = $z = null;
         $maxX = $clipboard->selection->getSizeX() - 1;
-        //$maxY = $clipboard->selection->getSizeY();//TODO enable when upside down flip is implemented
         $maxZ = $clipboard->selection->getSizeZ() - 1;
         foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {
             var_dump("$x $y $z");
             $newX = $x;
             $newZ = $z;
-            if ($this->rotation === self::ROTATE_90) {
+            if ($this->rotation === self::ROTATE_90) {//TODO modify selection size/position
                 $newX = -$z;
                 $newZ = $x;
                 if ($this->aroundOrigin) {
@@ -88,7 +87,7 @@ class RotateAction extends ClipboardAction
                     $newZ += $maxZ;
                 }
             }
-            if ($this->rotation === self::ROTATE_270) {
+            if ($this->rotation === self::ROTATE_270) {//TODO modify selection size/position
                 $newX = $z;
                 $newZ = -$x;
                 if ($this->aroundOrigin) {

@@ -231,7 +231,7 @@ class BlockStatesEntry
                     }*/
                 }
             } else {
-                if (isset($flippedStates)) $value = $flippedStates[$stateName]; else throw new InvalidArgumentException("flippedStates is not set. Error should never occur, please use //report and send a stack trace");
+                if (isset($flippedStates)) $value = $flippedStates[$stateName] ?? $tag->getValue(); else throw new InvalidArgumentException("flippedStates is not set. Error should never occur, please use //report and send a stack trace");
             }
             if ($tag instanceof StringTag) {
                 $bsCompound->setString($tag->getName(), $value);

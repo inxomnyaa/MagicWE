@@ -180,7 +180,7 @@ class API
             #$c = $clipboard->getCenter();
             #$clipboard->setCenter($target->asVector3());//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste
+            $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
             $end = $start->add($clipboard->selection->getShape()->getMaxVec3()->subtract($clipboard->selection->getShape()->getMinVec3()));//add size
             $aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
             $shape = clone $clipboard->selection->getShape();//needed
