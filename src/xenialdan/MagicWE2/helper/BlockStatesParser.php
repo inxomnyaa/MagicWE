@@ -30,8 +30,6 @@ class BlockStatesParser
     /** @var ListTag|null */
     private static $rootListTag = null;
     /** @var CompoundTag|null */
-    private static $defaultStates = null;
-    /** @var CompoundTag|null */
     private static $allStates = null;
     /** @var string */
     private static $regex = "/,(?![^\[]*\])/";
@@ -57,9 +55,7 @@ class BlockStatesParser
         /** @var ListTag $namedTag */
         $namedTag = (new NetworkLittleEndianNBTStream())->read($contentsStateNBT);
         self::$rootListTag = $namedTag;
-        //Load default states
-        self::$defaultStates = new CompoundTag("defaultStates");
-        //and all states. Mapping: oldname:meta->states
+        //Load all states. Mapping: oldname:meta->states
         self::$allStates = new CompoundTag("allStates");
         foreach (self::$rootListTag->getAllValues() as $rootCompound) {
             /** @var CompoundTag $rootCompound */
@@ -78,13 +74,8 @@ class BlockStatesParser
                 }
             }
             //trapdoor debug end
-            if ($oldCompound->getShort("val") === 0) {
-                $states->setName($oldCompound->getString("name"));
-                self::$defaultStates->setTag($states);
-            }
-            $s2 = clone $newCompound->getCompoundTag("states");
-            $s2->setName($oldCompound->getString("name") . ":" . $oldCompound->getShort("val"));
-            self::$allStates->setTag($s2);
+            $states->setName($oldCompound->getString("name") . ":" . $oldCompound->getShort("val"));
+            self::$allStates->setTag($states);
         }
         $blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
         if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
@@ -106,7 +97,7 @@ class BlockStatesParser
      */
     public static function isInit(): bool
     {
-        return self::$defaultStates instanceof CompoundTag && self::$rootListTag instanceof ListTag;
+        return self::$allStates instanceof CompoundTag && self::$rootListTag instanceof ListTag;
     }
 
     /**
@@ -251,13 +242,14 @@ class BlockStatesParser
             $blockData = strtolower(str_replace("minecraft:", "", $query));
             $re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
             preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
-            $selectedBlockName = "minecraft:" . ($matches[0][1] ?? "air");
             if (count($matches[0]) < 3) {
                 /** @var Item $items */
                 $items = Item::fromString($query);
                 return [$items->getBlock()];
             }
-            $defaultStatesNamedTag = self::$defaultStates->getTag($selectedBlockName);
+            $selectedBlockName = "minecraft:" . ($matches[0][1] ?? "air");
+            #$defaultStatesNamedTag = self::$defaultStates->getTag($selectedBlockName);
+            $defaultStatesNamedTag = self::$allStates->getTag($selectedBlockName.":0");
             if (!$defaultStatesNamedTag instanceof CompoundTag) {
                 throw new InvalidArgumentException("Could not find default block states for $selectedBlockName");
             }
@@ -360,7 +352,7 @@ class BlockStatesParser
         $s = $failed = [];
         foreach ($printedCompound as $statesTagEntry) {
             /** @var CompoundTag $defaultStatesNamedTag */
-            $defaultStatesNamedTag = self::$defaultStates->getTag($blockIdentifier);
+            $defaultStatesNamedTag = self::$allStates->getTag($blockIdentifier.":0");
             $namedTag = $defaultStatesNamedTag->getTag($statesTagEntry->getName());
             if (!$namedTag instanceof ByteTag && !$namedTag instanceof StringTag && !$namedTag instanceof IntTag) {
                 continue;
@@ -402,8 +394,6 @@ class BlockStatesParser
             Server::getInstance()->getLogger()->debug(self::printStates($bs, true));
             try {
                 Server::getInstance()->getLogger()->debug(strval($bs));
-            } catch (InvalidBlockStateException $e) {
-            } catch (InvalidArgumentException $e) {
             } catch (RuntimeException $e) {
                 Server::getInstance()->getLogger()->logException($e);
             }
@@ -482,6 +472,8 @@ class BlockStatesParser
             "minecraft:stone_button[direction=0]",
             "minecraft:stone_brick_stairs[direction=0]",
             "minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
+            "minecraft:birch_door[direction=0,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
         ];
         foreach ($tests as $test) {
             try {
