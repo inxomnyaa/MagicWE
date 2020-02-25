@@ -67,11 +67,17 @@ class BlockStatesParser
             $newCompound = $rootCompound->getCompoundTag("new");
             $states = clone $newCompound->getCompoundTag("states");
             //TODO REMOVE, Trapdoor debug
-            if (strpos($oldCompound->getString("name"), "trapdoor") !== false) {
-                if ($oldCompound->getShort("val") === 8 || $oldCompound->getShort("val") === 11)
+            if ($oldCompound->getString("name") === "minecraft:trapdoor") {
+                $i = $oldCompound->getShort("val");
+                if ($i === 0 || $i === 8 || $i === 11) {
                     var_dump($oldCompound, $newCompound);
+                    #if($i!==0)
+                    #Server::getInstance()->getLogger()->debug(self::printStates(new BlockStatesEntry("minecraft:trapdoor", $states, Block::get(Block::TRAPDOOR, $i)), true));
+                    //gives: minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]
+                    //and  : minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]
+                }
             }
-            //
+            //trapdoor debug end
             if ($oldCompound->getShort("val") === 0) {
                 $states->setName($oldCompound->getString("name"));
                 self::$defaultStates->setTag($states);
@@ -90,7 +96,7 @@ class BlockStatesParser
                 throw new PluginException("rotation_flip_data.json could not be loaded! Rotation and flip support has been disabled!");
             } else {
                 self::setRotationFlipMap(json_decode($fileGetContents, true));
-                var_dump("Successfully loaded");
+                var_dump("Successfully loaded rotation_flip_data.json");
             }
         }
     }
@@ -332,9 +338,11 @@ class BlockStatesParser
     public static function getStateByBlock(Block $block): ?BlockStatesEntry
     {
         $name = self::getBlockIdMapName($block);
+        if ($block->getId() === Block::TRAPDOOR) var_dump($name);
         if ($name === null) return null;
         /** @var string $name */
-        $blockStates = self::$allStates->getCompoundTag($name . ":" . $block->getDamage());
+        $blockStates = clone self::$allStates->getCompoundTag($name . ":" . $block->getDamage());
+        if ($block->getId() === Block::TRAPDOOR) var_dump($blockStates);
         if ($blockStates === null) return null;
         return new BlockStatesEntry($name, $blockStates, $block);
     }
@@ -527,6 +535,14 @@ class BlockStatesParser
         }
         //test trapdoors because WTF they are weird
         try {
+            $block = Block::get(Block::TRAPDOOR, 0);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
+            $entry = self::getStateByBlock($block);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry->blockStates);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, true));
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, false));
+
             $block = Block::get(Block::TRAPDOOR, 8);
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
             $entry = self::getStateByBlock($block);
