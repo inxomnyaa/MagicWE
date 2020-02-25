@@ -5,8 +5,8 @@ parameters:
 
     ignoreErrors: []
 
-	featureToggles:
-		parallel: true
+    featureToggles:
+        parallel: true
 
     paths:
         - /source/src
