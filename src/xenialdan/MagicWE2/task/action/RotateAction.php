@@ -13,6 +13,7 @@ use xenialdan\MagicWE2\helper\BlockEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\Cuboid;
 
 class RotateAction extends ClipboardAction
 {
@@ -68,11 +69,12 @@ class RotateAction extends ClipboardAction
         $x = $y = $z = null;
         $maxX = $clipboard->selection->getSizeX() - 1;
         $maxZ = $clipboard->selection->getSizeZ() - 1;
-        foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {
+        foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {//only fully works if xyz is positive //TODO make sure this is always positive, see next comment
             var_dump("$x $y $z");
             $newX = $x;
             $newZ = $z;
-            if ($this->rotation === self::ROTATE_90) {//TODO modify selection size/position
+            //TODO if aroundOrigin is true (or false, unsure right now), modify the paste vector instead, and always keep the blocks in the positive range?
+            if ($this->rotation === self::ROTATE_90) {
                 $newX = -$z;
                 $newZ = $x;
                 if ($this->aroundOrigin) {
@@ -87,7 +89,7 @@ class RotateAction extends ClipboardAction
                     $newZ += $maxZ;
                 }
             }
-            if ($this->rotation === self::ROTATE_270) {//TODO modify selection size/position
+            if ($this->rotation === self::ROTATE_270) {
                 $newX = $z;
                 $newZ = -$x;
                 if ($this->aroundOrigin) {
@@ -110,6 +112,34 @@ class RotateAction extends ClipboardAction
                 $lastProgress = $progress;
             }
         }
+
+        $clonedSelection = $clonedClipboard->selection;
+        $pos1 = $clonedSelection->pos1;
+        $pos2 = $clonedSelection->pos2;
+        if ($this->rotation === self::ROTATE_90) {//TODO rewrite to be cleaner
+            $pos2 = $pos2->setComponents($pos1->x, $pos2->y, $pos1->z + $maxX);
+            $pos1 = $pos1->subtract($maxZ, 0, 0);
+            if ($this->aroundOrigin) {
+                $pos1 = $pos1->add($maxZ, 0, 0);
+                $pos2 = $pos2->add($maxZ, 0, 0);
+            }
+        }
+        if ($this->rotation === self::ROTATE_180) {
+            if (!$this->aroundOrigin) {
+                $pos1 = $pos1->subtract($maxX, 0, $maxZ);
+                $pos2 = $pos2->subtract($maxX, 0, $maxZ);
+            }
+        }
+        if ($this->rotation === self::ROTATE_270) {//TODO rewrite to be cleaner
+            $pos2 = $pos2->setComponents($pos1->x + $maxZ, $pos2->y, $pos1->z);
+            $pos1 = $pos1->subtract(0, 0, $maxX);
+            if ($this->aroundOrigin) {
+                $pos1 = $pos1->add(0, 0, $maxX);
+                $pos2 = $pos2->add(0, 0, $maxX);
+            }
+        }
+        $clonedSelection->setShape(Cuboid::constructFromPositions($pos1, $pos2));//TODO figure out how to keep the shape (not always Cuboid)
+        $clonedClipboard->selection = $clonedSelection;
         $clipboard = $clonedClipboard;
     }
 }
