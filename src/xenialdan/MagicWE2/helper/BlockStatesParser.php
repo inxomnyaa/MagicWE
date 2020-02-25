@@ -63,12 +63,12 @@ class BlockStatesParser
             $newCompound = $rootCompound->getCompoundTag("new");
             $states = clone $newCompound->getCompoundTag("states");
             //TODO REMOVE, Trapdoor debug
-            if ($oldCompound->getString("name") === "minecraft:trapdoor") {
+            if ($oldCompound->getString("name") === "minecraft:wooden_door") {
                 $i = $oldCompound->getShort("val");
                 if ($i === 0 || $i === 8 || $i === 11) {
                     var_dump($oldCompound, $newCompound);
-                    #if($i!==0)
-                    #Server::getInstance()->getLogger()->debug(self::printStates(new BlockStatesEntry("minecraft:trapdoor", $states, Block::get(Block::TRAPDOOR, $i)), true));
+                    if($i!==0)
+                    Server::getInstance()->getLogger()->debug(self::printStates(new BlockStatesEntry("minecraft:wooden_door", $states, Block::get(Block::WOODEN_DOOR_BLOCK, $i)), true));
                     //gives: minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]
                     //and  : minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]
                 }
@@ -439,41 +439,43 @@ class BlockStatesParser
     {
         //testing blockstate parser
         $tests = [
-            "minecraft:tnt",
-            "minecraft:wood",
-            "minecraft:log",
-            "minecraft:wooden_slab",
-            "minecraft:wooden_slab_wrongname",
-            "minecraft:wooden_slab[foo=bar]",
-            "minecraft:wooden_slab[top_slot_bit=]",
-            "minecraft:wooden_slab[top_slot_bit=true]",
-            "minecraft:wooden_slab[top_slot_bit=false]",
-            "minecraft:wooden_slab[wood_type=oak]",
-            "minecraft:wooden_slab[wood_type=spruce]",
-            "minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]",
-            "minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
-            "minecraft:end_rod[]",
-            "minecraft:end_rod[facing_direction=1]",
-            "minecraft:end_rod[block_light_level=14]",
-            "minecraft:end_rod[block_light_level=13]",
-            "minecraft:light_block[block_light_level=14]",
-            "minecraft:stone[]",
-            "minecraft:stone[stone_type=granite]",
-            "minecraft:stone[stone_type=andesite]",
-            "minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
-            //alias testing
-            "minecraft:wooden_slab[top=true]",
-            "minecraft:wooden_slab[top=true,type=spruce]",
-            "minecraft:stone[type=granite]",
-            "minecraft:bedrock[burn=true]",
-            "minecraft:lever[direction=1]",
-            "minecraft:wheat[growth=3]",
-            "minecraft:stone_button[direction=1,pressed=true]",
-            "minecraft:stone_button[direction=0]",
-            "minecraft:stone_brick_stairs[direction=0]",
-            "minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
+            #"minecraft:tnt",
+            #"minecraft:wood",
+            #"minecraft:log",
+            #"minecraft:wooden_slab",
+            #"minecraft:wooden_slab_wrongname",
+            #"minecraft:wooden_slab[foo=bar]",
+            #"minecraft:wooden_slab[top_slot_bit=]",
+            #"minecraft:wooden_slab[top_slot_bit=true]",
+            #"minecraft:wooden_slab[top_slot_bit=false]",
+            #"minecraft:wooden_slab[wood_type=oak]",
+            #"minecraft:wooden_slab[wood_type=spruce]",
+            #"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]",
+            #"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
+            #"minecraft:end_rod[]",
+            #"minecraft:end_rod[facing_direction=1]",
+            #"minecraft:end_rod[block_light_level=14]",
+            #"minecraft:end_rod[block_light_level=13]",
+            #"minecraft:light_block[block_light_level=14]",
+            #"minecraft:stone[]",
+            #"minecraft:stone[stone_type=granite]",
+            #"minecraft:stone[stone_type=andesite]",
+            #"minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
+            #//alias testing
+            #"minecraft:wooden_slab[top=true]",
+            #"minecraft:wooden_slab[top=true,type=spruce]",
+            #"minecraft:stone[type=granite]",
+            #"minecraft:bedrock[burn=true]",
+            #"minecraft:lever[direction=1]",
+            #"minecraft:wheat[growth=3]",
+            #"minecraft:stone_button[direction=1,pressed=true]",
+            #"minecraft:stone_button[direction=0]",
+            #"minecraft:stone_brick_stairs[direction=0]",
+            #"minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
+            "minecraft:birch_door",
             "minecraft:birch_door[direction=0,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
             "minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
         ];
         foreach ($tests as $test) {
             try {
@@ -481,6 +483,8 @@ class BlockStatesParser
                 foreach (self::fromString($test) as $block) {
                     assert($block instanceof Block);
                     Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
+                    Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates(self::getStateByBlock($block),true));
+                    Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates(self::getStateByBlock($block),false));
                 }
             } catch (Exception $e) {
                 Server::getInstance()->getLogger()->debug($e->getMessage());
@@ -489,18 +493,22 @@ class BlockStatesParser
         }
         //test flip+rotation
         $tests2 = [
-            "minecraft:wooden_slab[wood_type=oak]",
-            "minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
-            "minecraft:end_rod[]",
-            "minecraft:end_rod[facing_direction=1]",
-            "minecraft:end_rod[facing_direction=2]",
-            "minecraft:stone_brick_stairs[direction=0]",
-            "minecraft:stone_brick_stairs[direction=1]",
-            "minecraft:stone_brick_stairs[direction=1,upside_down_bit=true]",
-            "stone_brick_stairs[direction=1,upside_down_bit=true]",
-            "minecraft:ladder[facing_direction=3]",
-            "minecraft:magenta_glazed_terracotta[facing_direction=2]",
-            "minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]"
+            #"minecraft:wooden_slab[wood_type=oak]",
+            #"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
+            #"minecraft:end_rod[]",
+            #"minecraft:end_rod[facing_direction=1]",
+            #"minecraft:end_rod[facing_direction=2]",
+            #"minecraft:stone_brick_stairs[direction=0]",
+            #"minecraft:stone_brick_stairs[direction=1]",
+            #"minecraft:stone_brick_stairs[direction=1,upside_down_bit=true]",
+            #"stone_brick_stairs[direction=1,upside_down_bit=true]",
+            #"minecraft:ladder[facing_direction=3]",
+            #"minecraft:magenta_glazed_terracotta[facing_direction=2]",
+            #"minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]",
+            "minecraft:birch_door",
+            "minecraft:birch_door[direction=0,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
         ];
         foreach ($tests2 as $test) {
             try {
@@ -527,7 +535,7 @@ class BlockStatesParser
         }
         //test trapdoors because WTF they are weird
         try {
-            $block = Block::get(Block::TRAPDOOR, 0);
+            $block = Block::get(Block::BIRCH_DOOR_BLOCK, 0);
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
             $entry = self::getStateByBlock($block);
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
@@ -535,7 +543,7 @@ class BlockStatesParser
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, true));
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, false));
 
-            $block = Block::get(Block::TRAPDOOR, 8);
+            $block = Block::get(Block::BIRCH_DOOR_BLOCK, 8);
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
             $entry = self::getStateByBlock($block);
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
@@ -543,7 +551,7 @@ class BlockStatesParser
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, true));
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, false));
 
-            $block = Block::get(Block::TRAPDOOR, 11);
+            $block = Block::get(Block::BIRCH_DOOR_BLOCK, 11);
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
             $entry = self::getStateByBlock($block);
             Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
