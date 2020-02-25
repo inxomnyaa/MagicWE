@@ -48,7 +48,7 @@ class BlockStatesParser
      * @throws PluginException
      * @throws RuntimeException
      */
-    public static function init(?string $rotFlipMapPath): void
+    public static function init(?string $rotFlipMapPath = null): void
     {
         if (self::isInit()) return;//Silent return if already initialised
         $contentsStateNBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
