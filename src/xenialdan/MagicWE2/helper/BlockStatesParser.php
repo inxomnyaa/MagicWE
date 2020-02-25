@@ -66,6 +66,12 @@ class BlockStatesParser
             $oldCompound = $rootCompound->getCompoundTag("old");
             $newCompound = $rootCompound->getCompoundTag("new");
             $states = clone $newCompound->getCompoundTag("states");
+            //TODO REMOVE, Trapdoor debug
+            if (strpos($oldCompound->getString("name"), "trapdoor") !== false) {
+                if ($oldCompound->getShort("val") === 8 || $oldCompound->getShort("val") === 11)
+                    var_dump($oldCompound, $newCompound);
+            }
+            //
             if ($oldCompound->getShort("val") === 0) {
                 $states->setName($oldCompound->getString("name"));
                 self::$defaultStates->setTag($states);
@@ -433,7 +439,7 @@ class BlockStatesParser
 
     public static function runTests(): void
     {
-        //testing cases
+        //testing blockstate parser
         $tests = [
             "minecraft:tnt",
             "minecraft:wood",
@@ -467,6 +473,7 @@ class BlockStatesParser
             "minecraft:stone_button[direction=1,pressed=true]",
             "minecraft:stone_button[direction=0]",
             "minecraft:stone_brick_stairs[direction=0]",
+            "minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
         ];
         foreach ($tests as $test) {
             try {
@@ -480,6 +487,7 @@ class BlockStatesParser
                 continue;
             }
         }
+        //test flip+rotation
         $tests2 = [
             "minecraft:wooden_slab[wood_type=oak]",
             "minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
@@ -516,6 +524,26 @@ class BlockStatesParser
                 Server::getInstance()->getLogger()->debug($e->getMessage());
                 continue;
             }
+        }
+        //test trapdoors because WTF they are weird
+        try {
+            $block = Block::get(Block::TRAPDOOR, 8);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
+            $entry = self::getStateByBlock($block);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry->blockStates);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, true));
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, false));
+
+            $block = Block::get(Block::TRAPDOOR, 11);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
+            $entry = self::getStateByBlock($block);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry->blockStates);
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, true));
+            Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, false));
+        } catch (Exception $e) {
+            Server::getInstance()->getLogger()->debug($e->getMessage());
         }
     }
 
