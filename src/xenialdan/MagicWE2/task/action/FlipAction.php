@@ -17,6 +17,7 @@ use xenialdan\MagicWE2\selection\Selection;
 class FlipAction extends ClipboardAction
 {
     const AXIS_X = "x";
+    const AXIS_Y = "y";
     const AXIS_Z = "z";
     const AXIS_XZ = "xz";
     /** @var bool */
@@ -28,7 +29,7 @@ class FlipAction extends ClipboardAction
 
     public function __construct(string $axis)
     {
-        if ($axis !== self::AXIS_X && $axis !== self::AXIS_Z && $axis !== self::AXIS_XZ) throw new InvalidArgumentException("Invalid axis $axis given");
+        if ($axis !== self::AXIS_X && $axis !== self::AXIS_Y && $axis !== self::AXIS_Z && $axis !== self::AXIS_XZ) throw new InvalidArgumentException("Invalid axis $axis given");
         $this->axis = $axis;
     }
 
@@ -63,7 +64,7 @@ class FlipAction extends ClipboardAction
         $clonedClipboard = clone $clipboard;
         $x = $y = $z = null;
         $maxX = $clipboard->selection->getSizeX() - 1;
-        //$maxY = $clipboard->selection->getSizeY();//TODO enable when upside down flip is implemented
+        $maxY = $clipboard->selection->getSizeY() - 1;
         $maxZ = $clipboard->selection->getSizeZ() - 1;
         foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {
             var_dump("$x $y $z");
@@ -71,6 +72,8 @@ class FlipAction extends ClipboardAction
                 $x = $maxX - $x;
             if ($this->axis === self::AXIS_X || $this->axis === self::AXIS_XZ)
                 $z = $maxZ - $z;
+            if ($this->axis === self::AXIS_Y)
+                $y = $maxY - $y;
             var_dump("$x $y $z");
             $block1 = $blockEntry->toBlock();
             $blockStatesEntry = BlockStatesParser::getStateByBlock($block1);

@@ -503,10 +503,15 @@ class BlockStatesParser
                 assert($state->toBlock() instanceof Block);
                 Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Rotated block: " . TF::AQUA . $state->toBlock());
 
-                Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query: " . TF::LIGHT_PURPLE . $test);
+                Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query x: " . TF::LIGHT_PURPLE . $test);
                 $state = self::getStateByBlock($block)->mirror("x");
                 assert($state->toBlock() instanceof Block);
-                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block: " . TF::AQUA . $state->toBlock());
+                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block x: " . TF::AQUA . $state->toBlock());
+
+                Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query y: " . TF::LIGHT_PURPLE . $test);
+                $state = self::getStateByBlock($block)->mirror("y");
+                assert($state->toBlock() instanceof Block);
+                Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block y: " . TF::AQUA . $state->toBlock());
             } catch (Exception $e) {
                 Server::getInstance()->getLogger()->debug($e->getMessage());
                 continue;

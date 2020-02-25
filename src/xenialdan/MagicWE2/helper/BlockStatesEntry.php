@@ -17,6 +17,7 @@ use RuntimeException;
 use Throwable;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\task\action\FlipAction;
 
 class BlockStatesEntry
 {
@@ -121,7 +122,7 @@ class BlockStatesEntry
         }
         $clone->blockStates = $bsCompound;
         $clone->block = null;
-        $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
+        $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
         return $clone;
         //TODO reduce useless calls. BSP::fromStates?
         #$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
@@ -130,7 +131,7 @@ class BlockStatesEntry
 
     /**
      * TODO Optimize (reduce getStateByBlock/fromString calls)
-     * @param string $axis any of ["x","z","xz"]
+     * @param string $axis any of ["x","y","z","xz"]
      * @return BlockStatesEntry
      * @throws InvalidArgumentException
      * @throws InvalidBlockStateException
@@ -144,43 +145,111 @@ class BlockStatesEntry
         $block = $clone->toBlock();
         $idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
         $key = $idMapName . ":" . $block->getDamage();
-        $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
-        if ($fromMap === null) {
-            var_dump("block not in mirror map");
-            return $clone;
-        }
-        $flippedStates = $fromMap[$axis] ?? null;
-        if ($flippedStates === null) {
-            var_dump("axis not in mirror map");
-            return $clone;
+        if ($axis !== FlipAction::AXIS_Y) {//ugly hack for y flip
+            $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
+            if ($fromMap === null) {
+                var_dump("block not in mirror map");
+                return $clone;
+            }
+            $flippedStates = $fromMap[$axis] ?? null;
+            if ($flippedStates === null && $axis !== FlipAction::AXIS_Y) {//ugly hack for y flip
+                var_dump("axis not in mirror map");
+                return $clone;
+            }
         }
         //ugly hack to keep current ones
         //TODO use the states compound tag
         $bsCompound = clone $clone->blockStates;//TODO check if clone is necessary
         $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
-        foreach ($flippedStates as $k => $v) {
+        if ($axis === FlipAction::AXIS_Y && !(//TODO maybe add vine + mushroom block directions
+                $bsCompound->hasTag("attachment") ||
+                $bsCompound->hasTag("facing_direction") ||
+                $bsCompound->hasTag("hanging") ||
+                $bsCompound->hasTag("lever_direction") ||
+                $bsCompound->hasTag("rail_direction") ||
+                $bsCompound->hasTag("top_slot_bit") ||
+                $bsCompound->hasTag("torch_facing_direction") ||
+                $bsCompound->hasTag("upper_block_bit") ||
+                $bsCompound->hasTag("upside_down_bit")
+            )) {//ugly hack for y flip
+            var_dump("nothing can be flipped around y axis");
+            return $clone;
+        }
+        foreach ($bsCompound as $stateName => $tag) {
             //TODO clean up.. new method?
-            $tag = $bsCompound->getTag($k);
-            if ($tag === null) {
-                throw new InvalidBlockStateException("Invalid state $k");
+            if ($axis === FlipAction::AXIS_Y) {
+                $value = $tag->getValue();
+                switch ($stateName) {//TODO clean up oh my god
+                    case "attachment":
+                    {
+                        if ($value === "standing") $value = "hanging";
+                        else if ($value === "hanging") $value = "standing";
+                        break;
+                    }
+                    case "facing_direction":
+                    {
+                        if ($value === 0) $value = 1;
+                        else if ($value === 1) $value = 0;
+                        break;
+                    }
+                    case "hanging":
+                    {
+                        if ($value === 0) $value = 1;
+                        else if ($value === 1) $value = 0;
+                        break;
+                    }
+                    case "lever_direction":
+                    {
+                        if ($value === "down_east_west") $value = "up_east_west";
+                        else if ($value === "up_east_west") $value = "down_east_west";
+                        else if ($value === "down_north_south") $value = "up_north_south";
+                        else if ($value === "up_north_south") $value = "down_north_south";
+                        break;
+                    }
+                    case "rail_direction":
+                    {
+                        //TODO
+                        break;
+                    }
+                    case "top_slot_bit":
+                    case "upper_block_bit":
+                    case "upside_down_bit":
+                    {
+                        if ($value === 0) $value = 1;
+                        else if ($value === 1) $value = 0;
+                        break;
+                    }
+                    case "torch_facing_direction":
+                    {
+                        if ($value === "unknown") $value = "top";
+                        else if ($value === "top") $value = "unknown";
+                        break;
+                    }/*
+                    default:
+                    {
+                        $value = $flippedStates[$stateName];
+                    }*/
+                }
+            } else {
+                $value = $flippedStates[$stateName];
             }
             if ($tag instanceof StringTag) {
-                $bsCompound->setString($tag->getName(), $v);
+                $bsCompound->setString($tag->getName(), $value);
             } else if ($tag instanceof IntTag) {
-                $bsCompound->setInt($tag->getName(), intval($v));
+                $bsCompound->setInt($tag->getName(), intval($value));
             } else if ($tag instanceof ByteTag) {
-                if ($v !== "true" && $v !== "false") {
-                    throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+                if ($value != true && $value != false) {//Intentional weak check
+                    throw new InvalidBlockStateException("Invalid value $value for blockstate $stateName, must be \"true\" or \"false\"");
                 }
-                $val = ($v === "true" ? 1 : 0);
-                $bsCompound->setByte($tag->getName(), $val);
+                $bsCompound->setByte($tag->getName(), intval($value));
             } else {
                 throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
             }
         }
         $clone->blockStates = $bsCompound;
         $clone->block = null;
-        $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
+        $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
+        var_dump($clone->blockFull);
         return $clone;
         //TODO reduce useless calls. BSP::fromStates?
         #$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
