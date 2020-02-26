@@ -9,7 +9,7 @@ use pocketmine\command\CommandSender;
 
 class RotateAngleArgument extends StringEnumArgument
 {
-    /** @var array<string,int> */
+    /** @var array */
     protected const VALUES = ["90" => 90, "180" => 180, "270" => 270];
 
     public function getTypeName(): string
@@ -27,6 +27,6 @@ class RotateAngleArgument extends StringEnumArgument
      */
     public function parse(string $argument, CommandSender $sender)
     {
-        return intval(self::VALUES[$argument]);//TODO maybe make better?
+        return intval(self::VALUES[(int)$argument]);//TODO maybe make better?
     }
 }
