@@ -31,8 +31,6 @@ class BlockStatesParser
     private static $rootListTag = null;
     /** @var CompoundTag|null */
     private static $allStates = null;
-    /** @var string */
-    private static $regex = "/,(?![^\[]*\])/";
     /** @var array */
     private static $aliasMap = [];
     /** @var array */
@@ -231,7 +229,7 @@ class BlockStatesParser
     {
         $blocks = [];
         if ($multiple) {
-            $pregSplit = preg_split(self::$regex, trim($query), -1, PREG_SPLIT_NO_EMPTY);
+            $pregSplit = preg_split('/,(?![^\[]*\])/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
             if (!is_array($pregSplit)) throw new InvalidArgumentException("Regex matching failed");
             foreach ($pregSplit as $b) {
                 $blocks = array_merge($blocks, self::fromString($b, false));
@@ -242,12 +240,15 @@ class BlockStatesParser
             $blockData = strtolower(str_replace("minecraft:", "", $query));
             $re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
             preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
+            if(!isset($matches[0][1])){
+                throw new InvalidArgumentException("Could not detect block id");
+            }
             if (count($matches[0]) < 3) {
                 /** @var Item $items */
-                $items = Item::fromString($query);
+                $items = Item::fromString($matches[0][1]??$query);
                 return [$items->getBlock()];
             }
-            $selectedBlockName = "minecraft:" . ($matches[0][1] ?? "air");
+            $selectedBlockName = "minecraft:" . $matches[0][1];
             #$defaultStatesNamedTag = self::$defaultStates->getTag($selectedBlockName);
             $defaultStatesNamedTag = self::$allStates->getTag($selectedBlockName.":0");
             if (!$defaultStatesNamedTag instanceof CompoundTag) {
@@ -257,7 +258,7 @@ class BlockStatesParser
             $explode = explode(",", $extraData);
             $finalStatesList = clone $defaultStatesNamedTag;
             $finalStatesList->setName("states");
-            $availableAliases = [];//TODO map in init() if too slow
+            $availableAliases = [];//TODO map in init()! No need to recreate every time!
             foreach ($finalStatesList as $state) {
                 if (array_key_exists($state->getName(), self::$aliasMap)) {
                     foreach (self::$aliasMap[$state->getName()]["alias"] as $alias) {
@@ -295,7 +296,7 @@ class BlockStatesParser
             }
             //print final list
             //TODO remove. This crashes in AsyncTasks and is just for debug
-            #Server::getInstance()->getLogger()->debug(self::printStates($finalStatesList, $selectedBlockName, false));
+            Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($selectedBlockName,$finalStatesList), false));
             //return found block(s)
             $blocks = [];
             //TODO there must be a more efficient way to do this
@@ -305,6 +306,8 @@ class BlockStatesParser
                 $newCompound = $rootCompound->getCompoundTag("new");
                 $states = $newCompound->getCompoundTag("states");
                 if (($oldCompound->getString("name") === $selectedBlockName || $newCompound->getString("name") === $selectedBlockName) && $states->equals($finalStatesList)) {
+                    Server::getInstance()->getLogger()->notice("FOUND!");
+                    Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($selectedBlockName,$states), false));
                     /** @var Item $items1 */
                     $items1 = Item::fromString($selectedBlockName . ":" . $oldCompound->getShort("val"));
                     $block = $items1->getBlock();
@@ -330,11 +333,11 @@ class BlockStatesParser
     public static function getStateByBlock(Block $block): ?BlockStatesEntry
     {
         $name = self::getBlockIdMapName($block);
-        if ($block->getId() === Block::TRAPDOOR) var_dump($name);
+        if ($block->getId() === Block::BIRCH_DOOR_BLOCK) var_dump($name);
         if ($name === null) return null;
         /** @var string $name */
         $blockStates = clone self::$allStates->getCompoundTag($name . ":" . $block->getDamage());
-        if ($block->getId() === Block::TRAPDOOR) var_dump($blockStates);
+        if ($block->getId() === Block::BIRCH_DOOR_BLOCK) var_dump($blockStates);
         if ($blockStates === null) return null;
         return new BlockStatesEntry($name, $blockStates, $block);
     }
@@ -473,8 +476,9 @@ class BlockStatesParser
             #"minecraft:stone_brick_stairs[direction=0]",
             #"minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
             "minecraft:birch_door",
-            "minecraft:birch_door[direction=0,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[direction=1]",
             "minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
             "minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
         ];
         foreach ($tests as $test) {
@@ -482,9 +486,9 @@ class BlockStatesParser
                 Server::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
                 foreach (self::fromString($test) as $block) {
                     assert($block instanceof Block);
-                    Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
                     Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates(self::getStateByBlock($block),true));
                     Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates(self::getStateByBlock($block),false));
+                    Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
                 }
             } catch (Exception $e) {
                 Server::getInstance()->getLogger()->debug($e->getMessage());
@@ -506,8 +510,9 @@ class BlockStatesParser
             #"minecraft:magenta_glazed_terracotta[facing_direction=2]",
             #"minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]",
             "minecraft:birch_door",
-            "minecraft:birch_door[direction=0,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[direction=1]",
             "minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+            "minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
             "minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
         ];
         foreach ($tests2 as $test) {
