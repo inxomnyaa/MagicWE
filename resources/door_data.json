@@ -804,5 +804,31 @@
     "xz":{
       "direction":0
     }
+  },
+  {
+    "0":{
+      "direction":3,
+      "door_hinge_bit":true,
+      "open_bit":true,
+      "upper_block_bit":true
+    },
+    "90":{
+      "direction":0
+    },
+    "180":{
+      "direction":1
+    },
+    "270":{
+      "direction":2
+    },
+    "x":{
+
+    },
+    "z":{
+      "direction":1
+    },
+    "xz":{
+      "direction":1
+    }
   }
 ]
