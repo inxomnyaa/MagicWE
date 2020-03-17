@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use InvalidStateException;
 use pocketmine\block\Block;
 use pocketmine\item\Item;
+use pocketmine\item\ItemBlock;
 use pocketmine\level\Position;
 use pocketmine\nbt\NetworkLittleEndianNBTStream;
 use pocketmine\nbt\tag\ByteTag;
@@ -37,15 +38,18 @@ class BlockStatesParser
     /** @var array */
     private static $rotationFlipMap = [];
     /** @var array */
+    private static $doorRotationFlipMap = [];
+    /** @var array */
     private static $blockIdMap = [];
 
     /**
      * @param string|null $rotFlipMapPath
+     * @param string|null $doorRotFlipMapPath
      * @throws InvalidArgumentException
      * @throws PluginException
      * @throws RuntimeException
      */
-    public static function init(?string $rotFlipMapPath = null): void
+    public static function init(?string $rotFlipMapPath = null, ?string $doorRotFlipMapPath = null): void
     {
         if (self::isInit()) return;//Silent return if already initialised
         $contentsStateNBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
@@ -61,17 +65,6 @@ class BlockStatesParser
             $oldCompound = $rootCompound->getCompoundTag("old");
             $newCompound = $rootCompound->getCompoundTag("new");
             $states = clone $newCompound->getCompoundTag("states");
-            //TODO REMOVE, Door debug
-            if ($oldCompound->getString("name") === "minecraft:wooden_door") {
-                $i = $oldCompound->getShort("val");
-                if ($i === 0 || $i === 8 || $i === 11) {
-                    #if ($i !== 0)
-                        #Server::getInstance()->getLogger()->debug(self::printStates(new BlockStatesEntry("minecraft:birch_door", $states, Block::get(Block::BIRCH_DOOR_BLOCK, $i)), true));
-                    //gives: minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]
-                    //and  : minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]
-                }
-            }
-            //trapdoor debug end
             $states->setName($oldCompound->getString("name") . ":" . $oldCompound->getShort("val"));
             self::$allStates->setTag($states);
         }
@@ -86,6 +79,15 @@ class BlockStatesParser
             } else {
                 self::setRotationFlipMap(json_decode($fileGetContents, true));
                 var_dump("Successfully loaded rotation_flip_data.json");
+            }
+        }
+        if ($doorRotFlipMapPath !== null) {
+            $fileGetContents = file_get_contents($doorRotFlipMapPath);
+            if ($fileGetContents === false) {
+                throw new PluginException("door_data.json could not be loaded! Door rotation and flip support has been disabled!");
+            } else {
+                self::setDoorRotationFlipMap(json_decode($fileGetContents, true));
+                var_dump("Successfully loaded door_data.json");
             }
         }
     }
@@ -129,6 +131,22 @@ class BlockStatesParser
     public static function setRotationFlipMap(array $map): void
     {
         self::$rotationFlipMap = $map;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getDoorRotationFlipMap(): array
+    {
+        return self::$doorRotationFlipMap;
+    }
+
+    /**
+     * @param array $map
+     */
+    public static function setDoorRotationFlipMap(array $map): void
+    {
+        self::$doorRotationFlipMap = $map;
     }
 
     /**
@@ -227,6 +245,7 @@ class BlockStatesParser
      */
     public static function fromString(string $query, bool $multiple = false): array
     {
+        #if (!BlockFactory::isInit()) BlockFactory::init();
         $blocks = [];
         if ($multiple) {
             $pregSplit = preg_split('/,(?![^\[]*\])/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
@@ -280,18 +299,17 @@ class BlockStatesParser
                 if ($tag === null) {
                     throw new InvalidBlockStateException("Invalid state $k");
                 }
-                //TODO Doors are some special flowers. they need extra attention
-                #if (strpos($query, "_door") !== false && $tag->getName() === "direction") continue;
                 if ($tag instanceof StringTag) {
                     $finalStatesList->setString($tag->getName(), $v);
                 } else if ($tag instanceof IntTag) {
                     $finalStatesList->setInt($tag->getName(), intval($v));
                 } else if ($tag instanceof ByteTag) {
+                    if ($v === 1) $v = "true";
+                    if ($v === 0) $v = "false";
                     if ($v !== "true" && $v !== "false") {
                         throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
                     }
-                    $val = ($v === "true" ? 1 : 0);
-                    $finalStatesList->setByte($tag->getName(), $val);
+                    $finalStatesList->setByte($tag->getName(), $v === "true" ? 1 : 0);
                 } else {
                     throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
                 }
@@ -301,23 +319,46 @@ class BlockStatesParser
             #Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($selectedBlockName,$finalStatesList), false));
             //return found block(s)
             $blocks = [];
+            //doors.. special blocks annoying -.-
+            $isDoor = strpos($selectedBlockName, "_door") !== false;
+            if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
+                return [ItemBlock::fromString($selectedBlockName . "_block:8")->getBlock()];
+            }
             //TODO there must be a more efficient way to do this
             //TODO Testing a new method here, still iterating over all entries, but skipping those with different id
-            var_dump((string)$finalStatesList);
+            #var_dump((string)$finalStatesList);
             foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
-                $currentoldName = rtrim(preg_replace("/([0-9]+)/", "", $oldNameAndMeta), ":");
-                if ($currentoldName !== $selectedBlockName) continue;//skip wrong blocks
+                [$mc, $currentoldName, $currentoldDamage] = explode(":", $oldNameAndMeta);//first is minecraft:
+                $currentoldName = $mc . ":" . $currentoldName;
+                if ($currentoldName !== $selectedBlockName) {//skip wrong blocks
+                    continue;
+                }
+                $currentoldDamage = intval($currentoldDamage);
+                if ($currentoldDamage > 15) {
+                    $currentoldDamage = $currentoldDamage & 0x0F;
+                    #var_dump("META TOO BIG");
+                    #continue;
+                }
                 /** @var CompoundTag $printedCompound */
                 $clonedPrintedCompound = clone $printedCompound;
                 $clonedPrintedCompound->setName($finalStatesList->getName());
-                if ($clonedPrintedCompound->equals($finalStatesList) || (strpos($query, "_door") !== false && self::doorEquals($oldNameAndMeta, $clonedPrintedCompound, $defaultStatesNamedTag, $finalStatesList))) {
+                if ($isDoor) {
+                    $currentoldName = str_replace("_door", "_door_block", $currentoldName);
+                    $oldNameAndMeta = str_replace("_door:", "_door_block:", $oldNameAndMeta);
+                }
+                if ($clonedPrintedCompound->equals($finalStatesList) || ($isDoor && self::doorEquals($currentoldDamage, $defaultStatesNamedTag, $clonedPrintedCompound, $finalStatesList))) {
                     #Server::getInstance()->getLogger()->notice("FOUND!");
                     /** @var Item $items1 */
                     $items1 = Item::fromString($oldNameAndMeta);
-                    var_dump($oldNameAndMeta,(string)$clonedPrintedCompound);
+                    #var_dump($oldNameAndMeta,$items1);
                     $block = $items1->getBlock();
-                    if(strpos($query, "_door") !== false )
-                        $block->setDamage($block->getDamage() + $finalStatesList->getInt("direction",0));
+                    var_dump($oldNameAndMeta, $items1, $block, $finalStatesList);
+                    if ($isDoor) {
+                        var_dump(
+                            self::printStates(self::getStateByBlock($block), false),
+                            #self::printStates(new BlockStatesEntry($currentoldName, $finalStatesList, $block), false)
+                        );
+                    }
                     $blocks[] = $block;
                     #Server::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
                     #Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($selectedBlockName, $clonedPrintedCompound), true));//might cause loop lol
@@ -325,6 +366,7 @@ class BlockStatesParser
             }
             #if (empty($blocks)) return [Block::get(0)];//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
             if (empty($blocks)) throw new InvalidArgumentException("No block $selectedBlockName matching $query could be found");//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
+            if (count($blocks) === 1) return $blocks;
             //"Hack" to get just one block if multiple results have been found. Most times this results in the default one (meta:0)
             $smallestMeta = PHP_INT_MAX;
             $result = null;
@@ -342,11 +384,10 @@ class BlockStatesParser
     public static function getStateByBlock(Block $block): ?BlockStatesEntry
     {
         $name = self::getBlockIdMapName($block);
-        #if ($block->getId() === Block::BIRCH_DOOR_BLOCK) var_dump($name);
         if ($name === null) return null;
         /** @var string $name */
-        $blockStates = clone self::$allStates->getCompoundTag($name . ":" . $block->getDamage());
-        #if ($block->getId() === Block::BIRCH_DOOR_BLOCK) var_dump($blockStates);
+        $damage = $block->getDamage();
+        $blockStates = clone self::$allStates->getCompoundTag($name . ":" . $damage);
         if ($blockStates === null) return null;
         return new BlockStatesEntry($name, $blockStates, $block);
     }
@@ -485,7 +526,8 @@ class BlockStatesParser
             #"minecraft:stone_brick_stairs[direction=0]",
             #"minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
             "minecraft:birch_door",
-            "minecraft:birch_door[direction=1]",
+            #"minecraft:iron_door[direction=1]",
+            "minecraft:birch_door[upper_block_bit=true]",
             "minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
             #"minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
             #"minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
@@ -549,8 +591,8 @@ class BlockStatesParser
         }
         //test doors because WTF they are weird
         try {
-            for($i=0;$i<16;$i++) {
-                $block = Block::get(Block::BIRCH_DOOR_BLOCK, $i);
+            for ($i = 0; $i < 15; $i++) {
+                $block = Block::get(Block::IRON_DOOR_BLOCK, $i);
                 Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
                 $entry = self::getStateByBlock($block);
                 Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
@@ -606,23 +648,22 @@ class BlockStatesParser
         var_dump("DONE");
     }
 
-    private static function doorEquals(string $oldNameAndMeta, CompoundTag $defaultStatesNamedTag, CompoundTag $clonedPrintedCompound, NamedTag $finalStatesList): bool
+    private static function doorEquals(int $currentoldDamage, CompoundTag $defaultStatesNamedTag, CompoundTag $clonedPrintedCompound, NamedTag $finalStatesList): bool
     {
-        //Doors are some special flowers. they need extra attention
-        //name
-        //default states from allstates
-        //current from allstates
-        //final (edited) one
-        #var_dump($oldNameAndMeta,(string)$finalStatesList,self::$rotationFlipMap[str_replace("minecraft:","",$oldNameAndMeta)]["default"]);
-
-        if(
-            #$defaultStatesNamedTag->getInt("direction") === $clonedPrintedCompound->getInt("direction") &&
-//            $defaultStatesNamedTag->getByte("door_hinge_bit") === $clonedPrintedCompound->getByte("door_hinge_bit") &&
-//            $defaultStatesNamedTag->getByte("open_bit") === $clonedPrintedCompound->getByte("open_bit") &&
-//            $defaultStatesNamedTag->getByte("upper_block_bit") === $clonedPrintedCompound->getByte("upper_block_bit")
-            $finalStatesList->getByte("door_hinge_bit") === $defaultStatesNamedTag->getByte("door_hinge_bit") &&
-            $finalStatesList->getByte("open_bit") === $defaultStatesNamedTag->getByte("open_bit") &&
-            $finalStatesList->getByte("upper_block_bit") === $defaultStatesNamedTag->getByte("upper_block_bit")
+        if (
+            /*(
+                $isUp &&
+                $currentoldDamage === 8 &&
+                $finalStatesList->getByte("door_hinge_bit") === $defaultStatesNamedTag->getByte("door_hinge_bit") &&
+                $finalStatesList->getByte("open_bit") === $defaultStatesNamedTag->getByte("open_bit") &&
+                $finalStatesList->getInt("direction") === $defaultStatesNamedTag->getInt("direction")
+            )
+            xor*/
+        (
+            #$finalStatesList->getByte("door_hinge_bit") === $clonedPrintedCompound->getByte("door_hinge_bit") &&
+            $finalStatesList->getByte("open_bit") === $clonedPrintedCompound->getByte("open_bit") &&
+            $finalStatesList->getInt("direction") === $clonedPrintedCompound->getInt("direction")
+        )
         ) return true;
         return false;
     }

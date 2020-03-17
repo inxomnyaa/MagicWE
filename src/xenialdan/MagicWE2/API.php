@@ -399,7 +399,7 @@ class API
     public static function blockParser(string $fullstring, array &$messages, bool &$error)
     {
         if (!BlockFactory::isInit()) BlockFactory::init();
-        BlockStatesParser::init(Loader::getRotFlipFolder());
+        BlockStatesParser::init(Loader::getRotFlipPath(),Loader::getDoorRotFlipPath());
         $blocks = BlockStatesParser::fromString($fullstring, true);
         foreach ($blocks as $block) {
             if ($block instanceof UnknownBlock) {

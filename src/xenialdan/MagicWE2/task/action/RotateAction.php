@@ -70,7 +70,7 @@ class RotateAction extends ClipboardAction
         $maxX = $clipboard->selection->getSizeX() - 1;
         $maxZ = $clipboard->selection->getSizeZ() - 1;
         foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {//only fully works if xyz is positive //TODO make sure this is always positive, see next comment
-            var_dump("$x $y $z");
+            #var_dump("$x $y $z");
             $newX = $x;
             $newZ = $z;
             //TODO if aroundOrigin is true (or false, unsure right now), modify the paste vector instead, and always keep the blocks in the positive range?
@@ -96,13 +96,13 @@ class RotateAction extends ClipboardAction
                     $newZ += $maxX;
                 }
             }
-            var_dump("$newX $y $newZ");
+            #var_dump("$newX $y $newZ");
             $block1 = $blockEntry->toBlock();
             $blockStatesEntry = BlockStatesParser::getStateByBlock($block1);
             $rotated = $blockStatesEntry->rotate($this->rotation);
             $block = $rotated->toBlock();
             $entry = BlockEntry::fromBlock($block);
-            var_dump($blockStatesEntry->__toString(), $rotated->__toString(), $entry);
+            #var_dump($blockStatesEntry->__toString(), $rotated->__toString(), $entry);
             /** @var int $y */
             $clonedClipboard->addEntry($newX, $y, $newZ, $entry);
             $changed++;

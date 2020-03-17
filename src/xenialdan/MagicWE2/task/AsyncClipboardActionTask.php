@@ -27,6 +27,8 @@ class AsyncClipboardActionTask extends MWEAsyncTask
     private $clipboard;
     /** @var string */
     private $rotFlipMapPath;
+    /** @var string */
+    private $doorRotFlipMapPath;
 
     /**
      * AsyncClipboardActionTask constructor.
@@ -42,7 +44,8 @@ class AsyncClipboardActionTask extends MWEAsyncTask
         $this->selection = serialize($selection);//TODO check if needed, $clipboard already holds the selection
         $this->clipboard = serialize($clipboard);//TODO check if this even needs to be serialized
         $this->action = $action;
-        $this->rotFlipMapPath = Loader::getRotFlipFolder();
+        $this->rotFlipMapPath = Loader::getRotFlipPath();
+        $this->doorRotFlipMapPath = Loader::getDoorRotFlipPath();
 
         try {
             $session = SessionHelper::getSessionByUUID($sessionUUID);
@@ -65,7 +68,7 @@ class AsyncClipboardActionTask extends MWEAsyncTask
     {
         $this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
-        if (!BlockStatesParser::isInit()) BlockStatesParser::init($this->rotFlipMapPath);
+        if (!BlockStatesParser::isInit()) BlockStatesParser::init($this->rotFlipMapPath,$this->doorRotFlipMapPath);
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
         /** @var SingleClipboard $clipboard */

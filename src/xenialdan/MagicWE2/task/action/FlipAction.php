@@ -67,20 +67,20 @@ class FlipAction extends ClipboardAction
         $maxY = $clipboard->selection->getSizeY() - 1;
         $maxZ = $clipboard->selection->getSizeZ() - 1;
         foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {
-            var_dump("$x $y $z");
+            #var_dump("$x $y $z");
             if ($this->axis === self::AXIS_Z || $this->axis === self::AXIS_XZ)
                 $x = $maxX - $x;
             if ($this->axis === self::AXIS_X || $this->axis === self::AXIS_XZ)
                 $z = $maxZ - $z;
             if ($this->axis === self::AXIS_Y)
                 $y = $maxY - $y;
-            var_dump("$x $y $z");
-            $block1 = $blockEntry->toBlock();
+            #var_dump("$x $y $z");
+            $block1 = $blockEntry->toBlock();var_dump($block1);
             $blockStatesEntry = BlockStatesParser::getStateByBlock($block1);
             $mirrored = $blockStatesEntry->mirror($this->axis);
             $block = $mirrored->toBlock();
             $entry = BlockEntry::fromBlock($block);
-            var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $entry);
+            var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $block);
             /** @var int $x */
             /** @var int $y */
             /** @var int $z */

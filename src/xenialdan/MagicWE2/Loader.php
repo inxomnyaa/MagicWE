@@ -98,9 +98,14 @@ class Loader extends PluginBase
         throw new ShapeRegistryException("Shape registry is not initialized");
     }
 
-    public static function getRotFlipFolder(): string
+    public static function getRotFlipPath(): string
     {
         return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+    }
+
+    public static function getDoorRotFlipPath(): string
+    {
+        return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
     }
 
     /**
@@ -119,7 +124,7 @@ class Loader extends PluginBase
         #$this->saveResource("rotation_flip_data.json", true);
         $this->saveResource("blockstate_alias_map.json", true);
 
-        BlockStatesParser::init(self::getRotFlipFolder());
+        BlockStatesParser::init(self::getRotFlipPath(),self::getDoorRotFlipPath());
         $fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
         if ($fileGetContents === false) {
             throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");

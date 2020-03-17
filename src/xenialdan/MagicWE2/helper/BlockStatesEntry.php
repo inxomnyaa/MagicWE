@@ -12,11 +12,11 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginException;
+use pocketmine\utils\MainLogger;
 use pocketmine\utils\TextFormat;
 use RuntimeException;
 use Throwable;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
-use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\task\action\FlipAction;
 
 class BlockStatesEntry
@@ -38,6 +38,7 @@ class BlockStatesEntry
      */
     public function __construct(string $blockIdentifier, CompoundTag $blockStates, ?Block $block = null)
     {
+        if(strpos($blockIdentifier,"_door")!==false)var_dump($blockIdentifier);
         $this->blockIdentifier = $blockIdentifier;
         $this->blockStates = $blockStates;
         $this->block = $block;
@@ -47,7 +48,7 @@ class BlockStatesEntry
             else
                 $this->blockFull = $this->blockIdentifier;
         } catch (Throwable $e) {
-            Loader::getInstance()->getLogger()->logException($e);
+            MainLogger::getLogger()->logException($e);
             $this->blockFull = $this->blockIdentifier;
         }
     }
@@ -92,7 +93,12 @@ class BlockStatesEntry
         $block = $clone->toBlock();
         $idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
         $key = $idMapName . ":" . $block->getDamage();
-        $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
+        if (strpos($idMapName, "_door") !== false) {
+            $fromMap = BlockStatesParser::getDoorRotationFlipMap()[$block->getDamage()] ?? null;
+            #var_dump($fromMap);
+        } else {
+            $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
+        }
         if ($fromMap === null) return $clone;
         $rotatedStates = $fromMap[$amount] ?? null;
         if ($rotatedStates === null) return $clone;
@@ -111,18 +117,22 @@ class BlockStatesEntry
             } else if ($tag instanceof IntTag) {
                 $bsCompound->setInt($tag->getName(), intval($v));
             } else if ($tag instanceof ByteTag) {
+                if ($v === 1) $v = "true";
+                if ($v === 0) $v = "false";
                 if ($v !== "true" && $v !== "false") {
                     throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
                 }
-                $val = ($v === "true" ? 1 : 0);
-                $bsCompound->setByte($tag->getName(), $val);
+                $bsCompound->setByte($tag->getName(), $v === "true" ? 1 : 0);
             } else {
                 throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
             }
         }
         $clone->blockStates = $bsCompound;
-        $clone->block = null;
         $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
+        if (strpos($idMapName, "_door") !== false) {
+            $clone->block = BlockStatesParser::fromString($clone->blockFull, false)[0];
+        } else
+            $clone->block = null;
         return $clone;
         //TODO reduce useless calls. BSP::fromStates?
         #$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
@@ -148,12 +158,12 @@ class BlockStatesEntry
         if ($axis !== FlipAction::AXIS_Y) {//ugly hack for y flip
             $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
             if ($fromMap === null) {
-                var_dump("block not in mirror map");
+                #var_dump("block not in mirror map");
                 return $clone;
             }
             $flippedStates = $fromMap[$axis] ?? null;
             if ($flippedStates === null && $axis !== FlipAction::AXIS_Y) {//ugly hack for y flip
-                var_dump("axis not in mirror map");
+                #var_dump("axis not in mirror map");
                 return $clone;
             }
         }
@@ -172,7 +182,7 @@ class BlockStatesEntry
                 $bsCompound->hasTag("upper_block_bit") ||
                 $bsCompound->hasTag("upside_down_bit")
             )) {//ugly hack for y flip
-            var_dump("nothing can be flipped around y axis");
+            #var_dump("nothing can be flipped around y axis");
             return $clone;
         }
         foreach ($bsCompound as $stateName => $tag) {
@@ -238,10 +248,12 @@ class BlockStatesEntry
             } else if ($tag instanceof IntTag) {
                 $bsCompound->setInt($tag->getName(), intval($value));
             } else if ($tag instanceof ByteTag) {
-                if ($value != true && $value != false) {//Intentional weak check
-                    throw new InvalidBlockStateException("Invalid value $value for blockstate $stateName, must be \"true\" or \"false\"");
+                if ($value === 1) $value = "true";
+                if ($value === 0) $value = "false";
+                if ($value !== "true" && $value !== "false") {
+                    throw new InvalidBlockStateException("Invalid value $value for blockstate {$tag->getName()}, must be \"true\" or \"false\"");
                 }
-                $bsCompound->setByte($tag->getName(), intval($value));
+                $bsCompound->setByte($tag->getName(), $value === "true" ? 1 : 0);
             } else {
                 throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
             }
@@ -249,11 +261,16 @@ class BlockStatesEntry
         $clone->blockStates = $bsCompound;
         $clone->block = null;
         $clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
-        var_dump($clone->blockFull);
+        #var_dump($clone->blockFull);
         return $clone;
         //TODO reduce useless calls. BSP::fromStates?
         #$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
         #return BlockStatesParser::getStateByBlock(BlockStatesParser::fromString($blockFull)[0]);
+    }
+
+    private function rotateDoor(int $amount, BlockStatesEntry $clone, Block $block): BlockStatesEntry
+    {
+
     }
 
 }
