@@ -1,14 +1,12 @@
 ![MagicWE2's awesome wide banner!](https://github.com/thebigsmileXD/MagicWE2/blob/master/resources/magicwe_icon_wide.png)
 ---
-# MagicWE2
+# MagicWE2 [![Poggit-CI](https://poggit.pmmp.io/ci.badge/thebigsmileXD/MagicWE2/MagicWE2/master)](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2) [![PHPStan](https://github.com/thebigsmileXD/MagicWE2/workflows/PHPStan/badge.svg)](https://github.com/thebigsmileXD/MagicWE2/actions?query=workflow%3APHPStan)
 Lag free asynchronous world editor for [PMMP](https://github.com/pmmp/PocketMine-MP)
 
 Try the new MagicWE, now way more powerful, with more support, more commands, new tools and more!
 
-[![Poggit-CI](https://poggit.pmmp.io/ci.badge/thebigsmileXD/MagicWE2/MagicWE2/master)](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2)
-[![](https://poggit.pmmp.io/shield.state/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)
-[![](https://poggit.pmmp.io/shield.api/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)
-![PHPStan](https://github.com/thebigsmileXD/MagicWE2/workflows/PHPStan/badge.svg)
+<!--[![Poggit-CI](https://poggit.pmmp.io/shield.state/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)-->
+<!--[![Poggit-CI](https://poggit.pmmp.io/shield.api/MagicWE2)](https://poggit.pmmp.io/p/MagicWE2)-->
 ## Why MagicWE2?
 _Rainbow sprinkles!_
 
@@ -56,6 +54,19 @@ Jokes aside, here is a list of pros:
 | `//donate` | `//support,//paypal` | `Donate to support development of MagicWE!` | `//donate` |
 | `//brush` |  | `Opens the brush tool menu` | `//brush` |
 | `//flood` |  | `Opens the flood tool menu` | `//flood` |
+
+## Flags
+| Flag | Description |
+| --- | --- |
+| `-keepblocks` | Modifies all air blocks in selection, but keeps others |
+| `-keepair` | Modifies all blocks in selection, but keeps air |
+| `-a` | When copying and pasting, paste will ignore air blocks in the copied selection |
+| `-h` | Pastes or sets hollow |
+| `-hc` | Pastes or sets hollow, but closes off the ends |
+| `-n` | Makes it only consider naturally occurring blocks |
+| `-p` | Without the -p flag, the paste will appear centered at the target location. With the flag, the paste will appear relative to where you stood, relative by the copied area when you copied it |
+| `-v` | Without the -v flag, block checks, selections and replacing will use and check the exact meta of the blocks, with the flag it will check for similar variants |
+| `-m` | When copying and pasting, the damage/meta values will be kept |
 
 ## Planned features
 - Saved sessions (saved brushes and clipboards)
