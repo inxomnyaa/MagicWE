@@ -16,7 +16,6 @@ use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\NamedTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
@@ -304,8 +303,8 @@ class BlockStatesParser
                 } else if ($tag instanceof IntTag) {
                     $finalStatesList->setInt($tag->getName(), intval($v));
                 } else if ($tag instanceof ByteTag) {
-                    if ($v === 1) $v = "true";
-                    if ($v === 0) $v = "false";
+                    if ($v == 1) $v = "true";
+                    if ($v == 0) $v = "false";
                     if ($v !== "true" && $v !== "false") {
                         throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
                     }
@@ -322,7 +321,9 @@ class BlockStatesParser
             //doors.. special blocks annoying -.-
             $isDoor = strpos($selectedBlockName, "_door") !== false;
             if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
-                return [ItemBlock::fromString($selectedBlockName . "_block:8")->getBlock()];
+                /** @var ItemBlock $fromString */
+                $fromString = ItemBlock::fromString($selectedBlockName . "_block:8");
+                return [$fromString->getBlock()];
             }
             //TODO there must be a more efficient way to do this
             //TODO Testing a new method here, still iterating over all entries, but skipping those with different id
@@ -564,7 +565,7 @@ class BlockStatesParser
             #"minecraft:birch_door[direction=1]",
             #"minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
             #"minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
-            #"minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
+            "minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
         ];
         foreach ($tests2 as $test) {
             try {
@@ -648,7 +649,7 @@ class BlockStatesParser
         var_dump("DONE");
     }
 
-    private static function doorEquals(int $currentoldDamage, CompoundTag $defaultStatesNamedTag, CompoundTag $clonedPrintedCompound, NamedTag $finalStatesList): bool
+    private static function doorEquals(int $currentoldDamage, CompoundTag $defaultStatesNamedTag, CompoundTag $clonedPrintedCompound, CompoundTag $finalStatesList): bool
     {
         if (
             /*(

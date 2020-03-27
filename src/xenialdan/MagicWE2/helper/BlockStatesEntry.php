@@ -268,9 +268,4 @@ class BlockStatesEntry
         #return BlockStatesParser::getStateByBlock(BlockStatesParser::fromString($blockFull)[0]);
     }
 
-    private function rotateDoor(int $amount, BlockStatesEntry $clone, Block $block): BlockStatesEntry
-    {
-
-    }
-
 }
