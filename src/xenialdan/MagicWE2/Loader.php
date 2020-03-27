@@ -253,7 +253,7 @@ class Loader extends PluginBase
             /* -- debugging -- */
             new PlaceAllBlockstatesCommand("/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
         ]);
-        if (class_exists("xenialdan\\customui\\API")) {
+        if (class_exists(\xenialdan\customui\API::class)) {
             $this->getLogger()->notice("CustomUI found, can use ui-based commands");
             $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
                 /* -- brush -- */
