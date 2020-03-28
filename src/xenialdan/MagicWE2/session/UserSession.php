@@ -111,7 +111,7 @@ class UserSession extends Session implements JsonSerializable
     public function setWandEnabled(bool $wandEnabled)
     {
         $this->wandEnabled = $wandEnabled;
-        return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+        return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') . TF::RESET : TF::RED . $this->getLanguage()->translateString('disabled') . TF::RESET)]);
     }
 
     /**
@@ -129,7 +129,7 @@ class UserSession extends Session implements JsonSerializable
     public function setDebugToolEnabled(bool $debugToolEnabled)
     {
         $this->debugToolEnabled = $debugToolEnabled;
-        return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+        return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') . TF::RESET : TF::RED . $this->getLanguage()->translateString('disabled') . TF::RESET)]);
     }
 
     /**
