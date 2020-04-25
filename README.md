@@ -30,6 +30,11 @@ Jokes aside, here is a list of pros:
 - MyPlot support
 -->
 
+## Stable Builds
+Current stable branches are either [phpstan](https://github.com/thebigsmileXD/MagicWE2/tree/phpstan) or [experimental-blockstate-testing](https://github.com/thebigsmileXD/MagicWE2/tree/experimental-blockstate-testing).
+
+You can find the stable build at [Poggit-CI, dev#279](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2/~/dev:279).
+
 ## Commands
 | Command | Alias | Description | Usage |
 | --- | --- | --- | --- |
