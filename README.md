@@ -21,6 +21,7 @@ Jokes aside, here is a list of pros:
 - Optimized item / block parsing - you can place any block, by id, name, and item!
 - Alot more commands
 - Command auto-completion
+- Similar permissions and commands like WorldEdit
 - Command flags (i.e. -p for relative copying/pasting, -h for hollow objects)
 - UI for brush setup and configuration
 - Fancy icon and optional startup ASCII art
@@ -31,9 +32,9 @@ Jokes aside, here is a list of pros:
 -->
 
 ## Stable Builds
-Current stable branches are either [phpstan](https://github.com/thebigsmileXD/MagicWE2/tree/phpstan) or [experimental-blockstate-testing](https://github.com/thebigsmileXD/MagicWE2/tree/experimental-blockstate-testing).
+Current semi-stable development branches are either [phpstan](https://github.com/thebigsmileXD/MagicWE2/tree/phpstan) or [experimental-blockstate-testing](https://github.com/thebigsmileXD/MagicWE2/tree/experimental-blockstate-testing).
 
-You can find the stable build at [Poggit-CI, dev#279](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2/~/dev:279).
+You can find the stable build at [Poggit-CI, dev#279](https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2/~/dev:279) or in [the Releases](https://github.com/thebigsmileXD/MagicWE2/releases).
 
 ## Commands
 | Command | Alias | Description | Usage |
@@ -94,6 +95,7 @@ If you have an urgent issue, tag me on Twitter for faster response time: [@xenia
 
 ## Quotes
 - _"MagicWE2 has a new fresh coating over the plugin, with rainbow colored sprinkle topping!"_ ~ XenialDan, 2017
+- _"At least people are not confusing your plugin with the legendary MEW2!"_ ~ XenialDan, 2020
 
 ### Foot notes
 License: GNU GENERAL PUBLIC LICENSE
