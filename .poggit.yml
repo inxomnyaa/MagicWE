@@ -13,7 +13,7 @@ projects:
     - src: thebigsmilexd/customui/customui
       version: ^3.0.0
     - src: thebigsmilexd/apibossbar/apibossbar
-      version: ^0.0.3
+      version: ^0.0.5
     - src: CortexPE/Commando/Commando
       version: ^0.5.0
     - src: muqsit/invmenu/InvMenu
