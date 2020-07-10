@@ -8,7 +8,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockIds;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\RuntimeBlockMapping;
+use  pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
 class BlockEntry
 {
@@ -31,8 +31,12 @@ class BlockEntry
     public function validate(): bool
     {
         [$id, $meta] = RuntimeBlockMapping::fromStaticRuntimeId($this->runtimeId);
-        if ($id === BlockIds::INFO_UPDATE) return false;
-        if ($this->nbt instanceof CompoundTag && !$this->nbt->valid()) return false;
+        if ($id === BlockIds::INFO_UPDATE) {
+            return false;
+        }
+        if ($this->nbt instanceof CompoundTag && !$this->nbt->valid()) {
+            return false;
+        }
         return true;
     }
 
@@ -48,9 +52,10 @@ class BlockEntry
 
     public function toBlock(): Block
     {
-        if (!BlockFactory::isInit()) BlockFactory::init();
+        if (!BlockFactory::isInit()) {
+            BlockFactory::init();
+        }
         [$id, $meta] = RuntimeBlockMapping::fromStaticRuntimeId($this->runtimeId);
         return BlockFactory::get($id, $meta);
     }
-
 }
