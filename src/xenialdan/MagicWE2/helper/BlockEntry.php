@@ -8,7 +8,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockIds;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\RuntimeBlockMapping;
+use  pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 
 class BlockEntry
 {
