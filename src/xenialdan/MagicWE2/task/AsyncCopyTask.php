@@ -6,7 +6,7 @@ use Exception;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\types\RuntimeBlockMapping;
+use  pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
