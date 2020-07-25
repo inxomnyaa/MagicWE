@@ -113,9 +113,7 @@ class AsyncCopyTask extends MWEAsyncTask
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) {
-                $session->getBossBar()->hideFromAll();
-            }
+            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
             $result = $this->getResult();
             $copied = $result["copied"];
             /** @var SingleClipboard $clipboard */

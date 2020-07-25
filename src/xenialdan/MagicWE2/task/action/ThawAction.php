@@ -7,7 +7,6 @@ namespace xenialdan\MagicWE2\task\action;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\network\mcpe\protocol\types\RuntimeBlockMapping;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -56,7 +55,7 @@ class ThawAction extends TaskAction
                 /** @var Block $new */
                 $new = clone $newBlocks[$ib];
                 #$oldBlocks[] = $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
-                $oldBlocksSingleClipboard->addEntry($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));
+                $oldBlocksSingleClipboard->addEntry($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), BlockEntry::fromBlock($block));
                 $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
                 if ($manager->getBlockIdAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== $block->getId()) {
                     $changed++;

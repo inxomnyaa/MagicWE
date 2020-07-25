@@ -21,7 +21,10 @@ use xenialdan\MagicWE2\commands\clipboard\ClearClipboardCommand;
 use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
 use xenialdan\MagicWE2\commands\clipboard\Cut2Command;
 use xenialdan\MagicWE2\commands\clipboard\CutCommand;
+use xenialdan\MagicWE2\commands\clipboard\FlipCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
+use xenialdan\MagicWE2\commands\clipboard\RotateCommand;
+use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
 use xenialdan\MagicWE2\commands\DonateCommand;
 use xenialdan\MagicWE2\commands\generation\CylinderCommand;
 use xenialdan\MagicWE2\commands\HelpCommand;
@@ -95,6 +98,16 @@ class Loader extends PluginBase
         throw new ShapeRegistryException("Shape registry is not initialized");
     }
 
+    public static function getRotFlipPath(): string
+    {
+        return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+    }
+
+    public static function getDoorRotFlipPath(): string
+    {
+        return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+    }
+
     /**
      * @throws PluginException
      * @throws RuntimeException
@@ -108,13 +121,20 @@ class Loader extends PluginBase
         self::$shapeRegistry = new ShapeRegistry();
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
-        BlockStatesParser::init();
-        $fileGetContents = file_get_contents(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
+        #$this->saveResource("rotation_flip_data.json", true);
+        $this->saveResource("blockstate_alias_map.json", true);
+
+        BlockStatesParser::init(self::getRotFlipPath(),self::getDoorRotFlipPath());
+        $fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
         if ($fileGetContents === false) {
             throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
+        } else {
+            BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
         }
-        BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
+        #BlockStatesParser::printAllStates();
         BlockStatesParser::runTests();
+        #BlockStatesParser::generatePossibleStatesJson();
+        #BlockStatesParser::placeAllBlockstates(new Position());
     }
 
     /**
@@ -190,8 +210,8 @@ class Loader extends PluginBase
             new CutCommand("/cut", "Cut the selection to the clipboard"),
             new Cut2Command("/cut2", "Cut the selection to the clipboard - the new way"),
             new ClearClipboardCommand("/clearclipboard", "Clear your clipboard"),
-            //new FlipCommand("/flip","Flip the contents of the clipboard across the origin"),
-            //new RotateCommand("/rotate","Rotate the contents of the clipboard around the origin"),
+            new FlipCommand("/flip", "Flip the contents of the clipboard across the origin", ["/mirror"]),
+            new RotateCommand("/rotate", "Rotate the contents of the clipboard around the origin"),
             /* -- history -- */
             new UndoCommand("/undo", "Rolls back the last action"),
             new RedoCommand("/redo", "Applies the last undo action again"),
@@ -230,8 +250,10 @@ class Loader extends PluginBase
             //new SnowCommand("/snow", "Creates a snow layer cover in the selection"),
             //new ThawCommand("/thaw", "Thaws blocks in the selection"),
             new CalculateCommand("/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
+            /* -- debugging -- */
+            new PlaceAllBlockstatesCommand("/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
         ]);
-        if (class_exists("xenialdan\\customui\\API")) {
+        if (class_exists(\xenialdan\customui\API::class)) {
             $this->getLogger()->notice("CustomUI found, can use ui-based commands");
             $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
                 /* -- brush -- */

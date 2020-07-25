@@ -8,7 +8,10 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockIds;
 use pocketmine\nbt\tag\CompoundTag;
-use  pocketmine\network\mcpe\convert\RuntimeBlockMapping;
+use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
+use pocketmine\utils\MainLogger;
+use pocketmine\utils\TextFormat;
+use xenialdan\MagicWE2\Loader;
 
 class BlockEntry
 {
@@ -56,6 +59,20 @@ class BlockEntry
             BlockFactory::init();
         }
         [$id, $meta] = RuntimeBlockMapping::fromStaticRuntimeId($this->runtimeId);
-        return BlockFactory::get($id, $meta);
+        #var_dump(__METHOD__,"$id:$meta",BlockFactory::get($id, $meta),ItemFactory::get($id,$meta)->getBlock());
+        try {
+            return BlockFactory::get($id, $meta);
+        } catch (InvalidArgumentException $e) {
+            #MainLogger::getLogger()->logException($e);//TODO decide if log or not
+            MainLogger::getLogger()->debug(Loader::PREFIX . TextFormat::GRAY . " Couldn't find a registered block for $id:$meta, trying UnknownBlock!");
+        }
+        return new UnknownBlock($id, $meta);
     }
+
+    public static function fromBlock(Block $block): self
+    {
+        if (!BlockFactory::isInit()) BlockFactory::init();
+        return new BlockEntry($block->getRuntimeId());
+    }
+
 }

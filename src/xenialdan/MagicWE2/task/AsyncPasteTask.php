@@ -36,7 +36,7 @@ class AsyncPasteTask extends MWEAsyncTask
     private $offset;
 
     /**
-     * AsyncFillTask constructor.
+     * AsyncPasteTask constructor.
      * @param UUID $sessionUUID
      * @param Selection $selection
      * @param string[] $touchedChunks serialized chunks

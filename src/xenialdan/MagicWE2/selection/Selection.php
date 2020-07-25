@@ -110,7 +110,7 @@ class Selection implements Serializable, JsonSerializable
             $this->pos2 = null;
         }
         $this->setLevel($position->getLevel());
-        if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
+        if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())//TODO test change
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
             $session = SessionHelper::getSessionByUUID($this->sessionUUID);
@@ -144,7 +144,7 @@ class Selection implements Serializable, JsonSerializable
             $this->pos1 = null;
         }
         $this->setLevel($position->getLevel());
-        if (($this->shape instanceof Cuboid || !$this->shape instanceof Shape) && $this->isValid())
+        if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
             $session = SessionHelper::getSessionByUUID($this->sessionUUID);

@@ -180,7 +180,7 @@ class API
             #$c = $clipboard->getCenter();
             #$clipboard->setCenter($target->asVector3());//TODO check
             if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
-            $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste
+            $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
             $end = $start->add($clipboard->selection->getShape()->getMaxVec3()->subtract($clipboard->selection->getShape()->getMinVec3()));//add size
             $aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
             $shape = clone $clipboard->selection->getShape();//needed
@@ -398,19 +398,10 @@ class API
      */
     public static function blockParser(string $fullstring, array &$messages, bool &$error)
     {
-        $blocks = [];
         if (!BlockFactory::isInit()) BlockFactory::init();
-        BlockStatesParser::init();
-        foreach (BlockStatesParser::fromString($fullstring, true) as $block) {
-            $blocks[] = $block;
-            /*if (($item instanceof ItemBlock) or ($item instanceof Item && $item->getBlock()->getId() !== Block::AIR)) {
-                $block = $item->getBlock();
-                $blocks[] = $block;
-            } else {
-                $error = true;
-                $messages[] = TF::RED . "Could not find a block/item with the " . (is_numeric($name) ? "id" : "name") . ": " . $name;
-                continue;
-            }*/
+        BlockStatesParser::init(Loader::getRotFlipPath(),Loader::getDoorRotFlipPath());
+        $blocks = BlockStatesParser::fromString($fullstring, true);
+        foreach ($blocks as $block) {
             if ($block instanceof UnknownBlock) {
                 $messages[] = TF::GOLD . $block . " is an unknown block";
             }
