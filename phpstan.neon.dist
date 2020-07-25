@@ -5,9 +5,6 @@ parameters:
 
     ignoreErrors: []
 
-    featureToggles:
-        parallel: true
-
     paths:
         - /source/src
     autoload_files:
