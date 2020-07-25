@@ -7,9 +7,9 @@ parameters:
 
     paths:
         - /source/src
-    autoload_files:
+    bootstrapFiles:
         - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
-    autoload_directories:
+    scanDirectories:
         - /source/src
         - phar:///source/vendor/customui.phar/src
         - phar:///source/vendor/apibossbar.phar/src
