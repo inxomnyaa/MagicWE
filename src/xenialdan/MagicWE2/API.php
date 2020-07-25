@@ -17,6 +17,7 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\NamedTag;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
@@ -93,7 +94,11 @@ class API
             if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
-            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) {
+                $player = $session->getPlayer();
+                /** @var Player $player */
+                $session->getBossBar()->showTo([$player]);
+            }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $newblocks, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
@@ -121,7 +126,11 @@ class API
             if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
-            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) {
+                $player = $session->getPlayer();
+                /** @var Player $player */
+                $session->getBossBar()->showTo([$player]);
+            }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $oldBlocks, $newBlocks, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
@@ -147,10 +156,13 @@ class API
             }
             //TODO check/edit how relative position works
             $offset = new Vector3();
-            if (/*!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE) && */ $session instanceof UserSession)//TODO relative or not by flags
-                $offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
-            //TODO figure out wrong offset
-            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) {
+                /** @var Player $player */
+                $player = $session->getPlayer();
+                /*if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE)*///TODO relative or not by flags
+                $offset = $selection->getShape()->getMinVec3()->subtract($player->asVector3()->floor())->floor();//TODO figure out wrong offset
+                $session->getBossBar()->showTo([$player]);
+            }
             #var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getLevel()), $flags));
         } catch (Exception $e) {
@@ -179,7 +191,11 @@ class API
             }
             #$c = $clipboard->getCenter();
             #$clipboard->setCenter($target->asVector3());//TODO check
-            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) {
+                $player = $session->getPlayer();
+                /** @var Player $player */
+                $session->getBossBar()->showTo([$player]);
+            }
             $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
             $end = $start->add($clipboard->selection->getShape()->getMaxVec3()->subtract($clipboard->selection->getShape()->getMinVec3()));//add size
             $aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
@@ -258,7 +274,11 @@ class API
             if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
-            if ($session instanceof UserSession) $session->getBossBar()->showTo([$session->getPlayer()]);
+            if ($session instanceof UserSession) {
+                $player = $session->getPlayer();
+                /** @var Player $player */
+                $session->getBossBar()->showTo([$player]);
+            }
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getLevel())));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
@@ -399,7 +419,7 @@ class API
     public static function blockParser(string $fullstring, array &$messages, bool &$error)
     {
         if (!BlockFactory::isInit()) BlockFactory::init();
-        BlockStatesParser::init(Loader::getRotFlipPath(),Loader::getDoorRotFlipPath());
+        BlockStatesParser::init(Loader::getRotFlipPath(), Loader::getDoorRotFlipPath());
         $blocks = BlockStatesParser::fromString($fullstring, true);
         foreach ($blocks as $block) {
             if ($block instanceof UnknownBlock) {

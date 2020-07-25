@@ -201,8 +201,8 @@ abstract class Session
         if ($amount > self::MAX_CLIPBOARDS) array_shift($this->clipboards);
         $i = array_search($clipboard, $this->clipboards, true);
         if ($i !== false) {
-            if ($setAsCurrent) $this->currentClipboard = $i;
-            return $i;
+            if ($setAsCurrent) $this->currentClipboard = (int)$i;
+            return (int)$i;
         }
         return -1;
     }

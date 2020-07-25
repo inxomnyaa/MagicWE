@@ -51,9 +51,15 @@ class BlockStatesParser
      */
     public static function init(?string $rotFlipMapPath = null, ?string $doorRotFlipMapPath = null): void
     {
-        if (self::isInit()) return;//Silent return if already initialised
+        if (self::isInit()) {
+            return;
+        }//Silent return if already initialised
         self::$legacyStateMap = [];
-        $legacyStateMapReader = new NetworkBinaryStream(file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
+        $contents = file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/.bin");
+        if (!$contents) {
+            throw  new PluginException('r12_to_current_block_map could not be loaded');
+        }
+        $legacyStateMapReader = new NetworkBinaryStream($contents);
         $nbtReader = new NetworkLittleEndianNBTStream();
         while (!$legacyStateMapReader->feof()) {
             $stringId = $legacyStateMapReader->getString();
@@ -383,6 +389,7 @@ class BlockStatesParser
                 }
             }
             #Loader::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $result);
+            /** @var Block $result */
             return [$result];
         }
     }

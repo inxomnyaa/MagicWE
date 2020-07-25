@@ -6,6 +6,7 @@ use Exception;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
@@ -64,7 +65,9 @@ class AsyncActionTask extends MWEAsyncTask
         try {
             $session = SessionHelper::getSessionByUUID($sessionUUID);
             if ($session instanceof UserSession) {
-                $session->getBossBar()->showTo([$session->getPlayer()]);
+                $player = $session->getPlayer();
+                /** @var Player $player */
+                $session->getBossBar()->showTo([$player]);
                 $session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
             }
         } catch (SessionException $e) {
