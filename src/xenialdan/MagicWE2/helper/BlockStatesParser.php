@@ -55,7 +55,7 @@ class BlockStatesParser
             return;
         }//Silent return if already initialised
         self::$legacyStateMap = [];
-        $contents = file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/.bin");
+        $contents = file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
         if (!$contents) {
             throw  new PluginException('r12_to_current_block_map could not be loaded');
         }
