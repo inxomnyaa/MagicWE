@@ -15,8 +15,9 @@ use pocketmine\nbt\NetworkLittleEndianNBTStream;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\network\mcpe\convert\R12ToCurrentBlockMapEntry;
+use pocketmine\network\mcpe\NetworkBinaryStream;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\Config;
@@ -28,8 +29,8 @@ use const pocketmine\RESOURCE_PATH;
 
 class BlockStatesParser
 {
-    /** @var ListTag|null */
-    private static $rootListTag = null;
+    /** @var R12ToCurrentBlockMapEntry[] */
+    private static $legacyStateMap = [];
     /** @var CompoundTag|null */
     private static $allStates = null;
     /** @var array */
@@ -51,20 +52,26 @@ class BlockStatesParser
     public static function init(?string $rotFlipMapPath = null, ?string $doorRotFlipMapPath = null): void
     {
         if (self::isInit()) return;//Silent return if already initialised
-        $contentsStateNBT = file_get_contents(RESOURCE_PATH . '/vanilla/r12_to_current_block_map.nbt');
-        if ($contentsStateNBT === false) throw new PluginException("BlockState mapping file (r12_to_current_block_map) could not be loaded!");
-        /** @var string $contentsStateNBT */
-        /** @var ListTag $namedTag */
-        $namedTag = (new NetworkLittleEndianNBTStream())->read($contentsStateNBT);
-        self::$rootListTag = $namedTag;
+        self::$legacyStateMap = [];
+        $legacyStateMapReader = new NetworkBinaryStream(file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
+        $nbtReader = new NetworkLittleEndianNBTStream();
+        while (!$legacyStateMapReader->feof()) {
+            $stringId = $legacyStateMapReader->getString();
+            $meta = $legacyStateMapReader->getLShort();
+
+            $offset = $legacyStateMapReader->getOffset();
+            $state = $nbtReader->read($legacyStateMapReader->getBuffer(), false, $offset);
+            $legacyStateMapReader->setOffset($offset);
+            if (!($state instanceof CompoundTag)) {
+                throw new \RuntimeException("Blockstate should be a TAG_Compound");
+            }
+            self::$legacyStateMap[] = new R12ToCurrentBlockMapEntry($stringId, $meta, $state);
+        }
         //Load all states. Mapping: oldname:meta->states
         self::$allStates = new CompoundTag("allStates");
-        foreach (self::$rootListTag->getAllValues() as $rootCompound) {
-            /** @var CompoundTag $rootCompound */
-            $oldCompound = $rootCompound->getCompoundTag("old");
-            $newCompound = $rootCompound->getCompoundTag("new");
-            $states = clone $newCompound->getCompoundTag("states");
-            $states->setName($oldCompound->getString("name") . ":" . $oldCompound->getShort("val"));
+        foreach (self::$legacyStateMap as $legacyMapEntry) {
+            $states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
+            $states->setName($legacyMapEntry->getId() . ":" . $legacyMapEntry->getMeta());
             self::$allStates->setTag($states);
         }
         $blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
@@ -96,7 +103,7 @@ class BlockStatesParser
      */
     public static function isInit(): bool
     {
-        return self::$allStates instanceof CompoundTag && self::$rootListTag instanceof ListTag;
+        return self::$allStates instanceof CompoundTag && !empty(self::$legacyStateMap);
     }
 
     /**
@@ -160,10 +167,8 @@ class BlockStatesParser
         $config = new Config(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
         $config->setAll([]);
         $config->save();
-        foreach (self::$rootListTag->getAllValues() as $rootCompound) {
-            /** @var CompoundTag $rootCompound */
-            $newCompound = $rootCompound->getCompoundTag("new");
-            $states = clone $newCompound->getCompoundTag("states");
+        foreach (self::$legacyStateMap as $legacyMapEntry) {
+            $states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
             foreach ($states as $state) {
                 if (!$config->exists($state->getName())) {
                     $alias = $state->getName();
@@ -357,7 +362,7 @@ class BlockStatesParser
                     if ($isDoor) {
                         var_dump(
                             self::printStates(self::getStateByBlock($block), false),
-                            #self::printStates(new BlockStatesEntry($currentoldName, $finalStatesList, $block), false)
+                        #self::printStates(new BlockStatesEntry($currentoldName, $finalStatesList, $block), false)
                         );
                     }
                     $blocks[] = $block;
@@ -438,12 +443,9 @@ class BlockStatesParser
      */
     public static function printAllStates(): void
     {
-        foreach (self::$rootListTag->getAllValues() as $rootCompound) {
-            /** @var CompoundTag $rootCompound */
-            $oldCompound = $rootCompound->getCompoundTag("old");
-            $newCompound = $rootCompound->getCompoundTag("new");
-            $currentoldName = $oldCompound->getString("name");
-            $printedCompound = $newCompound->getCompoundTag("states");
+        foreach (self::$legacyStateMap as $legacyMapEntry) {
+            $currentoldName = $legacyMapEntry->getId();
+            $printedCompound = $legacyMapEntry->getBlockState()->getCompoundTag('states');
             $bs = new BlockStatesEntry($currentoldName, $printedCompound);
             Server::getInstance()->getLogger()->debug(self::printStates($bs, true));
             try {
@@ -466,10 +468,8 @@ class BlockStatesParser
         $config->setAll([]);
         $config->save();
         $all = [];
-        foreach (self::$rootListTag->getAllValues() as $rootCompound) {
-            /** @var CompoundTag $rootCompound */
-            $newCompound = $rootCompound->getCompoundTag("new");
-            $states = clone $newCompound->getCompoundTag("states");
+        foreach (self::$legacyStateMap as $legacyMapEntry) {
+            $states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
             foreach ($states as $state) {
                 if (!array_key_exists($state->getName(), $all)) {
                     $all[$state->getName()] = [];
