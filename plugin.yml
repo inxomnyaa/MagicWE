@@ -5,9 +5,9 @@ version: 10.0.2
 api: ["3.13"]
 load: STARTUP
 authors:
-- XenialDan
+  - XenialDan
 description: Lag free asynchronous world editor for PMMP with plenty of options
-prefix: 'MWE2'
+prefix: "MWE2"
 website: https://github.com/thebigsmileXD/MagicWE2
 permissions:
   we.session:
@@ -121,4 +121,3 @@ permissions:
         children:
           we.command.utility.calculate:
             default: op
-...
