@@ -6,7 +6,7 @@ use Exception;
 use pocketmine\block\Block;
 use pocketmine\level\format\Chunk;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\types\RuntimeBlockMapping;
+use  pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\utils\UUID;
@@ -113,7 +113,9 @@ class AsyncCopyTask extends MWEAsyncTask
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+            if ($session instanceof UserSession) {
+                $session->getBossBar()->hideFromAll();
+            }
             $result = $this->getResult();
             $copied = $result["copied"];
             /** @var SingleClipboard $clipboard */
