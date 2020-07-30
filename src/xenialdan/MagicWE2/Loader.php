@@ -132,7 +132,7 @@ class Loader extends PluginBase
             BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
         }
         #BlockStatesParser::printAllStates();
-        BlockStatesParser::runTests();
+        #BlockStatesParser::runTests();
         #BlockStatesParser::generatePossibleStatesJson();
         #BlockStatesParser::placeAllBlockstates(new Position());
     }
