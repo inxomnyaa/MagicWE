@@ -52,7 +52,7 @@ class CountAction extends TaskAction
         if (!BlockFactory::isInit()) BlockFactory::init();
         foreach ($selection->getShape()->getBlocks($manager, $newBlocks) as $block) {
             $block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-            $tostring = (BlockFactory::get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
+			$tostring = (BlockFactory::getInstance()->get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
             $counts[$tostring]++;
             $changed++;

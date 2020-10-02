@@ -81,17 +81,17 @@ class AsyncActionTask extends MWEAsyncTask
      * @return void
      * @throws Exception
      */
-    public function onRun()
-    {
-        $this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
+    public function onRun(): void
+	{
+		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
-        $touchedChunks = unserialize($this->touchedChunks);
-        $touchedChunks = array_map(function ($chunk) {
-            return Chunk::fastDeserialize($chunk);
-        }, $touchedChunks);
+		$touchedChunks = unserialize($this->touchedChunks);
+		$touchedChunks = array_map(function ($chunk) {
+			return Chunk::fastDeserialize($chunk);
+		}, $touchedChunks);
 
-        $manager = Shape::getChunkManager($touchedChunks);
-        unset($touchedChunks);
+		$manager = Shape::getChunkManager($touchedChunks);
+		unset($touchedChunks);
 
         /** @var Selection $selection */
         $selection = unserialize($this->selection);

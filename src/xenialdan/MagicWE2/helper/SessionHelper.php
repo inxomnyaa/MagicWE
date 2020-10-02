@@ -35,10 +35,12 @@ class SessionHelper
 
     public static function init(): void
     {
-        @mkdir(Loader::getInstance()->getDataFolder() . "sessions");
-        self::$userSessions = new Map();
-        self::$pluginSessions = new Map();
-    }
+		if (!mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "sessions") && !is_dir($concurrentDirectory)) {
+			throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+		}
+		self::$userSessions = new Map();
+		self::$pluginSessions = new Map();
+	}
 
     /**
      * @param Session $session

@@ -67,17 +67,17 @@ class AsyncClipboardActionTask extends MWEAsyncTask
      * @return void
      * @throws Exception
      */
-    public function onRun()
-    {
-        $this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
+    public function onRun(): void
+	{
+		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
-        if (!BlockStatesParser::isInit()) BlockStatesParser::init($this->rotFlipMapPath,$this->doorRotFlipMapPath);
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
-        /** @var SingleClipboard $clipboard */
-        $clipboard = unserialize($this->clipboard);
-        $clipboard->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
-        $messages = [];
+		if (!BlockStatesParser::isInit()) BlockStatesParser::init($this->rotFlipMapPath, $this->doorRotFlipMapPath);
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection,);
+		/** @var SingleClipboard $clipboard */
+		$clipboard = unserialize($this->clipboard);
+		$clipboard->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
+		$messages = [];
         /** @var Progress $progress */
         foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $clipboard, $messages) as $progress) {
             $this->publishProgress($progress);

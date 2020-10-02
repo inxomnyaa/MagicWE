@@ -57,7 +57,7 @@ class BlockStatesParser
             return;
         }//Silent return if already initialised
         self::$legacyStateMap = [];
-        $contents = file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
+		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
         if (!$contents) {
             throw  new PluginException('r12_to_current_block_map could not be loaded');
         }
@@ -109,27 +109,29 @@ class BlockStatesParser
 //            }
 //            throw new \RuntimeException("Mapped new state does not appear in network table");
 //        }
-        /// /////////////
-        #$legacyStateMapReader = new NetworkBinaryStream($contents);
-        #$nbtReader = new NetworkLittleEndianNBTStream();
-        while (!$legacyStateMapReader->feof()) {
-            $stringId = $legacyStateMapReader->getString();
-            $meta = $legacyStateMapReader->getLShort();
+		/// /////////////
+		#$legacyStateMapReader = new NetworkBinaryStream($contents);
+		#$nbtReader = new NetworkLittleEndianNBTStream();
+		$legacyStateMapReader = null;//TODO
+		while (!$legacyStateMapReader->feof()) {
+			$stringId = $legacyStateMapReader->getString();
+			$meta = $legacyStateMapReader->getLShort();
 
-            $offset = $legacyStateMapReader->getOffset();
-            $state = $nbtReader->read($legacyStateMapReader->getBuffer(), false, $offset);
-            $legacyStateMapReader->setOffset($offset);
-            if (!($state instanceof CompoundTag)) {
-                throw new \RuntimeException("Blockstate should be a TAG_Compound");
-            }
-            self::$legacyStateMap[] = new R12ToCurrentBlockMapEntry($stringId, $meta, $state);
-        }
+			$offset = $legacyStateMapReader->getOffset();
+			$nbtReader = null;//TODO
+			$state = $nbtReader->read($legacyStateMapReader->getBuffer(), false, $offset);
+			$legacyStateMapReader->setOffset($offset);
+			if (!($state instanceof CompoundTag)) {
+				throw new RuntimeException("Blockstate should be a TAG_Compound");
+			}
+			self::$legacyStateMap[] = new R12ToCurrentBlockMapEntry($stringId, $meta, $state);
+		}
         //Load all states. Mapping: oldname:meta->states
-        self::$allStates = new CompoundTag("allStates");
+		self::$allStates = new CompoundTag();
         foreach (self::$legacyStateMap as $legacyMapEntry) {
             $states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
-            $states->setName($legacyMapEntry->getId() . ":" . $legacyMapEntry->getMeta());
-            self::$allStates->setTag($states);
+			$states->setName($legacyMapEntry->getId() . ":" . $legacyMapEntry->getMeta());
+			self::$allStates->setTag("allStates", $states);
         }
         $blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
         if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
@@ -672,8 +674,8 @@ class BlockStatesParser
         /** @var array<int,Block> $sorted */
         $sorted = [];
         foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
-            $currentoldName = rtrim(preg_replace("/([0-9]+)/", "", $oldNameAndMeta), ":");
-            $bs = new BlockStatesEntry($currentoldName, $printedCompound);
+			$currentoldName = rtrim(preg_replace("/(\d+)/", "", $oldNameAndMeta), ":");
+			$bs = new BlockStatesEntry($currentoldName, $printedCompound);
             try {
                 /** @var Block $block */
                 #$block = array_values(self::fromString(TF::clean(strval($bs))))[0];

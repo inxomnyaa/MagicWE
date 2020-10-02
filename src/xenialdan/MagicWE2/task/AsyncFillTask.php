@@ -55,16 +55,16 @@ class AsyncFillTask extends MWEAsyncTask
      * @return void
      * @throws Exception
      */
-    public function onRun()
-    {
-        $this->publishProgress([0, "Start"]);
+    public function onRun(): void
+	{
+		$this->publishProgress([0, "Start"]);
 
-        $touchedChunks = array_map(function ($chunk) {
-            return Chunk::fastDeserialize($chunk);
-        }, unserialize($this->touchedChunks));
+		$touchedChunks = array_map(function ($chunk) {
+			return Chunk::fastDeserialize($chunk);
+		}, unserialize($this->touchedChunks));
 
-        $manager = Shape::getChunkManager($touchedChunks);
-        unset($touchedChunks);
+		$manager = Shape::getChunkManager($touchedChunks);
+		unset($touchedChunks);
 
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
@@ -102,14 +102,14 @@ class AsyncFillTask extends MWEAsyncTask
                 $rel = $block->subtract($selection->shape->getPasteVector());
                 $block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
             }*/
-            if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
-                $lastchunkx = $block->x >> 4;
-                $lastchunkz = $block->z >> 4;
-                if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
-                    #print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
-                    continue;
-                }
-            }
+			if (is_null($lastchunkx) || ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->x >> 4;
+				$lastchunkz = $block->z >> 4;
+				if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
+					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
+					continue;
+				}
+			}
             /** @var Block $new */
             $new = clone $newBlocks[array_rand($newBlocks)];
             if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks

@@ -459,19 +459,19 @@ class API
                     $regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
                     preg_match($regex, $str, $matches);
                     if (isset($matches[1]) && isset($matches[2])) {
-                        if ($operator == '+') $result = (float)$matches[1] + (float)$matches[2];
-                        if ($operator == '-') $result = (float)$matches[1] - (float)$matches[2];
-                        if ($operator == '*') $result = (float)$matches[1] * (float)$matches[2];
-                        if ($operator == '/') {
-                            if ((float)$matches[2]) {
-                                $result = (float)$matches[1] / (float)$matches[2];
-                            } else {
-                                $error = true;
-                            }
-                        }
-                        $str = preg_replace($regex, (string)$result, $str, 1);
-                        $str = str_replace(['++', '--', '-+', '+-'], ['+', '+', '-', '-'], $str);
-                    } else {
+						if ($operator == '+') $result = (float)$matches[1] + (float)$matches[2];
+						if ($operator == '-') $result = (float)$matches[1] - (float)$matches[2];
+						if ($operator === '*') $result = (float)$matches[1] * (float)$matches[2];
+						if ($operator === '/') {
+							if ((float)$matches[2]) {
+								$result = (float)$matches[1] / (float)$matches[2];
+							} else {
+								$error = true;
+							}
+						}
+						$str = preg_replace($regex, (string)$result, $str, 1);
+						$str = str_replace(['++', '--', '-+', '+-'], ['+', '+', '-', '-'], $str);
+					} else {
                         $error = true;
                     }
                 }

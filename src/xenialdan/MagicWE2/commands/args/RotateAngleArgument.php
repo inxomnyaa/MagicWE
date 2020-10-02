@@ -10,7 +10,7 @@ use pocketmine\command\CommandSender;
 class RotateAngleArgument extends StringEnumArgument
 {
     /** @var array */
-    protected const VALUES = ["90" => 90, "180" => 180, "270" => 270];
+    protected const VALUES = [90 => 90, 180 => 180, 270 => 270];
 
     public function getTypeName(): string
     {

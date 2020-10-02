@@ -53,17 +53,17 @@ class AsyncCountTask extends MWEAsyncTask
      * @return void
      * @throws Exception
      */
-    public function onRun()
-    {
-        $this->publishProgress([0, "Start"]);
-        $chunks = unserialize($this->touchedChunks);
-        foreach ($chunks as $hash => $data) {
-            $chunks[$hash] = Chunk::fastDeserialize($data);
-        }
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
-        $manager = Shape::getChunkManager($chunks);
-        unset($chunks);
+    public function onRun(): void
+	{
+		$this->publishProgress([0, "Start"]);
+		$chunks = unserialize($this->touchedChunks);
+		foreach ($chunks as $hash => $data) {
+			$chunks[$hash] = Chunk::fastDeserialize($data);
+		}
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection);
+		$manager = Shape::getChunkManager($chunks);
+		unset($chunks);
         /** @var Block[] $newBlocks */
         $newBlocks = unserialize($this->newBlocks);
         $totalCount = $selection->getShape()->getTotalCount();
@@ -88,17 +88,17 @@ class AsyncCountTask extends MWEAsyncTask
         $counts = [];
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, $newBlocks, $this->flags) as $block) {
-            if (is_null($lastchunkx) || $block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz) {
-                $lastchunkx = $block->x >> 4;
-                $lastchunkz = $block->z >> 4;
-                if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
-                    #print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
-                    continue;
-                }
-            }
-            if (!BlockFactory::isInit()) BlockFactory::init();
-            $block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-            $tostring = (BlockFactory::get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
+			if (is_null($lastchunkx) || ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->x >> 4;
+				$lastchunkz = $block->z >> 4;
+				if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
+					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
+					continue;
+				}
+			}
+			if (!BlockFactory::isInit()) BlockFactory::init();
+			$block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+			$tostring = (BlockFactory::getInstance()->get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
             $counts[$tostring]++;
             $changed++;

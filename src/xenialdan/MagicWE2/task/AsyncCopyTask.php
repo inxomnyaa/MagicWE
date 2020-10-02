@@ -57,17 +57,17 @@ class AsyncCopyTask extends MWEAsyncTask
      * @return void
      * @throws Exception
      */
-    public function onRun()
-    {
-        $this->publishProgress([0, "Start"]);
-        $chunks = array_map(function ($chunk) {
-            return Chunk::fastDeserialize($chunk);
-        }, unserialize($this->chunks));
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
-        #var_dump("shape", $selection->getShape());
-        $manager = Shape::getChunkManager($chunks);
-        unset($chunks);
+    public function onRun(): void
+	{
+		$this->publishProgress([0, "Start"]);
+		$chunks = array_map(function ($chunk) {
+			return Chunk::fastDeserialize($chunk);
+		}, unserialize($this->chunks));
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection);
+		#var_dump("shape", $selection->getShape());
+		$manager = Shape::getChunkManager($chunks);
+		unset($chunks);
         #var_dump($this->offset);
         $clipboard = new SingleClipboard($this->offset);
         $clipboard->selection = $selection;

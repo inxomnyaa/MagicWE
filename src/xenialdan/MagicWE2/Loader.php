@@ -337,12 +337,12 @@ class Loader extends PluginBase
             "{$colorAxe}####{$colorAxeSky}        by XenialDan"];
         foreach (array_map(function ($line) {
             return preg_replace_callback(
-                '/ +(?<![#§l5d6]] )(?= [#§l5d6]+)|(?<=[#§l5d6] ) +(?=\s)/',
-                #'/ +(?<!# )(?= #+)|(?<=# ) +(?=\s)/',
-                function ($v) {
-                    return substr(str_shuffle(str_pad('+*~', strlen($v[0]))), 0, strlen($v[0]));
-                },
-                TF::LIGHT_PURPLE . $line
+                '/ +(?<![#§l5d6]] )(?= [#§l5d6]+)|(?<=[#§l5d6] ) +(?=\s)/u',
+				#'/ +(?<!# )(?= #+)|(?<=# ) +(?=\s)/',
+				function ($v) {
+					return substr(str_shuffle(str_pad('+*~', strlen($v[0]))), 0, strlen($v[0]));
+				},
+				TF::LIGHT_PURPLE . $line
             );
         }, $axe) as $axeMsg)
             $this->getLogger()->info($axeMsg);

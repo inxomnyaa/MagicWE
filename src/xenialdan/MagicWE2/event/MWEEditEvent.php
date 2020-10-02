@@ -76,14 +76,20 @@ class MWEEditEvent extends MWEEvent implements Cancellable
      */
     public function getNewBlocks(): array
     {
-        return $this->newBlocks;
-    }
+		return $this->newBlocks;
+	}
 
-    /**
-     * @param Block[] $newBlocks
-     */
-    public function setNewBlocks(array $newBlocks): void
-    {
-        $this->newBlocks = $newBlocks;
-    }
+	/**
+	 * @param Block[] $newBlocks
+	 */
+	public function setNewBlocks(array $newBlocks): void
+	{
+		$this->newBlocks = $newBlocks;
+	}
+
+	public function isCancelled(): bool
+	{
+		// TODO: Implement isCancelled() method.
+		return false;
+	}
 }

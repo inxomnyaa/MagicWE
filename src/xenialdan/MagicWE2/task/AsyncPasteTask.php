@@ -61,17 +61,17 @@ class AsyncPasteTask extends MWEAsyncTask
      * @return void
      * @throws Exception
      */
-    public function onRun()
-    {
-        $this->publishProgress([0, "Start"]);
+    public function onRun(): void
+	{
+		$this->publishProgress([0, "Start"]);
 
-        $touchedChunks = array_map(function ($chunk) {
-            return Chunk::fastDeserialize($chunk);
-        }, unserialize($this->touchedChunks));
-        foreach ($touchedChunks as $chunk) {
-            /** @var Chunk $chunk */
-            #var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
-        }//TODO REMOVE
+		$touchedChunks = array_map(function ($chunk) {
+			return Chunk::fastDeserialize($chunk);
+		}, unserialize($this->touchedChunks));
+		foreach ($touchedChunks as $chunk) {
+			/** @var Chunk $chunk */
+			#var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
+		}//TODO REMOVE
 
         $manager = Shape::getChunkManager($touchedChunks);
         unset($touchedChunks);
@@ -113,14 +113,14 @@ class AsyncPasteTask extends MWEAsyncTask
             $y += $this->offset->getFloorY();
             $z += $this->offset->getFloorZ();
             #var_dump("add offset xyz $x $y $z");
-            if (is_null($lastchunkx) || $x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) {
-                $lastchunkx = $x >> 4;
-                $lastchunkz = $z >> 4;
-                if (is_null($manager->getChunk($x >> 4, $z >> 4))) {
-                    print PHP_EOL . "Paste chunk not found in async paste manager: " . strval($x >> 4) . ":" . strval($z >> 4) . PHP_EOL;
-                    continue;
-                }
-            }
+			if (is_null($lastchunkx) || ($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $x >> 4;
+				$lastchunkz = $z >> 4;
+				if (is_null($manager->getChunk($x >> 4, $z >> 4))) {
+					print PHP_EOL . "Paste chunk not found in async paste manager: " . strval($x >> 4) . ":" . strval($z >> 4) . PHP_EOL;
+					continue;
+				}
+			}
             /*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
                 $rel = $block->subtract($selection->shape->getPasteVector());
                 $block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
