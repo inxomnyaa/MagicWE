@@ -5,10 +5,10 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\level\format\Chunk;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
+use pocketmine\world\format\Chunk;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -97,7 +97,7 @@ class AsyncCountTask extends MWEAsyncTask
                 }
             }
             if (!BlockFactory::isInit()) BlockFactory::init();
-            $block1 = $manager->getBlockArrayAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ());
+            $block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
             $tostring = (BlockFactory::get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
             $counts[$tostring]++;

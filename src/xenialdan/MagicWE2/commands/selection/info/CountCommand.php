@@ -14,7 +14,7 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
@@ -78,7 +78,7 @@ class CountCommand extends BaseCommand
                 if (!$selection->isValid()) {
                     throw new Exception($lang->translateString('error.selectioninvalid'));
                 }
-                if ($selection->getLevel() !== $sender->getLevel()) {
+                if ($selection->getWorld() !== $sender->getWorld()) {
                     $session->sendMessage(TF::GOLD . $lang->translateString('warning.differentlevel'));
                 }
                 Server::getInstance()->getAsyncPool()->submitTask(
@@ -86,7 +86,7 @@ class CountCommand extends BaseCommand
                         $session->getUUID(),
                         $selection,
                         new CountAction(),
-                        $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                        $selection->getShape()->getTouchedChunks($selection->getWorld()),
                         "",
                         $filterBlocks
                     )

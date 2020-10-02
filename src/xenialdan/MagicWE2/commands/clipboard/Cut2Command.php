@@ -12,7 +12,7 @@ use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -65,7 +65,7 @@ class Cut2Command extends BaseCommand
             if (!$selection->isValid()) {
                 throw new Exception($lang->translateString('error.selectioninvalid'));
             }
-            if ($selection->getLevel() !== $sender->getLevel()) {
+            if ($selection->getWorld() !== $sender->getWorld()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
             }
             #$hasFlags = isset($args["flags"]);
@@ -77,7 +77,7 @@ class Cut2Command extends BaseCommand
                     $session->getUUID(),
                     $selection,
                     $action,
-                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
                     "air",//TODO option
                     ""
                 )

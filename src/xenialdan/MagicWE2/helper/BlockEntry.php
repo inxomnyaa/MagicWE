@@ -7,7 +7,8 @@ namespace xenialdan\MagicWE2\helper;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIds;
+use pocketmine\block\BlockIdentifier;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\UnknownBlock;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
@@ -35,8 +36,8 @@ class BlockEntry
 
     public function validate(): bool
     {
-        [$id, $meta] = RuntimeBlockMapping::fromStaticRuntimeId($this->runtimeId);
-        if ($id === BlockIds::INFO_UPDATE) {
+        [$id, $meta] = RuntimeBlockMapping::getInstance()->fromRuntimeId($this->runtimeId);
+        if ($id === BlockLegacyIds::INFO_UPDATE) {
             return false;
         }
         if ($this->nbt instanceof CompoundTag && !$this->nbt->valid()) {
@@ -47,7 +48,7 @@ class BlockEntry
 
     public function __toString()
     {
-        [$id, $meta] = RuntimeBlockMapping::fromStaticRuntimeId($this->runtimeId);
+        [$id, $meta] = RuntimeBlockMapping::getInstance()->fromRuntimeId($this->runtimeId);
         $str = __CLASS__ . " " . $this->runtimeId . " [$id:$meta]";
         if ($this->nbt instanceof CompoundTag) {
             $str .= " " . str_replace("\n", "", $this->nbt->toString());
@@ -57,22 +58,20 @@ class BlockEntry
 
     public function toBlock(): Block
     {
-        if (!BlockFactory::isInit()) {
-            BlockFactory::init();
-        }
-        [$id, $meta] = RuntimeBlockMapping::fromStaticRuntimeId($this->runtimeId);
+        BlockFactory::getInstance();
+        [$id, $meta] = RuntimeBlockMapping::getInstance()->fromRuntimeId($this->runtimeId);
         try {
-            return BlockFactory::get($id, $meta);
+            return BlockFactory::getInstance()->get($id, $meta);
         } catch (InvalidArgumentException $e) {
             MainLogger::getLogger()->debug(Loader::PREFIX . TextFormat::GRAY . " Couldn't find a registered block for $id:$meta, trying UnknownBlock!");
         }
-        return new UnknownBlock($id, $meta);
+        return new UnknownBlock(new BlockIdentifier($id, $meta));
     }
 
     public static function fromBlock(Block $block): self
     {
-        if (!BlockFactory::isInit()) BlockFactory::init();
-        return new BlockEntry($block->getRuntimeId());
+        BlockFactory::getInstance();
+        return new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getId(), $block->getMeta()));
     }
 
 }

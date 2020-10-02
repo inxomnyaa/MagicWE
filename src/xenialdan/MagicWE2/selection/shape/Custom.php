@@ -5,10 +5,10 @@ namespace xenialdan\MagicWE2\selection\shape;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
@@ -30,7 +30,7 @@ class Custom extends Shape
 
     /**
      * Returns the blocks by their actual position
-     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
+     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
      * @return Generator|Block[]
@@ -47,7 +47,7 @@ class Custom extends Shape
 
     /**
      * Returns a flat layer of all included x z positions in selection
-     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
+     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
      * @return Generator|Vector2[]
      * @throws Exception
@@ -58,7 +58,7 @@ class Custom extends Shape
         /* Mapping: $walked[$hash]=true */
         $walked = [];
         foreach ($this->positions as $position) {
-            $hash = Level::chunkHash($position->getFloorX(), $position->getFloorZ());
+            $hash = World::chunkHash($position->getFloorX(), $position->getFloorZ());
             if (isset($walked[$hash])) continue;
             $walked[$hash] = true;
             yield new Vector2($position->x, $position->z);
@@ -66,7 +66,7 @@ class Custom extends Shape
     }
 
     /**
-     * @param Level|AsyncChunkManager $manager
+     * @param World|AsyncChunkManager $manager
      * @return string[] fastSerialized chunks
      * @throws Exception
      */
@@ -82,7 +82,7 @@ class Custom extends Shape
                 continue;
             }
             print "Touched Chunk at: $x:$z" . PHP_EOL;
-            $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+            $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
         return $touchedChunks;

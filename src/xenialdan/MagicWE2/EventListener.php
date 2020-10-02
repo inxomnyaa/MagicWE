@@ -12,10 +12,10 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
-use pocketmine\level\Position;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\Position;
 use xenialdan\customui\windows\ModalForm;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -123,11 +123,11 @@ class EventListener implements Listener
                     $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                     break;
                 }
-                $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+                $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getWorld())); // TODO check if the selection inside of the session updates
                 if (is_null($selection)) {
                     throw new Error("No selection created - Check the console for errors");
                 }
-                $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getWorld()));
                 break;
             }
             case ItemIds::STICK:
@@ -160,11 +160,11 @@ class EventListener implements Listener
                         $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                         break;
                     }
-                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getWorld())); // TODO check if the selection inside of the session updates
                     if (is_null($selection)) {
                         throw new Error("No selection created - Check the console for errors");
                     }
-                    $selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                    $selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getWorld()));
                     break;
                 }
                 case ItemIds::STICK:
@@ -179,7 +179,7 @@ class EventListener implements Listener
                 case ItemIds::BUCKET:
                 {
                     #if (){// && has perms
-                    API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
+                    API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE), $session);
                     #}
                     break;
                 }
@@ -193,7 +193,7 @@ class EventListener implements Listener
      */
     private function onLeftClickBlock(PlayerInteractEvent $event): void
     {
-        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
+        if (!is_null($event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE))) {
             $event->setCancelled();
             $session = SessionHelper::getUserSession($event->getPlayer());
             if (!$session instanceof UserSession) return;
@@ -204,11 +204,11 @@ class EventListener implements Listener
                         $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
                         break;
                     }
-                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getLevel())); // TODO check if the selection inside of the session updates
+                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getWorld())); // TODO check if the selection inside of the session updates
                     if (is_null($selection)) {
                         throw new Error("No selection created - Check the console for errors");
                     }
-                    $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getLevel()));
+                    $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getWorld()));
                     break;
                 }
                 case ItemIds::STICK:

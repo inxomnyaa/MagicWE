@@ -72,7 +72,7 @@ class BlockStatesEntry
     public function toBlock(): Block
     {
         if ($this->block instanceof Block) return $this->block;
-        if (!BlockFactory::isInit()) BlockFactory::init();
+        BlockFactory::getInstance();
         if (!BlockStatesParser::isInit()) BlockStatesParser::init();
         return array_values(BlockStatesParser::fromString($this->blockFull, false))[0];
     }
@@ -92,9 +92,9 @@ class BlockStatesEntry
         $clone = clone $this;
         $block = $clone->toBlock();
         $idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
-        $key = $idMapName . ":" . $block->getDamage();
+        $key = $idMapName . ":" . $block->getMeta();
         if (strpos($idMapName, "_door") !== false) {
-            $fromMap = BlockStatesParser::getDoorRotationFlipMap()[$block->getDamage()] ?? null;
+            $fromMap = BlockStatesParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
             #var_dump($fromMap);
         } else {
             $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
@@ -154,7 +154,7 @@ class BlockStatesEntry
         $clone = clone $this;
         $block = $clone->toBlock();
         $idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
-        $key = $idMapName . ":" . $block->getDamage();
+        $key = $idMapName . ":" . $block->getMeta();
         if ($axis !== FlipAction::AXIS_Y) {//ugly hack for y flip
             $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
             if ($fromMap === null) {

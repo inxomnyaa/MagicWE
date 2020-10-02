@@ -6,10 +6,11 @@ use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
-use pocketmine\level\format\Chunk;
-use pocketmine\level\Level;
+use pocketmine\math\Facing;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
@@ -35,7 +36,7 @@ class Flood extends WETool
 
     /**
      * Returns the blocks by their actual position
-     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
+     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
      * @return Generator|Block[]
@@ -56,7 +57,7 @@ class Flood extends WETool
 
     /**
      * Returns a flat layer of all included x z positions in selection
-     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
+     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
      * @return Generator|Vector2[]
      * @throws Exception
@@ -70,7 +71,7 @@ class Flood extends WETool
     }
 
     /**
-     * @param Level|AsyncChunkManager $manager
+     * @param World|AsyncChunkManager $manager
      * @return Block[]
      * @throws InvalidArgumentException
      */
@@ -92,7 +93,7 @@ class Flood extends WETool
     }
 
     /**
-     * @param Level|AsyncChunkManager $manager
+     * @param World|AsyncChunkManager $manager
      * @param Vector3 $vector3
      * @return Generator|Block[]
      * @throws InvalidArgumentException
@@ -100,7 +101,7 @@ class Flood extends WETool
     private function getHorizontalSides($manager, Vector3 $vector3): Generator
     {
         $this->validateChunkManager($manager);
-        foreach ([Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH, Vector3::SIDE_WEST, Vector3::SIDE_EAST] as $vSide) {
+        foreach ([Facing::NORTH, Facing::SOUTH, Facing::WEST, Facing::EAST] as $vSide) {
             $side = $vector3->getSide($vSide);
             if ($manager->getChunk($side->x >> 4, $side->z >> 4) === null) continue;
             $block = $manager->getBlockAt($side->getFloorX(), $side->getFloorY(), $side->getFloorZ());
@@ -115,7 +116,7 @@ class Flood extends WETool
     }
 
     /**
-     * @param Level|AsyncChunkManager $chunkManager
+     * @param World|AsyncChunkManager $chunkManager
      * @return array
      * @throws InvalidArgumentException
      */
@@ -140,7 +141,7 @@ class Flood extends WETool
                     continue;
                 }
                 #print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
             }
         }
         #print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
@@ -158,7 +159,7 @@ class Flood extends WETool
      */
     public function validateChunkManager($manager): void
     {
-        if (!$manager instanceof Level && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of Level or AsyncChunkManager");
+        if (!$manager instanceof World && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncChunkManager");
     }
 
     private function getCenter(): Vector3

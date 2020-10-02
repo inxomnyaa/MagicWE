@@ -54,10 +54,10 @@ class ThawAction extends TaskAction
             foreach ($selection->getShape()->getBlocks($manager, [$blockF]) as $block) {
                 /** @var Block $new */
                 $new = clone $newBlocks[$ib];
-                #$oldBlocks[] = $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
-                $oldBlocksSingleClipboard->addEntry($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), BlockEntry::fromBlock($block));
-                $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
-                if ($manager->getBlockIdAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== $block->getId()) {
+                #$oldBlocks[] = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->setComponents($block->x, $block->y, $block->z);
+                $oldBlocksSingleClipboard->addEntry($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), BlockEntry::fromBlock($block));
+                $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+                if ($manager->getBlockIdAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== $block->getId()) {
                     $changed++;
                 }
                 $i++;

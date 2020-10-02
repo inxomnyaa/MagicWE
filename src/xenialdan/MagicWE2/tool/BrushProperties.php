@@ -6,8 +6,8 @@ namespace xenialdan\MagicWE2\tool;
 
 use InvalidArgumentException;
 use JsonSerializable;
-use pocketmine\level\biome\Biome;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\biome\Biome;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\selection\shape\Shape;

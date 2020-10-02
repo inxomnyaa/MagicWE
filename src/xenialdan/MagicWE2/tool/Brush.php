@@ -10,13 +10,14 @@ use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
-use pocketmine\level\biome\Biome;
+use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
+use pocketmine\world\biome\Biome;
 use ReflectionClass;
 use xenialdan\customui\elements\Dropdown;
 use xenialdan\customui\elements\Input;
@@ -64,7 +65,7 @@ class Brush extends WETool
     public function toItem(): Item
     {
         /** @var Durable $item */
-        $item = Item::get(Item::WOODEN_SHOVEL);
+        $item = Item::get(ItemIds::WOODEN_SHOVEL);
         $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
         $uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
         $this->properties->uuid = $uuid;

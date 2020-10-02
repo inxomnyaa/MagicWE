@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\clipboard;
 
 use pocketmine\block\Block;
-use pocketmine\level\format\Chunk;
-use pocketmine\level\Level;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 
 class RevertClipboard extends Clipboard
 {
@@ -38,7 +38,7 @@ class RevertClipboard extends Clipboard
     {
         $chunks = [];
         foreach ($this->chunks as $chunk)
-            $chunks[Level::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
+            $chunks[World::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
         return serialize([
             $this->levelid,
             $chunks,

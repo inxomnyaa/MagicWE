@@ -7,7 +7,7 @@ namespace xenialdan\MagicWE2;
 use InvalidArgumentException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\enchantment\Enchantment;
-use pocketmine\lang\BaseLang;
+use pocketmine\lang\Language;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
@@ -71,7 +71,7 @@ class Loader extends PluginBase
     public static $shapeRegistry = null;
     /** @var null|ActionRegistry */
     public static $actionRegistry = null;
-    /** @var BaseLang */
+    /** @var Language */
     private $baseLang;
     /** @var string[] Donator names */
     public $donators = [];
@@ -153,8 +153,8 @@ class Loader extends PluginBase
      */
     public function onEnable(): void
     {
-        $lang = $this->getConfig()->get("language", BaseLang::FALLBACK_LANGUAGE);
-        $this->baseLang = new BaseLang((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
+        $lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
+        $this->baseLang = new Language((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
         if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
         //$this->loadDonator();
         $this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
@@ -279,10 +279,10 @@ class Loader extends PluginBase
     }
 
     /**
-     * @return BaseLang
+     * @return Language
      * @api
      */
-    public function getLanguage(): BaseLang
+    public function getLanguage(): Language
     {
         return $this->baseLang;
     }
@@ -364,6 +364,6 @@ class Loader extends PluginBase
      */
     public function getLanguageList(): array
     {
-        return BaseLang::getLanguageList($this->getLanguageFolder());
+        return Language::getLanguageList($this->getLanguageFolder());
     }
 }

@@ -10,11 +10,11 @@ use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\level\Level;
-use pocketmine\level\Position;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\Position;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -56,16 +56,16 @@ class ChunkCommand extends BaseCommand
             if (!$session instanceof UserSession) {
                 throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
-            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
+            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getWorld())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
                 throw new Error("No selection created - Check the console for errors");
             }
-            $chunk = $sender->getLevel()->getChunkAtPosition($sender);
+            $chunk = $sender->getWorld()->getChunkAtPosition($sender);
             if (is_null($chunk)) {
                 throw new Error("Could not find a chunk at your position");
             }
-            $selection->setPos1(Position::fromObject(new Vector3($chunk->getX() * 16, 0, $chunk->getZ() * 16), $sender->getLevel()));
-            $selection->setPos2(Position::fromObject(new Vector3($chunk->getX() * 16 + 15, Level::Y_MAX, $chunk->getZ() * 16 + 15), $sender->getLevel()));
+            $selection->setPos1(Position::fromObject(new Vector3($chunk->getX() * 16, 0, $chunk->getZ() * 16), $sender->getWorld()));
+            $selection->setPos2(Position::fromObject(new Vector3($chunk->getX() * 16 + 15, World::Y_MAX, $chunk->getZ() * 16 + 15), $sender->getWorld()));
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

@@ -10,9 +10,9 @@ use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\level\format\Chunk;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\format\Chunk;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -59,10 +59,10 @@ class ListChunksCommand extends BaseCommand
             if (!$selection->isValid()) {
                 throw new Exception($lang->translateString('error.selectioninvalid'));
             }
-            if ($selection->getLevel() !== $sender->getLevel()) {
+            if ($selection->getWorld() !== $sender->getWorld()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
             }
-            $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getLevel());
+            $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
             $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.listchunks.found', [count($touchedChunks)]));
             foreach ($touchedChunks as $chunkHash => $touchedChunk) {
                 $chunk = Chunk::fastDeserialize($touchedChunk);

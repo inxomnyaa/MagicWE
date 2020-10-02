@@ -12,7 +12,7 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\customui\elements\Dropdown;
 use xenialdan\customui\elements\Label;

@@ -5,12 +5,12 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\level\format\Chunk;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -85,7 +85,7 @@ class AsyncPasteTask extends MWEAsyncTask
 
         $resultChunks = $manager->getChunks();
         $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
-            return $chunk->hasChanged();
+            return $chunk->isDirty();
         });
         $this->setResult(compact("resultChunks", "oldBlocks", "changed"));
     }
@@ -131,7 +131,7 @@ class AsyncPasteTask extends MWEAsyncTask
             #var_dump("old", $old, "new", $new);
             yield $old;
             $manager->setBlockAt($x, $y, $z, $new);
-            if ($manager->getBlockArrayAt($x, $y, $z) !== [$old->getId(), $old->getDamage()]) {//TODO remove? Just useless waste imo
+            if ($manager->getBlockArrayAt($x, $y, $z) !== [$old->getId(), $old->getMeta()]) {//TODO remove? Just useless waste imo
                 $changed++;
             }
             ///
@@ -168,8 +168,8 @@ class AsyncPasteTask extends MWEAsyncTask
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
         $totalCount = $selection->getShape()->getTotalCount();
-        /** @var Level $level */
-        $level = $selection->getLevel();
+        /** @var World $level */
+        $level = $selection->getWorld();
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\clipboard;
 
 use Exception;
-use pocketmine\level\format\Chunk;
-use pocketmine\level\Level;
 use pocketmine\Server;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use Serializable;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
@@ -45,10 +45,10 @@ abstract class Clipboard implements Serializable
     }
 
     /**
-     * @return Level
+     * @return World
      * @throws Exception
      */
-    public function getLevel(): Level
+    public function getWorld(): World
     {
         if (is_null($this->levelid)) {
             throw new Exception("Level is not set!");
@@ -61,9 +61,9 @@ abstract class Clipboard implements Serializable
     }
 
     /**
-     * @param Level $level
+     * @param World $level
      */
-    public function setLevel(Level $level): void
+    public function setWorld(World $level): void
     {
         $this->levelid = $level->getId();
     }
@@ -71,7 +71,7 @@ abstract class Clipboard implements Serializable
     /**
      * @return int
      */
-    public function getLevelId(): int
+    public function getWorldId(): int
     {
         return $this->levelid;
     }

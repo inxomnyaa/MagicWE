@@ -12,8 +12,9 @@ use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
 use pocketmine\block\Block;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -64,13 +65,13 @@ class CutCommand extends BaseCommand
             if (!$selection->isValid()) {
                 throw new Exception($lang->translateString('error.selectioninvalid'));
             }
-            if ($selection->getLevel() !== $sender->getLevel()) {
+            if ($selection->getWorld() !== $sender->getWorld()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
             }
             $hasFlags = isset($args["flags"]);
             //TODO Temp hack - add cutAsync - Update 9th Feb. 2020 LEAVE THAT ALONE! IT WORKS, DO NOT TOUCH IT!
             API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
-            API::fillAsync($selection, $session, [Block::get(Block::AIR)], $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
+            API::fillAsync($selection, $session, [Block::get(BlockLegacyIds::AIR)], $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

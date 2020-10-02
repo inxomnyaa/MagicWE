@@ -10,7 +10,7 @@ use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -58,7 +58,7 @@ class SizeCommand extends BaseCommand
             if (!$selection->isValid()) {
                 throw new Exception($lang->translateString('error.selectioninvalid'));
             }
-            if ($selection->getLevel() !== $sender->getLevel()) {
+            if ($selection->getWorld() !== $sender->getWorld()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
             }
             $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.size'));

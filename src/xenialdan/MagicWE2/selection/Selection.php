@@ -6,12 +6,12 @@ namespace xenialdan\MagicWE2\selection;
 
 use Exception;
 use JsonSerializable;
-use pocketmine\level\Level;
-use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
+use pocketmine\world\Position;
+use pocketmine\world\World;
 use Serializable;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -41,7 +41,7 @@ class Selection implements Serializable, JsonSerializable
     /**
      * Selection constructor.
      * @param UUID $sessionUUID
-     * @param Level $level
+     * @param World $level
      * @param ?int $minX
      * @param ?int $minY
      * @param ?int $minZ
@@ -49,7 +49,7 @@ class Selection implements Serializable, JsonSerializable
      * @param ?int $maxY
      * @param ?int $maxZ
      */
-    public function __construct(UUID $sessionUUID, Level $level, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
+    public function __construct(UUID $sessionUUID, World $level, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
     {
         $this->sessionUUID = $sessionUUID;
         $this->setLevel($level);
@@ -63,10 +63,10 @@ class Selection implements Serializable, JsonSerializable
     }
 
     /**
-     * @return Level
+     * @return World
      * @throws Exception
      */
-    public function getLevel(): Level
+    public function getWorld(): World
     {
         if (is_null($this->levelid)) {
             throw new Exception("Level is not set!");
@@ -79,9 +79,9 @@ class Selection implements Serializable, JsonSerializable
     }
 
     /**
-     * @param Level $level
+     * @param World $level
      */
-    public function setLevel(Level $level): void
+    public function setLevel(World $level): void
     {
         $this->levelid = $level->getId();
     }
@@ -95,7 +95,7 @@ class Selection implements Serializable, JsonSerializable
         if (is_null($this->pos1)) {
             throw new Exception("Position 1 is not set!");
         }
-        return Position::fromObject($this->pos1, $this->getLevel());
+        return Position::fromObject($this->pos1, $this->getWorld());
     }
 
     /**
@@ -104,12 +104,12 @@ class Selection implements Serializable, JsonSerializable
     public function setPos1(Position $position): void
     {
         $this->pos1 = $position->asVector3()->floor();
-        if ($this->pos1->y >= Level::Y_MAX) $this->pos1->y = Level::Y_MAX;
+        if ($this->pos1->y >= World::Y_MAX) $this->pos1->y = World::Y_MAX;
         if ($this->pos1->y < 0) $this->pos1->y = 0;
-        if ($this->levelid !== $position->getLevel()->getId()) {//reset other position if in different level
+        if ($this->levelid !== $position->getWorld()->getId()) {//reset other position if in different level
             $this->pos2 = null;
         }
-        $this->setLevel($position->getLevel());
+        $this->setLevel($position->getWorld());
         if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())//TODO test change
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
@@ -129,7 +129,7 @@ class Selection implements Serializable, JsonSerializable
         if (is_null($this->pos2)) {
             throw new Exception("Position 2 is not set!");
         }
-        return Position::fromObject($this->pos2, $this->getLevel());
+        return Position::fromObject($this->pos2, $this->getWorld());
     }
 
     /**
@@ -138,12 +138,12 @@ class Selection implements Serializable, JsonSerializable
     public function setPos2(Position $position): void
     {
         $this->pos2 = $position->asVector3()->floor();
-        if ($this->pos2->y >= Level::Y_MAX) $this->pos2->y = Level::Y_MAX;
+        if ($this->pos2->y >= World::Y_MAX) $this->pos2->y = World::Y_MAX;
         if ($this->pos2->y < 0) $this->pos2->y = 0;
-        if ($this->levelid !== $position->getLevel()->getId()) {
+        if ($this->levelid !== $position->getWorld()->getId()) {
             $this->pos1 = null;
         }
-        $this->setLevel($position->getLevel());
+        $this->setLevel($position->getWorld());
         if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
@@ -184,7 +184,7 @@ class Selection implements Serializable, JsonSerializable
     {
         try {
             #$this->getShape();
-            $this->getLevel();
+            $this->getWorld();
             $this->getPos1();
             $this->getPos2();
         } catch (Exception $e) {

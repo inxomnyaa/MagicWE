@@ -15,7 +15,7 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -74,7 +74,7 @@ class CylinderCommand extends BaseCommand
                     throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
                 $cyl = new Cylinder($sender->asVector3()->floor(), $height, $diameter);
-                $cylSelection = new Selection($session->getUUID(), $sender->getLevel());
+                $cylSelection = new Selection($session->getUUID(), $sender->getWorld());
                 $cylSelection->setShape($cyl);
                 API::fillAsync($cylSelection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {

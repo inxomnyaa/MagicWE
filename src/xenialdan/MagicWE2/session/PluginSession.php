@@ -6,7 +6,7 @@ namespace xenialdan\MagicWE2\session;
 
 use Ds\Deque;
 use pocketmine\plugin\Plugin;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
 use xenialdan\MagicWE2\Loader;
 
 class PluginSession extends Session

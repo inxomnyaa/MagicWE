@@ -3,13 +3,13 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use pocketmine\level\format\Chunk;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -110,7 +110,7 @@ class AsyncActionTask extends MWEAsyncTask
 
         $resultChunks = $manager->getChunks();
         $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
-            return $chunk->hasChanged();
+            return $chunk->isDirty();
         });
         $this->setResult(compact("resultChunks", "oldBlocks", "changed", "messages"));
     }
@@ -147,8 +147,8 @@ class AsyncActionTask extends MWEAsyncTask
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
         $totalCount = $selection->getShape()->getTotalCount();
-        /** @var Level $level */
-        $level = $selection->getLevel();
+        /** @var World $level */
+        $level = $selection->getWorld();
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }

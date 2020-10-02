@@ -8,24 +8,26 @@ use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use pocketmine\block\Block;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
-use pocketmine\level\Position;
-use pocketmine\nbt\NetworkLittleEndianNBTStream;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\R12ToCurrentBlockMapEntry;
-use pocketmine\network\mcpe\NetworkBinaryStream;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\Loader;
 use const pocketmine\RESOURCE_PATH;
+
+#use pocketmine\nbt\NetworkLittleEndianNBTStream;
+#use pocketmine\network\mcpe\NetworkBinaryStream;
 
 class BlockStatesParser
 {
@@ -59,8 +61,57 @@ class BlockStatesParser
         if (!$contents) {
             throw  new PluginException('r12_to_current_block_map could not be loaded');
         }
-        $legacyStateMapReader = new NetworkBinaryStream($contents);
-        $nbtReader = new NetworkLittleEndianNBTStream();
+        //////////////////
+//
+//        $legacyIdMap = LegacyBlockIdToStringIdMap::getInstance();
+//        /** @var R12ToCurrentBlockMapEntry[] $legacyStateMap */
+//        $legacyStateMap = [];
+//        $legacyStateMapReader = new PacketSerializer(file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
+//        $nbtReader = new NetworkNbtSerializer();
+//        while(!$legacyStateMapReader->feof()){
+//            $id = $legacyStateMapReader->getString();
+//            $meta = $legacyStateMapReader->getLShort();
+//
+//            $offset = $legacyStateMapReader->getOffset();
+//            $state = $nbtReader->read($legacyStateMapReader->getBuffer(), $offset)->mustGetCompoundTag();
+//            $legacyStateMapReader->setOffset($offset);
+//            $legacyStateMap[] = new R12ToCurrentBlockMapEntry($id, $meta, $state);
+//        }
+//
+//        /**
+//         * @var int[][] $idToStatesMap string id -> int[] list of candidate state indices
+//         */
+//        $idToStatesMap = [];
+//        foreach($this->bedrockKnownStates as $k => $state){
+//            $idToStatesMap[$state->getCompoundTag("block")->getString("name")][] = $k;
+//        }
+//        foreach($legacyStateMap as $pair){
+//            $id = $legacyIdMap->stringToLegacy($pair->getId()) ?? null;
+//            if($id === null){
+//                throw new \RuntimeException("No legacy ID matches " . $pair->getId());
+//            }
+//            $data = $pair->getMeta();
+//            if($data > 15){
+//                //we can't handle metadata with more than 4 bits
+//                continue;
+//            }
+//            $mappedState = $pair->getBlockState();
+//            $mappedName = $mappedState->getString("name");
+//            if(!isset($idToStatesMap[$mappedName])){
+//                throw new \RuntimeException("Mapped new state does not appear in network table");
+//            }
+//            foreach($idToStatesMap[$mappedName] as $k){
+//                $networkState = $this->bedrockKnownStates[$k];
+//                if($mappedState->equals($networkState->getCompoundTag("block"))){
+//                    $this->registerMapping($k, $id, $data);
+//                    continue 2;
+//                }
+//            }
+//            throw new \RuntimeException("Mapped new state does not appear in network table");
+//        }
+        /// /////////////
+        #$legacyStateMapReader = new NetworkBinaryStream($contents);
+        #$nbtReader = new NetworkLittleEndianNBTStream();
         while (!$legacyStateMapReader->feof()) {
             $stringId = $legacyStateMapReader->getString();
             $meta = $legacyStateMapReader->getLShort();
@@ -383,8 +434,8 @@ class BlockStatesParser
             $smallestMeta = PHP_INT_MAX;
             $result = null;
             foreach ($blocks as $block) {
-                if ($block->getDamage() < $smallestMeta) {
-                    $smallestMeta = $block->getDamage();
+                if ($block->getMeta() < $smallestMeta) {
+                    $smallestMeta = $block->getMeta();
                     $result = $block;
                 }
             }
@@ -399,7 +450,7 @@ class BlockStatesParser
         $name = self::getBlockIdMapName($block);
         if ($name === null) return null;
         /** @var string $name */
-        $damage = $block->getDamage();
+        $damage = $block->getMeta();
         $blockStates = clone self::$allStates->getCompoundTag($name . ":" . $damage);
         if ($blockStates === null) return null;
         return new BlockStatesEntry($name, $blockStates, $block);
@@ -600,7 +651,7 @@ class BlockStatesParser
         //test doors because WTF they are weird
         try {
             for ($i = 0; $i < 15; $i++) {
-                $block = Block::get(Block::IRON_DOOR_BLOCK, $i);
+                $block = Block::get(BlockLegacyIds::IRON_DOOR_BLOCK, $i);
                 Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
                 $entry = self::getStateByBlock($block);
                 Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
@@ -617,7 +668,7 @@ class BlockStatesParser
         $pasteY = $position->getFloorY();
         $pasteX = $position->getFloorX();
         $pasteZ = $position->getFloorZ();
-        $level = $position->getLevel();
+        $level = $position->getWorld();
         /** @var array<int,Block> $sorted */
         $sorted = [];
         foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
@@ -627,7 +678,7 @@ class BlockStatesParser
                 /** @var Block $block */
                 #$block = array_values(self::fromString(TF::clean(strval($bs))))[0];
                 $block = $bs->toBlock();
-                $sorted[($block->getId() << 4) | $block->getDamage()] = $bs;
+                $sorted[($block->getId() << 4) | $block->getMeta()] = $bs;
             } catch (Exception $e) {
                 //skip blocks that pm does not know about
                 #$level->getServer()->broadcastMessage($e->getMessage());
@@ -643,10 +694,10 @@ class BlockStatesParser
             try {
                 /** @var Block $block */
                 $block = $blockStatesEntry->toBlock();
-                #if($block->getId() !== $id || $block->getDamage() !== $meta) var_dump("error, $id:$meta does not match {$block->getId()}:{$block->getDamage()}");
+                #if($block->getId() !== $id || $block->getMeta() !== $meta) var_dump("error, $id:$meta does not match {$block->getId()}:{$block->getMeta()}");
                 #$level->setBlock(new Vector3($pasteX + $x, $pasteY, $pasteZ + $z), $block);
                 $level->setBlockIdAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getId());
-                $level->setBlockDataAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getDamage());
+                $level->setBlockDataAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getMeta());
             } catch (Exception $e) {
                 $i++;
                 continue;

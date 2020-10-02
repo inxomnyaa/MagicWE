@@ -7,10 +7,10 @@ namespace xenialdan\MagicWE2\session;
 use Ds\Deque;
 use Exception;
 use InvalidArgumentException;
-use pocketmine\lang\BaseLang;
+use pocketmine\lang\Language;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -230,7 +230,7 @@ abstract class Session
         }
         /** @var RevertClipboard $revertClipboard */
         $revertClipboard = $this->undoHistory->pop();
-        $level = $revertClipboard->getLevel();
+        $level = $revertClipboard->getWorld();
         foreach ($revertClipboard->chunks as $hash => $chunk) {
             $revertClipboard->chunks[$hash] = $level->getChunk($chunk->getX(), $chunk->getZ(), false);
         }
@@ -266,9 +266,9 @@ abstract class Session
     }
 
     /**
-     * @return BaseLang
+     * @return Language
      */
-    public function getLanguage(): BaseLang
+    public function getLanguage(): Language
     {
         return Loader::getInstance()->getLanguage();
     }

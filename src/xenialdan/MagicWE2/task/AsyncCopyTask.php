@@ -4,12 +4,12 @@ namespace xenialdan\MagicWE2\task;
 
 use Exception;
 use pocketmine\block\Block;
-use pocketmine\level\format\Chunk;
 use pocketmine\math\Vector3;
-use  pocketmine\network\mcpe\convert\RuntimeBlockMapping;
+use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
+use pocketmine\world\format\Chunk;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -96,8 +96,8 @@ class AsyncCopyTask extends MWEAsyncTask
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
             #var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
-            $newv3 = $block->subtract($min)->floor();
-            $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::toStaticRuntimeId($block->getId(), $block->getDamage())));//TODO test tiles
+            $newv3 = $block->getPos()->subtractVector($min)->floor();
+            $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getId(), $block->getMeta())));//TODO test tiles
             #var_dump("copied selection block", $block);
             $i++;
             $progress = floor($i / $blockCount * 100);

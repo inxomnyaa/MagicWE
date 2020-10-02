@@ -7,12 +7,12 @@ namespace xenialdan\MagicWE2\commands\brush;
 use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
-use CortexPE\Commando\exception\SubCommandCollision;
 use Error;
 use Exception;
+use InvalidArgumentException;
 use muqsit\invmenu\InvMenu;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\customui\elements\Button;
 use xenialdan\customui\elements\Label;
@@ -30,7 +30,7 @@ class BrushCommand extends BaseCommand
 {
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws SubCommandCollision
+     * @throws InvalidArgumentException
      */
     protected function prepare(): void
     {

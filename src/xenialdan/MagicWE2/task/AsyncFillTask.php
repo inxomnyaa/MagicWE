@@ -5,11 +5,11 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\level\format\Chunk;
-use pocketmine\level\Level;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -75,7 +75,7 @@ class AsyncFillTask extends MWEAsyncTask
 
         $resultChunks = $manager->getChunks();
         $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
-            return $chunk->hasChanged();
+            return $chunk->isDirty();
         });
         $this->setResult(compact("resultChunks", "oldBlocks", "changed"));
     }
@@ -112,10 +112,11 @@ class AsyncFillTask extends MWEAsyncTask
             }
             /** @var Block $new */
             $new = clone $newBlocks[array_rand($newBlocks)];
-            if ($new->getId() === $block->getId() && $new->getDamage() === $block->getDamage()) continue;//skip same blocks
-            yield $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
-            $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
-            if ($manager->getBlockArrayAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== [$block->getId(), $block->getDamage()]) {
+            if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
+            yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->x, $block->y, $block->z)*/
+            ;
+            $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+            if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
                 $changed++;
             }
             ///
@@ -152,8 +153,8 @@ class AsyncFillTask extends MWEAsyncTask
         /** @var Selection $selection */
         $selection = unserialize($this->selection);
         $totalCount = $selection->getShape()->getTotalCount();
-        /** @var Level $level */
-        $level = $selection->getLevel();
+        /** @var World $level */
+        $level = $selection->getWorld();
         foreach ($resultChunks as $hash => $chunk) {
             $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
         }

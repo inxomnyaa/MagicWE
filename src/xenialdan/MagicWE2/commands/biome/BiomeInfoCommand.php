@@ -12,10 +12,10 @@ use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\level\biome\Biome;
-use pocketmine\level\format\Chunk;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\biome\Biome;
+use pocketmine\world\format\Chunk;
 use ReflectionClass;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -74,12 +74,12 @@ class BiomeInfoCommand extends BaseCommand
                         $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
                         return;
                     }
-                    $biomeId = $target->getLevel()->getChunkAtPosition($target)->getBiomeId($target->getX() % 16, $target->getZ() % 16);
+                    $biomeId = $target->getPos()->getWorld()->getChunkAtPosition($target)->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
                     $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
                     $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
                 if (in_array(self::FLAG_P, $flagArray)) {
-                    $biomeId = $sender->getLevel()->getChunkAtPosition($sender)->getBiomeId($sender->getX() % 16, $sender->getZ() % 16);
+                    $biomeId = $sender->getWorld()->getChunkAtPosition($sender)->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
                     $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
                     $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
                 }
@@ -92,10 +92,10 @@ class BiomeInfoCommand extends BaseCommand
             if (!$selection->isValid()) {
                 throw new Exception($lang->translateString('error.selectioninvalid'));
             }
-            if ($selection->getLevel() !== $sender->getLevel()) {
+            if ($selection->getWorld() !== $sender->getWorld()) {
                 $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
             }
-            $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getLevel());
+            $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
             $biomes = [];
             foreach ($touchedChunks as $touchedChunk) {
                 for ($x = 0; $x < 16; $x++)

@@ -9,11 +9,11 @@ use Exception;
 use InvalidArgumentException;
 use JsonSerializable;
 use pocketmine\item\Item;
-use pocketmine\lang\BaseLang;
+use pocketmine\lang\Language;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
@@ -34,7 +34,7 @@ class UserSession extends Session implements JsonSerializable
     private $debugToolEnabled = true;
     /** @var Brush[] */
     private $brushes = [];
-    /** @var BaseLang|null */
+    /** @var Language|null */
     private $lang;
 
     public function __construct(Player $player)
@@ -46,7 +46,7 @@ class UserSession extends Session implements JsonSerializable
         $this->bossBar->hideFrom([$player]);
         $this->undoHistory = new Deque();
         $this->redoHistory = new Deque();
-        if (is_null($this->lang)) $this->setLanguage(BaseLang::FALLBACK_LANGUAGE);
+        if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
         Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
     }
 
@@ -57,9 +57,9 @@ class UserSession extends Session implements JsonSerializable
     }
 
     /**
-     * @return BaseLang
+     * @return Language
      */
-    public function getLanguage(): BaseLang
+    public function getLanguage(): Language
     {
         return $this->lang;
     }
@@ -72,10 +72,10 @@ class UserSession extends Session implements JsonSerializable
     {
         $langShort = strtolower($langShort);
         if (isset(Loader::getInstance()->getLanguageList()[$langShort])) {
-            $this->lang = new BaseLang($langShort, Loader::getInstance()->getLanguageFolder());
+            $this->lang = new Language($langShort, Loader::getInstance()->getLanguageFolder());
             $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString("session.language.set", [$this->getLanguage()->getName()]));
         } else {
-            $this->lang = new BaseLang(BaseLang::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
+            $this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
             $this->sendMessage(TF::RED . $this->getLanguage()->translateString("session.language.notfound", [$langShort]));
         }
     }

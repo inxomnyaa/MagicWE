@@ -10,7 +10,7 @@ use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -53,7 +53,7 @@ class Pos1Command extends BaseCommand
             if (!$session instanceof UserSession) {
                 throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
-            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
+            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getWorld())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
                 throw new Error("No selection created - Check the console for errors");
             }

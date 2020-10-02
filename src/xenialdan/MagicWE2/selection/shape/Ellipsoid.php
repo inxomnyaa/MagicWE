@@ -5,10 +5,11 @@ namespace xenialdan\MagicWE2\selection\shape;
 use Exception;
 use Generator;
 use pocketmine\block\Block;
-use pocketmine\level\Level;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
@@ -38,7 +39,7 @@ class Ellipsoid extends Shape
 
     /**
      * Returns the blocks by their actual position
-     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
+     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
      * @return Generator|Block[]
@@ -71,14 +72,14 @@ class Ellipsoid extends Shape
                     //TODO hollow
                     if ($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) continue;
                     $block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())->setComponents($vec3->x, $vec3->y, $vec3->z);
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== Block::AIR) continue;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === Block::AIR) continue;
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
+                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-                    if ($block->y >= Level::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
+                    if ($block->y >= World::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
                     if (empty($filterblocks)) yield $block;
                     else {
                         foreach ($filterblocks as $filterblock) {
-                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getDamage() === $filterblock->getDamage() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
                                 yield $block;
                         }
                     }
@@ -89,7 +90,7 @@ class Ellipsoid extends Shape
 
     /**
      * Returns a flat layer of all included x z positions in selection
-     * @param Level|AsyncChunkManager $manager The level or AsyncChunkManager
+     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param int $flags
      * @return Generator|Vector2[]
      * @throws Exception
@@ -118,7 +119,7 @@ class Ellipsoid extends Shape
     }
 
     /**
-     * @param Level|AsyncChunkManager $manager
+     * @param World|AsyncChunkManager $manager
      * @return string[] fastSerialized chunks
      * @throws Exception
      */
@@ -137,7 +138,7 @@ class Ellipsoid extends Shape
                     continue;
                 }
                 print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
             }
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;

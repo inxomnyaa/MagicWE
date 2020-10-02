@@ -12,7 +12,7 @@ use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;

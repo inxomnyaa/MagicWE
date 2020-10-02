@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\clipboard;
 
 use Generator;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\helper\BlockEntry;
 use xenialdan\MagicWE2\selection\Selection;
 
@@ -30,7 +30,7 @@ class SingleClipboard extends Clipboard
 
     public function addEntry(int $x, int $y, int $z, BlockEntry $entry): void
     {
-        $this->entries[Level::blockHash($x, $y, $z)] = $entry;
+        $this->entries[World::blockHash($x, $y, $z)] = $entry;
     }
 
     public function clear(): void
@@ -47,7 +47,7 @@ class SingleClipboard extends Clipboard
     public function iterateEntries(&$x, &$y, &$z): Generator
     {
         foreach ($this->entries as $hash => $entry) {
-            Level::getBlockXYZ($hash, $x, $y, $z);
+            World::getBlockXYZ($hash, $x, $y, $z);
             yield $entry;
         }
     }

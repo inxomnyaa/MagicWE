@@ -4,7 +4,7 @@ namespace xenialdan\MagicWE2\event;
 
 use pocketmine\block\Block;
 use pocketmine\event\Cancellable;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;

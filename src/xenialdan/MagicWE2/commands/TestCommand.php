@@ -10,7 +10,7 @@ use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -55,7 +55,7 @@ class TestCommand extends BaseCommand
                     $pluginSession->getUUID(),
                     $selection,
                     new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
                     "minecraft:snow_block",
                     "minecraft:tnt"
                 )
@@ -66,7 +66,7 @@ class TestCommand extends BaseCommand
                     $pluginSession->getUUID(),
                     $selection,
                     new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
                     "minecraft:snow_block",
                     "minecraft:tnt"
                 )
@@ -77,7 +77,7 @@ class TestCommand extends BaseCommand
                     $pluginSession->getUUID(),
                     $selection,
                     new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
                     "minecraft:snow_block",
                     "minecraft:tnt"
                 )
@@ -88,7 +88,7 @@ class TestCommand extends BaseCommand
                     $pluginSession->getUUID(),
                     $selection,
                     new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getLevel()),
+                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
                     "minecraft:snow_block",
                     "minecraft:tnt"
                 )

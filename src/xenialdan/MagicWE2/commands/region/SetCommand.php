@@ -14,7 +14,7 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -73,7 +73,7 @@ class SetCommand extends BaseCommand
                 if (!$selection->isValid()) {
                     throw new Exception($lang->translateString('error.selectioninvalid'));
                 }
-                if ($selection->getLevel() !== $sender->getLevel()) {
+                if ($selection->getWorld() !== $sender->getWorld()) {
                     $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
                 }
                 API::fillAsync($selection, $session, $replaceBlocks, API::flagParser(explode(" ", strval($args["flags"]))));

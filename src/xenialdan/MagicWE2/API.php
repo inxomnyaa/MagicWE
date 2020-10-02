@@ -9,17 +9,17 @@ use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
-use pocketmine\level\ChunkManager;
-use pocketmine\level\Level;
-use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\LittleEndianNBTStream;
+use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\NamedTag;
-use pocketmine\Player;
+use pocketmine\nbt\TreeRoot;
+use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\ChunkManager;
+use pocketmine\world\Position;
+use pocketmine\world\World;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -99,7 +99,7 @@ class API
                 /** @var Player $player */
                 $session->getBossBar()->showTo([$player]);
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $newblocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $newblocks, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
@@ -131,7 +131,7 @@ class API
                 /** @var Player $player */
                 $session->getBossBar()->showTo([$player]);
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $oldBlocks, $newBlocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $oldBlocks, $newBlocks, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
@@ -160,11 +160,11 @@ class API
                 /** @var Player $player */
                 $player = $session->getPlayer();
                 /*if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE)*///TODO relative or not by flags
-                $offset = $selection->getShape()->getMinVec3()->subtract($player->asVector3()->floor())->floor();//TODO figure out wrong offset
+                $offset = $selection->getShape()->getMinVec3()->subtractVector($player->getPosition()->asVector3()->floor())->floor();//TODO figure out wrong offset
                 $session->getBossBar()->showTo([$player]);
             }
             #var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getLevel()), $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getWorld()), $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
@@ -197,12 +197,12 @@ class API
                 $session->getBossBar()->showTo([$player]);
             }
             $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
-            $end = $start->add($clipboard->selection->getShape()->getMaxVec3()->subtract($clipboard->selection->getShape()->getMinVec3()));//add size
+            $end = $start->addVector($clipboard->selection->getShape()->getMaxVec3()->subtractVector($clipboard->selection->getShape()->getMinVec3()));//add size
             $aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
             $shape = clone $clipboard->selection->getShape();//needed
             $shape->setPasteVector($target->asVector3()->floor());//needed
             $clipboard->selection->setShape($shape);//needed
-            $touchedChunks = self::getAABBTouchedChunksTemp($target->getLevel(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
+            $touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
             Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
@@ -231,7 +231,7 @@ class API
                     continue;
                 }
                 print __METHOD__ . " Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[Level::chunkHash($x, $z)] = $chunk->fastSerialize();
+                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
             }
         }
         print  __METHOD__ . " Touched chunks count: " . count($touchedChunks) . PHP_EOL;
@@ -252,7 +252,7 @@ class API
             if ($selection->getShape()->getTotalCount() > $limit && $limit !== -1) {
                 throw new LimitExceededException("You are trying to count too many blocks at once. Reduce the selection or raise the limit");
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getLevel()), $filterBlocks, $flags));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $filterBlocks, $flags));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
@@ -279,7 +279,7 @@ class API
                 /** @var Player $player */
                 $session->getBossBar()->showTo([$player]);
             }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getLevel())));
+            Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getWorld())));
         } catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
@@ -299,8 +299,8 @@ class API
     {
         $shapeClass = $brush->properties->shape;
         /** @var Shape $shape */
-        $shape = new $shapeClass($target->asVector3(), ...array_values($brush->properties->shapeProperties));
-        $selection = new Selection($session->getUUID(), $target->getLevel());
+        $shape = new $shapeClass($target->getPos()->asVector3(), ...array_values($brush->properties->shapeProperties));
+        $selection = new Selection($session->getUUID(), $target->getPos()->getWorld());
         $selection->setShape($shape);
         $actionClass = $brush->properties->action;
         //TODO remove hack
@@ -308,22 +308,22 @@ class API
         /** @var TaskAction $action */
         $action = new $actionClass(...array_values($brush->properties->actionProperties));
         $action->prefix = "Brush";
-        Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getLevel()), $brush->properties->blocks, $brush->properties->filter));
+        Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getWorld()), $brush->properties->blocks, $brush->properties->filter));
     }
 
     /**
      * @param Block $target
-     * @param NamedTag $settings
+     * @param CompoundTag $settings
      * @param Session $session
      * @param int $flags
      * @return bool
      */
-    public static function floodArea(Block $target, NamedTag $settings, Session $session, int $flags = self::FLAG_BASE): bool
+    public static function floodArea(Block $target, CompoundTag $settings, Session $session, int $flags = self::FLAG_BASE): bool
     { //TODO
         if (!$settings instanceof CompoundTag) return false;
         $session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
         return false;/*
-        $shape = ShapeRegistry::getShape($target->getLevel(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));
+        $shape = ShapeRegistry::getShape($target->getWorld(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));
         $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
         $messages = [];
         $error = false;
@@ -418,7 +418,7 @@ class API
      */
     public static function blockParser(string $fullstring, array &$messages, bool &$error)
     {
-        if (!BlockFactory::isInit()) BlockFactory::init();
+        BlockFactory::getInstance();
         BlockStatesParser::init(Loader::getRotFlipPath(), Loader::getDoorRotFlipPath());
         $blocks = BlockStatesParser::fromString($fullstring, true);
         foreach ($blocks as $block) {
@@ -512,8 +512,14 @@ class API
      */
     public static function compoundToArray(CompoundTag $compoundTag)
     {
-        $nbt = new LittleEndianNBTStream();
-        $nbt->writeTag($compoundTag);
-        return $nbt::toArray($compoundTag);
+        $a = [];
+        foreach ($compoundTag->getValue() as $key => $value) {
+            $a[$key] = $value;
+        }
+        return $a;
+        $nbt = new LittleEndianNbtSerializer();
+        $treeRoot = new TreeRoot($compoundTag);
+        $buffer = $nbt->write($treeRoot);
+        return $treeRoot->getTag()->getValue();//TODO TEST PM4
     }
 }
