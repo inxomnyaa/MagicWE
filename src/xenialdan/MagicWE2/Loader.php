@@ -63,29 +63,29 @@ use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Loader extends PluginBase
 {
-    const FAKE_ENCH_ID = 201;
-    const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
-    /** @var Loader */
-    private static $instance = null;
-    /** @var null|ShapeRegistry */
-    public static $shapeRegistry = null;
-    /** @var null|ActionRegistry */
-    public static $actionRegistry = null;
-    /** @var Language */
-    private $baseLang;
-    /** @var string[] Donator names */
-    public $donators = [];
-    /** @var string */
-    public $donatorData = "";
+	const FAKE_ENCH_ID = 201;
+	const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
+	/** @var Loader */
+	private static ?Loader $instance = null;
+	/** @var null|ShapeRegistry */
+	public static ?ShapeRegistry $shapeRegistry = null;
+	/** @var null|ActionRegistry */
+	public static ?ActionRegistry $actionRegistry = null;
+	/** @var Language */
+	private Language $baseLang;
+	/** @var string[] Donator names */
+	public array $donators = [];
+	/** @var string */
+	public string $donatorData = "";
 
-    /**
-     * Returns an instance of the plugin
-     * @return Loader
-     */
-    public static function getInstance(): Loader
-    {
-        return self::$instance;
-    }
+	/**
+	 * Returns an instance of the plugin
+	 * @return Loader
+	 */
+	public static function getInstance(): Loader
+	{
+		return self::$instance;
+	}
 
     /**
      * ShapeRegistry
@@ -116,9 +116,9 @@ class Loader extends PluginBase
     public function onLoad(): void
     {
         self::$instance = $this;
-        $ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
-        Enchantment::registerEnchantment($ench);
-        self::$shapeRegistry = new ShapeRegistry();
+		$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
+		Enchantment::register($ench);
+		self::$shapeRegistry = new ShapeRegistry();
         self::$actionRegistry = new ActionRegistry();
         SessionHelper::init();
         #$this->saveResource("rotation_flip_data.json", true);
@@ -299,19 +299,19 @@ class Loader extends PluginBase
     public static function getInfo(): array
     {
         return [
-            "| " . TF::GREEN . Loader::getInstance()->getFullName() . TF::RESET . " | Information |",
-            "| --- | --- |",
-            "| Website | " . Loader::getInstance()->getDescription()->getWebsite() . " |",
-            "| Version | " . Loader::getInstance()->getDescription()->getVersion() . " |",
-            "| Plugin API Version | " . implode(", ", Loader::getInstance()->getDescription()->getCompatibleApis()) . " |",
-            "| Authors | " . implode(", ", Loader::getInstance()->getDescription()->getAuthors()) . " |",
-            "| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(Loader::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-            "| Uses UI | " . (class_exists("xenialdan\\customui\\API") ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-            "| Phar | " . (Loader::getInstance()->isPhar() ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-            "| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
-            "| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
-            "| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
-        ];
+			"| " . TF::GREEN . Loader::getInstance()->getFullName() . TF::RESET . " | Information |",
+			"| --- | --- |",
+			"| Website | " . Loader::getInstance()->getDescription()->getWebsite() . " |",
+			"| Version | " . Loader::getInstance()->getDescription()->getVersion() . " |",
+			"| Plugin API Version | " . implode(", ", Loader::getInstance()->getDescription()->getCompatibleApis()) . " |",
+			"| Authors | " . implode(", ", Loader::getInstance()->getDescription()->getAuthors()) . " |",
+			"| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(Loader::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Uses UI | " . (class_exists("xenialdan\\customui\\API") ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Phar | " . (strpos(Loader::getInstance()->getFile(), 'phar:') ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
+			"| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
+			"| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
+		];
     }
 
     private function showStartupIcon(): void

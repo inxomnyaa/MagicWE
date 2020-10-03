@@ -18,18 +18,18 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 abstract class Shape implements Serializable
 {
-    /** @var null|Vector3 */
-    public $pasteVector = null;
+	/** @var null|Vector3 */
+	public ?Vector3 $pasteVector = null;
 
-    public function getPasteVector(): ?Vector3
-    {
-        return $this->pasteVector;
-    }
+	public function getPasteVector(): ?Vector3
+	{
+		return $this->pasteVector;
+	}
 
-    public function setPasteVector(Vector3 $pasteVector): void
-    {
-        $this->pasteVector = $pasteVector->asVector3();
-    }
+	public function setPasteVector(Vector3 $pasteVector): void
+	{
+		$this->pasteVector = $pasteVector->asVector3();
+	}
 
     /**
      * Creates a chunk manager used for async editing

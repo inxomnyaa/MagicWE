@@ -9,28 +9,29 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Ellipsoid extends Shape
 {
-    /** @var int */
-    public $width = 5;
-    /** @var int */
-    public $height = 5;
-    /** @var int */
-    public $depth = 5;
+	/** @var int */
+	public int $width = 5;
+	/** @var int */
+	public int $height = 5;
+	/** @var int */
+	public int $depth = 5;
 
-    /**
-     * Pyramid constructor.
-     * @param Vector3 $pasteVector
-     * @param int $width
-     * @param int $height
-     * @param int $depth
-     */
-    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
-    {
+	/**
+	 * Pyramid constructor.
+	 * @param Vector3 $pasteVector
+	 * @param int $width
+	 * @param int $height
+	 * @param int $depth
+	 */
+	public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
+	{
         $this->pasteVector = $pasteVector;
         $this->width = $width;
         $this->height = $height;
@@ -71,7 +72,8 @@ class Ellipsoid extends Shape
                     $vec3 = new Vector3($x, $y, $z);
                     //TODO hollow
                     if ($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) continue;
-                    $block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())->setComponents($vec3->x, $vec3->y, $vec3->z);
+					$block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())/*->setComponents($vec3->x, $vec3->y, $vec3->z)*/
+					;
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
@@ -137,8 +139,8 @@ class Ellipsoid extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				print "Touched Chunk at: $x:$z" . PHP_EOL;
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;

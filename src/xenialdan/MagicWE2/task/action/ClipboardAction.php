@@ -12,24 +12,24 @@ use xenialdan\MagicWE2\selection\Selection;
 
 abstract class ClipboardAction
 {
-    /** @var string */
-    public $prefix = "";
-    /** @var string */
-    public $completionString = '{%name} succeed, took {%took}, {%changed} entries out of {%total} changed.';
-    /** @var bool */
-    public $addClipboard = false;
-    /** @var null|Vector3 */
-    public $clipboardVector = null;
+	/** @var string */
+	public string $prefix = "";
+	/** @var string */
+	public string $completionString = '{%name} succeed, took {%took}, {%changed} entries out of {%total} changed.';
+	/** @var bool */
+	public bool $addClipboard = false;
+	/** @var null|Vector3 */
+	public ?Vector3 $clipboardVector = null;
 
-    /**
-     * @param string $sessionUUID
-     * @param Selection $selection
-     * @param null|int $changed
-     * @param SingleClipboard $clipboard
-     * @param string[] $messages
-     * @return Generator|Progress[]
-     */
-    public abstract function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []): Generator;
+	/**
+	 * @param string $sessionUUID
+	 * @param Selection $selection
+	 * @param null|int $changed
+	 * @param SingleClipboard $clipboard
+	 * @param string[] $messages
+	 * @return Generator|Progress[]
+	 */
+	public abstract function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []): Generator;
 
     public static abstract function getName(): string;
 

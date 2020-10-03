@@ -31,28 +31,28 @@ use const pocketmine\RESOURCE_PATH;
 
 class BlockStatesParser
 {
-    /** @var R12ToCurrentBlockMapEntry[] */
-    private static $legacyStateMap = [];
-    /** @var CompoundTag|null */
-    private static $allStates = null;
-    /** @var array */
-    private static $aliasMap = [];
-    /** @var array */
-    private static $rotationFlipMap = [];
-    /** @var array */
-    private static $doorRotationFlipMap = [];
-    /** @var array */
-    private static $blockIdMap = [];
+	/** @var R12ToCurrentBlockMapEntry[] */
+	private static array $legacyStateMap = [];
+	/** @var CompoundTag|null */
+	private static ?CompoundTag $allStates = null;
+	/** @var array */
+	private static array $aliasMap = [];
+	/** @var array */
+	private static array $rotationFlipMap = [];
+	/** @var array */
+	private static array $doorRotationFlipMap = [];
+	/** @var array */
+	private static array $blockIdMap = [];
 
-    /**
-     * @param string|null $rotFlipMapPath
-     * @param string|null $doorRotFlipMapPath
-     * @throws InvalidArgumentException
-     * @throws PluginException
-     * @throws RuntimeException
-     */
-    public static function init(?string $rotFlipMapPath = null, ?string $doorRotFlipMapPath = null): void
-    {
+	/**
+	 * @param string|null $rotFlipMapPath
+	 * @param string|null $doorRotFlipMapPath
+	 * @throws InvalidArgumentException
+	 * @throws PluginException
+	 * @throws RuntimeException
+	 */
+	public static function init(?string $rotFlipMapPath = null, ?string $doorRotFlipMapPath = null): void
+	{
         if (self::isInit()) {
             return;
         }//Silent return if already initialised
@@ -311,7 +311,7 @@ class BlockStatesParser
         #if (!BlockFactory::isInit()) BlockFactory::init();
         $blocks = [];
         if ($multiple) {
-            $pregSplit = preg_split('/,(?![^\[]*\])/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
+			$pregSplit = preg_split('/,(?![^\[]*])/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
             if (!is_array($pregSplit)) throw new InvalidArgumentException("Regex matching failed");
             foreach ($pregSplit as $b) {
 				/** @noinspection SlowArrayOperationsInLoopInspection */
@@ -540,7 +540,9 @@ class BlockStatesParser
 				if (!in_array($state->getValue(), $all[$state->getName()], true)) {
 					$all[$state->getName()][] = $state->getValue();
 					if (strpos($state->getName(), "_bit") !== false) {
+						var_dump("_bit");
 					} else {
+						var_dump("no _bit");
 					}
 				}
             }
@@ -701,8 +703,7 @@ class BlockStatesParser
                 $block = $blockStatesEntry->toBlock();
                 #if($block->getId() !== $id || $block->getMeta() !== $meta) var_dump("error, $id:$meta does not match {$block->getId()}:{$block->getMeta()}");
                 #$level->setBlock(new Vector3($pasteX + $x, $pasteY, $pasteZ + $z), $block);
-                $level->setBlockIdAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getId());
-                $level->setBlockDataAt($pasteX + $x, $pasteY, $pasteZ + $z, $block->getMeta());
+				$level->setBlockAt($pasteX + $x, $pasteY, $pasteZ + $z, $block, false);
             } catch (Exception $e) {
                 $i++;
                 continue;

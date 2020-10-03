@@ -9,24 +9,25 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Sphere extends Shape
 {
-    /** @var int */
-    public $diameter = 5;
+	/** @var int */
+	public int $diameter = 5;
 
-    /**
-     * Sphere constructor.
-     * @param Vector3 $pasteVector
-     * @param int $diameter
-     */
-    public function __construct(Vector3 $pasteVector, int $diameter)
-    {
-        $this->pasteVector = $pasteVector;
-        $this->diameter = $diameter;
+	/**
+	 * Sphere constructor.
+	 * @param Vector3 $pasteVector
+	 * @param int $diameter
+	 */
+	public function __construct(Vector3 $pasteVector, int $diameter)
+	{
+		$this->pasteVector = $pasteVector;
+		$this->diameter = $diameter;
     }
 
     /**
@@ -43,22 +44,23 @@ class Sphere extends Shape
         for ($x = intval(floor($this->pasteVector->x - $this->diameter / 2 - 1)); $x <= floor($this->pasteVector->x + $this->diameter / 2 + 1); $x++) {
             for ($y = intval(floor($this->pasteVector->y - $this->diameter / 2 - 1)); $y <= floor($this->pasteVector->y + $this->diameter / 2 + 1); $y++) {
                 for ($z = intval(floor($this->pasteVector->z - $this->diameter / 2 - 1)); $z <= floor($this->pasteVector->z + $this->diameter / 2 + 1); $z++) {
-                    $vec3 = new Vector3($x, $y, $z);
-                    if ($vec3->distanceSquared($this->getPasteVector()) > (($this->diameter / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW) && $vec3->distanceSquared($this->getPasteVector()) <= ((($this->diameter / 2) - 1) ** 2)))
-                        continue;
-                    $block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())->setComponents($vec3->x, $vec3->y, $vec3->z);
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
+					$vec3 = new Vector3($x, $y, $z);
+					if ($vec3->distanceSquared($this->getPasteVector()) > (($this->diameter / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW) && $vec3->distanceSquared($this->getPasteVector()) <= ((($this->diameter / 2) - 1) ** 2)))
+						continue;
+					$block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())/*->setComponents($vec3->x, $vec3->y, $vec3->z)*/
+					;
+					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
+					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-                    if ($block->y >= World::Y_MAX || $block->y < 0) continue;//TODO fufufufuuu
-                    if (empty($filterblocks)) yield $block;
-                    else {
-                        foreach ($filterblocks as $filterblock) {
-                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-                                yield $block;
-                        }
-                    }
-                }
+					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fufufufuuu
+					if (empty($filterblocks)) yield $block;
+					else {
+						foreach ($filterblocks as $filterblock) {
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+								yield $block;
+						}
+					}
+				}
             }
         }
     }
@@ -103,8 +105,8 @@ class Sphere extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				print "Touched Chunk at: $x:$z" . PHP_EOL;
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;

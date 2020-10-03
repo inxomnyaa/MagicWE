@@ -10,6 +10,8 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -24,26 +26,26 @@ use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncPasteTask extends MWEAsyncTask
 {
-    /** @var string */
-    private $touchedChunks;
-    /** @var string */
-    private $selection;
-    /** @var int */
-    private $flags;
-    /** @var string */
-    private $clipboard;
-    /** @var Vector3 */
-    private $offset;
+	/** @var string */
+	private $touchedChunks;
+	/** @var string */
+	private $selection;
+	/** @var int */
+	private int $flags;
+	/** @var string */
+	private $clipboard;
+	/** @var Vector3 */
+	private Vector3 $offset;
 
-    /**
-     * AsyncPasteTask constructor.
-     * @param UUID $sessionUUID
-     * @param Selection $selection
-     * @param string[] $touchedChunks serialized chunks
-     * @param SingleClipboard $clipboard
-     * @param int $flags
-     */
-    public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, SingleClipboard $clipboard, int $flags)
+	/**
+	 * AsyncPasteTask constructor.
+	 * @param UUID $sessionUUID
+	 * @param Selection $selection
+	 * @param string[] $touchedChunks serialized chunks
+	 * @param SingleClipboard $clipboard
+	 * @param int $flags
+	 */
+	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, SingleClipboard $clipboard, int $flags)
     {
         $this->start = microtime(true);
         $this->offset = $selection->getShape()->getPasteVector()->add($clipboard->position)->floor();
@@ -66,11 +68,11 @@ class AsyncPasteTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 
 		$touchedChunks = array_map(function ($chunk) {
-			return Chunk::fastDeserialize($chunk);
+			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 		foreach ($touchedChunks as $chunk) {
 			/** @var Chunk $chunk */
-			#var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
+			var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
 		}//TODO REMOVE
 
 		$manager = Shape::getChunkManager($touchedChunks);
@@ -121,23 +123,25 @@ class AsyncPasteTask extends MWEAsyncTask
 					continue;
 				}
 			}
-            /*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
-                $rel = $block->subtract($selection->shape->getPasteVector());
-                $block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
-            }*/
-            /** @var Block $new */
-            $new = $entry->toBlock()->setComponents($x, $y, $z);
-            $old = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
-            #var_dump("old", $old, "new", $new);
-            yield $old;
-            $manager->setBlockAt($x, $y, $z, $new);
-            if ($manager->getBlockArrayAt($x, $y, $z) !== [$old->getId(), $old->getMeta()]) {//TODO remove? Just useless waste imo
-                $changed++;
-            }
-            ///
-            $i++;
-            $progress = floor($i / $blockCount * 100);
-            if ($lastprogress < $progress) {//this prevents spamming packets
+			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
+				$rel = $block->subtract($selection->shape->getPasteVector());
+				$block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
+			}*/
+			/** @var Block $new */
+			$new = $entry->toBlock();
+			$new->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
+			$old = $manager->getBlockAt($x, $y, $z);
+			$old->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
+			#var_dump("old", $old, "new", $new);
+			yield $old;
+			$manager->setBlockAt($x, $y, $z, $new);
+			if ($manager->getBlockArrayAt($x, $y, $z) !== [$old->getId(), $old->getMeta()]) {//TODO remove? Just useless waste imo
+				$changed++;
+			}
+			///
+			$i++;
+			$progress = floor($i / $blockCount * 100);
+			if ($lastprogress < $progress) {//this prevents spamming packets
                 $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount"]);
                 $lastprogress = $progress;
             }
@@ -161,7 +165,7 @@ class AsyncPasteTask extends MWEAsyncTask
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(function ($chunk) {
-			return Chunk::fastDeserialize($chunk);
+			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];
 		$changed = $result["changed"];

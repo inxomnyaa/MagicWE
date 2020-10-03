@@ -8,24 +8,25 @@ use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Custom extends Shape
 {
-    /** @var Vector3[] */
-    public $positions = [];
+	/** @var Vector3[] */
+	public array $positions = [];
 
-    /**
-     * Custom constructor.
-     * @param Vector3 $pasteVector
-     * @param Vector3[] $positions
-     */
-    public function __construct(Vector3 $pasteVector, array $positions)
-    {
-        $this->pasteVector = $pasteVector;
-        $this->positions = $positions;
+	/**
+	 * Custom constructor.
+	 * @param Vector3 $pasteVector
+	 * @param Vector3[] $positions
+	 */
+	public function __construct(Vector3 $pasteVector, array $positions)
+	{
+		$this->pasteVector = $pasteVector;
+		$this->positions = $positions;
     }
 
     /**
@@ -41,7 +42,8 @@ class Custom extends Shape
         $this->validateChunkManager($manager);
         foreach ($this->positions as $position) {
             //TODO filterblocks
-            yield $manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ())->setComponents($position->x, $position->y, $position->z);
+			yield $manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ())/*->setComponents($position->x, $position->y, $position->z)*/
+			;
         }
     }
 
@@ -81,8 +83,8 @@ class Custom extends Shape
             if ($chunk === null) {
                 continue;
             }
-            print "Touched Chunk at: $x:$z" . PHP_EOL;
-            $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+			print "Touched Chunk at: $x:$z" . PHP_EOL;
+			$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
         return $touchedChunks;

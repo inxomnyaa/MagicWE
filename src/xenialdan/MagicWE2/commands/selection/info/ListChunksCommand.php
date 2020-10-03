@@ -12,7 +12,7 @@ use Exception;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -65,11 +65,11 @@ class ListChunksCommand extends BaseCommand
             $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
             $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.listchunks.found', [count($touchedChunks)]));
             foreach ($touchedChunks as $chunkHash => $touchedChunk) {
-                $chunk = Chunk::fastDeserialize($touchedChunk);
-                $biomes = [];
+				$chunk = FastChunkSerializer::deserialize($touchedChunk);
+				$biomes = [];
                 for ($x = 0; $x < 16; $x++)
                     for ($z = 0; $z < 16; $z++)
-                        $biomes[] = (Chunk::fastDeserialize($touchedChunk)->getBiomeId($x, $z));
+						$biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
                 $biomes = array_unique($biomes);
                 $biomecount = count($biomes);
                 $biomes = implode(", ", $biomes);

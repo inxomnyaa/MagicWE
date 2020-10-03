@@ -53,17 +53,17 @@ class DebugCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $item = ItemFactory::getInstance()->get(ItemIds::STICK);
-			$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-            $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.debug'));
-            $item->setLore([
+			$item = ItemFactory::getInstance()->get(ItemIds::STICK);
+			$item->addEnchantment(new EnchantmentInstance(Enchantment::get(Loader::FAKE_ENCH_ID)));
+			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.debug'));
+			$item->setLore([
 				$lang->translateString('tool.debug.lore.1'),
 				$lang->translateString('tool.debug.lore.2'),
 				$lang->translateString('tool.debug.lore.3')
 			]);
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			$sender->getInventory()->addItem($item);
-        } catch (Exception $error) {
+		} catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());

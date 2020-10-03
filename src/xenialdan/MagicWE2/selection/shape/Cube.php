@@ -9,24 +9,25 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cube extends Shape
 {
-    /** @var int */
-    public $width = 5;
+	/** @var int */
+	public int $width = 5;
 
-    public function __construct(Vector3 $pasteVector, int $width)
-    {
-        $this->pasteVector = $pasteVector;
-        $this->width = $width;
-    }
+	public function __construct(Vector3 $pasteVector, int $width)
+	{
+		$this->pasteVector = $pasteVector;
+		$this->width = $width;
+	}
 
-    /**
-     * Returns the blocks by their actual position
-     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
+	/**
+	 * Returns the blocks by their actual position
+	 * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
      * @param Block[] $filterblocks If not empty, applying a filter on the block list
      * @param int $flags
      * @return Generator|Block[]
@@ -38,7 +39,8 @@ class Cube extends Shape
         for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
             for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
                 for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-                    $block = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
+					$block = $manager->getBlockAt($x, $y, $z)/*->setComponents($x, $y, $z)*/
+					;
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
@@ -92,8 +94,8 @@ class Cube extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				print "Touched Chunk at: $x:$z" . PHP_EOL;
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;

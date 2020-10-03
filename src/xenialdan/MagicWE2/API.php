@@ -18,6 +18,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\ChunkManager;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use RuntimeException;
@@ -64,27 +65,27 @@ class API
     // For example: Oak Logs with any rotation instead of a specific rotation
     const FLAG_VARIANT = 0x07; // -v
     // With the -m flag the damage values / meta will be kept
-    // For example: Replacing all wool blocks with concrete of the same color
-    const FLAG_KEEP_META = 0x08; // -m
-    // Pastes or sets hollow but closes off the ends
-    const FLAG_HOLLOW_CLOSED = 0x09; // -hc//TODO
+	// For example: Replacing all wool blocks with concrete of the same color
+	const FLAG_KEEP_META = 0x08; // -m
+	// Pastes or sets hollow but closes off the ends
+	const FLAG_HOLLOW_CLOSED = 0x09; // -hc//TODO
 
-    const TAG_MAGIC_WE = "MagicWE";
-    const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
+	const TAG_MAGIC_WE = "MagicWE";
+	const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
 
-    //TODO Split into seperate Class (SchematicStorage?)
-    /** @var Clipboard[] */
-    private static $schematics = [];//TODO
+	//TODO Split into seperate Class (SchematicStorage?)
+	/** @var Clipboard[] */
+	private static array $schematics = [];//TODO
 
-    /**
-     * @param Selection $selection
-     * @param Session $session
-     * @param Block[] $newblocks
-     * @param int $flags
-     * @return bool
-     */
-    public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
-    {
+	/**
+	 * @param Selection $selection
+	 * @param Session $session
+	 * @param Block[] $newblocks
+	 * @param int $flags
+	 * @return bool
+	 */
+	public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE)
+	{
         if (empty($newblocks)) {
             $session->sendMessage(TF::RED . "New blocks is empty!");
             return false;
@@ -155,7 +156,7 @@ class API
                 throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
             }
             //TODO check/edit how relative position works
-            $offset = new Vector3();
+			$offset = new Vector3(0, 0, 0);
             if ($session instanceof UserSession) {
                 /** @var Player $player */
                 $player = $session->getPlayer();
@@ -186,25 +187,25 @@ class API
         #return false;
         try {
             $limit = Loader::getInstance()->getConfig()->get("limit", -1);
-            if ($clipboard->getTotalCount() > $limit && $limit !== -1) {
-                throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
-            }
-            #$c = $clipboard->getCenter();
-            #$clipboard->setCenter($target->asVector3());//TODO check
-            if ($session instanceof UserSession) {
-                $player = $session->getPlayer();
-                /** @var Player $player */
-                $session->getBossBar()->showTo([$player]);
-            }
-            $start = clone $target->asVector3()->floor()->add($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
-            $end = $start->addVector($clipboard->selection->getShape()->getMaxVec3()->subtractVector($clipboard->selection->getShape()->getMinVec3()));//add size
-            $aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
-            $shape = clone $clipboard->selection->getShape();//needed
-            $shape->setPasteVector($target->asVector3()->floor());//needed
-            $clipboard->selection->setShape($shape);//needed
-            $touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard, $flags));
-        } catch (Exception $e) {
+			if ($clipboard->getTotalCount() > $limit && $limit !== -1) {
+				throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
+			}
+			#$c = $clipboard->getCenter();
+			#$clipboard->setCenter($target->asVector3());//TODO check
+			if ($session instanceof UserSession) {
+				$player = $session->getPlayer();
+				/** @var Player $player */
+				$session->getBossBar()->showTo([$player]);
+			}
+			$start = clone $target->asVector3()->floor()->addVector($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
+			$end = $start->addVector($clipboard->selection->getShape()->getMaxVec3()->subtractVector($clipboard->selection->getShape()->getMinVec3()));//add size
+			$aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
+			$shape = clone $clipboard->selection->getShape();//needed
+			$shape->setPasteVector($target->asVector3()->floor());//needed
+			$clipboard->selection->setShape($shape);//needed
+			$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard, $flags));
+		} catch (Exception $e) {
             $session->sendMessage($e->getMessage());
             Loader::getInstance()->getLogger()->logException($e);
             return false;
@@ -230,8 +231,8 @@ class API
                 if ($chunk === null) {
                     continue;
                 }
-                print __METHOD__ . " Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				print __METHOD__ . " Touched Chunk at: $x:$z" . PHP_EOL;
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         print  __METHOD__ . " Touched chunks count: " . count($touchedChunks) . PHP_EOL;
@@ -444,7 +445,7 @@ class API
         $add_sub = false;
         $result = 0;
 
-        $str = preg_replace('/[^\d\.\+\-\*\/]/', '', $str);
+		$str = preg_replace('/[^\d.+\-*\/]/', '', $str);
 		$str = rtrim(trim($str, '/*+'), '-');
 
         if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
@@ -479,8 +480,8 @@ class API
         }
 
         if (!$error && (strpos($str, '+') !== false || strpos($str, '-') !== false)) {
-            $add_sub = true;
-            preg_match_all('/([\d\.]+|[\+\-])/', $str, $matches);
+			$add_sub = true;
+			preg_match_all('/([\d.]+|[+\-])/', $str, $matches);
             if (isset($matches[0])) {
                 $result = 0;
                 $operator = '+';

@@ -12,21 +12,21 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class SingleClipboard extends Clipboard
 {
-    /** @var BlockEntry[] */
-    private $entries = [];
-    /** @var Selection */
-    public $selection;
-    /** @var Vector3 */
-    public $position;
+	/** @var BlockEntry[] */
+	private array $entries = [];
+	/** @var Selection */
+	public Selection $selection;
+	/** @var Vector3 */
+	public Vector3 $position;
 
-    /**
-     * SingleClipboard constructor.
-     * @param Vector3 $position
-     */
-    public function __construct(Vector3 $position)
-    {
-        $this->position = $position->asVector3()->floor();
-    }
+	/**
+	 * SingleClipboard constructor.
+	 * @param Vector3 $position
+	 */
+	public function __construct(Vector3 $position)
+	{
+		$this->position = $position->asVector3()->floor();
+	}
 
     public function addEntry(int $x, int $y, int $z, BlockEntry $entry): void
     {

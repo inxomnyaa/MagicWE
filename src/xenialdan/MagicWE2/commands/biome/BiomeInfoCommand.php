@@ -15,7 +15,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\biome\Biome;
-use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use ReflectionClass;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -100,7 +100,7 @@ class BiomeInfoCommand extends BaseCommand
             foreach ($touchedChunks as $touchedChunk) {
                 for ($x = 0; $x < 16; $x++)
                     for ($z = 0; $z < 16; $z++)
-                        $biomes[] = (Chunk::fastDeserialize($touchedChunk)->getBiomeId($x, $z));
+						$biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
             }
             $biomes = array_unique($biomes);
             $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.result', [count($biomes)]));

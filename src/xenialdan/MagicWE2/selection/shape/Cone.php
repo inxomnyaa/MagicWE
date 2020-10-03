@@ -9,28 +9,29 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cone extends Shape
 {
-    /** @var int */
-    public $height = 5;
-    /** @var int */
-    public $diameter = 5;
-    /** @var bool */
-    public $flipped = false;
+	/** @var int */
+	public int $height = 5;
+	/** @var int */
+	public int $diameter = 5;
+	/** @var bool */
+	public bool $flipped = false;
 
-    /**
-     * Cone constructor.
-     * @param Vector3 $pasteVector
-     * @param int $height
-     * @param int $diameter
-     * @param bool $flipped
-     */
-    public function __construct(Vector3 $pasteVector, int $height, int $diameter, bool $flipped = false)
-    {
+	/**
+	 * Cone constructor.
+	 * @param Vector3 $pasteVector
+	 * @param int $height
+	 * @param int $diameter
+	 * @param bool $flipped
+	 */
+	public function __construct(Vector3 $pasteVector, int $height, int $diameter, bool $flipped = false)
+	{
         $this->pasteVector = $pasteVector;
         $this->height = $height;
         $this->diameter = $diameter;
@@ -55,25 +56,26 @@ class Cone extends Shape
                 for ($z = intval(floor($centerVec2->y - $this->diameter / 2 - 1)); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
                     $vec2 = new Vector2($x, $z);
                     $vec3 = new Vector3($x, $y, $z);
-                    if ($this->flipped)
-                        $radiusLayer = ($this->diameter - $reducePerLayer * ($this->height - $ry)) / 2;
-                    else
-                        $radiusLayer = ($this->diameter - $reducePerLayer * $ry) / 2;
-                    if ($vec2->distanceSquared($centerVec2) > ($radiusLayer ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
-                        continue;
-                    $block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())->setComponents($vec3->x, $vec3->y, $vec3->z);
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
+					if ($this->flipped)
+						$radiusLayer = ($this->diameter - $reducePerLayer * ($this->height - $ry)) / 2;
+					else
+						$radiusLayer = ($this->diameter - $reducePerLayer * $ry) / 2;
+					if ($vec2->distanceSquared($centerVec2) > ($radiusLayer ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
+						continue;
+					$block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())/*->setComponents($vec3->x, $vec3->y, $vec3->z)*/
+					;
+					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
+					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-                    if ($block->y >= World::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
-                    if (empty($filterblocks)) yield $block;
-                    else {
-                        foreach ($filterblocks as $filterblock) {
-                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-                                yield $block;
-                        }
-                    }
-                }
+					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fuufufufuuu
+					if (empty($filterblocks)) yield $block;
+					else {
+						foreach ($filterblocks as $filterblock) {
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+								yield $block;
+						}
+					}
+				}
             }
         }
     }
@@ -118,8 +120,8 @@ class Cone extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				print "Touched Chunk at: $x:$z" . PHP_EOL;
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;

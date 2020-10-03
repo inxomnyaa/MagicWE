@@ -19,23 +19,23 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncRevertTask extends MWEAsyncTask
 {
 
-    const TYPE_UNDO = 0;
-    const TYPE_REDO = 1;
+	const TYPE_UNDO = 0;
+	const TYPE_REDO = 1;
 
-    /** @var string */
-    private $clipboard;
-    /** @var int */
-    private $type;
+	/** @var string */
+	private $clipboard;
+	/** @var int */
+	private int $type;
 
-    /**
-     * AsyncRevertTask constructor.
-     * @param UUID $sessionUUID
-     * @param RevertClipboard $clipboard
-     * @param int $type The type of clipboard pasting.
-     */
-    public function __construct(UUID $sessionUUID, RevertClipboard $clipboard, $type = self::TYPE_UNDO)
-    {
-        $this->sessionUUID = $sessionUUID->toString();
+	/**
+	 * AsyncRevertTask constructor.
+	 * @param UUID $sessionUUID
+	 * @param RevertClipboard $clipboard
+	 * @param int $type The type of clipboard pasting.
+	 */
+	public function __construct(UUID $sessionUUID, RevertClipboard $clipboard, $type = self::TYPE_UNDO)
+	{
+		$this->sessionUUID = $sessionUUID->toString();
         $this->start = microtime(true);
         $this->clipboard = serialize($clipboard);
         $this->type = $type;

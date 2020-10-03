@@ -6,24 +6,25 @@ namespace xenialdan\MagicWE2\clipboard;
 
 use pocketmine\block\Block;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 
 class RevertClipboard extends Clipboard
 {
-    /** @var Chunk[] */
-    public $chunks = [];
-    /** @var Block[] */
-    public $blocksAfter;
+	/** @var Chunk[] */
+	public array $chunks = [];
+	/** @var Block[] */
+	public array $blocksAfter;
 
-    /**
-     * RevertClipboard constructor.
-     * @param int $levelId
-     * @param Chunk[] $chunks
-     * @param Block[] $blocksAfter
-     */
-    public function __construct(int $levelId, array $chunks = [], array $blocksAfter = [])
-    {
-        $this->levelid = $levelId;
+	/**
+	 * RevertClipboard constructor.
+	 * @param int $levelId
+	 * @param Chunk[] $chunks
+	 * @param Block[] $blocksAfter
+	 */
+	public function __construct(int $levelId, array $chunks = [], array $blocksAfter = [])
+	{
+		$this->levelid = $levelId;
         $this->chunks = $chunks;
         $this->blocksAfter = $blocksAfter;
     }
@@ -38,7 +39,7 @@ class RevertClipboard extends Clipboard
     {
         $chunks = [];
         foreach ($this->chunks as $chunk)
-            $chunks[World::chunkHash($chunk->getX(), $chunk->getZ())] = $chunk->fastSerialize();
+			$chunks[World::chunkHash($chunk->getX(), $chunk->getZ())] = FastChunkSerializer::serialize($chunk);
         return serialize([
             $this->levelid,
             $chunks,
@@ -63,6 +64,6 @@ class RevertClipboard extends Clipboard
 			$this->blocksAfter
 		] = unserialize($serialized, ['allowed_classes' => [__CLASS__]]);//TODO test pm4
 		foreach ($chunks as $hash => $chunk)
-			$this->chunks[$hash] = Chunk::fastDeserialize($chunk);
+			$this->chunks[$hash] = FastChunkSerializer::deserialize($chunk);
 	}
 }

@@ -21,24 +21,24 @@ use xenialdan\MagicWE2\task\action\FlipAction;
 
 class BlockStatesEntry
 {
-    /** @var string */
-    public $blockIdentifier;
-    /** @var CompoundTag */
-    public $blockStates;
-    /** @var string */
-    public $blockFull;
-    /** @var Block|null */
-    public $block;
+	/** @var string */
+	public string $blockIdentifier;
+	/** @var CompoundTag */
+	public CompoundTag $blockStates;
+	/** @var string */
+	public string $blockFull;
+	/** @var Block|null */
+	public ?Block $block;
 
-    /**
-     * BlockStatesEntry constructor.
-     * @param string $blockIdentifier
-     * @param CompoundTag $blockStates
-     * @param Block|null $block
-     */
-    public function __construct(string $blockIdentifier, CompoundTag $blockStates, ?Block $block = null)
-    {
-        if(strpos($blockIdentifier,"_door")!==false)var_dump($blockIdentifier);
+	/**
+	 * BlockStatesEntry constructor.
+	 * @param string $blockIdentifier
+	 * @param CompoundTag $blockStates
+	 * @param Block|null $block
+	 */
+	public function __construct(string $blockIdentifier, CompoundTag $blockStates, ?Block $block = null)
+	{
+		if (strpos($blockIdentifier, "_door") !== false) var_dump($blockIdentifier);
         $this->blockIdentifier = $blockIdentifier;
         $this->blockStates = $blockStates;
         $this->block = $block;
@@ -189,57 +189,47 @@ class BlockStatesEntry
             //TODO clean up.. new method?
             if ($axis === FlipAction::AXIS_Y) {
                 $value = $tag->getValue();
-                switch ($stateName) {//TODO clean up oh my god
-                    case "attachment":
-                    {
-                        if ($value === "standing") $value = "hanging";
-                        else if ($value === "hanging") $value = "standing";
-                        break;
-                    }
-                    case "facing_direction":
-                    {
-                        if ($value === 0) $value = 1;
-                        else if ($value === 1) $value = 0;
-                        break;
-                    }
-                    case "hanging":
-                    {
-                        if ($value === 0) $value = 1;
-                        else if ($value === 1) $value = 0;
-                        break;
-                    }
-                    case "lever_direction":
-                    {
-                        if ($value === "down_east_west") $value = "up_east_west";
-                        else if ($value === "up_east_west") $value = "down_east_west";
-                        else if ($value === "down_north_south") $value = "up_north_south";
-                        else if ($value === "up_north_south") $value = "down_north_south";
-                        break;
-                    }
-                    case "rail_direction":
-                    {
-                        //TODO
-                        break;
-                    }
-                    case "top_slot_bit":
-                    case "upper_block_bit":
-                    case "upside_down_bit":
-                    {
-                        if ($value === 0) $value = 1;
-                        else if ($value === 1) $value = 0;
-                        break;
-                    }
-                    case "torch_facing_direction":
-                    {
-                        if ($value === "unknown") $value = "top";
-                        else if ($value === "top") $value = "unknown";
-                        break;
-                    }/*
+				switch ($stateName) {//TODO clean up oh my god
+					case "attachment":
+					{
+						if ($value === "standing") $value = "hanging";
+						else if ($value === "hanging") $value = "standing";
+						break;
+					}
+					case "hanging":
+					case "upside_down_bit":
+					case "upper_block_bit":
+					case "top_slot_bit":
+					case "facing_direction":
+					{
+						if ($value === 0) $value = 1;
+						else if ($value === 1) $value = 0;
+						break;
+					}
+					case "lever_direction":
+					{
+						if ($value === "down_east_west") $value = "up_east_west";
+						else if ($value === "up_east_west") $value = "down_east_west";
+						else if ($value === "down_north_south") $value = "up_north_south";
+						else if ($value === "up_north_south") $value = "down_north_south";
+						break;
+					}
+					case "rail_direction":
+					{
+						//TODO
+						break;
+					}
+					case "torch_facing_direction":
+					{
+						if ($value === "unknown") $value = "top";
+						else if ($value === "top") $value = "unknown";
+						break;
+					}/*
                     default:
                     {
                         $value = $flippedStates[$stateName];
                     }*/
-                }
+				}
             } else {
                 if (isset($flippedStates)) $value = $flippedStates[$stateName] ?? $tag->getValue(); else throw new InvalidArgumentException("flippedStates is not set. Error should never occur, please use //report and send a stack trace");
             }

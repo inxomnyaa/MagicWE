@@ -73,8 +73,8 @@ class CylinderCommand extends BaseCommand
                 if (is_null($session)) {
                     throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
-                $cyl = new Cylinder($sender->asVector3()->floor(), $height, $diameter);
-                $cylSelection = new Selection($session->getUUID(), $sender->getWorld());
+                $cyl = new Cylinder($sender->getPosition()->asVector3()->floor(), $height, $diameter);
+				$cylSelection = new Selection($session->getUUID(), $sender->getWorld());
                 $cylSelection->setShape($cyl);
                 API::fillAsync($cylSelection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));
             } else {

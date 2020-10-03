@@ -8,6 +8,7 @@ use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
+use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\BlockEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
@@ -17,27 +18,27 @@ use xenialdan\MagicWE2\selection\shape\Cuboid;
 
 class RotateAction extends ClipboardAction
 {
-    const ROTATE_90 = 90;
-    const ROTATE_180 = 180;
-    const ROTATE_270 = 270;
-    /** @var bool */
-    public $addClipboard = true;
-    /** @var string */
-    public $completionString = '{%name} succeed, took {%took}, rotated {%changed} blocks out of {%total}';
-    /** @var int */
-    private $rotation;
-    /** @var bool */
-    public $aroundOrigin;
+	const ROTATE_90 = 90;
+	const ROTATE_180 = 180;
+	const ROTATE_270 = 270;
+	/** @var bool */
+	public bool $addClipboard = true;
+	/** @var string */
+	public string $completionString = '{%name} succeed, took {%took}, rotated {%changed} blocks out of {%total}';
+	/** @var int */
+	private int $rotation;
+	/** @var bool */
+	public bool $aroundOrigin;
 
-    public function __construct(int $rotation, bool $aroundOrigin = true)
-    {
-        if ($rotation !== self::ROTATE_90 && $rotation !== self::ROTATE_180 && $rotation !== self::ROTATE_270) throw new InvalidArgumentException("Invalid rotation $rotation given");
-        $this->rotation = $rotation;
-        $this->addClipboard = $aroundOrigin;
-    }
+	public function __construct(int $rotation, bool $aroundOrigin = true)
+	{
+		if ($rotation !== self::ROTATE_90 && $rotation !== self::ROTATE_180 && $rotation !== self::ROTATE_270) throw new InvalidArgumentException("Invalid rotation $rotation given");
+		$this->rotation = $rotation;
+		$this->addClipboard = $aroundOrigin;
+	}
 
-    public static function getName(): string
-    {
+	public static function getName(): string
+	{
         return "Rotate";
     }
 
@@ -56,10 +57,8 @@ class RotateAction extends ClipboardAction
         $changed = 0;
         #$oldBlocks = [];
         $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
-        if (!BlockFactory::isInit()) {
-            BlockFactory::init();
-        }
+		$lastProgress = new Progress(0, "");
+		BlockFactory::getInstance();
         if (!BlockStatesParser::isInit()) {
             var_dump("reinit BlockStatesParser AGAIN");
             BlockStatesParser::init();
@@ -117,13 +116,14 @@ class RotateAction extends ClipboardAction
         $pos1 = $clonedSelection->pos1;
         $pos2 = $clonedSelection->pos2;
         if ($this->rotation === self::ROTATE_90) {//TODO rewrite to be cleaner
-            $pos2 = $pos2->setComponents($pos1->x, $pos2->y, $pos1->z + $maxX);
-            $pos1 = $pos1->subtract($maxZ, 0, 0);
-            if ($this->aroundOrigin) {
-                $pos1 = $pos1->add($maxZ, 0, 0);
-                $pos2 = $pos2->add($maxZ, 0, 0);
-            }
-        }
+			#$pos2 = $pos2->setComponents($pos1->x, $pos2->y, $pos1->z + $maxX);
+			$pos2 = new Vector3($pos1->x, $pos2->y, $pos1->z + $maxX);
+			$pos1 = $pos1->subtract($maxZ, 0, 0);
+			if ($this->aroundOrigin) {
+				$pos1 = $pos1->add($maxZ, 0, 0);
+				$pos2 = $pos2->add($maxZ, 0, 0);
+			}
+		}
         if ($this->rotation === self::ROTATE_180) {
             if (!$this->aroundOrigin) {
                 $pos1 = $pos1->subtract($maxX, 0, $maxZ);
@@ -131,13 +131,14 @@ class RotateAction extends ClipboardAction
             }
         }
         if ($this->rotation === self::ROTATE_270) {//TODO rewrite to be cleaner
-            $pos2 = $pos2->setComponents($pos1->x + $maxZ, $pos2->y, $pos1->z);
-            $pos1 = $pos1->subtract(0, 0, $maxX);
-            if ($this->aroundOrigin) {
-                $pos1 = $pos1->add(0, 0, $maxX);
-                $pos2 = $pos2->add(0, 0, $maxX);
-            }
-        }
+			#$pos2 = $pos2->setComponents($pos1->x + $maxZ, $pos2->y, $pos1->z);
+			$pos2 = new Vector3($pos1->x + $maxZ, $pos2->y, $pos1->z);
+			$pos1 = $pos1->subtract(0, 0, $maxX);
+			if ($this->aroundOrigin) {
+				$pos1 = $pos1->add(0, 0, $maxX);
+				$pos2 = $pos2->add(0, 0, $maxX);
+			}
+		}
         $clonedSelection->setShape(Cuboid::constructFromPositions($pos1, $pos2));//TODO figure out how to keep the shape (not always Cuboid)
         $clonedClipboard->selection = $clonedSelection;
         $clipboard = $clonedClipboard;

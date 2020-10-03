@@ -48,51 +48,51 @@ class TestCommand extends BaseCommand
         try {
             //TODO REMOVE DEBUG
             $pluginSession = SessionHelper::createPluginSession(Loader::getInstance());
-            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 0, 0, 0);
-            $pluginSession->addSelection($selection);
-            Server::getInstance()->getAsyncPool()->submitTask(
-                new AsyncActionTask(
-                    $pluginSession->getUUID(),
-                    $selection,
-                    new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
-                    "minecraft:snow_block",
-                    "minecraft:tnt"
-                )
-            );
-            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 1, 1, 1);
-            Server::getInstance()->getAsyncPool()->submitTask(
-                new AsyncActionTask(
-                    $pluginSession->getUUID(),
-                    $selection,
-                    new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
-                    "minecraft:snow_block",
-                    "minecraft:tnt"
-                )
-            );
-            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 2, 2, 2);
-            Server::getInstance()->getAsyncPool()->submitTask(
-                new AsyncActionTask(
-                    $pluginSession->getUUID(),
-                    $selection,
-                    new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
-                    "minecraft:snow_block",
-                    "minecraft:tnt"
-                )
-            );
-            $selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getDefaultLevel(), 0, 0, 0, 1, 2, 3);
-            Server::getInstance()->getAsyncPool()->submitTask(
-                new AsyncActionTask(
-                    $pluginSession->getUUID(),
-                    $selection,
-                    new TestAction(),
-                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
-                    "minecraft:snow_block",
-                    "minecraft:tnt"
-                )
-            );
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 0, 0, 0);
+			$pluginSession->addSelection($selection);
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncActionTask(
+					$pluginSession->getUUID(),
+					$selection,
+					new TestAction(),
+					$selection->getShape()->getTouchedChunks($selection->getWorld()),
+					"minecraft:snow_block",
+					"minecraft:tnt"
+				)
+			);
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 1, 1, 1);
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncActionTask(
+					$pluginSession->getUUID(),
+					$selection,
+					new TestAction(),
+					$selection->getShape()->getTouchedChunks($selection->getWorld()),
+					"minecraft:snow_block",
+					"minecraft:tnt"
+				)
+			);
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 2, 2, 2);
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncActionTask(
+					$pluginSession->getUUID(),
+					$selection,
+					new TestAction(),
+					$selection->getShape()->getTouchedChunks($selection->getWorld()),
+					"minecraft:snow_block",
+					"minecraft:tnt"
+				)
+			);
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 1, 2, 3);
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncActionTask(
+					$pluginSession->getUUID(),
+					$selection,
+					new TestAction(),
+					$selection->getShape()->getTouchedChunks($selection->getWorld()),
+					"minecraft:snow_block",
+					"minecraft:tnt"
+				)
+			);
         } catch (Exception $error) {
             Loader::getInstance()->getLogger()->logException($error);
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

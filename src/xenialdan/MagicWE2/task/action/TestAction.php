@@ -15,19 +15,19 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class TestAction extends TaskAction
 {
-    /** @var bool */
-    public $addRevert = false;
-    /** @var string */
-    public $completionString = '{%name} succeed, took {%took}, tested {%changed} blocks';
+	/** @var bool */
+	public bool $addRevert = false;
+	/** @var string */
+	public string $completionString = '{%name} succeed, took {%took}, tested {%changed} blocks';
 
-    public function __construct()
-    {
-    }
+	public function __construct()
+	{
+	}
 
-    public static function getName(): string
-    {
-        return "Test";
-    }
+	public static function getName(): string
+	{
+		return "Test";
+	}
 
     /**
      * @param string $sessionUUID
@@ -47,15 +47,15 @@ class TestAction extends TaskAction
 		#$oldBlocks = [];
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
-		if (!BlockFactory::isInit()) BlockFactory::init();
+		BlockFactory::getInstance();
 		foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
 			$changed++;
 			$messages[] = $block->asVector3()->__toString() . " " . $block->getName();
 			$progress = new Progress($changed / $count, "$changed/$count");
-            if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
-                yield $progress;
-                $lastProgress = $progress;
-            }
-        }
-    }
+			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
+				yield $progress;
+				$lastProgress = $progress;
+			}
+		}
+	}
 }

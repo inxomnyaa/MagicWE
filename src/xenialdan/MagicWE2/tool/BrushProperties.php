@@ -20,39 +20,39 @@ use xenialdan\MagicWE2\task\action\TaskAction;
 class BrushProperties implements JsonSerializable
 {
 
-    public const VERSION = 1;
-    /** @var int */
-    public $version = self::VERSION;
-    /** @var string */
-    public $customName = "";
-    /** @var string */
-    public $shape = Sphere::class;
-    /** @var array */
-    public $shapeProperties = [];
-    /** @var string */
-    public $action = SetBlockAction::class;
-    /** @var array */
-    public $actionProperties = [];
-    /** @var bool */
-    public $hollow = false;//TODO consider moving into shape properties
-    /** @var string */
-    public $blocks = "stone";
-    /** @var string */
-    public $filter = "";
-    /** @var int */
-    public $biomeId = Biome::PLAINS;
-    /** @var string */
-    public $uuid;
+	public const VERSION = 1;
+	/** @var int */
+	public int $version = self::VERSION;
+	/** @var string */
+	public string $customName = "";
+	/** @var string */
+	public string $shape = Sphere::class;
+	/** @var array */
+	public array $shapeProperties = [];
+	/** @var string */
+	public string $action = SetBlockAction::class;
+	/** @var array */
+	public array $actionProperties = [];
+	/** @var bool */
+	public bool $hollow = false;//TODO consider moving into shape properties
+	/** @var string */
+	public string $blocks = "stone";
+	/** @var string */
+	public string $filter = "";
+	/** @var int */
+	public int $biomeId = Biome::PLAINS;
+	/** @var string */
+	public string $uuid;
 
-    /**
-     * Specify data which should be serialized to JSON
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4.0
-     */
-    public function jsonSerialize()
-    {
+	/**
+	 * Specify data which should be serialized to JSON
+	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * which is a value of any type other than a resource.
+	 * @since 5.4.0
+	 */
+	public function jsonSerialize()
+	{
         return (array)$this;
     }
 

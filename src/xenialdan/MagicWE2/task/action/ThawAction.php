@@ -58,16 +58,16 @@ class ThawAction extends TaskAction
 				#$oldBlocks[] = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->setComponents($block->x, $block->y, $block->z);
 				$oldBlocksSingleClipboard->addEntry($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), BlockEntry::fromBlock($block));
 				$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-				if ($manager->getBlockIdAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== $block->getId()) {
+				if ($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->getId() !== $block->getId()) {
 					$changed++;
-                }
-                $i++;
-                $progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
-                if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
-                    yield $progress;
-                    $lastProgress = $progress;
-                }
-            }
+				}
+				$i++;
+				$progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
+				if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
+					yield $progress;
+					$lastProgress = $progress;
+				}
+			}
         }
     }
 }

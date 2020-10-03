@@ -16,26 +16,26 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class FlipAction extends ClipboardAction
 {
-    const AXIS_X = "x";
-    const AXIS_Y = "y";
-    const AXIS_Z = "z";
-    const AXIS_XZ = "xz";
-    /** @var bool */
-    public $addClipboard = true;
-    /** @var string */
-    public $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
-    /** @var string */
-    private $axis;
+	const AXIS_X = "x";
+	const AXIS_Y = "y";
+	const AXIS_Z = "z";
+	const AXIS_XZ = "xz";
+	/** @var bool */
+	public bool $addClipboard = true;
+	/** @var string */
+	public string $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
+	/** @var string */
+	private string $axis;
 
-    public function __construct(string $axis)
-    {
-        if ($axis !== self::AXIS_X && $axis !== self::AXIS_Y && $axis !== self::AXIS_Z && $axis !== self::AXIS_XZ) throw new InvalidArgumentException("Invalid axis $axis given");
-        $this->axis = $axis;
-    }
+	public function __construct(string $axis)
+	{
+		if ($axis !== self::AXIS_X && $axis !== self::AXIS_Y && $axis !== self::AXIS_Z && $axis !== self::AXIS_XZ) throw new InvalidArgumentException("Invalid axis $axis given");
+		$this->axis = $axis;
+	}
 
-    public static function getName(): string
-    {
-        return "Flip";
+	public static function getName(): string
+	{
+		return "Flip";
     }
 
     /**
@@ -53,10 +53,8 @@ class FlipAction extends ClipboardAction
         $changed = 0;
         #$oldBlocks = [];
         $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
-        if (!BlockFactory::isInit()) {
-            BlockFactory::init();
-        }
+		$lastProgress = new Progress(0, "");
+		BlockFactory::getInstance();
         if (!BlockStatesParser::isInit()) {
             var_dump("reinit BlockStatesParser AGAIN");
             BlockStatesParser::init();

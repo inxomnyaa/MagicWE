@@ -56,7 +56,7 @@ class WandCommand extends BaseCommand
         try {
 			/** @var Durable $item */
 			$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_AXE);
-			$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
+			$item->addEnchantment(new EnchantmentInstance(Enchantment::get(Loader::FAKE_ENCH_ID)));
 			$item->setUnbreakable(true);
 			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.wand'));
 			$item->setLore([

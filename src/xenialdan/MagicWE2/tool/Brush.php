@@ -10,6 +10,7 @@ use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
@@ -34,20 +35,20 @@ use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Brush extends WETool
 {
-    public const TAG_BRUSH_ID = "id";
-    public const TAG_BRUSH_PROPERTIES = "properties";
+	public const TAG_BRUSH_ID = "id";
+	public const TAG_BRUSH_PROPERTIES = "properties";
 
-    /** @var BrushProperties */
-    public $properties;
+	/** @var BrushProperties */
+	public BrushProperties $properties;
 
-    /**
-     * Brush constructor.
-     * @param BrushProperties $properties
-     */
-    public function __construct(BrushProperties $properties)
-    {
-        $this->properties = $properties;
-    }
+	/**
+	 * Brush constructor.
+	 * @param BrushProperties $properties
+	 */
+	public function __construct(BrushProperties $properties)
+	{
+		$this->properties = $properties;
+	}
 
     public function getName(): string
     {
@@ -61,10 +62,10 @@ class Brush extends WETool
      * @throws ShapeNotFoundException
      */
     public function toItem(): Item
-    {
+	{
 		/** @var Durable $item */
-		$item = Item::get(ItemIds::WOODEN_SHOVEL);
-		$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
+		$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_SHOVEL);
+		$item->addEnchantment(new EnchantmentInstance(Enchantment::get(Loader::FAKE_ENCH_ID)));
 		$uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
 		$this->properties->uuid = $uuid;
 		$properties = json_encode($this->properties, JSON_THROW_ON_ERROR);

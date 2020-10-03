@@ -47,7 +47,7 @@ class PlaceAllBlockstatesCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            BlockStatesParser::placeAllBlockstates($sender->asPosition());
+            BlockStatesParser::placeAllBlockstates($sender->getPosition());
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

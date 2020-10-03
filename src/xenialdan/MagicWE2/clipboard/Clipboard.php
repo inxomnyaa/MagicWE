@@ -16,29 +16,29 @@ abstract class Clipboard implements Serializable
     const DIRECTION_DEFAULT = 1;
 
     const FLIP_X = 0x01;
-    const FLIP_WEST = 0x01;
-    const FLIP_EAST = 0x01;
-    const FLIP_Y = 0x02;
-    const FLIP_UP = 0x02;
-    const FLIP_DOWN = 0x02;
-    const FLIP_Z = 0x03;
-    const FLIP_NORTH = 0x03;
-    const FLIP_SOUTH = 0x03;
+	const FLIP_WEST = 0x01;
+	const FLIP_EAST = 0x01;
+	const FLIP_Y = 0x02;
+	const FLIP_UP = 0x02;
+	const FLIP_DOWN = 0x02;
+	const FLIP_Z = 0x03;
+	const FLIP_NORTH = 0x03;
+	const FLIP_SOUTH = 0x03;
 
-    /** @var int|null */
-    public $levelid;
-    /** @var string */
-    public $customName = "";
+	/** @var int|null */
+	public ?int $levelid;
+	/** @var string */
+	public string $customName = "";
 
-    /**
-     * Creates a chunk manager used for async editing
-     * @param Chunk[] $chunks
-     * @return AsyncChunkManager
-     */
-    public static function getChunkManager(array $chunks): AsyncChunkManager
-    {
-        $manager = new AsyncChunkManager(0);
-        foreach ($chunks as $chunk) {
+	/**
+	 * Creates a chunk manager used for async editing
+	 * @param Chunk[] $chunks
+	 * @return AsyncChunkManager
+	 */
+	public static function getChunkManager(array $chunks): AsyncChunkManager
+	{
+		$manager = new AsyncChunkManager(0);
+		foreach ($chunks as $chunk) {
             $manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
         }
         return $manager;
@@ -53,7 +53,7 @@ abstract class Clipboard implements Serializable
         if (is_null($this->levelid)) {
             throw new Exception("Level is not set!");
         }
-        $level = Server::getInstance()->getLevel($this->levelid);
+		$level = Server::getInstance()->getWorldManager()->getWorld($this->levelid);
         if (is_null($level)) {
             throw new Exception("Level is not found!");
         }

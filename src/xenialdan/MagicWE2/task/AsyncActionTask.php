@@ -9,6 +9,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -32,26 +33,26 @@ class AsyncActionTask extends MWEAsyncTask
      * Strings: Begin, completion, bossbar, other stuff can be in the action
     */
 
-    /** @var string */
-    private $touchedChunks;
-    /** @var string */
-    private $selection;
-    /** @var string */
-    private $blockFilter;
-    /** @var string */
-    private $newBlocks;
-    /** @var TaskAction */
-    private $action;
+	/** @var string */
+	private $touchedChunks;
+	/** @var string */
+	private $selection;
+	/** @var string */
+	private string $blockFilter;
+	/** @var string */
+	private string $newBlocks;
+	/** @var TaskAction */
+	private TaskAction $action;
 
-    /**
-     * AsyncActionTask constructor.
-     * @param UUID $sessionUUID
-     * @param Selection $selection
-     * @param TaskAction $action
-     * @param string[] $touchedChunks serialized chunks
-     * @param string $newBlocks
-     * @param string $blockFilter
-     */
+	/**
+	 * AsyncActionTask constructor.
+	 * @param UUID $sessionUUID
+	 * @param Selection $selection
+	 * @param TaskAction $action
+	 * @param string[] $touchedChunks serialized chunks
+	 * @param string $newBlocks
+	 * @param string $blockFilter
+	 */
     public function __construct(UUID $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, string $newBlocks = "", string $blockFilter = "")
     {
         $this->start = microtime(true);
@@ -87,7 +88,7 @@ class AsyncActionTask extends MWEAsyncTask
 
 		$touchedChunks = unserialize($this->touchedChunks, ['allowed_classes' => false]);
 		$touchedChunks = array_map(function ($chunk) {
-			return Chunk::fastDeserialize($chunk);
+			return FastChunkSerializer::deserialize($chunk);
 		}, $touchedChunks);
 
 		$manager = Shape::getChunkManager($touchedChunks);
@@ -132,7 +133,7 @@ class AsyncActionTask extends MWEAsyncTask
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(function ($chunk) {
-			return Chunk::fastDeserialize($chunk);
+			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 		/** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere
 		$oldBlocks = $result["oldBlocks"];
@@ -141,7 +142,8 @@ class AsyncActionTask extends MWEAsyncTask
 		$oldBlocksBlocks = [];
 		$x = $y = $z = null;
 		foreach ($oldBlocks->iterateEntries($x, $y, $z) as $entry) {
-			$oldBlocksBlocks[] = $entry->toBlock()->setComponents(intval($x), intval($y), intval($z));
+			$oldBlocksBlocks[] = $entry->toBlock()/*->setComponents(intval($x), intval($y), intval($z))*/
+			;
 		}
 		$changed = $result["changed"];
 		/** @var Selection $selection */

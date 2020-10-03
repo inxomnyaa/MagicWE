@@ -14,20 +14,20 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class SetBiomeAction extends TaskAction
 {
-    /** @var bool */
-    public $addRevert = false;
-    /** @var int */
-    private $biomeId;
+	/** @var bool */
+	public bool $addRevert = false;
+	/** @var int */
+	private int $biomeId;
 
-    public function __construct(int $biomeId)
-    {
-        $this->biomeId = $biomeId;
-    }
+	public function __construct(int $biomeId)
+	{
+		$this->biomeId = $biomeId;
+	}
 
-    public static function getName(): string
-    {
-        return "Set biome";
-    }
+	public static function getName(): string
+	{
+		return "Set biome";
+	}
 
     /**
      * @param string $sessionUUID

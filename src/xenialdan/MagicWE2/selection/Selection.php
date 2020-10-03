@@ -25,28 +25,28 @@ use xenialdan\MagicWE2\session\Session;
  */
 class Selection implements Serializable, JsonSerializable
 {
-    /** @var int|null */
-    public $levelid;
-    /** @var Vector3|null */
-    public $pos1;
-    /** @var Vector3|null */
-    public $pos2;
-    /** @var UUID */
-    public $uuid;
-    /** @var UUID */
-    public $sessionUUID;
-    /** @var Shape|null */
-    public $shape;
+	/** @var int|null */
+	public ?int $levelid;
+	/** @var Vector3|null */
+	public ?Vector3 $pos1;
+	/** @var Vector3|null */
+	public ?Vector3 $pos2;
+	/** @var UUID */
+	public UUID $uuid;
+	/** @var UUID */
+	public UUID $sessionUUID;
+	/** @var Shape|null */
+	public ?Shape $shape;
 
-    /**
-     * Selection constructor.
-     * @param UUID $sessionUUID
-     * @param World $level
-     * @param ?int $minX
-     * @param ?int $minY
-     * @param ?int $minZ
-     * @param ?int $maxX
-     * @param ?int $maxY
+	/**
+	 * Selection constructor.
+	 * @param UUID $sessionUUID
+	 * @param World $level
+	 * @param ?int $minX
+	 * @param ?int $minY
+	 * @param ?int $minZ
+	 * @param ?int $maxX
+	 * @param ?int $maxY
      * @param ?int $maxZ
      */
     public function __construct(UUID $sessionUUID, World $level, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
@@ -71,7 +71,7 @@ class Selection implements Serializable, JsonSerializable
         if (is_null($this->levelid)) {
             throw new Exception("Level is not set!");
         }
-        $level = Server::getInstance()->getLevel($this->levelid);
+		$level = Server::getInstance()->getWorldManager()->getWorld($this->levelid);
         if (is_null($level)) {
             throw new Exception("Level is not found!");
         }

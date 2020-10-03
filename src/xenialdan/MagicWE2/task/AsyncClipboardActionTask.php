@@ -20,26 +20,26 @@ use xenialdan\MagicWE2\task\action\ClipboardAction;
 class AsyncClipboardActionTask extends MWEAsyncTask
 {
 
-    /** @var string */
-    private $selection;
-    /** @var ClipboardAction */
-    private $action;
-    /** @var string */
-    private $clipboard;
-    /** @var string */
-    private $rotFlipMapPath;
-    /** @var string */
-    private $doorRotFlipMapPath;
+	/** @var string */
+	private $selection;
+	/** @var ClipboardAction */
+	private ClipboardAction $action;
+	/** @var string */
+	private $clipboard;
+	/** @var string */
+	private string $rotFlipMapPath;
+	/** @var string */
+	private string $doorRotFlipMapPath;
 
-    /**
-     * AsyncClipboardActionTask constructor.
-     * @param UUID $sessionUUID
-     * @param Selection $selection
-     * @param ClipboardAction $action
-     * @param SingleClipboard $clipboard
-     */
-    public function __construct(UUID $sessionUUID, Selection $selection, ClipboardAction $action, SingleClipboard $clipboard)
-    {
+	/**
+	 * AsyncClipboardActionTask constructor.
+	 * @param UUID $sessionUUID
+	 * @param Selection $selection
+	 * @param ClipboardAction $action
+	 * @param SingleClipboard $clipboard
+	 */
+	public function __construct(UUID $sessionUUID, Selection $selection, ClipboardAction $action, SingleClipboard $clipboard)
+	{
         $this->start = microtime(true);
         $this->sessionUUID = $sessionUUID->toString();
         $this->selection = serialize($selection);//TODO check if needed, $clipboard already holds the selection

@@ -70,8 +70,8 @@ class Cut2Command extends BaseCommand
             }
             #$hasFlags = isset($args["flags"]);
             $action = new CutAction();
-            $offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
-            $action->setClipboardVector($offset);
+			$offset = $selection->getShape()->getMinVec3()->subtractVector($session->getPlayer()->getPosition()->asVector3()->floor())->floor();
+			$action->setClipboardVector($offset);
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncActionTask(
                     $session->getUUID(),

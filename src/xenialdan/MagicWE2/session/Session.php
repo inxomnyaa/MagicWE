@@ -20,34 +20,34 @@ use xenialdan\MagicWE2\task\AsyncRevertTask;
 
 abstract class Session
 {
-    const MAX_CLIPBOARDS = 5;
-    const MAX_HISTORY = 32;
-    /** @var UUID */
-    private $uuid;
-    //todo change to a list of objects with a pointer of the latest action
-    /** @var Selection[] */
-    private $selections = [];
-    /** @var UUID|null */
-    private $latestselection = null;
-    //todo change to a list of objects with a pointer of the latest action
-    /** @var Clipboard[] */
-    private $clipboards = [];
-    /** @var int */
-    private $currentClipboard = -1;
-    /** @var Deque<RevertClipboard> */
-    public $undoHistory;
-    /** @var Deque<RevertClipboard> */
-    public $redoHistory;
+	const MAX_CLIPBOARDS = 5;
+	const MAX_HISTORY = 32;
+	/** @var UUID */
+	private UUID $uuid;
+	//todo change to a list of objects with a pointer of the latest action
+	/** @var Selection[] */
+	private array $selections = [];
+	/** @var UUID|null */
+	private ?UUID $latestselection = null;
+	//todo change to a list of objects with a pointer of the latest action
+	/** @var Clipboard[] */
+	private array $clipboards = [];
+	/** @var int */
+	private int $currentClipboard = -1;
+	/** @var Deque<RevertClipboard> */
+	public Deque $undoHistory;
+	/** @var Deque<RevertClipboard> */
+	public Deque $redoHistory;
 
-    /**
-     * @return UUID
-     */
-    public function getUUID(): UUID
-    {
-        return $this->uuid;
-    }
+	/**
+	 * @return UUID
+	 */
+	public function getUUID(): UUID
+	{
+		return $this->uuid;
+	}
 
-    /**
+	/**
      * @param UUID $uuid
      */
     public function setUUID(UUID $uuid): void

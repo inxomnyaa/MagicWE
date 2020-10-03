@@ -24,28 +24,28 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 
 class UserSession extends Session implements JsonSerializable
 {
-    /** @var Player|null */
-    private $player = null;
-    /** @var BossBar */
-    private $bossBar;
-    /** @var bool */
-    private $wandEnabled = true;
-    /** @var bool */
-    private $debugToolEnabled = true;
-    /** @var Brush[] */
-    private $brushes = [];
-    /** @var Language|null */
-    private $lang;
+	/** @var Player|null */
+	private ?Player $player = null;
+	/** @var BossBar */
+	private BossBar $bossBar;
+	/** @var bool */
+	private bool $wandEnabled = true;
+	/** @var bool */
+	private bool $debugToolEnabled = true;
+	/** @var Brush[] */
+	private array $brushes = [];
+	/** @var Language|null */
+	private ?Language $lang;
 
-    public function __construct(Player $player)
-    {
-        $this->setPlayer($player);
-        $this->cleanupInventory();
-        $this->setUUID($player->getUniqueId());
-        $this->bossBar = (new BossBar())->addPlayer($player);
-        $this->bossBar->hideFrom([$player]);
-        $this->undoHistory = new Deque();
-        $this->redoHistory = new Deque();
+	public function __construct(Player $player)
+	{
+		$this->setPlayer($player);
+		$this->cleanupInventory();
+		$this->setUUID($player->getUniqueId());
+		$this->bossBar = (new BossBar())->addPlayer($player);
+		$this->bossBar->hideFrom([$player]);
+		$this->undoHistory = new Deque();
+		$this->redoHistory = new Deque();
         if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
         Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
     }
@@ -148,17 +148,17 @@ class UserSession extends Session implements JsonSerializable
      */
     public function getBrushFromItem(Item $item): Brush
     {
-        if ((($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) instanceof CompoundTag) {
-            $version = $entry->getInt("version", 0);
-            if ($version !== BrushProperties::VERSION) {
-                throw new Exception("Brush can not be restored - version mismatch");
-            }
-            /** @var BrushProperties $properties */
-            $properties = json_decode($entry->getString("properties"), true);
+		if ((($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) instanceof CompoundTag) {
+			$version = $entry->getInt("version", 0);
+			if ($version !== BrushProperties::VERSION) {
+				throw new Exception("Brush can not be restored - version mismatch");
+			}
+			/** @var BrushProperties $properties */
+			$properties = json_decode($entry->getString("properties"), true);
 			$uuid = UUID::fromString($properties->uuid);
-            $brush = $this->getBrush($uuid);
-            if ($brush instanceof Brush) {
-                return $brush;
+			$brush = $this->getBrush($uuid);
+			if ($brush instanceof Brush) {
+				return $brush;
             }
             $brush = new Brush($properties);
             $this->addBrush($brush);
@@ -197,11 +197,11 @@ class UserSession extends Session implements JsonSerializable
     {
         if ($delete) unset($this->brushes[$brush->properties->uuid]);
         foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-            if (($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
-                if ($entry->getString("id") === $brush->properties->uuid) {
-                    $this->getPlayer()->getInventory()->clear($slot);
-                }
-            }
+			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
+				if ($entry->getString("id") === $brush->properties->uuid) {
+					$this->getPlayer()->getInventory()->clear($slot);
+				}
+			}
         }
         if ($delete) $this->sendMessage($this->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
         else $this->sendMessage($this->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
@@ -220,11 +220,11 @@ class UserSession extends Session implements JsonSerializable
         $this->brushes[$brush->properties->uuid] = $brush;
         $new = $brush->toItem();
         foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-            if (($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
-                if ($entry->getString("id") === $brush->properties->uuid) {
-                    $this->getPlayer()->getInventory()->setItem($slot, $new);
-                }
-            }
+			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
+				if ($entry->getString("id") === $brush->properties->uuid) {
+					$this->getPlayer()->getInventory()->setItem($slot, $new);
+				}
+			}
         }
     }
 
@@ -240,12 +240,12 @@ class UserSession extends Session implements JsonSerializable
     {
         foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
             /** @var CompoundTag $entry */
-            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH)))) {
-                $this->getPlayer()->getInventory()->clear($slot);
-            }
-            if (!is_null(($entry = $item->getNamedTagEntry(API::TAG_MAGIC_WE)))) {
-                $this->getPlayer()->getInventory()->clear($slot);
-            }
+			if (!is_null(($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)))) {
+				$this->getPlayer()->getInventory()->clear($slot);
+			}
+			if (!is_null(($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)))) {
+				$this->getPlayer()->getInventory()->clear($slot);
+			}
         }
     }
 

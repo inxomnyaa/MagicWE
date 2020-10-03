@@ -8,7 +8,7 @@ use pocketmine\block\BlockFactory;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -19,22 +19,22 @@ use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncCountTask extends MWEAsyncTask
 {
-    /** @var string */
-    private $touchedChunks;
-    /** @var string */
-    private $selection;
-    /** @var int */
-    private $flags;
-    /** @var string */
-    private $newBlocks;
+	/** @var string */
+	private $touchedChunks;
+	/** @var string */
+	private $selection;
+	/** @var int */
+	private int $flags;
+	/** @var string */
+	private $newBlocks;
 
-    /**
-     * AsyncCountTask constructor.
-     * @param Selection $selection
-     * @param UUID $sessionUUID
-     * @param string[] $touchedChunks serialized chunks
-     * @param Block[] $newBlocks
-     * @param int $flags
+	/**
+	 * AsyncCountTask constructor.
+	 * @param Selection $selection
+	 * @param UUID $sessionUUID
+	 * @param string[] $touchedChunks serialized chunks
+	 * @param Block[] $newBlocks
+	 * @param int $flags
      * @throws Exception
      */
     public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
@@ -58,7 +58,7 @@ class AsyncCountTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 		$chunks = unserialize($this->touchedChunks, ['allowed_classes' => [false]]);//TODO test pm4
 		foreach ($chunks as $hash => $data) {
-			$chunks[$hash] = Chunk::fastDeserialize($data);
+			$chunks[$hash] = FastChunkSerializer::deserialize($data);
 		}
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
@@ -88,25 +88,25 @@ class AsyncCountTask extends MWEAsyncTask
         $counts = [];
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, $newBlocks, $this->flags) as $block) {
-			if (is_null($lastchunkx) || ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz)) {
-				$lastchunkx = $block->x >> 4;
-				$lastchunkz = $block->z >> 4;
-				if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
+			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->getPos()->x >> 4;
+				$lastchunkz = $block->getPos()->z >> 4;
+				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
 			}
-			if (!BlockFactory::isInit()) BlockFactory::init();
+			BlockFactory::getInstance();
 			$block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
 			$tostring = (BlockFactory::getInstance()->get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
-            if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
-            $counts[$tostring]++;
-            $changed++;
-            $progress = floor($changed / $blockCount * 100);
-            if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, counting $changed blocks out of $blockCount"]);
-                $lastprogress = $progress;
-            }
+			if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
+			$counts[$tostring]++;
+			$changed++;
+			$progress = floor($changed / $blockCount * 100);
+			if ($lastprogress < $progress) {//this prevents spamming packets
+				$this->publishProgress([$progress, "Running, counting $changed blocks out of $blockCount"]);
+				$lastprogress = $progress;
+			}
         }
         return $counts;
     }

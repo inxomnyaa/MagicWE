@@ -14,26 +14,26 @@ use xenialdan\MagicWE2\selection\Selection;
 
 abstract class TaskAction
 {
-    /** @var string */
-    public $prefix = "";
-    /** @var bool */
-    public $addRevert = true;
-    /** @var string */
-    public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} changed.';
-    /** @var bool */
-    public $addClipboard = false;
-    /** @var null|Vector3 */
-    public $clipboardVector = null;
+	/** @var string */
+	public string $prefix = "";
+	/** @var bool */
+	public bool $addRevert = true;
+	/** @var string */
+	public string $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} changed.';
+	/** @var bool */
+	public bool $addClipboard = false;
+	/** @var null|Vector3 */
+	public ?Vector3 $clipboardVector = null;
 
-    /**
-     * @param string $sessionUUID
-     * @param Selection $selection
-     * @param AsyncChunkManager $manager
-     * @param null|int $changed
-     * @param Block[] $newBlocks
-     * @param Block[] $blockFilter
-     * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
-     * @param string[] $messages
+	/**
+	 * @param string $sessionUUID
+	 * @param Selection $selection
+	 * @param AsyncChunkManager $manager
+	 * @param null|int $changed
+	 * @param Block[] $newBlocks
+	 * @param Block[] $blockFilter
+	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
+	 * @param string[] $messages
      * @return Generator|Progress[]
      */
     public abstract function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;

@@ -9,28 +9,29 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cuboid extends Shape
 {
-    /** @var int */
-    public $width = 5;
-    /** @var int */
-    public $height = 5;
-    /** @var int */
-    public $depth = 5;
+	/** @var int */
+	public int $width = 5;
+	/** @var int */
+	public int $height = 5;
+	/** @var int */
+	public int $depth = 5;
 
-    /**
-     * Cuboid constructor.
-     * @param Vector3 $pasteVector
-     * @param int $width
-     * @param int $height
-     * @param int $depth
-     */
-    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
-    {
+	/**
+	 * Cuboid constructor.
+	 * @param Vector3 $pasteVector
+	 * @param int $width
+	 * @param int $height
+	 * @param int $depth
+	 */
+	public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
+	{
         $this->pasteVector = $pasteVector;
         $this->width = $width;
         $this->height = $height;
@@ -60,7 +61,8 @@ class Cuboid extends Shape
         for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
             for ($y = intval(floor($this->getMinVec3()->y)); $y <= floor($this->getMaxVec3()->y); $y++) {
                 for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
-                    $block = $manager->getBlockAt($x, $y, $z)->setComponents($x, $y, $z);
+					$block = $manager->getBlockAt($x, $y, $z)/*->setComponents($x, $y, $z)*/
+					;
                     #var_dump("shape getblocks", $block);
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
@@ -115,7 +117,7 @@ class Cuboid extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         return $touchedChunks;

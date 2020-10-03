@@ -9,6 +9,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -21,22 +22,22 @@ use xenialdan\MagicWE2\session\UserSession;
 
 class AsyncFillTask extends MWEAsyncTask
 {
-    /** @var string */
-    private $touchedChunks;
-    /** @var string */
-    private $selection;
-    /** @var int */
-    private $flags;
-    /** @var string */
-    private $newBlocks;
+	/** @var string */
+	private $touchedChunks;
+	/** @var string */
+	private $selection;
+	/** @var int */
+	private int $flags;
+	/** @var string */
+	private $newBlocks;
 
-    /**
-     * AsyncFillTask constructor.
-     * @param UUID $sessionUUID
-     * @param Selection $selection
-     * @param string[] $touchedChunks serialized chunks
-     * @param Block[] $newBlocks
-     * @param int $flags
+	/**
+	 * AsyncFillTask constructor.
+	 * @param UUID $sessionUUID
+	 * @param Selection $selection
+	 * @param string[] $touchedChunks serialized chunks
+	 * @param Block[] $newBlocks
+	 * @param int $flags
      * @throws Exception
      */
     public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
@@ -60,7 +61,7 @@ class AsyncFillTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 
 		$touchedChunks = array_map(function ($chunk) {
-			return Chunk::fastDeserialize($chunk);
+			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 
 		$manager = Shape::getChunkManager($touchedChunks);
@@ -98,24 +99,24 @@ class AsyncFillTask extends MWEAsyncTask
         $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
         /** @var Block $block */
         foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
-            /*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
-                $rel = $block->subtract($selection->shape->getPasteVector());
-                $block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
-            }*/
-			if (is_null($lastchunkx) || ($block->x >> 4 !== $lastchunkx && $block->z >> 4 !== $lastchunkz)) {
-				$lastchunkx = $block->x >> 4;
-				$lastchunkz = $block->z >> 4;
-				if (is_null($manager->getChunk($block->x >> 4, $block->z >> 4))) {
+			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
+				$rel = $block->subtract($selection->shape->getPasteVector());
+				$block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
+			}*/
+			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->getPos()->x >> 4;
+				$lastchunkz = $block->getPos()->z >> 4;
+				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
 			}
-            /** @var Block $new */
-            $new = clone $newBlocks[array_rand($newBlocks)];
-            if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-            yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->x, $block->y, $block->z)*/
-            ;
-            $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+			/** @var Block $new */
+			$new = clone $newBlocks[array_rand($newBlocks)];
+			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
+			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->x, $block->y, $block->z)*/
+			;
+			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
             if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
                 $changed++;
             }
@@ -146,7 +147,7 @@ class AsyncFillTask extends MWEAsyncTask
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(function ($chunk) {
-			return Chunk::fastDeserialize($chunk);
+			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4)
 		$oldBlocks = $result["oldBlocks"];
 		$changed = $result["changed"];

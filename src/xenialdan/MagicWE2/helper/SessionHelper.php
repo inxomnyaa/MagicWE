@@ -28,13 +28,13 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 
 class SessionHelper
 {
-    /** @var Map<UUID,UserSession> */
-    private static $userSessions;
-    /** @var Map<UUID,PluginSession> */
-    private static $pluginSessions;
+	/** @var Map<UUID,UserSession> */
+	private static Map $userSessions;
+	/** @var Map<UUID,PluginSession> */
+	private static Map $pluginSessions;
 
-    public static function init(): void
-    {
+	public static function init(): void
+	{
 		if (!mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "sessions") && !is_dir($concurrentDirectory)) {
 			throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
@@ -218,19 +218,19 @@ class SessionHelper
 			}
 			if (!is_null(($latestSelection = $data["latestSelection"] ?? null))) {
 				try {
-					$level = Server::getInstance()->getLevel($latestSelection["levelid"]);
+					$level = Server::getInstance()->getWorldManager()->getWorld($latestSelection["levelid"]);
 					if (is_null($level)) {
 						$session->sendMessage(TF::RED . "The level of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
 					} else {
 						$selection = new Selection(
 							$session->getUUID(),
-							Server::getInstance()->getLevel($latestSelection["levelid"]),
+							Server::getInstance()->getWorldManager()->getWorld($latestSelection["levelid"]),
 							$latestSelection["pos1"]["x"],
 							$latestSelection["pos1"]["y"],
-                            $latestSelection["pos1"]["z"],
-                            $latestSelection["pos2"]["x"],
-                            $latestSelection["pos2"]["y"],
-                            $latestSelection["pos2"]["z"]
+							$latestSelection["pos1"]["z"],
+							$latestSelection["pos2"]["x"],
+							$latestSelection["pos2"]["y"],
+							$latestSelection["pos2"]["z"]
                         );
                         $shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
                         $pasteVector = $latestSelection["shape"]["pasteVector"];

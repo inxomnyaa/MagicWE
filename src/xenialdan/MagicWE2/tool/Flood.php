@@ -10,29 +10,30 @@ use pocketmine\math\Facing;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Flood extends WETool
 {
-    /** @var int */
-    private $limit = 10000;
-    /** @var Block[] */
-    private $walked = [];
-    /** @var Block[] */
-    private $nextToCheck = [];
-    /** @var int */
-    private $y;
+	/** @var int */
+	private int $limit;
+	/** @var Block[] */
+	private array $walked = [];
+	/** @var Block[] */
+	private array $nextToCheck = [];
+	/** @var int */
+	private int $y;
 
-    /**
-     * Square constructor.
-     * @param int $limit
-     */
-    public function __construct(int $limit)
-    {
-        $this->limit = $limit;
-    }
+	/**
+	 * Square constructor.
+	 * @param int $limit
+	 */
+	public function __construct(int $limit)
+	{
+		$this->limit = $limit;
+	}
 
     /**
      * Returns the blocks by their actual position
@@ -47,7 +48,7 @@ class Flood extends WETool
         $this->validateChunkManager($manager);
         $this->y = $this->getCenter()->getFloorY();
         $block = $manager->getBlockAt($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
-        $block->setComponents($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
+		//$block->setComponents($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
         $this->walked[] = $block;
         $this->nextToCheck = $this->walked;
         foreach ($this->walk($manager) as $block) {
@@ -106,7 +107,7 @@ class Flood extends WETool
             $side = $vector3->getSide($vSide);
             if ($manager->getChunk($side->x >> 4, $side->z >> 4) === null) continue;
             $block = $manager->getBlockAt($side->getFloorX(), $side->getFloorY(), $side->getFloorZ());
-            $block->setComponents($side->x, $side->y, $side->z);
+			//$block->setComponents($side->x, $side->y, $side->z);
             yield $block;
         }
     }
@@ -142,7 +143,7 @@ class Flood extends WETool
                     continue;
                 }
                 #print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         #print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;;
@@ -166,7 +167,7 @@ class Flood extends WETool
     private function getCenter(): Vector3
     {
         //UGLY HACK TO IGNORE ERRORS FOR NOW
-        return new Vector3();
+		return new Vector3(0, 0, 0);
     }
 
     /**

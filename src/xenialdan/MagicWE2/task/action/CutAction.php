@@ -15,21 +15,21 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class CutAction extends TaskAction
 {
-    /** @var string */
-    public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} cut.';
-    /** @var bool */
-    public $addRevert = true;
-    /** @var bool */
-    public $addClipboard = true;
+	/** @var string */
+	public string $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} cut.';
+	/** @var bool */
+	public bool $addRevert = true;
+	/** @var bool */
+	public bool $addClipboard = true;
 
-    public function __construct()
-    {
-    }
+	public function __construct()
+	{
+	}
 
-    public static function getName(): string
-    {
-        return "Cut";
-    }
+	public static function getName(): string
+	{
+		return "Cut";
+	}
 
     /**
      * @param string $sessionUUID

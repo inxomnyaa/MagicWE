@@ -8,17 +8,17 @@ use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 
 class ShapeRegistry
 {
-    /** @var string[] */
-    private static $shapes = [];
+	/** @var string[] */
+	private static array $shapes = [];
 
-    public const CUBOID = "Cuboid";
-    public const CUBE = "Cube";
-    public const CUSTOM = "Custom";
-    public const CYLINDER = "Cylinder";
-    public const SPHERE = "Sphere";
-    public const CONE = "Cone";
-    public const PYRAMID = "Pyramid";
-    public const ELLIPSOID = "Ellipsoid";
+	public const CUBOID = "Cuboid";
+	public const CUBE = "Cube";
+	public const CUSTOM = "Custom";
+	public const CYLINDER = "Cylinder";
+	public const SPHERE = "Sphere";
+	public const CONE = "Cone";
+	public const PYRAMID = "Pyramid";
+	public const ELLIPSOID = "Ellipsoid";
 
     public function __construct()
     {

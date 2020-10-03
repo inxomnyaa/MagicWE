@@ -18,20 +18,20 @@ use xenialdan\MagicWE2\Loader;
 
 class BlockEntry
 {
-    /** @var int BlockRuntimeId TODO check if RuntimeBlockMapping is okay for that */
-    public $runtimeId;
-    /** @var CompoundTag|null */
-    public $nbt;
+	/** @var int BlockRuntimeId TODO check if RuntimeBlockMapping is okay for that */
+	public int $runtimeId;
+	/** @var CompoundTag|null */
+	public ?CompoundTag $nbt;
 
-    /**
-     * BlockEntry constructor.
-     * @param int $runtimeId
-     * @param CompoundTag|null $nbt
-     */
-    public function __construct(int $runtimeId, ?CompoundTag $nbt = null)
-    {
-        $this->runtimeId = $runtimeId;
-        $this->nbt = $nbt;
+	/**
+	 * BlockEntry constructor.
+	 * @param int $runtimeId
+	 * @param CompoundTag|null $nbt
+	 */
+	public function __construct(int $runtimeId, ?CompoundTag $nbt = null)
+	{
+		$this->runtimeId = $runtimeId;
+		$this->nbt = $nbt;
     }
 
     public function validate(): bool

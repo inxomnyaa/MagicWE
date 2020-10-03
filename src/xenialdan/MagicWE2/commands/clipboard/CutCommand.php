@@ -11,7 +11,7 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
-use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -70,8 +70,8 @@ class CutCommand extends BaseCommand
             }
             $hasFlags = isset($args["flags"]);
             //TODO Temp hack - add cutAsync - Update 9th Feb. 2020 LEAVE THAT ALONE! IT WORKS, DO NOT TOUCH IT!
-            API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
-            API::fillAsync($selection, $session, [Block::get(BlockLegacyIds::AIR)], $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
+			API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
+			API::fillAsync($selection, $session, [BlockFactory::getInstance()->get(BlockLegacyIds::AIR)], $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

@@ -25,18 +25,18 @@ use xenialdan\MagicWE2\tool\Brush;
 
 class EventListener implements Listener
 {
-    /** @var Plugin */
-    public $owner;
+	/** @var Plugin */
+	public Plugin $owner;
 
-    public function __construct(Plugin $plugin)
-    {
-        $this->owner = $plugin;
-    }
+	public function __construct(Plugin $plugin)
+	{
+		$this->owner = $plugin;
+	}
 
-    /**
-     * @param PlayerJoinEvent $event
-     * @throws InvalidStateException
-     * @throws SessionException
+	/**
+	 * @param PlayerJoinEvent $event
+	 * @throws InvalidStateException
+	 * @throws SessionException
      */
     public function onLogin(PlayerJoinEvent $event): void
     {
@@ -96,15 +96,15 @@ class EventListener implements Listener
      */
     public function onBreak(BlockBreakEvent $event): void
     {
-        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
-            $event->setCancelled();
-            try {
-                $this->onBreakBlock($event);
-            } catch (Exception $error) {
-                $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
-                $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            }
-        }
+		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
+			$event->setCancelled();
+			try {
+				$this->onBreakBlock($event);
+			} catch (Exception $error) {
+				$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
+				$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			}
+		}
     }
 
     /**
@@ -118,18 +118,18 @@ class EventListener implements Listener
         if (!$session instanceof UserSession) return;
         switch ($event->getItem()->getId()) {
             case ItemIds::WOODEN_AXE:
-            {
-                if (!$session->isWandEnabled()) {
-                    $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
-                    break;
-                }
-                $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getWorld())); // TODO check if the selection inside of the session updates
-                if (is_null($selection)) {
-                    throw new Error("No selection created - Check the console for errors");
-                }
-                $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getWorld()));
-                break;
-            }
+			{
+				if (!$session->isWandEnabled()) {
+					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
+					break;
+				}
+				$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPos()->getWorld())); // TODO check if the selection inside of the session updates
+				if (is_null($selection)) {
+					throw new Error("No selection created - Check the console for errors");
+				}
+				$selection->setPos1(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
+				break;
+			}
             case ItemIds::STICK:
             {
                 if (!$session->isDebugToolEnabled()) {
@@ -149,24 +149,24 @@ class EventListener implements Listener
      */
     private function onRightClickBlock(PlayerInteractEvent $event): void
     {
-        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
-            $event->setCancelled();
-            $session = SessionHelper::getUserSession($event->getPlayer());
-            if (!$session instanceof UserSession) return;
-            switch ($event->getItem()->getId()) {
-                case ItemIds::WOODEN_AXE:
-                {
-                    if (!$session->isWandEnabled()) {
-                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
-                        break;
-                    }
-                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getWorld())); // TODO check if the selection inside of the session updates
-                    if (is_null($selection)) {
-                        throw new Error("No selection created - Check the console for errors");
-                    }
-                    $selection->setPos2(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getWorld()));
-                    break;
-                }
+		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE))) {
+			$event->setCancelled();
+			$session = SessionHelper::getUserSession($event->getPlayer());
+			if (!$session instanceof UserSession) return;
+			switch ($event->getItem()->getId()) {
+				case ItemIds::WOODEN_AXE:
+				{
+					if (!$session->isWandEnabled()) {
+						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
+						break;
+					}
+					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPos()->getWorld())); // TODO check if the selection inside of the session updates
+					if (is_null($selection)) {
+						throw new Error("No selection created - Check the console for errors");
+					}
+					$selection->setPos2(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
+					break;
+				}
                 case ItemIds::STICK:
                 {
                     if (!$session->isDebugToolEnabled()) {
@@ -199,18 +199,18 @@ class EventListener implements Listener
             if (!$session instanceof UserSession) return;
             switch ($event->getItem()->getId()) {
                 case ItemIds::WOODEN_AXE:
-                {
-                    if (!$session->isWandEnabled()) {
-                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
-                        break;
-                    }
-                    $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getWorld())); // TODO check if the selection inside of the session updates
-                    if (is_null($selection)) {
-                        throw new Error("No selection created - Check the console for errors");
-                    }
-                    $selection->setPos1(new Position($event->getBlock()->x, $event->getBlock()->y, $event->getBlock()->z, $event->getBlock()->getWorld()));
-                    break;
-                }
+				{
+					if (!$session->isWandEnabled()) {
+						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
+						break;
+					}
+					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPos()->getWorld())); // TODO check if the selection inside of the session updates
+					if (is_null($selection)) {
+						throw new Error("No selection created - Check the console for errors");
+					}
+					$selection->setPos1(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
+					break;
+				}
                 case ItemIds::STICK:
                 {
                     if (!$session->isDebugToolEnabled()) {
@@ -223,7 +223,7 @@ class EventListener implements Listener
                 case ItemIds::BUCKET:
                 {
                     #if (){// && has perms
-                    API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE), $session);
+					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE), $session);
                     #}
                     break;
                 }
@@ -237,17 +237,17 @@ class EventListener implements Listener
      */
     private function onRightClickAir(PlayerInteractEvent $event): void
     {
-        if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
-            $event->setCancelled();
-            $session = SessionHelper::getUserSession($event->getPlayer());
-            if (!$session instanceof UserSession) return;
-            $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
-            $brush = $session->getBrushFromItem($event->getItem());
+		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
+			$event->setCancelled();
+			$session = SessionHelper::getUserSession($event->getPlayer());
+			if (!$session instanceof UserSession) return;
+			$target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
+			$brush = $session->getBrushFromItem($event->getItem());
 			var_dump(json_encode($brush, JSON_THROW_ON_ERROR));
-            if (!is_null($target) && $brush instanceof Brush) {// && has perms
-                API::createBrush($target, $brush, $session);
-            }
-        }
+			if (!is_null($target) && $brush instanceof Brush) {// && has perms
+				API::createBrush($target, $brush, $session);
+			}
+		}
     }
 
     /**
@@ -256,24 +256,24 @@ class EventListener implements Listener
     public function onDropItem(PlayerDropItemEvent $event): void
     {
         try {
-            if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE_BRUSH))) {
-                $event->setCancelled();
-                $session = SessionHelper::getUserSession($event->getPlayer());
-                if (!$session instanceof UserSession) return;
-                $brush = $session->getBrushFromItem($event->getItem());
-                if ($brush instanceof Brush) {
-                    $form = new ModalForm(TF::BOLD . $brush->getName(), TF::RED .
-                        "Delete" . TF::WHITE . " brush from session or " . TF::GREEN . "remove" . TF::WHITE . " from Inventory?" . TF::EOL .
-                        implode(TF::EOL, $event->getItem()->getLore()), TF::BOLD . TF::DARK_RED . "Delete", TF::BOLD . TF::DARK_GREEN . "Remove");
-                    $form->setCallable(function (Player $player, $data) use ($session, $brush) {
-                        $session->removeBrush($brush, $data);
-                    });
-                    $event->getPlayer()->sendForm($form);
-                }
-            } else if (!is_null($event->getItem()->getNamedTagEntry(API::TAG_MAGIC_WE))) {
-                $event->setCancelled();
-                $event->getPlayer()->getInventory()->remove($event->getItem());
-            }
+			if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
+				$event->setCancelled();
+				$session = SessionHelper::getUserSession($event->getPlayer());
+				if (!$session instanceof UserSession) return;
+				$brush = $session->getBrushFromItem($event->getItem());
+				if ($brush instanceof Brush) {
+					$form = new ModalForm(TF::BOLD . $brush->getName(), TF::RED .
+						"Delete" . TF::WHITE . " brush from session or " . TF::GREEN . "remove" . TF::WHITE . " from Inventory?" . TF::EOL .
+						implode(TF::EOL, $event->getItem()->getLore()), TF::BOLD . TF::DARK_RED . "Delete", TF::BOLD . TF::DARK_GREEN . "Remove");
+					$form->setCallable(function (Player $player, $data) use ($session, $brush) {
+						$session->removeBrush($brush, $data);
+					});
+					$event->getPlayer()->sendForm($form);
+				}
+			} else if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE))) {
+				$event->setCancelled();
+				$event->getPlayer()->getInventory()->remove($event->getItem());
+			}
         } catch (Exception $e) {
         }
     }

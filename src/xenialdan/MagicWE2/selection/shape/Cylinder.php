@@ -9,26 +9,27 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cylinder extends Shape
 {
-    /** @var int */
-    public $height = 1;
-    /** @var int */
-    public $diameter = 5;
+	/** @var int */
+	public int $height = 1;
+	/** @var int */
+	public int $diameter = 5;
 
-    /**
-     * Cylinder constructor.
-     * @param Vector3 $pasteVector
-     * @param int $height
-     * @param int $diameter
-     */
-    public function __construct(Vector3 $pasteVector, int $height, int $diameter)
-    {
-        $this->pasteVector = $pasteVector;
+	/**
+	 * Cylinder constructor.
+	 * @param Vector3 $pasteVector
+	 * @param int $height
+	 * @param int $diameter
+	 */
+	public function __construct(Vector3 $pasteVector, int $height, int $diameter)
+	{
+		$this->pasteVector = $pasteVector;
         $this->height = $height;
         $this->diameter = $diameter;
     }
@@ -52,7 +53,8 @@ class Cylinder extends Shape
                     $vec3 = new Vector3($x, $y, $z);
                     if ($vec2->distanceSquared($centerVec2) > (($this->diameter / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
                         continue;
-                    $block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())->setComponents($vec3->x, $vec3->y, $vec3->z);
+					$block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())/*->setComponents($vec3->x, $vec3->y, $vec3->z)*/
+					;
                     if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
                     if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
@@ -109,8 +111,8 @@ class Cylinder extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-                print "Touched Chunk at: $x:$z" . PHP_EOL;
-                $touchedChunks[World::chunkHash($x, $z)] = $chunk->fastSerialize();
+				print "Touched Chunk at: $x:$z" . PHP_EOL;
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;

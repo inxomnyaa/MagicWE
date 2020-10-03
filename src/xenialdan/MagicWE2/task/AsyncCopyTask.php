@@ -9,7 +9,7 @@ use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use pocketmine\world\format\Chunk;
+use pocketmine\world\format\io\FastChunkSerializer;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -23,24 +23,24 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncCopyTask extends MWEAsyncTask
 {
 
-    /** @var string */
-    private $chunks;
-    /** @var string */
-    private $selection;
-    /** @var Vector3 */
-    private $offset;
-    /** @var int */
-    private $flags;
+	/** @var string */
+	private $chunks;
+	/** @var string */
+	private $selection;
+	/** @var Vector3 */
+	private Vector3 $offset;
+	/** @var int */
+	private int $flags;
 
-    /**
-     * AsyncCopyTask constructor.
-     * @param Selection $selection
-     * @param Vector3 $offset
-     * @param UUID $sessionUUID
-     * @param string[] $chunks serialized chunks
-     * @param int $flags
-     * @throws Exception
-     */
+	/**
+	 * AsyncCopyTask constructor.
+	 * @param Selection $selection
+	 * @param Vector3 $offset
+	 * @param UUID $sessionUUID
+	 * @param string[] $chunks serialized chunks
+	 * @param int $flags
+	 * @throws Exception
+	 */
     public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
     {
         $this->start = microtime(true);
@@ -61,7 +61,7 @@ class AsyncCopyTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 		$chunks = array_map(function ($chunk) {
-			return Chunk::fastDeserialize($chunk);
+			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->chunks, ['allowed_classes' => false]));//TODO test pm4
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
