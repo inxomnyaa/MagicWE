@@ -6,10 +6,12 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
+use JsonException;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
@@ -19,6 +21,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
+use RuntimeException;
 use xenialdan\customui\windows\ModalForm;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -78,27 +81,35 @@ class EventListener implements Listener
                     break;
                 }
                 case PlayerInteractEvent::LEFT_CLICK_BLOCK:
-                {
-                    $this->onLeftClickBlock($event);
-                    break;
-                }
-                case PlayerInteractEvent::RIGHT_CLICK_AIR:
-                {
-                    $this->onRightClickAir($event);
-                    break;
-                }
-            }
-        } catch (Exception $error) {
-            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
-            $event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+				{
+					$this->onLeftClickBlock($event);
+					break;
+				}
+			}
+		} catch (Exception $error) {
+			$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
+			$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+		}
+	}
 
-    /**
-     * @param BlockBreakEvent $event
-     */
-    public function onBreak(BlockBreakEvent $event): void
-    {
+	/**
+	 * @param PlayerItemUseEvent $event
+	 */
+	public function onItemRightClick(PlayerItemUseEvent $event): void
+	{
+		try {
+			$this->onRightClickAir($event);
+		} catch (Exception $error) {
+			$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
+			$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+		}
+	}
+
+	/**
+	 * @param BlockBreakEvent $event
+	 */
+	public function onBreak(BlockBreakEvent $event): void
+	{
 		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
 			$event->setCancelled();
 			try {
@@ -237,22 +248,26 @@ class EventListener implements Listener
                     break;
                 }
                 case ItemIds::BUCKET:
-                {
-                    #if (){// && has perms
+				{
+					#if (){// && has perms
 					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE), $session);
-                    #}
-                    break;
-                }
-            }
-        }
-    }
+					#}
+					break;
+				}
+			}
+		}
+	}
 
-    /**
-     * @param PlayerInteractEvent $event
-     * @throws Exception
-     */
-    private function onRightClickAir(PlayerInteractEvent $event): void
-    {
+	/**
+	 * @param PlayerItemUseEvent $event
+	 * @throws AssumptionFailedError
+	 * @throws InvalidArgumentException
+	 * @throws SessionException
+	 * @throws JsonException
+	 * @throws RuntimeException
+	 */
+	private function onRightClickAir(PlayerItemUseEvent $event): void
+	{
 		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
 			$event->setCancelled();
 			$session = SessionHelper::getUserSession($event->getPlayer());
