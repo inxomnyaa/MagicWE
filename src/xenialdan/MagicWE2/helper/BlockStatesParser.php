@@ -55,72 +55,103 @@ class BlockStatesParser
 	 */
 	public static function init(?string $rotFlipMapPath = null, ?string $doorRotFlipMapPath = null): void
 	{
-        if (self::isInit()) {
-            return;
-        }//Silent return if already initialised
-        self::$legacyStateMap = [];
-		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
-        if (!$contents) {
-            throw  new PluginException('r12_to_current_block_map could not be loaded');
-        }
-        //////////////////
-//
-//        $legacyIdMap = LegacyBlockIdToStringIdMap::getInstance();
-//        /** @var R12ToCurrentBlockMapEntry[] $legacyStateMap */
-//        $legacyStateMap = [];
-//        $legacyStateMapReader = new PacketSerializer(file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
-//        $nbtReader = new NetworkNbtSerializer();
-//        while(!$legacyStateMapReader->feof()){
-//            $id = $legacyStateMapReader->getString();
-//            $meta = $legacyStateMapReader->getLShort();
-//
-//            $offset = $legacyStateMapReader->getOffset();
-//            $state = $nbtReader->read($legacyStateMapReader->getBuffer(), $offset)->mustGetCompoundTag();
-//            $legacyStateMapReader->setOffset($offset);
-//            $legacyStateMap[] = new R12ToCurrentBlockMapEntry($id, $meta, $state);
-//        }
-//
-//        /**
-//         * @var int[][] $idToStatesMap string id -> int[] list of candidate state indices
-//         */
-//        $idToStatesMap = [];
-//        foreach($this->bedrockKnownStates as $k => $state){
-//            $idToStatesMap[$state->getCompoundTag("block")->getString("name")][] = $k;
-//        }
-//        foreach($legacyStateMap as $pair){
-//            $id = $legacyIdMap->stringToLegacy($pair->getId()) ?? null;
-//            if($id === null){
-//                throw new \RuntimeException("No legacy ID matches " . $pair->getId());
-//            }
-//            $data = $pair->getMeta();
-//            if($data > 15){
-//                //we can't handle metadata with more than 4 bits
-//                continue;
-//            }
-//            $mappedState = $pair->getBlockState();
-//            $mappedName = $mappedState->getString("name");
-//            if(!isset($idToStatesMap[$mappedName])){
-//                throw new \RuntimeException("Mapped new state does not appear in network table");
-//            }
-//            foreach($idToStatesMap[$mappedName] as $k){
-//                $networkState = $this->bedrockKnownStates[$k];
-//                if($mappedState->equals($networkState->getCompoundTag("block"))){
-//                    $this->registerMapping($k, $id, $data);
-//                    continue 2;
-//                }
-//            }
-//            throw new \RuntimeException("Mapped new state does not appear in network table");
-//        }
+		if (self::isInit()) {
+			return;
+		}//Silent return if already initialised
+		//////////////////
+
+		self::$legacyIdMap = LegacyBlockIdToStringIdMap::getInstance();
+		/** @var R12ToCurrentBlockMapEntry[] $legacyStateMap */
+		$legacyStateMap = [];
+		$legacyStateMapReader = new PacketSerializer(file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
+		$nbtReader = new NetworkNbtSerializer();
+		while (!$legacyStateMapReader->feof()) {
+			$id = $legacyStateMapReader->getString();
+			$meta = $legacyStateMapReader->getLShort();
+
+			$offset = $legacyStateMapReader->getOffset();
+			$state = $nbtReader->read($legacyStateMapReader->getBuffer(), $offset)->mustGetCompoundTag();
+			$legacyStateMapReader->setOffset($offset);
+			self::$legacyStateMap[] = new R12ToCurrentBlockMapEntry($id, $meta, $state);
+		}
+//IDK what this is about
+		/**
+		 * @var int[][] $idToStatesMap string id -> int[] list of candidate state indices
+		 */
+		$idToStatesMap = [];
+		foreach (self::$bedrockKnownStates as $k => $state) {
+			$idToStatesMap[$state->getCompoundTag("block")->getString("name")][] = $k;
+		}
+// But lets ignore it for now
+
+		//Load all states. Mapping: oldname:meta->states
+		self::$allStates = new CompoundTag();
+
+		foreach (self::$legacyStateMap as $pair) {
+			///
+			$states = clone $pair->getBlockState()->getCompoundTag('states');
+			$states->setName($pair->getId() . ":" . $pair->getMeta());
+			self::$allStates->setTag("allStates", $states);
+			///
+			$id = $legacyIdMap->stringToLegacy($pair->getId()) ?? null;
+			if ($id === null) {
+				throw new \RuntimeException("No legacy ID matches " . $pair->getId());
+			}
+			$data = $pair->getMeta();
+			if ($data > 15) {
+				//we can't handle metadata with more than 4 bits
+				continue;
+			}
+			$mappedState = $pair->getBlockState();
+			$mappedName = $mappedState->getString("name");
+			if (!isset($idToStatesMap[$mappedName])) {
+				throw new \RuntimeException("Mapped new state does not appear in network table");
+			}
+			foreach ($idToStatesMap[$mappedName] as $k) {
+				$networkState = self::$bedrockKnownStates[$k];
+				if ($mappedState->equals($networkState->getCompoundTag("block"))) {
+					$this->registerMapping($k, $id, $data);
+					continue 2;
+				}
+			}
+			throw new \RuntimeException("Mapped new state does not appear in network table");
+		}
+
+		$blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
+		if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
+		self::$blockIdMap = json_decode($blockIdMap, true, 512, JSON_THROW_ON_ERROR);
+		//self::runTests();
+		if ($rotFlipMapPath !== null) {
+			$fileGetContents = file_get_contents($rotFlipMapPath);
+			if ($fileGetContents === false) {
+				throw new PluginException("rotation_flip_data.json could not be loaded! Rotation and flip support has been disabled!");
+			} else {
+				self::setRotationFlipMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+				var_dump("Successfully loaded rotation_flip_data.json");
+			}
+		}
+		if ($doorRotFlipMapPath !== null) {
+			$fileGetContents = file_get_contents($doorRotFlipMapPath);
+			if ($fileGetContents === false) {
+				throw new PluginException("door_data.json could not be loaded! Door rotation and flip support has been disabled!");
+			} else {
+				self::setDoorRotationFlipMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+				var_dump("Successfully loaded door_data.json");
+			}
+		}
 		/// /////////////
-		#$legacyStateMapReader = new NetworkBinaryStream($contents);
-		#$nbtReader = new NetworkLittleEndianNBTStream();
-		$legacyStateMapReader = null;//TODO
+		self::$legacyStateMap = [];
+		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
+		if (!$contents) {
+			throw  new PluginException('r12_to_current_block_map could not be loaded');
+		}
+		$legacyStateMapReader = new NetworkBinaryStream($contents);
+		$nbtReader = new NetworkLittleEndianNBTStream();
 		while (!$legacyStateMapReader->feof()) {
 			$stringId = $legacyStateMapReader->getString();
 			$meta = $legacyStateMapReader->getLShort();
 
 			$offset = $legacyStateMapReader->getOffset();
-			$nbtReader = null;//TODO
 			$state = $nbtReader->read($legacyStateMapReader->getBuffer(), false, $offset);
 			$legacyStateMapReader->setOffset($offset);
 			if (!($state instanceof CompoundTag)) {
