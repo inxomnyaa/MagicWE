@@ -41,17 +41,17 @@ class TestAction extends TaskAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard &$oldBlocksSingleClipboard, array &$messages = []): Generator
-    {
-        $changed = 0;
-        #$oldBlocks = [];
-        $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
-        if (!BlockFactory::isInit()) BlockFactory::init();
-        foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
-            $changed++;
-            $messages[] = $block->asVector3()->__toString() . " " . $block->getName();
-            $progress = new Progress($changed / $count, "$changed/$count");
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	{
+		$changed = 0;
+		#$oldBlocks = [];
+		$count = $selection->getShape()->getTotalCount();
+		$lastProgress = new Progress(0, "");
+		if (!BlockFactory::isInit()) BlockFactory::init();
+		foreach ($selection->getShape()->getBlocks($manager, []) as $block) {
+			$changed++;
+			$messages[] = $block->asVector3()->__toString() . " " . $block->getName();
+			$progress = new Progress($changed / $count, "$changed/$count");
             if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
                 yield $progress;
                 $lastProgress = $progress;

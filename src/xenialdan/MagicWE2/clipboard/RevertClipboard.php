@@ -57,12 +57,12 @@ class RevertClipboard extends Clipboard
      */
     public function unserialize($serialized)
     {
-        [
-            $this->levelid,
-            $chunks,
-            $this->blocksAfter
-        ] = unserialize($serialized);
-        foreach ($chunks as $hash => $chunk)
-            $this->chunks[$hash] = Chunk::fastDeserialize($chunk);
-    }
+		[
+			$this->levelid,
+			$chunks,
+			$this->blocksAfter
+		] = unserialize($serialized, ['allowed_classes' => [__CLASS__]]);//TODO test pm4
+		foreach ($chunks as $hash => $chunk)
+			$this->chunks[$hash] = Chunk::fastDeserialize($chunk);
+	}
 }

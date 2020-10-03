@@ -67,28 +67,28 @@ class AsyncPasteTask extends MWEAsyncTask
 
 		$touchedChunks = array_map(function ($chunk) {
 			return Chunk::fastDeserialize($chunk);
-		}, unserialize($this->touchedChunks));
+		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 		foreach ($touchedChunks as $chunk) {
 			/** @var Chunk $chunk */
 			#var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
 		}//TODO REMOVE
 
-        $manager = Shape::getChunkManager($touchedChunks);
-        unset($touchedChunks);
+		$manager = Shape::getChunkManager($touchedChunks);
+		unset($touchedChunks);
 
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
 
-        /** @var SingleClipboard $clipboard */
-        $clipboard = unserialize($this->clipboard);
-        $oldBlocks = iterator_to_array($this->execute($selection, $manager, $clipboard, $changed));
+		/** @var SingleClipboard $clipboard */
+		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [SingleClipboard::class]]);//TODO test pm4
+		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $clipboard, $changed));
 
-        $resultChunks = $manager->getChunks();
-        $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
-            return $chunk->isDirty();
-        });
-        $this->setResult(compact("resultChunks", "oldBlocks", "changed"));
-    }
+		$resultChunks = $manager->getChunks();
+		$resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
+			return $chunk->isDirty();
+		});
+		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
+	}
 
     /**
      * @param Selection $selection
@@ -152,30 +152,30 @@ class AsyncPasteTask extends MWEAsyncTask
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        } catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-            $session = null;
-        }
-        $result = $this->getResult();
-        /** @var Chunk[] $resultChunks */
-        $resultChunks = $result["resultChunks"];
-        $undoChunks = array_map(function ($chunk) {
-            return Chunk::fastDeserialize($chunk);
-        }, unserialize($this->touchedChunks));
-        $oldBlocks = $result["oldBlocks"];
-        $changed = $result["changed"];
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
-        $totalCount = $selection->getShape()->getTotalCount();
-        /** @var World $level */
-        $level = $selection->getWorld();
-        foreach ($resultChunks as $hash => $chunk) {
-            $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
-        }
-        if (!is_null($session)) {
-            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));
-            $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
-        }
+			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+		} catch (SessionException $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			$session = null;
+		}
+		$result = $this->getResult();
+		/** @var Chunk[] $resultChunks */
+		$resultChunks = $result["resultChunks"];
+		$undoChunks = array_map(function ($chunk) {
+			return Chunk::fastDeserialize($chunk);
+		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		$oldBlocks = $result["oldBlocks"];
+		$changed = $result["changed"];
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$totalCount = $selection->getShape()->getTotalCount();
+		/** @var World $level */
+		$level = $selection->getWorld();
+		foreach ($resultChunks as $hash => $chunk) {
+			$level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+		}
+		if (!is_null($session)) {
+			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));
+			$session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+		}
     }
 }

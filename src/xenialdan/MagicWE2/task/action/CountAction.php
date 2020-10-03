@@ -42,16 +42,16 @@ class CountAction extends TaskAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard &$oldBlocksSingleClipboard, array &$messages = []): Generator
-    {
-        $changed = 0;
-        #$oldBlocks = [];
-        $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
-        $counts = [];
-        if (!BlockFactory::isInit()) BlockFactory::init();
-        foreach ($selection->getShape()->getBlocks($manager, $newBlocks) as $block) {
-            $block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	{
+		$changed = 0;
+		#$oldBlocks = [];
+		$count = $selection->getShape()->getTotalCount();
+		$lastProgress = new Progress(0, "");
+		$counts = [];
+		if (!BlockFactory::isInit()) BlockFactory::init();
+		foreach ($selection->getShape()->getBlocks($manager, $newBlocks) as $block) {
+			$block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
 			$tostring = (BlockFactory::getInstance()->get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
             if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
             $counts[$tostring]++;

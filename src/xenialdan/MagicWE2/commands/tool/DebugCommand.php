@@ -57,12 +57,12 @@ class DebugCommand extends BaseCommand
 			$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
             $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.debug'));
             $item->setLore([
-                $lang->translateString('tool.debug.lore.1'),
-                $lang->translateString('tool.debug.lore.2'),
-                $lang->translateString('tool.debug.lore.3')
-            ]);
-            $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));
-            $sender->getInventory()->addItem($item);
+				$lang->translateString('tool.debug.lore.1'),
+				$lang->translateString('tool.debug.lore.2'),
+				$lang->translateString('tool.debug.lore.3')
+			]);
+			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
+			$sender->getInventory()->addItem($item);
         } catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

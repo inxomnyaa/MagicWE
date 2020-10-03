@@ -56,20 +56,20 @@ class AsyncCountTask extends MWEAsyncTask
     public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
-		$chunks = unserialize($this->touchedChunks);
+		$chunks = unserialize($this->touchedChunks, ['allowed_classes' => [false]]);//TODO test pm4
 		foreach ($chunks as $hash => $data) {
 			$chunks[$hash] = Chunk::fastDeserialize($data);
 		}
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection);
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
 		$manager = Shape::getChunkManager($chunks);
 		unset($chunks);
-        /** @var Block[] $newBlocks */
-        $newBlocks = unserialize($this->newBlocks);
-        $totalCount = $selection->getShape()->getTotalCount();
-        $counts = $this->countBlocks($selection, $manager, $newBlocks);
-        $this->setResult(compact("counts", "totalCount"));
-    }
+		/** @var Block[] $newBlocks */
+		$newBlocks = unserialize($this->newBlocks, ['allowed_classes' => [Block::class]]);//TODO test pm4
+		$totalCount = $selection->getShape()->getTotalCount();
+		$counts = $this->countBlocks($selection, $manager, $newBlocks);
+		$this->setResult(compact("counts", "totalCount"));
+	}
 
     /**
      * @param Selection $selection

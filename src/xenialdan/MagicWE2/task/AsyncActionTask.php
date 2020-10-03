@@ -85,7 +85,7 @@ class AsyncActionTask extends MWEAsyncTask
 	{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
-		$touchedChunks = unserialize($this->touchedChunks);
+		$touchedChunks = unserialize($this->touchedChunks, ['allowed_classes' => false]);
 		$touchedChunks = array_map(function ($chunk) {
 			return Chunk::fastDeserialize($chunk);
 		}, $touchedChunks);
@@ -93,20 +93,20 @@ class AsyncActionTask extends MWEAsyncTask
 		$manager = Shape::getChunkManager($touchedChunks);
 		unset($touchedChunks);
 
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);
 
-        $oldBlocks = new SingleClipboard($this->action->clipboardVector ?? new Vector3());//TODO Test if null V3 is ok //TODO test if the vector works
-        $oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
-        #$oldBlocks = [];
-        $messages = [];
-        $error = false;
-        $newBlocks = API::blockParser($this->newBlocks, $messages, $error);//TODO error handling
-        $blockFilter = API::blockParser($this->blockFilter, $messages, $error);//TODO error handling
-        /** @var Progress $progress */
-        foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $newBlocks, $blockFilter, $oldBlocks, $messages) as $progress) {
-            $this->publishProgress($progress);
-        }
+		$oldBlocks = new SingleClipboard($this->action->clipboardVector ?? new Vector3(0, 0, 0));//TODO Test if null V3 is ok //TODO test if the vector works
+		$oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
+		#$oldBlocks = [];
+		$messages = [];
+		$error = false;
+		$newBlocks = API::blockParser($this->newBlocks, $messages, $error);//TODO error handling
+		$blockFilter = API::blockParser($this->blockFilter, $messages, $error);//TODO error handling
+		/** @var Progress $progress */
+		foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $newBlocks, $blockFilter, $oldBlocks, $messages) as $progress) {
+			$this->publishProgress($progress);
+		}
 
         $resultChunks = $manager->getChunks();
         $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
@@ -123,39 +123,39 @@ class AsyncActionTask extends MWEAsyncTask
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        } catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-            $session = null;
-        }
-        $result = $this->getResult();
-        /** @var Chunk[] $resultChunks */
-        $resultChunks = $result["resultChunks"];
-        $undoChunks = array_map(function ($chunk) {
-            return Chunk::fastDeserialize($chunk);
-        }, unserialize($this->touchedChunks));
-        /** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere
-        $oldBlocks = $result["oldBlocks"];
-        //TODO Test this new behaviour!
-        //TODO so here i turn SingleClipboard entries into the same $oldBlocks as before this commit
-        $oldBlocksBlocks = [];
-        $x = $y = $z = null;
-        foreach ($oldBlocks->iterateEntries($x, $y, $z) as $entry) {
-            $oldBlocksBlocks[] = $entry->toBlock()->setComponents(intval($x), intval($y), intval($z));
-        }
-        $changed = $result["changed"];
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
-        $totalCount = $selection->getShape()->getTotalCount();
-        /** @var World $level */
-        $level = $selection->getWorld();
-        foreach ($resultChunks as $hash => $chunk) {
-            $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
-        }
-        if (!is_null($session)) {
-            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
-            foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
-            if ($this->action->addRevert)
+			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+		} catch (SessionException $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			$session = null;
+		}
+		$result = $this->getResult();
+		/** @var Chunk[] $resultChunks */
+		$resultChunks = $result["resultChunks"];
+		$undoChunks = array_map(function ($chunk) {
+			return Chunk::fastDeserialize($chunk);
+		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		/** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere
+		$oldBlocks = $result["oldBlocks"];
+		//TODO Test this new behaviour!
+		//TODO so here i turn SingleClipboard entries into the same $oldBlocks as before this commit
+		$oldBlocksBlocks = [];
+		$x = $y = $z = null;
+		foreach ($oldBlocks->iterateEntries($x, $y, $z) as $entry) {
+			$oldBlocksBlocks[] = $entry->toBlock()->setComponents(intval($x), intval($y), intval($z));
+		}
+		$changed = $result["changed"];
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$totalCount = $selection->getShape()->getTotalCount();
+		/** @var World $level */
+		$level = $selection->getWorld();
+		foreach ($resultChunks as $hash => $chunk) {
+			$level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+		}
+		if (!is_null($session)) {
+			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
+			foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
+			if ($this->action->addRevert)
                 $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocksBlocks));
             if ($this->action->addClipboard)
                 $session->addClipboard($oldBlocks);

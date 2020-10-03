@@ -68,21 +68,21 @@ class BiomeInfoCommand extends BaseCommand
             });
             if (!empty(($flags = ltrim(strval($args["flags"] ?? ""), "-")))) {
                 $flagArray = str_split($flags);
-                if (in_array(self::FLAG_T, $flagArray)) {
-                    $target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
-                    if ($target === null) {
-                        $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
-                        return;
-                    }
-                    $biomeId = $target->getPos()->getWorld()->getChunkAtPosition($target)->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
-                    $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
-                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
-                }
-                if (in_array(self::FLAG_P, $flagArray)) {
-                    $biomeId = $sender->getWorld()->getChunkAtPosition($sender)->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
-                    $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
-                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
-                }
+                if (in_array(self::FLAG_T, $flagArray, true)) {
+					$target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
+					if ($target === null) {
+						$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
+						return;
+					}
+					$biomeId = $target->getPos()->getWorld()->getChunkAtPosition($target)->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
+					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
+					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
+				}
+				if (in_array(self::FLAG_P, $flagArray, true)) {
+					$biomeId = $sender->getWorld()->getChunkAtPosition($sender)->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
+					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
+					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
+				}
                 return;
             }
             $selection = $session->getLatestSelection();

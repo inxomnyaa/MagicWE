@@ -154,8 +154,8 @@ class UserSession extends Session implements JsonSerializable
                 throw new Exception("Brush can not be restored - version mismatch");
             }
             /** @var BrushProperties $properties */
-            $properties = json_decode($entry->getString("properties"));
-            $uuid = UUID::fromString($properties->uuid);
+            $properties = json_decode($entry->getString("properties"), true);
+			$uuid = UUID::fromString($properties->uuid);
             $brush = $this->getBrush($uuid);
             if ($brush instanceof Brush) {
                 return $brush;
@@ -294,8 +294,8 @@ class UserSession extends Session implements JsonSerializable
     public function save(): void
     {
         file_put_contents(Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
-            $this->getPlayer()->getName() . ".json",
-            json_encode($this, JSON_PRETTY_PRINT)
+			$this->getPlayer()->getName() . ".json",
+			json_encode($this, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)
         );
     }
 }

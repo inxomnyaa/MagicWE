@@ -243,7 +243,7 @@ class EventListener implements Listener
             if (!$session instanceof UserSession) return;
             $target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
             $brush = $session->getBrushFromItem($event->getItem());
-            var_dump(json_encode($brush));
+			var_dump(json_encode($brush, JSON_THROW_ON_ERROR));
             if (!is_null($target) && $brush instanceof Brush) {// && has perms
                 API::createBrush($target, $brush, $session);
             }

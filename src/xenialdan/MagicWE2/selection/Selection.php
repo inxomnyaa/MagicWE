@@ -262,16 +262,16 @@ class Selection implements Serializable, JsonSerializable
      */
     public function unserialize($serialized)
     {
-        /** @var Vector3 $pos1 , $pos2 */
-        [
-            $this->levelid,
-            $this->pos1,
-            $this->pos2,
-            $this->uuid,
-            $this->sessionUUID,
-            $this->shape
-        ] = unserialize($serialized);
-    }
+		/** @var Vector3 $pos1 , $pos2 */
+		[
+			$this->levelid,
+			$this->pos1,
+			$this->pos2,
+			$this->uuid,
+			$this->sessionUUID,
+			$this->shape
+		] = unserialize($serialized, ['allowed_classes' => [__CLASS__]]);//TODO test pm4
+	}
 
     /**
      * Specify data which should be serialized to JSON

@@ -73,19 +73,19 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 
 		if (!BlockStatesParser::isInit()) BlockStatesParser::init($this->rotFlipMapPath, $this->doorRotFlipMapPath);
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection,);
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
 		/** @var SingleClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard);
+		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [SingleClipboard::class]]);//TODO test pm4
 		$clipboard->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
 		$messages = [];
-        /** @var Progress $progress */
-        foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $clipboard, $messages) as $progress) {
-            $this->publishProgress($progress);
-        }
-        //TODO $clipboard->selection shape might change when using rotate. Fix this, so //paste chunks are correct
+		/** @var Progress $progress */
+		foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $clipboard, $messages) as $progress) {
+			$this->publishProgress($progress);
+		}
+		//TODO $clipboard->selection shape might change when using rotate. Fix this, so //paste chunks are correct
 
-        $this->setResult(compact("clipboard", "changed", "messages"));
-    }
+		$this->setResult(compact("clipboard", "changed", "messages"));
+	}
 
     /**
      * @param Server $server
@@ -95,23 +95,23 @@ class AsyncClipboardActionTask extends MWEAsyncTask
     {
         try {
             $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        } catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-            $session = null;
-        }
-        $result = $this->getResult();
-        /** @var SingleClipboard $clipboard */
-        $clipboard = $result["clipboard"];
-        $changed = $result["changed"];
-        /** @var Selection $selection */
-        $selection = unserialize($this->selection);
-        $totalCount = $selection->getShape()->getTotalCount();
-        if (!is_null($session)) {
-            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
-            foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
-            if ($this->action->addClipboard)
-                $session->addClipboard($clipboard);
-        }
-    }
+			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+		} catch (SessionException $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			$session = null;
+		}
+		$result = $this->getResult();
+		/** @var SingleClipboard $clipboard */
+		$clipboard = $result["clipboard"];
+		$changed = $result["changed"];
+		/** @var Selection $selection */
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$totalCount = $selection->getShape()->getTotalCount();
+		if (!is_null($session)) {
+			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
+			foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
+			if ($this->action->addClipboard)
+				$session->addClipboard($clipboard);
+		}
+	}
 }

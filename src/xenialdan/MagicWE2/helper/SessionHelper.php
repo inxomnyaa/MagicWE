@@ -195,7 +195,7 @@ class SessionHelper
         if (!file_exists($path)) return null;
         $contents = file_get_contents($path);
         if ($contents === false) return null;
-        $data = json_decode($contents, true);
+        $data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
         if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
             Loader::getInstance()->getLogger()->error("Could not load user session from json file {$path}: " . json_last_error_msg());
             #unlink($path);//TODO make safe
@@ -205,28 +205,28 @@ class SessionHelper
         try {
             $session->setUUID(UUID::fromString($data["uuid"]));
             $session->setWandEnabled($data["wandEnabled"]);
-            $session->setDebugToolEnabled($data["debugToolEnabled"]);
-            $session->setLanguage($data["language"]);
-            foreach ($data["brushes"] as $brushUUID => $brushJson) {
-                try {
-                    $properties = BrushProperties::fromJson($brushJson["properties"]);
-                    $brush = new Brush($properties);
-                    $session->addBrush($brush);
-                } catch (InvalidArgumentException $e) {
-                    continue;
-                }
-            };
-            if (!is_null(($latestSelection = $data["latestSelection"] ?? null))) {
-                try {
-                    $level = Server::getInstance()->getLevel($latestSelection["levelid"]);
-                    if(is_null($level)){
-                        $session->sendMessage(TF::RED."The level of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
-                    } else {
-                        $selection = new Selection(
-                            $session->getUUID(),
-                            Server::getInstance()->getLevel($latestSelection["levelid"]),
-                            $latestSelection["pos1"]["x"],
-                            $latestSelection["pos1"]["y"],
+			$session->setDebugToolEnabled($data["debugToolEnabled"]);
+			$session->setLanguage($data["language"]);
+			foreach ($data["brushes"] as $brushUUID => $brushJson) {
+				try {
+					$properties = BrushProperties::fromJson($brushJson["properties"]);
+					$brush = new Brush($properties);
+					$session->addBrush($brush);
+				} catch (InvalidArgumentException $e) {
+					continue;
+				}
+			}
+			if (!is_null(($latestSelection = $data["latestSelection"] ?? null))) {
+				try {
+					$level = Server::getInstance()->getLevel($latestSelection["levelid"]);
+					if (is_null($level)) {
+						$session->sendMessage(TF::RED . "The level of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
+					} else {
+						$selection = new Selection(
+							$session->getUUID(),
+							Server::getInstance()->getLevel($latestSelection["levelid"]),
+							$latestSelection["pos1"]["x"],
+							$latestSelection["pos1"]["y"],
                             $latestSelection["pos1"]["z"],
                             $latestSelection["pos2"]["x"],
                             $latestSelection["pos2"]["y"],

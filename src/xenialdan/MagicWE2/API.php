@@ -444,8 +444,8 @@ class API
         $add_sub = false;
         $result = 0;
 
-        $str = preg_replace('/[^\d\.\+\-\*\/]/i', '', $str);
-        $str = rtrim(trim($str, '/*+'), '-');
+        $str = preg_replace('/[^\d\.\+\-\*\/]/', '', $str);
+		$str = rtrim(trim($str, '/*+'), '-');
 
         if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
             $div_mul = true;
@@ -459,8 +459,8 @@ class API
                     $regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
                     preg_match($regex, $str, $matches);
                     if (isset($matches[1]) && isset($matches[2])) {
-						if ($operator == '+') $result = (float)$matches[1] + (float)$matches[2];
-						if ($operator == '-') $result = (float)$matches[1] - (float)$matches[2];
+						if ($operator === '+') $result = (float)$matches[1] + (float)$matches[2];
+						if ($operator === '-') $result = (float)$matches[1] - (float)$matches[2];
 						if ($operator === '*') $result = (float)$matches[1] * (float)$matches[2];
 						if ($operator === '/') {
 							if ((float)$matches[2]) {
@@ -487,11 +487,11 @@ class API
                 $tokens = $matches[0];
                 $count = count($tokens);
                 for ($i = 0; $i < $count; $i++) {
-                    if ($tokens[$i] == '+' || $tokens[$i] == '-') {
-                        $operator = $tokens[$i];
-                    } else {
-                        $result = ($operator == '+') ? ($result + (float)$tokens[$i]) : ($result - (float)$tokens[$i]);
-                    }
+					if ($tokens[$i] === '+' || $tokens[$i] === '-') {
+						$operator = $tokens[$i];
+					} else {
+						$result = ($operator === '+') ? ($result + (float)$tokens[$i]) : ($result - (float)$tokens[$i]);
+					}
                 }
             }
         }

@@ -43,17 +43,17 @@ class CutAction extends TaskAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard &$oldBlocksSingleClipboard, array &$messages = []): Generator
-    {
-        $changed = 0;
-        $i = 0;
-        #$oldBlocks = [];
-        $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
-        $min = $selection->getShape()->getMinVec3();
-        foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
-            /** @var Block $new */
-            $new = clone $newBlocks[array_rand($newBlocks)];
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	{
+		$changed = 0;
+		$i = 0;
+		#$oldBlocks = [];
+		$count = $selection->getShape()->getTotalCount();
+		$lastProgress = new Progress(0, "");
+		$min = $selection->getShape()->getMinVec3();
+		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
+			/** @var Block $new */
+			$new = clone $newBlocks[array_rand($newBlocks)];
             if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
             #$oldBlocks[] = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->setComponents($block->x, $block->y, $block->z);
             $newv3 = $block->subtract($min)->floor();//TODO check if only used for clipboard

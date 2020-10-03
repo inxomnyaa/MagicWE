@@ -62,19 +62,19 @@ class AsyncCopyTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 		$chunks = array_map(function ($chunk) {
 			return Chunk::fastDeserialize($chunk);
-		}, unserialize($this->chunks));
+		}, unserialize($this->chunks, ['allowed_classes' => false]));//TODO test pm4
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection);
+		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
 		#var_dump("shape", $selection->getShape());
 		$manager = Shape::getChunkManager($chunks);
 		unset($chunks);
-        #var_dump($this->offset);
-        $clipboard = new SingleClipboard($this->offset);
-        $clipboard->selection = $selection;
-        #$clipboard->setCenter(unserialize($this->offset));
-        $totalCount = $selection->getShape()->getTotalCount();
-        $copied = $this->copyBlocks($selection, $manager, $clipboard);
-        #$clipboard->setShape($selection->getShape());
+		#var_dump($this->offset);
+		$clipboard = new SingleClipboard($this->offset);
+		$clipboard->selection = $selection;
+		#$clipboard->setCenter(unserialize($this->offset));
+		$totalCount = $selection->getShape()->getTotalCount();
+		$copied = $this->copyBlocks($selection, $manager, $clipboard);
+		#$clipboard->setShape($selection->getShape());
         #$clipboard->chunks = $manager->getChunks();
         $this->setResult(compact("clipboard", "copied", "totalCount"));
     }
@@ -86,17 +86,17 @@ class AsyncCopyTask extends MWEAsyncTask
      * @return int
      * @throws Exception
      */
-    private function copyBlocks(Selection $selection, AsyncChunkManager $manager, SingleClipboard &$clipboard): int
-    {
-        $blockCount = $selection->getShape()->getTotalCount();
-        $i = 0;
-        $lastprogress = 0;
-        $this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
-        $min = $selection->getShape()->getMinVec3();
-        /** @var Block $block */
-        foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
-            #var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
-            $newv3 = $block->getPos()->subtractVector($min)->floor();
+	private function copyBlocks(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard): int
+	{
+		$blockCount = $selection->getShape()->getTotalCount();
+		$i = 0;
+		$lastprogress = 0;
+		$this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
+		$min = $selection->getShape()->getMinVec3();
+		/** @var Block $block */
+		foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
+			#var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
+			$newv3 = $block->getPos()->subtractVector($min)->floor();
             $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getId(), $block->getMeta())));//TODO test tiles
             #var_dump("copied selection block", $block);
             $i++;

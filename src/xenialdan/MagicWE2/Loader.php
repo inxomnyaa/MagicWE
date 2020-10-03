@@ -129,7 +129,7 @@ class Loader extends PluginBase
         if ($fileGetContents === false) {
             throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
         } else {
-            BlockStatesParser::setAliasMap(json_decode($fileGetContents, true));
+            BlockStatesParser::setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
         }
         #BlockStatesParser::printAllStates();
         #BlockStatesParser::runTests();

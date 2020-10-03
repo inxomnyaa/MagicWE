@@ -12,8 +12,6 @@ use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
@@ -64,23 +62,24 @@ class Brush extends WETool
      */
     public function toItem(): Item
     {
-        /** @var Durable $item */
-        $item = Item::get(ItemIds::WOODEN_SHOVEL);
-        $item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-        $uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
-        $this->properties->uuid = $uuid;
-        $properties = json_encode($this->properties);
-        if (!is_string($properties)) throw new InvalidArgumentException("Brush properties could not be decoded");
-        $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE_BRUSH, [
-            new StringTag("id", $uuid),
-            new IntTag("version", $this->properties->version),
-            new StringTag("properties", $properties)
-        ]));
-        $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $this->getName());
-        $item->setLore($this->properties->generateLore());
-        $item->setUnbreakable();
-        return $item;
-    }
+		/** @var Durable $item */
+		$item = Item::get(ItemIds::WOODEN_SHOVEL);
+		$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
+		$uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
+		$this->properties->uuid = $uuid;
+		$properties = json_encode($this->properties, JSON_THROW_ON_ERROR);
+		if (!is_string($properties)) throw new InvalidArgumentException("Brush properties could not be decoded");
+		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_BRUSH,
+			CompoundTag::create()
+				->setString("id", $uuid)
+				->setInt("version", $this->properties->version)
+				->setString("properties", $properties)
+		);
+		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $this->getName());
+		$item->setLore($this->properties->generateLore());
+		$item->setUnbreakable();
+		return $item;
+	}
 
     /**
      * @param bool $new true if creating new brush
@@ -157,10 +156,10 @@ class Brush extends WETool
                 $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
                 $biomeNames = array_flip($biomeNames);
                 unset($biomeNames[Biome::MAX_BIOMES], $biomeNames[Biome::HELL]);
-                array_walk($biomeNames, function (&$value, $key) {
-                    $value = Biome::getBiome($key)->getName();
-                });
-                $biomeId = array_search($biome, $biomeNames);
+				array_walk($biomeNames, function (&$value, $key) {
+					$value = Biome::getBiome($key)->getName();
+				});
+				$biomeId = array_search($biome, $biomeNames, true);
 
                 //error checks
                 $error = [];

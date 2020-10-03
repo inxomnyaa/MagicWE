@@ -54,19 +54,19 @@ class WandCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            /** @var Durable $item */
-            $item = ItemFactory::getInstance()->get(ItemIds::WOODEN_AXE);
+			/** @var Durable $item */
+			$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_AXE);
 			$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-            $item->setUnbreakable(true);
-            $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.wand'));
-            $item->setLore([
-                $lang->translateString('tool.wand.lore.1'),
-                $lang->translateString('tool.wand.lore.2'),
-                $lang->translateString('tool.wand.lore.3')
-            ]);
-            $item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, []));
-            if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
-        } catch (Exception $error) {
+			$item->setUnbreakable(true);
+			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.wand'));
+			$item->setLore([
+				$lang->translateString('tool.wand.lore.1'),
+				$lang->translateString('tool.wand.lore.2'),
+				$lang->translateString('tool.wand.lore.3')
+			]);
+			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
+			if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
+		} catch (Exception $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());

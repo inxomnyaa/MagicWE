@@ -71,10 +71,11 @@ class Flood extends WETool
     }
 
     /**
-     * @param World|AsyncChunkManager $manager
-     * @return Block[]
-     * @throws InvalidArgumentException
-     */
+	 * @param World|AsyncChunkManager $manager
+	 * @return Block[]
+	 * @throws InvalidArgumentException
+	 * @noinspection SlowArrayOperationsInLoopInspection
+	 */
     private function walk($manager): array
     {
         $this->validateChunkManager($manager);
@@ -83,7 +84,7 @@ class Flood extends WETool
         foreach ($this->nextToCheck as $next) {
             $sides = iterator_to_array($this->getHorizontalSides($manager, $next));
             $walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
-                return $side->getId() === 0 && !in_array($side, $walkTo) && !in_array($side, $this->walked) && !in_array($side, $this->nextToCheck) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
+				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
             }));
         }
         $this->walked = array_merge($this->walked, $walkTo);

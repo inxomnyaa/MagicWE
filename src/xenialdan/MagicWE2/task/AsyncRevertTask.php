@@ -51,17 +51,17 @@ class AsyncRevertTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 		/** @var RevertClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard);
+		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [RevertClipboard::class]]);//TODO test pm4
 		$totalCount = count($clipboard->blocksAfter);
 		$manager = $clipboard::getChunkManager($clipboard->chunks);
 		$oldBlocks = [];
 		if ($this->type === self::TYPE_UNDO)
 			$oldBlocks = iterator_to_array($this->undoChunks($manager, $clipboard));
 		if ($this->type === self::TYPE_REDO)
-            $oldBlocks = iterator_to_array($this->redoChunks($manager, $clipboard));
-        $chunks = $manager->getChunks();
-        $this->setResult(compact("chunks", "oldBlocks", "totalCount"));
-    }
+			$oldBlocks = iterator_to_array($this->redoChunks($manager, $clipboard));
+		$chunks = $manager->getChunks();
+		$this->setResult(compact("chunks", "oldBlocks", "totalCount"));
+	}
 
     /**
      * @param AsyncChunkManager $manager
@@ -106,27 +106,27 @@ class AsyncRevertTask extends MWEAsyncTask
      * @throws Exception
      */
     public function onCompletion(Server $server): void
-    {
-        try {
-            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-        } catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-            $session = null;
-        }
-        $result = $this->getResult();
-        /** @var RevertClipboard $clipboard */
-        $clipboard = unserialize($this->clipboard);
-        $clipboard->chunks = $result["chunks"];
-        $totalCount = $result["totalCount"];
-        $changed = count($result["oldBlocks"]);
-        $clipboard->blocksAfter = $result["oldBlocks"];
-        /** @var World $level */
-        $level = $clipboard->getWorld();
-        foreach ($clipboard->chunks as $chunk) {
-            $level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
-        }
-        if (!is_null($session)) {
+	{
+		try {
+			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+		} catch (SessionException $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			$session = null;
+		}
+		$result = $this->getResult();
+		/** @var RevertClipboard $clipboard */
+		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [RevertClipboard::class]]);//TODO test pm4
+		$clipboard->chunks = $result["chunks"];
+		$totalCount = $result["totalCount"];
+		$changed = count($result["oldBlocks"]);
+		$clipboard->blocksAfter = $result["oldBlocks"];
+		/** @var World $level */
+		$level = $clipboard->getWorld();
+		foreach ($clipboard->chunks as $chunk) {
+			$level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+		}
+		if (!is_null($session)) {
             switch ($this->type) {
                 case self::TYPE_UNDO:
                 {

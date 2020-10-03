@@ -135,15 +135,15 @@ class BlockStatesParser
         }
         $blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
         if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
-        self::$blockIdMap = json_decode($blockIdMap, true);
+        self::$blockIdMap = json_decode($blockIdMap, true, 512, JSON_THROW_ON_ERROR);
         //self::runTests();
         if ($rotFlipMapPath !== null) {
             $fileGetContents = file_get_contents($rotFlipMapPath);
             if ($fileGetContents === false) {
                 throw new PluginException("rotation_flip_data.json could not be loaded! Rotation and flip support has been disabled!");
             } else {
-                self::setRotationFlipMap(json_decode($fileGetContents, true));
-                var_dump("Successfully loaded rotation_flip_data.json");
+				self::setRotationFlipMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+				var_dump("Successfully loaded rotation_flip_data.json");
             }
         }
         if ($doorRotFlipMapPath !== null) {
@@ -151,8 +151,8 @@ class BlockStatesParser
             if ($fileGetContents === false) {
                 throw new PluginException("door_data.json could not be loaded! Door rotation and flip support has been disabled!");
             } else {
-                self::setDoorRotationFlipMap(json_decode($fileGetContents, true));
-                var_dump("Successfully loaded door_data.json");
+				self::setDoorRotationFlipMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+				var_dump("Successfully loaded door_data.json");
             }
         }
     }
@@ -314,8 +314,9 @@ class BlockStatesParser
             $pregSplit = preg_split('/,(?![^\[]*\])/', trim($query), -1, PREG_SPLIT_NO_EMPTY);
             if (!is_array($pregSplit)) throw new InvalidArgumentException("Regex matching failed");
             foreach ($pregSplit as $b) {
-                $blocks = array_merge($blocks, self::fromString($b, false));
-            }
+				/** @noinspection SlowArrayOperationsInLoopInspection */
+				$blocks = array_merge($blocks, self::fromString($b, false));
+			}
             return $blocks;
         } else {
             #Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $query);
@@ -367,13 +368,15 @@ class BlockStatesParser
                 } else if ($tag instanceof IntTag) {
                     $finalStatesList->setInt($tag->getName(), intval($v));
                 } else if ($tag instanceof ByteTag) {
-                    if ($v == 1) $v = "true";
-                    if ($v == 0) $v = "false";
-                    if ($v !== "true" && $v !== "false") {
-                        throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
-                    }
-                    $finalStatesList->setByte($tag->getName(), $v === "true" ? 1 : 0);
-                } else {
+					/** @noinspection TypeUnsafeComparisonInspection */
+					if ($v == 1) $v = "true";
+					/** @noinspection TypeUnsafeComparisonInspection */
+					if ($v == 0) $v = "false";
+					if ($v !== "true" && $v !== "false") {
+						throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+					}
+					$finalStatesList->setByte($tag->getName(), $v === "true" ? 1 : 0);
+				} else {
                     throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
                 }
             }
@@ -531,15 +534,15 @@ class BlockStatesParser
         foreach (self::$legacyStateMap as $legacyMapEntry) {
             $states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
             foreach ($states as $state) {
-                if (!array_key_exists($state->getName(), $all)) {
-                    $all[$state->getName()] = [];
-                }
-                if (!in_array($state->getValue(), $all[$state->getName()])) {
-                    $all[$state->getName()][] = $state->getValue();
-                    if (strpos($state->getName(), "_bit") !== false) {
-                    } else {
-                    }
-                }
+				if (!array_key_exists($state->getName(), $all)) {
+					$all[$state->getName()] = [];
+				}
+				if (!in_array($state->getValue(), $all[$state->getName()], true)) {
+					$all[$state->getName()][] = $state->getValue();
+					if (strpos($state->getName(), "_bit") !== false) {
+					} else {
+					}
+				}
             }
         }
         /** @var array<string, mixed> $all */

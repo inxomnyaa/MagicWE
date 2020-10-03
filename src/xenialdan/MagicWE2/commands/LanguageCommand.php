@@ -72,7 +72,7 @@ class LanguageCommand extends BaseCommand
             $dropdown->setOptionAsDefault($session->getLanguage()->getName());
             $form->addElement($dropdown);
             $form->setCallable(function (Player $player, $data) use ($session, $languages) {
-                $langShort = array_search($data[1], $languages);
+                $langShort = array_search($data[1], $languages, true);
                 if (!is_string($langShort)) throw new InvalidArgumentException("Invalid data received");
                 $session->setLanguage($langShort);
             });
