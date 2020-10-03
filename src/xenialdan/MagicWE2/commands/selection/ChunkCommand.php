@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\selection;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
@@ -24,19 +24,20 @@ use xenialdan\MagicWE2\session\UserSession;
 class ChunkCommand extends BaseCommand
 {
 
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     */
-    protected function prepare(): void
-    {
-        $this->setPermission("we.command.selection.chunk");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->setPermission("we.command.selection.chunk");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
-     */
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
@@ -54,7 +55,7 @@ class ChunkCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getWorld())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
@@ -67,10 +68,6 @@ class ChunkCommand extends BaseCommand
             $selection->setPos1(Position::fromObject(new Vector3($chunk->getX() * 16, 0, $chunk->getZ() * 16), $sender->getWorld()));
             $selection->setPos2(Position::fromObject(new Vector3($chunk->getX() * 16 + 15, World::Y_MAX, $chunk->getZ() * 16 + 15), $sender->getWorld()));
         } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());

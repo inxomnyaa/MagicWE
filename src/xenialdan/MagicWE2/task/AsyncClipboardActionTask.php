@@ -3,8 +3,9 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
+use InvalidArgumentException;
 use pocketmine\player\Player;
-use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -87,14 +88,15 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 		$this->setResult(compact("clipboard", "changed", "messages"));
 	}
 
-    /**
-     * @param Server $server
-     * @throws Exception
-     */
-    public function onCompletion(Server $server): void
-    {
-        try {
-            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 * @throws Exception
+	 */
+	public function onCompletion(): void
+	{
+		try {
+			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

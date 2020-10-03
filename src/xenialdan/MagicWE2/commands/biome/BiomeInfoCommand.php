@@ -4,42 +4,44 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\biome;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\biome\Biome;
 use pocketmine\world\format\io\FastChunkSerializer;
 use ReflectionClass;
+use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
 class BiomeInfoCommand extends BaseCommand
 {
-    const FLAG_T = "t";
-    const FLAG_P = "p";
+	const FLAG_T = "t";
+	const FLAG_P = "p";
 
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws ArgumentOrderException
-     */
-    protected function prepare(): void
-    {
-        $this->registerArgument(0, new TextArgument("flags", true));
-        $this->setPermission("we.command.biome.info");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws ArgumentOrderException
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->registerArgument(0, new TextArgument("flags", true));
+		$this->setPermission("we.command.biome.info");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -58,7 +60,7 @@ class BiomeInfoCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
             $biomeNames = array_flip($biomeNames);
@@ -87,13 +89,13 @@ class BiomeInfoCommand extends BaseCommand
             }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-                throw new Exception($lang->translateString('error.noselection'));
+				throw new SelectionException($lang->translateString('error.noselection'));
             }
             if (!$selection->isValid()) {
-                throw new Exception($lang->translateString('error.selectioninvalid'));
+				throw new SelectionException($lang->translateString('error.selectioninvalid'));
             }
             if ($selection->getWorld() !== $sender->getWorld()) {
-                $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentlevel'));
+				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
             }
             $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
             $biomes = [];
@@ -108,10 +110,6 @@ class BiomeInfoCommand extends BaseCommand
                 $session->sendMessage(TF::AQUA . $lang->translateString('command.biomeinfo.result.line', [$biomeId, $biomeNames[$biomeId]]));
             }
         } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());

@@ -9,6 +9,7 @@ use pocketmine\Server;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\World;
 use Serializable;
+use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 abstract class Clipboard implements Serializable
@@ -26,7 +27,7 @@ abstract class Clipboard implements Serializable
 	const FLIP_SOUTH = 0x03;
 
 	/** @var int|null */
-	public ?int $levelid;
+	public ?int $worldId;
 	/** @var string */
 	public string $customName = "";
 
@@ -49,31 +50,31 @@ abstract class Clipboard implements Serializable
      * @throws Exception
      */
     public function getWorld(): World
-    {
-        if (is_null($this->levelid)) {
-            throw new Exception("Level is not set!");
-        }
-		$level = Server::getInstance()->getWorldManager()->getWorld($this->levelid);
-        if (is_null($level)) {
-            throw new Exception("Level is not found!");
-        }
-        return $level;
-    }
+	{
+		if (is_null($this->worldId)) {
+			throw new SelectionException("World is not set!");
+		}
+		$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
+		if (is_null($world)) {
+			throw new SelectionException("World is not found!");
+		}
+		return $world;
+	}
 
-    /**
-     * @param World $level
-     */
-    public function setWorld(World $level): void
-    {
-        $this->levelid = $level->getId();
-    }
+	/**
+	 * @param World $world
+	 */
+	public function setWorld(World $world): void
+	{
+		$this->worldId = $world->getId();
+	}
 
     /**
      * @return int
      */
     public function getWorldId(): int
     {
-        return $this->levelid;
+		return $this->worldId;
     }
 
     /**

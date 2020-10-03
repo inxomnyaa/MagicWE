@@ -7,12 +7,14 @@ namespace xenialdan\MagicWE2\helper;
 use Ds\Map;
 use Exception;
 use InvalidArgumentException;
-use InvalidStateException;
+use JsonException;
+use pocketmine\entity\InvalidSkinException;
 use pocketmine\entity\Skin;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use RuntimeException;
@@ -36,79 +38,80 @@ class SessionHelper
 	public static function init(): void
 	{
 		if (!mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "sessions") && !is_dir($concurrentDirectory)) {
-			throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+			throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
 		self::$userSessions = new Map();
 		self::$pluginSessions = new Map();
 	}
 
-    /**
-     * @param Session $session
-     * @throws InvalidStateException
-     */
-    public static function addSession(Session $session): void
-    {
-        if ($session instanceof UserSession) {
-            self::$userSessions->put($session->getUUID(), $session);
-            if (!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))) {
-                $oldSkin = $player->getSkin();
-                $newSkin = new Skin($oldSkin->getSkinId(), $oldSkin->getSkinData(), Loader::getInstance()->donatorData, $oldSkin->getGeometryName(), $oldSkin->getGeometryData());
-                $player->setSkin($newSkin);
-                $player->sendSkin();
-            }
-        } else if ($session instanceof PluginSession) self::$pluginSessions->put($session->getUUID(), $session);
-    }
+	/**
+	 * @param Session $session
+	 * @throws InvalidSkinException
+	 */
+	public static function addSession(Session $session): void
+	{
+		if ($session instanceof UserSession) {
+			self::$userSessions->put($session->getUUID(), $session);
+			if (!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))) {
+				$oldSkin = $player->getSkin();
+				$newSkin = new Skin($oldSkin->getSkinId(), $oldSkin->getSkinData(), Loader::getInstance()->donatorData, $oldSkin->getGeometryName(), $oldSkin->getGeometryData());
+				$player->setSkin($newSkin);
+				$player->sendSkin();
+			}
+		} else if ($session instanceof PluginSession) self::$pluginSessions->put($session->getUUID(), $session);
+	}
 
-    /**
-     * Destroys a session and removes it from cache. Saves to file if $save is true
-     * @param Session $session
-     * @param bool $save
-     */
-    public static function destroySession(Session $session, bool $save = true): void
-    {
-        if ($session instanceof UserSession) {
-            $session->cleanupInventory();
-            self::$userSessions->remove($session->getUUID());
-        } else if ($session instanceof PluginSession) self::$pluginSessions->remove($session->getUUID());
-        if ($save && $session instanceof UserSession) {
-            $session->save();
-        }
-        unset($session);
-    }
+	/**
+	 * Destroys a session and removes it from cache. Saves to file if $save is true
+	 * @param Session $session
+	 * @param bool $save
+	 * @throws JsonException
+	 */
+	public static function destroySession(Session $session, bool $save = true): void
+	{
+		if ($session instanceof UserSession) {
+			$session->cleanupInventory();
+			self::$userSessions->remove($session->getUUID());
+		} else if ($session instanceof PluginSession) self::$pluginSessions->remove($session->getUUID());
+		if ($save && $session instanceof UserSession) {
+			$session->save();
+		}
+		unset($session);
+	}
 
-    /**
-     * Creates an UserSession used to execute MagicWE2's functions
-     * @param Player $player
-     * @param bool $add If true, the session will be cached in SessionHelper
-     * @return UserSession
-     * @throws InvalidStateException
-     * @throws SessionException
-     */
-    public static function createUserSession(Player $player, bool $add = true): UserSession
-    {
-        if (!$player->hasPermission("we.session")) throw new SessionException(TF::RED . "You do not have the permission \"magicwe.session\"");
-        $session = new UserSession($player);
-        if ($add) self::addSession($session);
-        return $session;
-    }
+	/**
+	 * Creates an UserSession used to execute MagicWE2's functions
+	 * @param Player $player
+	 * @param bool $add If true, the session will be cached in SessionHelper
+	 * @return UserSession
+	 * @throws SessionException
+	 * @throws InvalidSkinException
+	 */
+	public static function createUserSession(Player $player, bool $add = true): UserSession
+	{
+		if (!$player->hasPermission("we.session")) throw new SessionException(TF::RED . "You do not have the permission \"magicwe.session\"");
+		$session = new UserSession($player);
+		if ($add) self::addSession($session);
+		return $session;
+	}
 
-    /**
-     * Creates a PluginSession used to call API functions via a plugin
-     * @param Plugin $plugin
-     * @param bool $add If true, the session will be cached in SessionHelper
-     * @return PluginSession
-     * @throws InvalidStateException
-     */
-    public static function createPluginSession(Plugin $plugin, bool $add = true): PluginSession
-    {
-        $session = new PluginSession($plugin);
-        if ($add) self::addSession($session);
-        return $session;
-    }
+	/**
+	 * Creates a PluginSession used to call API functions via a plugin
+	 * @param Plugin $plugin
+	 * @param bool $add If true, the session will be cached in SessionHelper
+	 * @return PluginSession
+	 * @throws InvalidSkinException
+	 */
+	public static function createPluginSession(Plugin $plugin, bool $add = true): PluginSession
+	{
+		$session = new PluginSession($plugin);
+		if ($add) self::addSession($session);
+		return $session;
+	}
 
-    /**
-     * @param Player $player
-     * @return bool
+	/**
+	 * @param Player $player
+	 * @return bool
      */
     public static function hasSession(Player $player): bool
     {
@@ -173,31 +176,33 @@ class SessionHelper
     public static function getUserSessions(): array
     {
         return self::$userSessions->values()->toArray();
-    }
+	}
 
-    /**
-     * @return array|PluginSession[]
-     */
-    public static function getPluginSessions(): array
-    {
-        return self::$pluginSessions->values()->toArray();
-    }
+	/**
+	 * @return array|PluginSession[]
+	 */
+	public static function getPluginSessions(): array
+	{
+		return self::$pluginSessions->values()->toArray();
+	}
 
-    /**
-     * @param Player $player
-     * @return UserSession|null
-     * @throws InvalidStateException
-     */
-    public static function loadUserSession(Player $player): ?UserSession
-    {
-        $path = Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
-            $player->getName() . ".json";
-        if (!file_exists($path)) return null;
-        $contents = file_get_contents($path);
-        if ($contents === false) return null;
-        $data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
-        if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
-            Loader::getInstance()->getLogger()->error("Could not load user session from json file {$path}: " . json_last_error_msg());
+	/**
+	 * @param Player $player
+	 * @return UserSession|null
+	 * @throws JsonException
+	 * @throws InvalidSkinException
+	 * @throws AssumptionFailedError
+	 */
+	public static function loadUserSession(Player $player): ?UserSession
+	{
+		$path = Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
+			$player->getName() . ".json";
+		if (!file_exists($path)) return null;
+		$contents = file_get_contents($path);
+		if ($contents === false) return null;
+		$data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
+		if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
+			Loader::getInstance()->getLogger()->error("Could not load user session from json file {$path}: " . json_last_error_msg());
             #unlink($path);//TODO make safe
             return null;
         }
@@ -218,13 +223,13 @@ class SessionHelper
 			}
 			if (!is_null(($latestSelection = $data["latestSelection"] ?? null))) {
 				try {
-					$level = Server::getInstance()->getWorldManager()->getWorld($latestSelection["levelid"]);
-					if (is_null($level)) {
-						$session->sendMessage(TF::RED . "The level of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
+					$world = Server::getInstance()->getWorldManager()->getWorld($latestSelection["worldId"]);
+					if (is_null($world)) {
+						$session->sendMessage(TF::RED . "The world of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
 					} else {
 						$selection = new Selection(
 							$session->getUUID(),
-							Server::getInstance()->getWorldManager()->getWorld($latestSelection["levelid"]),
+							Server::getInstance()->getWorldManager()->getWorld($latestSelection["worldId"]),
 							$latestSelection["pos1"]["x"],
 							$latestSelection["pos1"]["y"],
 							$latestSelection["pos1"]["z"],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\helper;
 
 use InvalidArgumentException;
+use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\nbt\tag\ByteTag;
@@ -51,34 +52,35 @@ class BlockStatesEntry
             MainLogger::getLogger()->logException($e);
             $this->blockFull = $this->blockIdentifier;
         }
-    }
+	}
 
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->blockFull;
-    }
+	/**
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return $this->blockFull;
+	}
 
-    /**
-     * TODO hacky AF. clean up
-     * @return Block
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     * @throws PluginException
-     * @throws InvalidBlockStateException
-     */
-    public function toBlock(): Block
-    {
-        if ($this->block instanceof Block) return $this->block;
-        BlockFactory::getInstance();
-        if (!BlockStatesParser::isInit()) BlockStatesParser::init();
-        return array_values(BlockStatesParser::fromString($this->blockFull, false))[0];
-    }
+	/**
+	 * TODO hacky AF. clean up
+	 * @return Block
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 * @throws PluginException
+	 * @throws InvalidBlockStateException
+	 * @throws JsonException
+	 */
+	public function toBlock(): Block
+	{
+		if ($this->block instanceof Block) return $this->block;
+		BlockFactory::getInstance();
+		if (!BlockStatesParser::isInit()) BlockStatesParser::init();
+		return array_values(BlockStatesParser::fromString($this->blockFull, false))[0];
+	}
 
-    /**
-     * TODO Optimize (reduce getStateByBlock/fromString calls)
+	/**
+	 * TODO Optimize (reduce getStateByBlock/fromString calls)
      * @param int $amount any of [90,180,270]
      * @return BlockStatesEntry
      * @throws InvalidArgumentException

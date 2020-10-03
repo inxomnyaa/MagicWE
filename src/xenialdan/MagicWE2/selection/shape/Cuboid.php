@@ -40,21 +40,20 @@ class Cuboid extends Shape
 
     public static function constructFromPositions(Vector3 $pos1, Vector3 $pos2): self
     {
-        $width = (int)abs($pos1->getX() - $pos2->getX()) + 1;
-        $height = (int)abs($pos1->getY() - $pos2->getY()) + 1;
-        $depth = (int)abs($pos1->getZ() - $pos2->getZ()) + 1;
-        $cuboid = new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, min($pos1->y, $pos2->y), ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
-        return $cuboid;
-    }
+		$width = (int)abs($pos1->getX() - $pos2->getX()) + 1;
+		$height = (int)abs($pos1->getY() - $pos2->getY()) + 1;
+		$depth = (int)abs($pos1->getZ() - $pos2->getZ()) + 1;
+		return new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, min($pos1->y, $pos2->y), ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
+	}
 
-    /**
-     * Returns the blocks by their actual position
-     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
-     * @param Block[] $filterblocks If not empty, applying a filter on the block list
-     * @param int $flags
-     * @return Generator|Block[]
-     * @throws Exception
-     */
+	/**
+	 * Returns the blocks by their actual position
+	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param int $flags
+	 * @return Generator|Block[]
+	 * @throws Exception
+	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
@@ -81,13 +80,13 @@ class Cuboid extends Shape
         }
     }
 
-    /**
-     * Returns a flat layer of all included x z positions in selection
-     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
-     * @param int $flags
-     * @return Generator|Vector2[]
-     * @throws Exception
-     */
+	/**
+	 * Returns a flat layer of all included x z positions in selection
+	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param int $flags
+	 * @return Generator|Vector2[]
+	 * @throws Exception
+	 */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);

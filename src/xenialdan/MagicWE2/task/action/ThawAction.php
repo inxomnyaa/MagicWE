@@ -53,7 +53,6 @@ class ThawAction extends TaskAction
 		$newBlocks = API::blockParser("air,air,water", $m, $e);
 		foreach ($blockFilter as $ib => $blockF) {
 			foreach ($selection->getShape()->getBlocks($manager, [$blockF]) as $block) {
-				/** @var Block $new */
 				$new = clone $newBlocks[$ib];
 				#$oldBlocks[] = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->setComponents($block->x, $block->y, $block->z);
 				$oldBlocksSingleClipboard->addEntry($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), BlockEntry::fromBlock($block));

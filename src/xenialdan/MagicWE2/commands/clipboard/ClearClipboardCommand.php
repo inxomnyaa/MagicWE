@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\clipboard;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
-use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -20,19 +19,20 @@ use xenialdan\MagicWE2\session\UserSession;
 class ClearClipboardCommand extends BaseCommand
 {
 
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     */
-    protected function prepare(): void
-    {
-        $this->setPermission("we.command.clipboard.clear");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->setPermission("we.command.clipboard.clear");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
-     */
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
@@ -49,22 +49,15 @@ class ClearClipboardCommand extends BaseCommand
         /** @var Player $sender */
         try {
             $session = SessionHelper::getUserSession($sender);
-            if (!$session instanceof UserSession) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $session->clearClipboard();
-            $sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.clearclipboard.cleared'));
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+			if (!$session instanceof UserSession) {
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+			}
+			$session->clearClipboard();
+			$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.clearclipboard.cleared'));
+		} catch (Exception $error) {
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsage());
+		}
+	}
 }

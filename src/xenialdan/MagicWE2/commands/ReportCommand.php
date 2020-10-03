@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
-use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
 use pocketmine\player\Player;
@@ -22,20 +21,21 @@ use xenialdan\MagicWE2\Loader;
 class ReportCommand extends BaseCommand
 {
 
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws ArgumentOrderException
-     */
-    protected function prepare(): void
-    {
-        $this->registerArgument(0, new TextArgument("title", true));
-        $this->setPermission("we.command.report");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws ArgumentOrderException
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->registerArgument(0, new TextArgument("title", true));
+		$this->setPermission("we.command.report");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -54,22 +54,15 @@ class ReportCommand extends BaseCommand
                 TF::EOL .
                 TF::EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
                 TF::EOL . "---" .
-                TF::EOL . TF::clean(implode(TF::EOL, Loader::getInfo())));
-            $url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . strval($args["title"] ?? "")));
+				TF::EOL . TF::clean(implode(TF::EOL, Loader::getInfo())));
+			$url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . strval($args["title"] ?? "")));
 
-            if (!$sender instanceof ConsoleCommandSender) $sender->sendMessage(Loader::PREFIX . $url);
-            Loader::getInstance()->getLogger()->alert($url);
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+			if (!$sender instanceof ConsoleCommandSender) $sender->sendMessage(Loader::PREFIX . $url);
+			Loader::getInstance()->getLogger()->alert($url);
+		} catch (Exception $error) {
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsage());
+		}
+	}
 }

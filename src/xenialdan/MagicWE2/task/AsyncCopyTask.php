@@ -6,7 +6,6 @@ use Exception;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
@@ -109,17 +108,17 @@ class AsyncCopyTask extends MWEAsyncTask
         return $i;
     }
 
-    public function onCompletion(Server $server): void
-    {
-        try {
-            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-            $result = $this->getResult();
-            $copied = $result["copied"];
-            /** @var SingleClipboard $clipboard */
-            $clipboard = $result["clipboard"];
-            $totalCount = $result["totalCount"];
-            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
+    public function onCompletion(): void
+	{
+		try {
+			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+			$result = $this->getResult();
+			$copied = $result["copied"];
+			/** @var SingleClipboard $clipboard */
+			$clipboard = $result["clipboard"];
+			$totalCount = $result["totalCount"];
+			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
             $session->addClipboard($clipboard);
         } catch (SessionException $e) {
             Loader::getInstance()->getLogger()->logException($e);

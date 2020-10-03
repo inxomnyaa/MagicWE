@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\brush;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
-use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -22,20 +21,21 @@ use xenialdan\MagicWE2\tool\Brush;
 
 class BrushNameCommand extends BaseSubCommand
 {
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws ArgumentOrderException
-     */
-    protected function prepare(): void
-    {
-        $this->registerArgument(0, new RawStringArgument("name", true));
-        $this->setPermission("we.command.brush.name");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws ArgumentOrderException
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->registerArgument(0, new RawStringArgument("name", true));
+		$this->setPermission("we.command.brush.name");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -54,7 +54,7 @@ class BrushNameCommand extends BaseSubCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
             if ($brush instanceof Brush) {
@@ -62,22 +62,15 @@ class BrushNameCommand extends BaseSubCommand
                     $sender->sendMessage($brush->getName());
                     return;
                 }
-                $name = strval($args["name"]);
-                $brush->properties->setCustomName($name);
-                $session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
-                $session->replaceBrush($brush);
-            }
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsageMessage());
-        } catch (ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsageMessage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+				$name = strval($args["name"]);
+				$brush->properties->setCustomName($name);
+				$session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
+				$session->replaceBrush($brush);
+			}
+		} catch (Exception $error) {
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsageMessage());
+		}
+	}
 }

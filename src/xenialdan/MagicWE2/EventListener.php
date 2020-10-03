@@ -4,6 +4,7 @@ namespace xenialdan\MagicWE2;
 
 use Error;
 use Exception;
+use InvalidArgumentException;
 use InvalidStateException;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -12,8 +13,10 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use xenialdan\customui\windows\ModalForm;
@@ -105,19 +108,22 @@ class EventListener implements Listener
 				$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
 			}
 		}
-    }
+	}
 
-    /**
-     * TODO use tool classes
-     * @param BlockBreakEvent $event
-     * @throws Exception
-     */
-    private function onBreakBlock(BlockBreakEvent $event): void
-    {
-        $session = SessionHelper::getUserSession($event->getPlayer());
-        if (!$session instanceof UserSession) return;
-        switch ($event->getItem()->getId()) {
-            case ItemIds::WOODEN_AXE:
+	/**
+	 * TODO use tool classes
+	 * @param BlockBreakEvent $event
+	 * @throws Error
+	 * @throws SessionException
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 */
+	private function onBreakBlock(BlockBreakEvent $event): void
+	{
+		$session = SessionHelper::getUserSession($event->getPlayer());
+		if (!$session instanceof UserSession) return;
+		switch ($event->getItem()->getId()) {
+			case ItemIds::WOODEN_AXE:
 			{
 				if (!$session->isWandEnabled()) {
 					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
@@ -132,23 +138,28 @@ class EventListener implements Listener
 			}
             case ItemIds::STICK:
             {
-                if (!$session->isDebugToolEnabled()) {
-                    $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
-                    break;
-                }
-                $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
-                break;
-            }
-        }
-    }
+				if (!$session->isDebugToolEnabled()) {
+					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
+					break;
+				}
+				$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+				break;
+			}
+		}
+	}
 
-    /**
-     * TODO use tool classes
-     * @param PlayerInteractEvent $event
-     * @throws Exception
-     */
-    private function onRightClickBlock(PlayerInteractEvent $event): void
-    {
+	/**
+	 * TODO use tool classes
+	 * @param PlayerInteractEvent $event
+	 * @throws Error
+	 * @throws InvalidStateException
+	 * @throws SessionException
+	 * @throws InvalidArgumentException
+	 * @throws UnexpectedTagTypeException
+	 * @throws AssumptionFailedError
+	 */
+	private function onRightClickBlock(PlayerInteractEvent $event): void
+	{
 		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE))) {
 			$event->setCancelled();
 			$session = SessionHelper::getUserSession($event->getPlayer());
@@ -177,28 +188,33 @@ class EventListener implements Listener
                     break;
                 }
                 case ItemIds::BUCKET:
-                {
-                    #if (){// && has perms
-                    API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE), $session);
-                    #}
-                    break;
-                }
-            }
-        }
-    }
+				{
+					#if (){// && has perms
+					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE), $session);
+					#}
+					break;
+				}
+			}
+		}
+	}
 
-    /**
-     * @param PlayerInteractEvent $event
-     * @throws Exception
-     */
-    private function onLeftClickBlock(PlayerInteractEvent $event): void
-    {
-        if (!is_null($event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE))) {
-            $event->setCancelled();
-            $session = SessionHelper::getUserSession($event->getPlayer());
-            if (!$session instanceof UserSession) return;
-            switch ($event->getItem()->getId()) {
-                case ItemIds::WOODEN_AXE:
+	/**
+	 * @param PlayerInteractEvent $event
+	 * @throws Error
+	 * @throws InvalidStateException
+	 * @throws SessionException
+	 * @throws InvalidArgumentException
+	 * @throws UnexpectedTagTypeException
+	 * @throws AssumptionFailedError
+	 */
+	private function onLeftClickBlock(PlayerInteractEvent $event): void
+	{
+		if (!is_null($event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE))) {
+			$event->setCancelled();
+			$session = SessionHelper::getUserSession($event->getPlayer());
+			if (!$session instanceof UserSession) return;
+			switch ($event->getItem()->getId()) {
+				case ItemIds::WOODEN_AXE:
 				{
 					if (!$session->isWandEnabled()) {
 						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));

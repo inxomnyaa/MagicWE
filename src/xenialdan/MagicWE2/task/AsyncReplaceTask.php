@@ -4,13 +4,13 @@ namespace xenialdan\MagicWE2\task;
 
 use Exception;
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\Block;
-use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
-use pocketmine\world\World;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -115,7 +115,6 @@ class AsyncReplaceTask extends MWEAsyncTask
 					continue;
 				}
 			}
-			/** @var Block $new */
 			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
 			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->x, $block->y, $block->z)*/
@@ -124,24 +123,26 @@ class AsyncReplaceTask extends MWEAsyncTask
             if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
                 $changed++;
             }
-            ///
-            $i++;
-            $progress = floor($i / $blockCount * 100);
-            if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount"]);
-                $lastprogress = $progress;
-            }
-        }
-    }
+			///
+			$i++;
+			$progress = floor($i / $blockCount * 100);
+			if ($lastprogress < $progress) {//this prevents spamming packets
+				$this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount"]);
+				$lastprogress = $progress;
+			}
+		}
+	}
 
-    /**
-     * @param Server $server
-     * @throws Exception
-     */
-    public function onCompletion(Server $server): void
-    {
-        try {
-            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 * @throws Exception
+	 * @throws Exception
+	 */
+	public function onCompletion(): void
+	{
+		try {
+			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);
@@ -158,14 +159,13 @@ class AsyncReplaceTask extends MWEAsyncTask
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
-		/** @var World $level */
-		$level = $selection->getWorld();
+		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {
-			$level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
 		}
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.replace.success', [$this->generateTookString(), $changed, $totalCount]));
-			$session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocks));
+			$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, $oldBlocks));
 		}
-    }
+	}
 }

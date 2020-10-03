@@ -230,9 +230,9 @@ abstract class Session
         }
         /** @var RevertClipboard $revertClipboard */
         $revertClipboard = $this->undoHistory->pop();
-        $level = $revertClipboard->getWorld();
+		$world = $revertClipboard->getWorld();
         foreach ($revertClipboard->chunks as $hash => $chunk) {
-            $revertClipboard->chunks[$hash] = $level->getChunk($chunk->getX(), $chunk->getZ(), false);
+			$revertClipboard->chunks[$hash] = $world->getChunk($chunk->getX(), $chunk->getZ(), false);
         }
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));

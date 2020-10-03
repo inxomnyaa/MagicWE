@@ -51,17 +51,17 @@ class RotateAction extends ClipboardAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []): Generator
-    {
-        //TODO modify position. For now, just flip the blocks around their own axis
-        $changed = 0;
-        #$oldBlocks = [];
-        $count = $selection->getShape()->getTotalCount();
+    public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator
+	{
+		//TODO modify position. For now, just flip the blocks around their own axis
+		$changed = 0;
+		#$oldBlocks = [];
+		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		BlockFactory::getInstance();
-        if (!BlockStatesParser::isInit()) {
-            var_dump("reinit BlockStatesParser AGAIN");
-            BlockStatesParser::init();
+		if (!BlockStatesParser::isInit()) {
+			var_dump("reinit BlockStatesParser AGAIN");
+			BlockStatesParser::init();
         }
         $clonedClipboard = clone $clipboard;
         $clonedClipboard->clear();

@@ -116,10 +116,11 @@ class BrushProperties implements JsonSerializable
     }
 
     /**
-     * @return array
-     * @throws ActionNotFoundException
-     * @throws ShapeNotFoundException
-     */
+	 * @return array
+	 * @throws ActionNotFoundException
+	 * @throws ShapeNotFoundException
+	 * @noinspection NestedTernaryOperatorInspection
+	 */
     public function generateLore(): array
     {
         $shapeProperties = array_map(function ($k, $v): string {

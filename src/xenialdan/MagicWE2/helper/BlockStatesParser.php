@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\helper;
 use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
+use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\item\Item;
@@ -18,6 +19,7 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\R12ToCurrentBlockMapEntry;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
@@ -47,9 +49,9 @@ class BlockStatesParser
 	/**
 	 * @param string|null $rotFlipMapPath
 	 * @param string|null $doorRotFlipMapPath
-	 * @throws InvalidArgumentException
 	 * @throws PluginException
 	 * @throws RuntimeException
+	 * @throws JsonException
 	 */
 	public static function init(?string $rotFlipMapPath = null, ?string $doorRotFlipMapPath = null): void
 	{
@@ -204,32 +206,33 @@ class BlockStatesParser
     public static function getDoorRotationFlipMap(): array
     {
         return self::$doorRotationFlipMap;
-    }
+	}
 
-    /**
-     * @param array $map
-     */
-    public static function setDoorRotationFlipMap(array $map): void
-    {
-        self::$doorRotationFlipMap = $map;
-    }
+	/**
+	 * @param array $map
+	 */
+	public static function setDoorRotationFlipMap(array $map): void
+	{
+		self::$doorRotationFlipMap = $map;
+	}
 
-    /**
-     * Generates an alias map for blockstates
-     * Only call from main thread!
-     * @throws InvalidStateException
-     * @internal
-     */
-    private static function generateBlockStateAliasMapJson(): void
-    {
-        Loader::getInstance()->saveResource("blockstate_alias_map.json");
-        $config = new Config(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
-        $config->setAll([]);
-        $config->save();
-        foreach (self::$legacyStateMap as $legacyMapEntry) {
-            $states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
-            foreach ($states as $state) {
-                if (!$config->exists($state->getName())) {
+	/**
+	 * Generates an alias map for blockstates
+	 * Only call from main thread!
+	 * @throws InvalidStateException
+	 * @throws AssumptionFailedError
+	 * @internal
+	 */
+	private static function generateBlockStateAliasMapJson(): void
+	{
+		Loader::getInstance()->saveResource("blockstate_alias_map.json");
+		$config = new Config(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
+		$config->setAll([]);
+		$config->save();
+		foreach (self::$legacyStateMap as $legacyMapEntry) {
+			$states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
+			foreach ($states as $state) {
+				if (!$config->exists($state->getName())) {
                     $alias = $state->getName();
                     $fullReplace = [
                         "top" => "top",
@@ -545,14 +548,13 @@ class BlockStatesParser
 						var_dump("no _bit");
 					}
 				}
-            }
-        }
-        /** @var array<string, mixed> $all */
-        ksort($all);
-        $config->setAll($all);
-        $config->save();
-        unset($config);
-    }
+			}
+		}
+		ksort($all);
+		$config->setAll($all);
+		$config->save();
+		unset($config);
+	}
 
     public static function runTests(): void
     {
@@ -671,24 +673,22 @@ class BlockStatesParser
     }
 
     public static function placeAllBlockstates(Position $position): void
-    {
-        $pasteY = $position->getFloorY();
-        $pasteX = $position->getFloorX();
-        $pasteZ = $position->getFloorZ();
-        $level = $position->getWorld();
-        /** @var array<int,Block> $sorted */
-        $sorted = [];
-        foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
+	{
+		$pasteY = $position->getFloorY();
+		$pasteX = $position->getFloorX();
+		$pasteZ = $position->getFloorZ();
+		$world = $position->getWorld();
+		$sorted = [];
+		foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
 			$currentoldName = rtrim(preg_replace("/(\d+)/", "", $oldNameAndMeta), ":");
 			$bs = new BlockStatesEntry($currentoldName, $printedCompound);
-            try {
-                /** @var Block $block */
-                #$block = array_values(self::fromString(TF::clean(strval($bs))))[0];
-                $block = $bs->toBlock();
-                $sorted[($block->getId() << 4) | $block->getMeta()] = $bs;
-            } catch (Exception $e) {
-                //skip blocks that pm does not know about
-                #$level->getServer()->broadcastMessage($e->getMessage());
+			try {
+				#$block = array_values(self::fromString(TF::clean(strval($bs))))[0];
+				$block = $bs->toBlock();
+				$sorted[($block->getId() << 4) | $block->getMeta()] = $bs;
+			} catch (Exception $e) {
+				//skip blocks that pm does not know about
+				#$world->getServer()->broadcastMessage($e->getMessage());
             }
         }
         ksort($sorted);
@@ -699,12 +699,11 @@ class BlockStatesParser
             $x = ($i % $limit) * 2;
             $z = ($i - ($i % $limit)) / $limit * 2;
             try {
-                /** @var Block $block */
-                $block = $blockStatesEntry->toBlock();
-                #if($block->getId() !== $id || $block->getMeta() !== $meta) var_dump("error, $id:$meta does not match {$block->getId()}:{$block->getMeta()}");
-                #$level->setBlock(new Vector3($pasteX + $x, $pasteY, $pasteZ + $z), $block);
-				$level->setBlockAt($pasteX + $x, $pasteY, $pasteZ + $z, $block, false);
-            } catch (Exception $e) {
+				$block = $blockStatesEntry->toBlock();
+				#if($block->getId() !== $id || $block->getMeta() !== $meta) var_dump("error, $id:$meta does not match {$block->getId()}:{$block->getMeta()}");
+				#$world->setBlock(new Vector3($pasteX + $x, $pasteY, $pasteZ + $z), $block);
+				$world->setBlockAt($pasteX + $x, $pasteY, $pasteZ + $z, $block, false);
+			} catch (Exception $e) {
                 $i++;
                 continue;
             }

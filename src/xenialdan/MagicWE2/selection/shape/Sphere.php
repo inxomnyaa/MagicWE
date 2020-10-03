@@ -31,13 +31,13 @@ class Sphere extends Shape
     }
 
     /**
-     * Returns the blocks by their actual position
-     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
-     * @param Block[] $filterblocks If not empty, applying a filter on the block list
-     * @param int $flags
-     * @return Generator|Block[]
-     * @throws Exception
-     */
+	 * Returns the blocks by their actual position
+	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param int $flags
+	 * @return Generator|Block[]
+	 * @throws Exception
+	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
@@ -65,13 +65,13 @@ class Sphere extends Shape
         }
     }
 
-    /**
-     * Returns a flat layer of all included x z positions in selection
-     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
-     * @param int $flags
-     * @return Generator|Vector2[]
-     * @throws Exception
-     */
+	/**
+	 * Returns a flat layer of all included x z positions in selection
+	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param int $flags
+	 * @return Generator|Vector2[]
+	 * @throws Exception
+	 */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);

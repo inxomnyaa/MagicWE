@@ -3,9 +3,10 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
@@ -107,25 +108,25 @@ class AsyncCountTask extends MWEAsyncTask
 				$this->publishProgress([$progress, "Running, counting $changed blocks out of $blockCount"]);
 				$lastprogress = $progress;
 			}
-        }
-        return $counts;
-    }
+		}
+		return $counts;
+	}
 
-    /**
-     * @param Server $server
-     * @throws Exception
-     */
-    public function onCompletion(Server $server): void
-    {
-        try {
-            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-            if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-            $result = $this->getResult();
-            $counts = $result["counts"];
-            $totalCount = $result["totalCount"];
-            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.count.success', [$this->generateTookString()]));
-            $session->sendMessage(TF::DARK_AQUA . $session->getLanguage()->translateString('task.count.result', [count($counts), $totalCount]));
-            uasort($counts, function ($a, $b) {
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 */
+	public function onCompletion(): void
+	{
+		try {
+			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
+			$result = $this->getResult();
+			$counts = $result["counts"];
+			$totalCount = $result["totalCount"];
+			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.count.success', [$this->generateTookString()]));
+			$session->sendMessage(TF::DARK_AQUA . $session->getLanguage()->translateString('task.count.result', [count($counts), $totalCount]));
+			uasort($counts, function ($a, $b) {
                 if ($a === $b) return 0;
                 return ($a > $b) ? -1 : 1;
             });

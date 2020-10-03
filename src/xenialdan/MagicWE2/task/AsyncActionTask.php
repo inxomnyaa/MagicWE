@@ -3,14 +3,14 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
+use InvalidArgumentException;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
-use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
-use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -109,21 +109,23 @@ class AsyncActionTask extends MWEAsyncTask
 			$this->publishProgress($progress);
 		}
 
-        $resultChunks = $manager->getChunks();
-        $resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
-            return $chunk->isDirty();
-        });
-        $this->setResult(compact("resultChunks", "oldBlocks", "changed", "messages"));
-    }
+		$resultChunks = $manager->getChunks();
+		$resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
+			return $chunk->isDirty();
+		});
+		$this->setResult(compact("resultChunks", "oldBlocks", "changed", "messages"));
+	}
 
-    /**
-     * @param Server $server
-     * @throws Exception
-     */
-    public function onCompletion(Server $server): void
-    {
-        try {
-            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 * @throws Exception
+	 * @throws Exception
+	 */
+	public function onCompletion(): void
+	{
+		try {
+			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);
@@ -149,18 +151,17 @@ class AsyncActionTask extends MWEAsyncTask
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
-		/** @var World $level */
-		$level = $selection->getWorld();
+		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {
-			$level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
 		}
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
 			foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
 			if ($this->action->addRevert)
-                $session->addRevert(new RevertClipboard($selection->levelid, $undoChunks, $oldBlocksBlocks));
-            if ($this->action->addClipboard)
-                $session->addClipboard($oldBlocks);
+				$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, $oldBlocksBlocks));
+			if ($this->action->addClipboard)
+				$session->addClipboard($oldBlocks);
         }
     }
 }

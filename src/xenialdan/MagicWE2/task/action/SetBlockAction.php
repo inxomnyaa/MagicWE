@@ -45,7 +45,6 @@ class SetBlockAction extends TaskAction
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
-			/** @var Block $new */
 			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
             #$oldBlocks[] = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->setComponents($block->x, $block->y, $block->z);

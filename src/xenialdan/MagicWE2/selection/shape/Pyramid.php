@@ -43,13 +43,13 @@ class Pyramid extends Shape
     }
 
     /**
-     * Returns the blocks by their actual position
-     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
-     * @param Block[] $filterblocks If not empty, applying a filter on the block list
-     * @param int $flags
-     * @return Generator|Block[]
-     * @throws Exception
-     */
+	 * Returns the blocks by their actual position
+	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param int $flags
+	 * @return Generator|Block[]
+	 * @throws Exception
+	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
@@ -89,23 +89,22 @@ class Pyramid extends Shape
         }
     }
 
-    /**
-     * Returns a flat layer of all included x z positions in selection
-     * @param World|AsyncChunkManager $manager The level or AsyncChunkManager
-     * @param int $flags
-     * @return Generator|Vector2[]
-     * @throws Exception
-     */
+	/**
+	 * Returns a flat layer of all included x z positions in selection
+	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param int $flags
+	 * @return Generator|Vector2[]
+	 * @throws Exception
+	 */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
         for ($x = intval(floor($centerVec2->x - $this->width / 2 - 1)); $x <= floor($centerVec2->x + $this->width / 2 + 1); $x++) {
             for ($z = intval(floor($centerVec2->y - $this->depth / 2 - 1)); $z <= floor($centerVec2->y + $this->depth / 2 + 1); $z++) {
-                $vec2 = new Vector2($x, $z);
-                //TODO hollow
-                yield $vec2;
-            }
+				//TODO hollow
+				yield new Vector2($x, $z);
+			}
         }
     }
 

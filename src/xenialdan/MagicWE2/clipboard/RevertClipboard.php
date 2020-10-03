@@ -18,21 +18,21 @@ class RevertClipboard extends Clipboard
 
 	/**
 	 * RevertClipboard constructor.
-	 * @param int $levelId
+	 * @param int $worldId
 	 * @param Chunk[] $chunks
 	 * @param Block[] $blocksAfter
 	 */
-	public function __construct(int $levelId, array $chunks = [], array $blocksAfter = [])
+	public function __construct(int $worldId, array $chunks = [], array $blocksAfter = [])
 	{
-		$this->levelid = $levelId;
-        $this->chunks = $chunks;
-        $this->blocksAfter = $blocksAfter;
-    }
+		$this->worldId = $worldId;
+		$this->chunks = $chunks;
+		$this->blocksAfter = $blocksAfter;
+	}
 
-    /**
-     * String representation of object
-     * @link http://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
+	/**
+	 * String representation of object
+	 * @link http://php.net/manual/en/serializable.serialize.php
+	 * @return string the string representation of the object or null
      * @since 5.1.0
      */
     public function serialize()
@@ -41,10 +41,10 @@ class RevertClipboard extends Clipboard
         foreach ($this->chunks as $chunk)
 			$chunks[World::chunkHash($chunk->getX(), $chunk->getZ())] = FastChunkSerializer::serialize($chunk);
         return serialize([
-            $this->levelid,
-            $chunks,
-            $this->blocksAfter
-        ]);
+			$this->worldId,
+			$chunks,
+			$this->blocksAfter
+		]);
     }
 
     /**
@@ -59,7 +59,7 @@ class RevertClipboard extends Clipboard
     public function unserialize($serialized)
     {
 		[
-			$this->levelid,
+			$this->worldId,
 			$chunks,
 			$this->blocksAfter
 		] = unserialize($serialized, ['allowed_classes' => [__CLASS__]]);//TODO test pm4

@@ -60,7 +60,7 @@ class BrushCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.content'));
             $form->addButton(new Button($lang->translateString('ui.brush.create')));

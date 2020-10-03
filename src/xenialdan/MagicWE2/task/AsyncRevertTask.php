@@ -4,11 +4,11 @@ namespace xenialdan\MagicWE2\task;
 
 use Exception;
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\Block;
-use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use pocketmine\world\World;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -63,49 +63,52 @@ class AsyncRevertTask extends MWEAsyncTask
 		$this->setResult(compact("chunks", "oldBlocks", "totalCount"));
 	}
 
-    /**
-     * @param AsyncChunkManager $manager
-     * @param RevertClipboard $clipboard
-     * @return Generator|Block[]
-     */
-    private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
-    {
-        $count = count($clipboard->blocksAfter);
-        $changed = 0;
-        $this->publishProgress([0, "Reverted $changed blocks out of $count"]);
-        foreach ($clipboard->blocksAfter as $block) {
-            yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())*/
-            ;
-            $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
-            $changed++;
-            $this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
-        }
-    }
+	/**
+	 * @param AsyncChunkManager $manager
+	 * @param RevertClipboard $clipboard
+	 * @return Generator|Block[]
+	 * @throws InvalidArgumentException
+	 */
+	private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
+	{
+		$count = count($clipboard->blocksAfter);
+		$changed = 0;
+		$this->publishProgress([0, "Reverted $changed blocks out of $count"]);
+		foreach ($clipboard->blocksAfter as $block) {
+			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())*/
+			;
+			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$changed++;
+			$this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
+		}
+	}
 
-    /**
-     * @param AsyncChunkManager $manager
-     * @param RevertClipboard $clipboard
-     * @return Generator|Block[]
-     */
-    private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
-    {
-        $count = count($clipboard->blocksAfter);
-        $changed = 0;
-        $this->publishProgress([0, "Redone $changed blocks out of $count"]);
-        foreach ($clipboard->blocksAfter as $block) {
-            yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())*/
-            ;
-            $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
-            $changed++;
-            $this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
-        }
-    }
+	/**
+	 * @param AsyncChunkManager $manager
+	 * @param RevertClipboard $clipboard
+	 * @return Generator|Block[]
+	 * @throws InvalidArgumentException
+	 */
+	private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
+	{
+		$count = count($clipboard->blocksAfter);
+		$changed = 0;
+		$this->publishProgress([0, "Redone $changed blocks out of $count"]);
+		foreach ($clipboard->blocksAfter as $block) {
+			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())*/
+			;
+			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$changed++;
+			$this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
+		}
+	}
 
-    /**
-     * @param Server $server
-     * @throws Exception
-     */
-    public function onCompletion(Server $server): void
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 * @throws Exception
+	 */
+	public function onCompletion(): void
 	{
 		try {
 			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
@@ -121,18 +124,17 @@ class AsyncRevertTask extends MWEAsyncTask
 		$totalCount = $result["totalCount"];
 		$changed = count($result["oldBlocks"]);
 		$clipboard->blocksAfter = $result["oldBlocks"];
-		/** @var World $level */
-		$level = $clipboard->getWorld();
+		$world = $clipboard->getWorld();
 		foreach ($clipboard->chunks as $chunk) {
-			$level->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
 		}
 		if (!is_null($session)) {
-            switch ($this->type) {
-                case self::TYPE_UNDO:
-                {
-                    $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
-                    $session->redoHistory->push($clipboard);
-                    break;
+			switch ($this->type) {
+				case self::TYPE_UNDO:
+				{
+					$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
+					$session->redoHistory->push($clipboard);
+					break;
                 }
                 case self::TYPE_REDO:
                 {

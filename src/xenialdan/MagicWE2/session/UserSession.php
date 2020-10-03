@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use JsonSerializable;
 use pocketmine\item\Item;
 use pocketmine\lang\Language;
+use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -17,6 +18,7 @@ use pocketmine\uuid\UUID;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
+use xenialdan\MagicWE2\exception\BrushException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\tool\Brush;
@@ -54,30 +56,31 @@ class UserSession extends Session implements JsonSerializable
     {
         Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
         $this->bossBar->removeAllPlayers();
-    }
+	}
 
-    /**
-     * @return Language
-     */
-    public function getLanguage(): Language
-    {
-        return $this->lang;
-    }
+	/**
+	 * @return Language
+	 */
+	public function getLanguage(): Language
+	{
+		return $this->lang;
+	}
 
-    /**
-     * Set the language for the user. Uses iso639-2 language code
-     * @param string $langShort iso639-2 conform language code (3 letter)
-     */
-    public function setLanguage(string $langShort): void
-    {
-        $langShort = strtolower($langShort);
-        if (isset(Loader::getInstance()->getLanguageList()[$langShort])) {
-            $this->lang = new Language($langShort, Loader::getInstance()->getLanguageFolder());
-            $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString("session.language.set", [$this->getLanguage()->getName()]));
-        } else {
-            $this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
-            $this->sendMessage(TF::RED . $this->getLanguage()->translateString("session.language.notfound", [$langShort]));
-        }
+	/**
+	 * Set the language for the user. Uses iso639-2 language code
+	 * @param string $langShort iso639-2 conform language code (3 letter)
+	 * @throws LanguageNotFoundException
+	 */
+	public function setLanguage(string $langShort): void
+	{
+		$langShort = strtolower($langShort);
+		if (isset(Loader::getInstance()->getLanguageList()[$langShort])) {
+			$this->lang = new Language($langShort, Loader::getInstance()->getLanguageFolder());
+			$this->sendMessage(TF::GREEN . $this->getLanguage()->translateString("session.language.set", [$this->getLanguage()->getName()]));
+		} else {
+			$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
+			$this->sendMessage(TF::RED . $this->getLanguage()->translateString("session.language.notfound", [$langShort]));
+		}
     }
 
     /**
@@ -151,7 +154,7 @@ class UserSession extends Session implements JsonSerializable
 		if ((($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) instanceof CompoundTag) {
 			$version = $entry->getInt("version", 0);
 			if ($version !== BrushProperties::VERSION) {
-				throw new Exception("Brush can not be restored - version mismatch");
+				throw new BrushException("Brush can not be restored - version mismatch");
 			}
 			/** @var BrushProperties $properties */
 			$properties = json_decode($entry->getString("properties"), true);
@@ -164,7 +167,7 @@ class UserSession extends Session implements JsonSerializable
             $this->addBrush($brush);
             return $brush;
         }
-        throw new Exception("The item is not a valid brush!");
+		throw new BrushException("The item is not a valid brush!");
     }
 
     /**

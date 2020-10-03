@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\tool;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
@@ -26,19 +26,20 @@ use xenialdan\MagicWE2\Loader;
 class WandCommand extends BaseCommand
 {
 
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     */
-    protected function prepare(): void
-    {
-        $this->setPermission("we.command.tool.wand");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->setPermission("we.command.tool.wand");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
-     */
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
@@ -67,10 +68,6 @@ class WandCommand extends BaseCommand
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
 		} catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
-use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -21,20 +20,21 @@ use xenialdan\MagicWE2\Loader;
 
 class HelpCommand extends BaseCommand
 {
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws ArgumentOrderException
-     */
-    protected function prepare(): void
-    {
-        $this->registerArgument(0, new RawStringArgument("command", true));
-        $this->setPermission("we.command.help");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws ArgumentOrderException
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->registerArgument(0, new RawStringArgument("command", true));
+		$this->setPermission("we.command.help");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -69,22 +69,15 @@ class HelpCommand extends BaseCommand
                     foreach ($aliases as $i => $alias) {
                         $aliases[$i] = "/" . $alias;
                     }
-                    $message .= TF::DARK_PURPLE . " [" . implode(",", $aliases) . "]";
-                }
-                $message .= TF::AQUA . " " . $command->getDescription() . TF::EOL . " - " . $command->getUsage();
-                $sender->sendMessage($message);
-            }
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+					$message .= TF::DARK_PURPLE . " [" . implode(",", $aliases) . "]";
+				}
+				$message .= TF::AQUA . " " . $command->getDescription() . TF::EOL . " - " . $command->getUsage();
+				$sender->sendMessage($message);
+			}
+		} catch (Exception $error) {
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsage());
+		}
+	}
 }

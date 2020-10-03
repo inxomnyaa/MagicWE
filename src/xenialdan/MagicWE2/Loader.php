@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2;
 
 use InvalidArgumentException;
+use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\Language;
+use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
@@ -65,7 +68,7 @@ class Loader extends PluginBase
 {
 	const FAKE_ENCH_ID = 201;
 	const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
-	/** @var Loader */
+	/** @var Loader|null */
 	private static ?Loader $instance = null;
 	/** @var null|ShapeRegistry */
 	public static ?ShapeRegistry $shapeRegistry = null;
@@ -98,31 +101,33 @@ class Loader extends PluginBase
         throw new ShapeRegistryException("Shape registry is not initialized");
     }
 
-    public static function getRotFlipPath(): string
-    {
-        return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-    }
+	public static function getRotFlipPath(): string
+	{
+		return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+	}
 
-    public static function getDoorRotFlipPath(): string
-    {
-        return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
-    }
+	public static function getDoorRotFlipPath(): string
+	{
+		return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+	}
 
-    /**
-     * @throws PluginException
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
-     */
-    public function onLoad(): void
-    {
-        self::$instance = $this;
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws PluginException
+	 * @throws RuntimeException
+	 * @throws JsonException
+	 * @throws AssumptionFailedError
+	 */
+	public function onLoad(): void
+	{
+		self::$instance = $this;
 		$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
 		Enchantment::register($ench);
 		self::$shapeRegistry = new ShapeRegistry();
-        self::$actionRegistry = new ActionRegistry();
-        SessionHelper::init();
-        #$this->saveResource("rotation_flip_data.json", true);
-        $this->saveResource("blockstate_alias_map.json", true);
+		self::$actionRegistry = new ActionRegistry();
+		SessionHelper::init();
+		#$this->saveResource("rotation_flip_data.json", true);
+		$this->saveResource("blockstate_alias_map.json", true);
 
         BlockStatesParser::init(self::getRotFlipPath(),self::getDoorRotFlipPath());
         $fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
@@ -138,29 +143,31 @@ class Loader extends PluginBase
     }
 
     /**
-     * ActionRegistry
-     * @return ActionRegistry
-     * @throws ActionRegistryException
-     */
-    public static function getActionRegistry(): ActionRegistry
-    {
-        if (self::$actionRegistry) return self::$actionRegistry;
-        throw new ActionRegistryException("Action registry is not initialized");
-    }
+	 * ActionRegistry
+	 * @return ActionRegistry
+	 * @throws ActionRegistryException
+	 */
+	public static function getActionRegistry(): ActionRegistry
+	{
+		if (self::$actionRegistry) return self::$actionRegistry;
+		throw new ActionRegistryException("Action registry is not initialized");
+	}
 
-    /**
-     * @throws PluginException
-     */
-    public function onEnable(): void
-    {
-        $lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
-        $this->baseLang = new Language((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
-        if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
-        //$this->loadDonator();
-        $this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
-        if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
-        $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
-        $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws PluginException
+	 * @throws LanguageNotFoundException
+	 */
+	public function onEnable(): void
+	{
+		$lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
+		$this->baseLang = new Language((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
+		if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
+		//$this->loadDonator();
+		$this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
+		if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+		$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
             /* -- selection -- */
             new Pos1Command("/pos1", "Set position 1", ["/1"]),
             new Pos2Command("/pos2", "Set position 2", ["/2"]),
@@ -348,22 +355,23 @@ class Loader extends PluginBase
             $this->getLogger()->info($axeMsg);
     }
 
-    /**
-     * Returns the path to the language files folder.
-     *
-     * @return string
-     */
-    public function getLanguageFolder(): string
-    {
-        return $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR;
-    }
+	/**
+	 * Returns the path to the language files folder.
+	 *
+	 * @return string
+	 */
+	public function getLanguageFolder(): string
+	{
+		return $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR;
+	}
 
-    /**
-     * Get a list of available languages
-     * @return array
-     */
-    public function getLanguageList(): array
-    {
-        return Language::getLanguageList($this->getLanguageFolder());
-    }
+	/**
+	 * Get a list of available languages
+	 * @return array
+	 * @throws LanguageNotFoundException
+	 */
+	public function getLanguageList(): array
+	{
+		return Language::getLanguageList($this->getLanguageFolder());
+	}
 }

@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\selection;
 
 use Exception;
+use InvalidArgumentException;
 use JsonSerializable;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use Serializable;
+use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
@@ -26,7 +29,7 @@ use xenialdan\MagicWE2\session\Session;
 class Selection implements Serializable, JsonSerializable
 {
 	/** @var int|null */
-	public ?int $levelid;
+	public ?int $worldId;
 	/** @var Vector3|null */
 	public ?Vector3 $pos1;
 	/** @var Vector3|null */
@@ -41,25 +44,27 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * Selection constructor.
 	 * @param UUID $sessionUUID
-	 * @param World $level
+	 * @param World $world
 	 * @param ?int $minX
 	 * @param ?int $minY
 	 * @param ?int $minZ
 	 * @param ?int $maxX
 	 * @param ?int $maxY
-     * @param ?int $maxZ
-     */
-    public function __construct(UUID $sessionUUID, World $level, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
-    {
-        $this->sessionUUID = $sessionUUID;
-        $this->setLevel($level);
-        if (isset($minX) && isset($minY) && isset($minZ)) {
-            $this->setPos1(new Position($minX, $minY, $minZ, $level));
-        }
-        if (isset($maxX) && isset($maxY) && isset($maxZ)) {
-            $this->setPos2(new Position($maxX, $maxY, $maxZ, $level));
-        }
-        $this->setUUID(UUID::fromRandom());
+	 * @param ?int $maxZ
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 */
+	public function __construct(UUID $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
+	{
+		$this->sessionUUID = $sessionUUID;
+		$this->setWorld($world);
+		if (isset($minX) && isset($minY) && isset($minZ)) {
+			$this->setPos1(new Position($minX, $minY, $minZ, $world));
+		}
+		if (isset($maxX) && isset($maxY) && isset($maxZ)) {
+			$this->setPos2(new Position($maxX, $maxY, $maxZ, $world));
+		}
+		$this->setUUID(UUID::fromRandom());
     }
 
     /**
@@ -67,50 +72,51 @@ class Selection implements Serializable, JsonSerializable
      * @throws Exception
      */
     public function getWorld(): World
-    {
-        if (is_null($this->levelid)) {
-            throw new Exception("Level is not set!");
-        }
-		$level = Server::getInstance()->getWorldManager()->getWorld($this->levelid);
-        if (is_null($level)) {
-            throw new Exception("Level is not found!");
-        }
-        return $level;
-    }
+	{
+		if (is_null($this->worldId)) {
+			throw new SelectionException("World is not set!");
+		}
+		$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
+		if (is_null($world)) {
+			throw new SelectionException("World is not found!");
+		}
+		return $world;
+	}
 
-    /**
-     * @param World $level
-     */
-    public function setLevel(World $level): void
-    {
-        $this->levelid = $level->getId();
-    }
+	/**
+	 * @param World $world
+	 */
+	public function setWorld(World $world): void
+	{
+		$this->worldId = $world->getId();
+	}
 
     /**
      * @return Position
-     * @throws Exception
-     */
-    public function getPos1(): Position
-    {
-        if (is_null($this->pos1)) {
-            throw new Exception("Position 1 is not set!");
-        }
-        return Position::fromObject($this->pos1, $this->getWorld());
-    }
+	 * @throws Exception
+	 */
+	public function getPos1(): Position
+	{
+		if (is_null($this->pos1)) {
+			throw new SelectionException("Position 1 is not set!");
+		}
+		return Position::fromObject($this->pos1, $this->getWorld());
+	}
 
-    /**
-     * @param Position $position
-     */
-    public function setPos1(Position $position): void
-    {
-        $this->pos1 = $position->asVector3()->floor();
-        if ($this->pos1->y >= World::Y_MAX) $this->pos1->y = World::Y_MAX;
-        if ($this->pos1->y < 0) $this->pos1->y = 0;
-        if ($this->levelid !== $position->getWorld()->getId()) {//reset other position if in different level
-            $this->pos2 = null;
-        }
-        $this->setLevel($position->getWorld());
-        if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())//TODO test change
+	/**
+	 * @param Position $position
+	 * @throws AssumptionFailedError
+	 */
+	public function setPos1(Position $position): void
+	{
+		$this->pos1 = $position->asVector3()->floor();
+		if ($this->pos1->y >= World::Y_MAX) $this->pos1->y = World::Y_MAX;
+		if ($this->pos1->y < 0) $this->pos1->y = 0;
+		if ($this->worldId !== $position->getWorld()->getId()) {//reset other position if in different world
+			$this->pos2 = null;
+		}
+		$this->setWorld($position->getWorld());
+		if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())//TODO test change
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
             $session = SessionHelper::getSessionByUUID($this->sessionUUID);
@@ -122,29 +128,30 @@ class Selection implements Serializable, JsonSerializable
 
     /**
      * @return Position
-     * @throws Exception
-     */
-    public function getPos2(): Position
-    {
-        if (is_null($this->pos2)) {
-            throw new Exception("Position 2 is not set!");
-        }
-        return Position::fromObject($this->pos2, $this->getWorld());
-    }
+	 * @throws Exception
+	 */
+	public function getPos2(): Position
+	{
+		if (is_null($this->pos2)) {
+			throw new SelectionException("Position 2 is not set!");
+		}
+		return Position::fromObject($this->pos2, $this->getWorld());
+	}
 
-    /**
-     * @param Position $position
-     */
-    public function setPos2(Position $position): void
-    {
-        $this->pos2 = $position->asVector3()->floor();
-        if ($this->pos2->y >= World::Y_MAX) $this->pos2->y = World::Y_MAX;
-        if ($this->pos2->y < 0) $this->pos2->y = 0;
-        if ($this->levelid !== $position->getWorld()->getId()) {
-            $this->pos1 = null;
-        }
-        $this->setLevel($position->getWorld());
-        if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())
+	/**
+	 * @param Position $position
+	 * @throws AssumptionFailedError
+	 */
+	public function setPos2(Position $position): void
+	{
+		$this->pos2 = $position->asVector3()->floor();
+		if ($this->pos2->y >= World::Y_MAX) $this->pos2->y = World::Y_MAX;
+		if ($this->pos2->y < 0) $this->pos2->y = 0;
+		if ($this->worldId !== $position->getWorld()->getId()) {
+			$this->pos1 = null;
+		}
+		$this->setWorld($position->getWorld());
+		if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())
             $this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
         try {
             $session = SessionHelper::getSessionByUUID($this->sessionUUID);
@@ -160,7 +167,7 @@ class Selection implements Serializable, JsonSerializable
      */
     public function getShape(): Shape
     {
-        if (!$this->shape instanceof Shape) throw new Exception("Shape is not valid");
+		if (!$this->shape instanceof Shape) throw new SelectionException("Shape is not valid");
         return $this->shape;
     }
 
@@ -172,14 +179,14 @@ class Selection implements Serializable, JsonSerializable
         $this->shape = $shape;
     }
 
-    /**
-     * Checks if a Selection is valid. It is not valid if:
-     * - The level is not set
-     * - Any of the positions are not set
-     * - The shape is not set / not a shape
-     * - The positions are not in the same level
-     * @return bool
-     */
+	/**
+	 * Checks if a Selection is valid. It is not valid if:
+	 * - The world is not set
+	 * - Any of the positions are not set
+	 * - The shape is not set / not a shape
+	 * - The positions are not in the same world
+	 * @return bool
+	 */
     public function isValid(): bool
     {
         try {
@@ -242,13 +249,13 @@ class Selection implements Serializable, JsonSerializable
     public function serialize()
     {
         return serialize([
-            $this->levelid,
-            $this->pos1,
-            $this->pos2,
-            $this->uuid,
-            $this->sessionUUID,
-            $this->shape
-        ]);
+			$this->worldId,
+			$this->pos1,
+			$this->pos2,
+			$this->uuid,
+			$this->sessionUUID,
+			$this->shape
+		]);
     }
 
     /**
@@ -264,7 +271,7 @@ class Selection implements Serializable, JsonSerializable
     {
 		/** @var Vector3 $pos1 , $pos2 */
 		[
-			$this->levelid,
+			$this->worldId,
 			$this->pos1,
 			$this->pos2,
 			$this->uuid,

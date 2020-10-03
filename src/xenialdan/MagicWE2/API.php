@@ -6,16 +6,16 @@ namespace xenialdan\MagicWE2;
 
 use Exception;
 use InvalidArgumentException;
+use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\TreeRoot;
 use pocketmine\player\Player;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\ChunkManager;
 use pocketmine\world\format\io\FastChunkSerializer;
@@ -164,29 +164,30 @@ class API
                 $offset = $selection->getShape()->getMinVec3()->subtractVector($player->getPosition()->asVector3()->floor())->floor();//TODO figure out wrong offset
                 $session->getBossBar()->showTo([$player]);
             }
-            #var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getWorld()), $flags));
-        } catch (Exception $e) {
-            $session->sendMessage($e->getMessage());
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
-        }
-        return true;
-    }
+			#var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getWorld()), $flags));
+		} catch (Exception $e) {
+			$session->sendMessage($e->getMessage());
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
+	}
 
-    /**
-     * TODO: flag parsing, Position to paste at
-     * @param SingleClipboard $clipboard TODO should this be Clipboard?
-     * @param Session $session
-     * @param Position $target CURRENTLY SENDER POSITION
-     * @param int $flags
-     * @return bool
-     */
-    public static function pasteAsync(SingleClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE)
-    {
-        #return false;
-        try {
-            $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+	/**
+	 * TODO: flag parsing, Position to paste at
+	 * @param SingleClipboard $clipboard TODO should this be Clipboard?
+	 * @param Session $session
+	 * @param Position $target CURRENTLY SENDER POSITION
+	 * @param int $flags
+	 * @return bool
+	 * @throws AssumptionFailedError
+	 */
+	public static function pasteAsync(SingleClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE)
+	{
+		#return false;
+		try {
+			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
 			if ($clipboard->getTotalCount() > $limit && $limit !== -1) {
 				throw new LimitExceededException($session->getLanguage()->translateString('error.limitexceeded'));
 			}
@@ -279,33 +280,38 @@ class API
                 $player = $session->getPlayer();
                 /** @var Player $player */
                 $session->getBossBar()->showTo([$player]);
-            }
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getWorld())));
-        } catch (Exception $e) {
-            $session->sendMessage($e->getMessage());
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
-        }
-        return true;
-    }
+			}
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getWorld())));
+		} catch (Exception $e) {
+			$session->sendMessage($e->getMessage());
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
+	}
 
-    /**
-     * Creates a brush at a specific location with the passed settings
-     * @param Block $target
-     * @param Brush $brush
-     * @param Session $session
-     * @throws Exception
-     */
-    public static function createBrush(Block $target, Brush $brush, Session $session): void
-    {
-        $shapeClass = $brush->properties->shape;
-        /** @var Shape $shape */
-        $shape = new $shapeClass($target->getPos()->asVector3(), ...array_values($brush->properties->shapeProperties));
-        $selection = new Selection($session->getUUID(), $target->getPos()->getWorld());
-        $selection->setShape($shape);
-        $actionClass = $brush->properties->action;
-        //TODO remove hack
-        if ($actionClass === SetBiomeAction::class) $brush->properties->actionProperties["biomeId"] = $brush->properties->biomeId;
+	/**
+	 * Creates a brush at a specific location with the passed settings
+	 * @param Block $target
+	 * @param Brush $brush
+	 * @param Session $session
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 * @throws AssumptionFailedError
+	 * @throws Exception
+	 * @throws Exception
+	 * @throws Exception
+	 */
+	public static function createBrush(Block $target, Brush $brush, Session $session): void
+	{
+		$shapeClass = $brush->properties->shape;
+		/** @var Shape $shape */
+		$shape = new $shapeClass($target->getPos()->asVector3(), ...array_values($brush->properties->shapeProperties));
+		$selection = new Selection($session->getUUID(), $target->getPos()->getWorld());
+		$selection->setShape($shape);
+		$actionClass = $brush->properties->action;
+		//TODO remove hack
+		if ($actionClass === SetBiomeAction::class) $brush->properties->actionProperties["biomeId"] = $brush->properties->biomeId;
         /** @var TaskAction $action */
         $action = new $actionClass(...array_values($brush->properties->actionProperties));
         $action->prefix = "Brush";
@@ -397,36 +403,37 @@ class API
     }
 
     /**
-     * Checks if $flags has the specified flag $check
-     * @param int $flags The return value of flagParser
-     * @param int $check The flag to check
-     * @return bool
-     */
-    public static function hasFlag(int $flags, int $check)
-    {
-        return ($flags & (self::FLAG_BASE << $check)) > 0;
-    }
+	 * Checks if $flags has the specified flag $check
+	 * @param int $flags The return value of flagParser
+	 * @param int $check The flag to check
+	 * @return bool
+	 */
+	public static function hasFlag(int $flags, int $check)
+	{
+		return ($flags & (self::FLAG_BASE << $check)) > 0;
+	}
 
-    /**
-     * More fail proof method of parsing a string to a Block
-     * @param string $fullstring
-     * @param array $messages
-     * @param bool $error
-     * @return Block[]
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
-     * @throws InvalidBlockStateException
-     */
-    public static function blockParser(string $fullstring, array &$messages, bool &$error)
-    {
-        BlockFactory::getInstance();
-        BlockStatesParser::init(Loader::getRotFlipPath(), Loader::getDoorRotFlipPath());
-        $blocks = BlockStatesParser::fromString($fullstring, true);
-        foreach ($blocks as $block) {
-            if ($block instanceof UnknownBlock) {
-                $messages[] = TF::GOLD . $block . " is an unknown block";
-            }
-        }
+	/**
+	 * More fail proof method of parsing a string to a Block
+	 * @param string $fullstring
+	 * @param array $messages
+	 * @param bool $error
+	 * @return Block[]
+	 * @throws RuntimeException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws JsonException
+	 */
+	public static function blockParser(string $fullstring, array &$messages, bool &$error)
+	{
+		BlockFactory::getInstance();
+		BlockStatesParser::init(Loader::getRotFlipPath(), Loader::getDoorRotFlipPath());
+		$blocks = BlockStatesParser::fromString($fullstring, true);
+		foreach ($blocks as $block) {
+			if ($block instanceof UnknownBlock) {
+				$messages[] = TF::GOLD . $block . " is an unknown block";
+			}
+		}
 
         return $blocks;
     }
@@ -454,12 +461,9 @@ class API
             while (!$error && !empty($operators)) {
                 $operator = array_pop($operators);
                 while ($operator && strpos($str, $operator) !== false) {
-                    if ($error) {
-                        break;
-                    }
-                    $regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
-                    preg_match($regex, $str, $matches);
-                    if (isset($matches[1]) && isset($matches[2])) {
+					$regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
+					preg_match($regex, $str, $matches);
+					if (isset($matches[1]) && isset($matches[2])) {
 						if ($operator === '+') $result = (float)$matches[1] + (float)$matches[2];
 						if ($operator === '-') $result = (float)$matches[1] - (float)$matches[2];
 						if ($operator === '*') $result = (float)$matches[1] * (float)$matches[2];
@@ -483,18 +487,17 @@ class API
 			$add_sub = true;
 			preg_match_all('/([\d.]+|[+\-])/', $str, $matches);
             if (isset($matches[0])) {
-                $result = 0;
-                $operator = '+';
-                $tokens = $matches[0];
-                $count = count($tokens);
-                for ($i = 0; $i < $count; $i++) {
-					if ($tokens[$i] === '+' || $tokens[$i] === '-') {
-						$operator = $tokens[$i];
+				$result = 0;
+				$operator = '+';
+				$tokens = $matches[0];
+				foreach ($tokens as $iValue) {
+					if ($iValue === '+' || $iValue === '-') {
+						$operator = $iValue;
 					} else {
-						$result = ($operator === '+') ? ($result + (float)$tokens[$i]) : ($result - (float)$tokens[$i]);
+						$result = ($operator === '+') ? ($result + (float)$iValue) : ($result - (float)$iValue);
 					}
-                }
-            }
+				}
+			}
         }
 
         if (!$error && !$div_mul && !$add_sub) {
@@ -512,15 +515,15 @@ class API
      * @return array
      */
     public static function compoundToArray(CompoundTag $compoundTag)
-    {
-        $a = [];
-        foreach ($compoundTag->getValue() as $key => $value) {
-            $a[$key] = $value;
-        }
-        return $a;
-        $nbt = new LittleEndianNbtSerializer();
-        $treeRoot = new TreeRoot($compoundTag);
-        $buffer = $nbt->write($treeRoot);
-        return $treeRoot->getTag()->getValue();//TODO TEST PM4
-    }
+	{
+		$a = [];
+		foreach ($compoundTag->getValue() as $key => $value) {
+			$a[$key] = $value;
+		}
+		return $a;
+		#$nbt = new LittleEndianNbtSerializer();
+		#$treeRoot = new TreeRoot($compoundTag);
+		#$buffer = $nbt->write($treeRoot);
+		#return $treeRoot->getTag()->getValue();//TODO TEST PM4
+	}
 }
