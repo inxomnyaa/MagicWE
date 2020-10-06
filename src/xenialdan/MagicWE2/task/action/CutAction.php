@@ -16,11 +16,11 @@ use xenialdan\MagicWE2\selection\Selection;
 class CutAction extends TaskAction
 {
 	/** @var string */
-	public string $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} cut.';
+	public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} cut.';
 	/** @var bool */
-	public bool $addRevert = true;
+	public $addRevert = true;
 	/** @var bool */
-	public bool $addClipboard = true;
+	public $addClipboard = true;
 
 	public function __construct()
 	{

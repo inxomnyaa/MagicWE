@@ -29,17 +29,17 @@ use xenialdan\MagicWE2\session\Session;
 class Selection implements Serializable, JsonSerializable
 {
 	/** @var int|null */
-	public ?int $worldId;
+	public $worldId;
 	/** @var Vector3|null */
-	public ?Vector3 $pos1;
+	public $pos1;
 	/** @var Vector3|null */
-	public ?Vector3 $pos2;
+	public $pos2;
 	/** @var UUID */
-	public UUID $uuid;
+	public $uuid;
 	/** @var UUID */
-	public UUID $sessionUUID;
+	public $sessionUUID;
 	/** @var Shape|null */
-	public ?Shape $shape;
+	public $shape;
 
 	/**
 	 * Selection constructor.

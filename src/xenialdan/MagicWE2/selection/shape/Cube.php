@@ -17,7 +17,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 class Cube extends Shape
 {
 	/** @var int */
-	public int $width = 5;
+	public $width = 5;
 
 	public function __construct(Vector3 $pasteVector, int $width)
 	{

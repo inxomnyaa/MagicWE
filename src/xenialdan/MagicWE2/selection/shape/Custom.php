@@ -16,7 +16,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 class Custom extends Shape
 {
 	/** @var Vector3[] */
-	public array $positions = [];
+	public $positions = [];
 
 	/**
 	 * Custom constructor.

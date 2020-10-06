@@ -18,13 +18,13 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 class Flood extends WETool
 {
 	/** @var int */
-	private int $limit;
+	private $limit;
 	/** @var Block[] */
-	private array $walked = [];
+	private $walked = [];
 	/** @var Block[] */
-	private array $nextToCheck = [];
+	private $nextToCheck = [];
 	/** @var int */
-	private int $y;
+	private $y;
 
 	/**
 	 * Square constructor.

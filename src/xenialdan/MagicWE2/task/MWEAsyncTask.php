@@ -12,9 +12,9 @@ use xenialdan\MagicWE2\session\UserSession;
 abstract class MWEAsyncTask extends AsyncTask
 {
 	/** @var string */
-	public string $sessionUUID;
+	public $sessionUUID;
 	/** @var float */
-	public float $start;
+	public $start;
 
 	public function onProgressUpdate($progress): void
 	{

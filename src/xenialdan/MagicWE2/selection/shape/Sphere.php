@@ -17,7 +17,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 class Sphere extends Shape
 {
 	/** @var int */
-	public int $diameter = 5;
+	public $diameter = 5;
 
 	/**
 	 * Sphere constructor.

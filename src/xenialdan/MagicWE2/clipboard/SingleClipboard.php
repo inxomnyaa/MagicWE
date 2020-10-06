@@ -13,11 +13,11 @@ use xenialdan\MagicWE2\selection\Selection;
 class SingleClipboard extends Clipboard
 {
 	/** @var BlockEntry[] */
-	private array $entries = [];
+	private $entries = [];
 	/** @var Selection */
-	public Selection $selection;
+	public $selection;
 	/** @var Vector3 */
-	public Vector3 $position;
+	public $position;
 
 	/**
 	 * SingleClipboard constructor.

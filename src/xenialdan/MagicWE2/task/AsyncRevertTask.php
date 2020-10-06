@@ -25,7 +25,7 @@ class AsyncRevertTask extends MWEAsyncTask
 	/** @var string */
 	private $clipboard;
 	/** @var int */
-	private int $type;
+	private $type;
 
 	/**
 	 * AsyncRevertTask constructor.

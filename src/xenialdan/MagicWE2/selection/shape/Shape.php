@@ -19,7 +19,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 abstract class Shape implements Serializable
 {
 	/** @var null|Vector3 */
-	public ?Vector3 $pasteVector = null;
+	public $pasteVector = null;
 
 	public function getPasteVector(): ?Vector3
 	{

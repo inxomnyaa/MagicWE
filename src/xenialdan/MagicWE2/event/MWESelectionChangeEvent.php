@@ -11,11 +11,11 @@ use xenialdan\MagicWE2\session\UserSession;
 class MWESelectionChangeEvent extends MWEEvent
 {
 	/** @var Selection */
-	private Selection $oldSelection;
+	private $oldSelection;
 	/** @var Selection */
-	private Selection $newSelection;
+	private $newSelection;
 	/** @var Session|null */
-	private ?Session $session;
+	private $session;
 
 	public function __construct(Plugin $plugin, Selection $oldSelection, Selection $newSelection, ?Session $session)
 	{

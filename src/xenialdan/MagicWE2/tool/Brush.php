@@ -42,7 +42,7 @@ class Brush extends WETool
 	public const TAG_BRUSH_PROPERTIES = "properties";
 
 	/** @var BrushProperties */
-	public BrushProperties $properties;
+	public $properties;
 
 	/**
 	 * Brush constructor.
@@ -172,7 +172,7 @@ class Brush extends WETool
 					$m = [];
 					$e = false;
 					API::blockParser($blocks, $m, $e);
-					if ($e) throw new \InvalidArgumentException(implode(TF::EOL, $m));
+					if ($e) throw new InvalidArgumentException(implode(TF::EOL, $m));
 					if (empty($blocks)) throw new AssumptionFailedError("Blocks cannot be empty!");
 				} catch (Exception $ex) {
                     $error['blocks'] = $ex->getMessage();

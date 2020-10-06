@@ -21,11 +21,11 @@ class FlipAction extends ClipboardAction
 	const AXIS_Z = "z";
 	const AXIS_XZ = "xz";
 	/** @var bool */
-	public bool $addClipboard = true;
+	public $addClipboard = true;
 	/** @var string */
-	public string $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
+	public $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
 	/** @var string */
-	private string $axis;
+	private $axis;
 
 	public function __construct(string $axis)
 	{

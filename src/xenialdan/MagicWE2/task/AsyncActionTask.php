@@ -38,11 +38,11 @@ class AsyncActionTask extends MWEAsyncTask
 	/** @var string */
 	private $selection;
 	/** @var string */
-	private string $blockFilter;
+	private $blockFilter;
 	/** @var string */
-	private string $newBlocks;
+	private $newBlocks;
 	/** @var TaskAction */
-	private TaskAction $action;
+	private $action;
 
 	/**
 	 * AsyncActionTask constructor.

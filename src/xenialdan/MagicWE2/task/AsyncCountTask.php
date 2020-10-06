@@ -25,7 +25,7 @@ class AsyncCountTask extends MWEAsyncTask
 	/** @var string */
 	private $selection;
 	/** @var int */
-	private int $flags;
+	private $flags;
 	/** @var string */
 	private $newBlocks;
 

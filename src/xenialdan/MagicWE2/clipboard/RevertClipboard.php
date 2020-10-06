@@ -12,9 +12,9 @@ use pocketmine\world\World;
 class RevertClipboard extends Clipboard
 {
 	/** @var Chunk[] */
-	public array $chunks = [];
+	public $chunks = [];
 	/** @var Block[] */
-	public array $blocksAfter;
+	public $blocksAfter;
 
 	/**
 	 * RevertClipboard constructor.

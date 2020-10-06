@@ -32,7 +32,7 @@ use xenialdan\MagicWE2\tool\Brush;
 class EventListener implements Listener
 {
 	/** @var Plugin */
-	public Plugin $owner;
+	public $owner;
 
 	public function __construct(Plugin $plugin)
 	{

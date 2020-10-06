@@ -27,7 +27,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 	/** @var string */
 	private $selection;
 	/** @var int */
-	private int $flags;
+	private $flags;
 	/** @var string */
 	private $replaceBlocks;
 	/** @var string */

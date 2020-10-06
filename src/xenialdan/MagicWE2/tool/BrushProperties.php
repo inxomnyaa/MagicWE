@@ -22,27 +22,27 @@ class BrushProperties implements JsonSerializable
 
 	public const VERSION = 1;
 	/** @var int */
-	public int $version = self::VERSION;
+	public $version = self::VERSION;
 	/** @var string */
-	public string $customName = "";
+	public $customName = "";
 	/** @var string */
-	public string $shape = Sphere::class;
+	public $shape = Sphere::class;
 	/** @var array */
-	public array $shapeProperties = [];
+	public $shapeProperties = [];
 	/** @var string */
-	public string $action = SetBlockAction::class;
+	public $action = SetBlockAction::class;
 	/** @var array */
-	public array $actionProperties = [];
+	public $actionProperties = [];
 	/** @var bool */
-	public bool $hollow = false;//TODO consider moving into shape properties
+	public $hollow = false;//TODO consider moving into shape properties
 	/** @var string */
-	public string $blocks = "stone";
+	public $blocks = "stone";
 	/** @var string */
-	public string $filter = "";
+	public $filter = "";
 	/** @var int */
-	public int $biomeId = Biome::PLAINS;
+	public $biomeId = Biome::PLAINS;
 	/** @var string */
-	public string $uuid;
+	public $uuid;
 
 	/**
 	 * Specify data which should be serialized to JSON

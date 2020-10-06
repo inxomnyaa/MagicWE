@@ -27,9 +27,9 @@ abstract class Clipboard implements Serializable
 	const FLIP_SOUTH = 0x03;
 
 	/** @var int|null */
-	public ?int $worldId;
+	public $worldId;
 	/** @var string */
-	public string $customName = "";
+	public $customName = "";
 
 	/**
 	 * Creates a chunk manager used for async editing

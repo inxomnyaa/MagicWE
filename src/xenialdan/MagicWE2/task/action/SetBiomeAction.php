@@ -15,9 +15,9 @@ use xenialdan\MagicWE2\selection\Selection;
 class SetBiomeAction extends TaskAction
 {
 	/** @var bool */
-	public bool $addRevert = false;
+	public $addRevert = false;
 	/** @var int */
-	private int $biomeId;
+	private $biomeId;
 
 	public function __construct(int $biomeId)
 	{

@@ -75,7 +75,7 @@ class API
 
 	//TODO Split into seperate Class (SchematicStorage?)
 	/** @var Clipboard[] */
-	private static array $schematics = [];//TODO
+	private static $schematics = [];//TODO
 
 	/**
 	 * @param Selection $selection

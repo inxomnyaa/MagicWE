@@ -24,13 +24,13 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	/** @var string */
 	private $selection;
 	/** @var ClipboardAction */
-	private ClipboardAction $action;
+	private $action;
 	/** @var string */
 	private $clipboard;
 	/** @var string */
-	private string $rotFlipMapPath;
+	private $rotFlipMapPath;
 	/** @var string */
-	private string $doorRotFlipMapPath;
+	private $doorRotFlipMapPath;
 
 	/**
 	 * AsyncClipboardActionTask constructor.

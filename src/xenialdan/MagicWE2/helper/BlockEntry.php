@@ -19,9 +19,9 @@ use xenialdan\MagicWE2\Loader;
 class BlockEntry
 {
 	/** @var int BlockRuntimeId TODO check if RuntimeBlockMapping is okay for that */
-	public int $runtimeId;
+	public $runtimeId;
 	/** @var CompoundTag|null */
-	public ?CompoundTag $nbt;
+	public $nbt;
 
 	/**
 	 * BlockEntry constructor.

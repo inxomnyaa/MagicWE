@@ -31,11 +31,11 @@ class AsyncPasteTask extends MWEAsyncTask
 	/** @var string */
 	private $selection;
 	/** @var int */
-	private int $flags;
+	private $flags;
 	/** @var string */
 	private $clipboard;
 	/** @var Vector3 */
-	private Vector3 $offset;
+	private $offset;
 
 	/**
 	 * AsyncPasteTask constructor.

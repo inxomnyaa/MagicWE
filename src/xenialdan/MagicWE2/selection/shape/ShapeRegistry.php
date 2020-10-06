@@ -9,7 +9,7 @@ use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 class ShapeRegistry
 {
 	/** @var string[] */
-	private static array $shapes = [];
+	private static $shapes = [];
 
 	public const CUBOID = "Cuboid";
 	public const CUBE = "Cube";

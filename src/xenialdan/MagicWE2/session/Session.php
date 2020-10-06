@@ -23,21 +23,21 @@ abstract class Session
 	const MAX_CLIPBOARDS = 5;
 	const MAX_HISTORY = 32;
 	/** @var UUID */
-	private UUID $uuid;
+	private $uuid;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Selection[] */
-	private array $selections = [];
+	private $selections = [];
 	/** @var UUID|null */
-	private ?UUID $latestselection = null;
+	private $latestselection = null;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Clipboard[] */
-	private array $clipboards = [];
+	private $clipboards = [];
 	/** @var int */
-	private int $currentClipboard = -1;
+	private $currentClipboard = -1;
 	/** @var Deque<RevertClipboard> */
-	public Deque $undoHistory;
+	public $undoHistory;
 	/** @var Deque<RevertClipboard> */
-	public Deque $redoHistory;
+	public $redoHistory;
 
 	/**
 	 * @return UUID

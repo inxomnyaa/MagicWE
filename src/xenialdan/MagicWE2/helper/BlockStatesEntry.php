@@ -23,13 +23,13 @@ use xenialdan\MagicWE2\task\action\FlipAction;
 class BlockStatesEntry
 {
 	/** @var string */
-	public string $blockIdentifier;
+	public $blockIdentifier;
 	/** @var CompoundTag */
-	public CompoundTag $blockStates;
+	public $blockStates;
 	/** @var string */
-	public string $blockFull;
+	public $blockFull;
 	/** @var Block|null */
-	public ?Block $block;
+	public $block;
 
 	/**
 	 * BlockStatesEntry constructor.

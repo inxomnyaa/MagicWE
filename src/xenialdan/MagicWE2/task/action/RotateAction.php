@@ -22,13 +22,13 @@ class RotateAction extends ClipboardAction
 	const ROTATE_180 = 180;
 	const ROTATE_270 = 270;
 	/** @var bool */
-	public bool $addClipboard = true;
+	public $addClipboard = true;
 	/** @var string */
-	public string $completionString = '{%name} succeed, took {%took}, rotated {%changed} blocks out of {%total}';
+	public $completionString = '{%name} succeed, took {%took}, rotated {%changed} blocks out of {%total}';
 	/** @var int */
-	private int $rotation;
+	private $rotation;
 	/** @var bool */
-	public bool $aroundOrigin;
+	public $aroundOrigin;
 
 	public function __construct(int $rotation, bool $aroundOrigin = true)
 	{

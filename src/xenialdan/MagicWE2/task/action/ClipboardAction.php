@@ -13,13 +13,13 @@ use xenialdan\MagicWE2\selection\Selection;
 abstract class ClipboardAction
 {
 	/** @var string */
-	public string $prefix = "";
+	public $prefix = "";
 	/** @var string */
-	public string $completionString = '{%name} succeed, took {%took}, {%changed} entries out of {%total} changed.';
+	public $completionString = '{%name} succeed, took {%took}, {%changed} entries out of {%total} changed.';
 	/** @var bool */
-	public bool $addClipboard = false;
+	public $addClipboard = false;
 	/** @var null|Vector3 */
-	public ?Vector3 $clipboardVector = null;
+	public $clipboardVector = null;
 
 	/**
 	 * @param string $sessionUUID

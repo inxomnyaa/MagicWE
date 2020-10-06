@@ -18,8 +18,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\R12ToCurrentBlockMapEntry;
-use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
-use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -29,7 +28,6 @@ use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\Loader;
-use const pocketmine\RESOURCE_PATH;
 
 class BlockStatesParser
 {
@@ -61,18 +59,7 @@ class BlockStatesParser
 
 		$legacyIdMap = LegacyBlockIdToStringIdMap::getInstance();
 		/** @var R12ToCurrentBlockMapEntry[] $legacyStateMap */
-		self::$legacyStateMap = [];
-		$legacyStateMapReader = new PacketSerializer(file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
-		$nbtReader = new NetworkNbtSerializer();
-		while (!$legacyStateMapReader->feof()) {
-			$id = $legacyStateMapReader->getString();
-			$meta = $legacyStateMapReader->getLShort();
-
-			$offset = $legacyStateMapReader->getOffset();
-			$state = $nbtReader->read($legacyStateMapReader->getBuffer(), $offset)->mustGetCompoundTag();
-			$legacyStateMapReader->setOffset($offset);
-			self::$legacyStateMap[] = new R12ToCurrentBlockMapEntry($id, $meta, $state);
-		}
+		self::$legacyStateMap = \xenialdan\xendevtools2\Loader::getInstance()->readAnyValue(RuntimeBlockMapping::getInstance(), 'legacyStateMap');
 //IDK what this is about
 		/**
 		 * @var int[][] $idToStatesMap string id -> int[] list of candidate state indices
@@ -135,25 +122,6 @@ class BlockStatesParser
 			}
 		}
 		/// /////////////
-		self::$legacyStateMap = [];
-		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
-		if (!$contents) {
-			throw  new PluginException('r12_to_current_block_map could not be loaded');
-		}
-		$legacyStateMapReader = new NetworkBinaryStream($contents);
-		$nbtReader = new NetworkLittleEndianNBTStream();
-		while (!$legacyStateMapReader->feof()) {
-			$stringId = $legacyStateMapReader->getString();
-			$meta = $legacyStateMapReader->getLShort();
-
-			$offset = $legacyStateMapReader->getOffset();
-			$state = $nbtReader->read($legacyStateMapReader->getBuffer(), false, $offset);
-			$legacyStateMapReader->setOffset($offset);
-			if (!($state instanceof CompoundTag)) {
-				throw new RuntimeException("Blockstate should be a TAG_Compound");
-			}
-			self::$legacyStateMap[] = new R12ToCurrentBlockMapEntry($stringId, $meta, $state);
-		}
         //Load all states. Mapping: oldname:meta->states
 		self::$allStates = new CompoundTag();
         foreach (self::$legacyStateMap as $legacyMapEntry) {

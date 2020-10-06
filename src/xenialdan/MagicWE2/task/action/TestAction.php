@@ -16,9 +16,9 @@ use xenialdan\MagicWE2\selection\Selection;
 class TestAction extends TaskAction
 {
 	/** @var bool */
-	public bool $addRevert = false;
+	public $addRevert = false;
 	/** @var string */
-	public string $completionString = '{%name} succeed, took {%took}, tested {%changed} blocks';
+	public $completionString = '{%name} succeed, took {%took}, tested {%changed} blocks';
 
 	public function __construct()
 	{

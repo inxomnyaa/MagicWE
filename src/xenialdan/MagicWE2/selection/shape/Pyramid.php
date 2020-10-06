@@ -17,13 +17,13 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 class Pyramid extends Shape
 {
 	/** @var int */
-	public int $width = 5;
+	public $width = 5;
 	/** @var int */
-	public int $height = 5;
+	public $height = 5;
 	/** @var int */
-	public int $depth = 5;
+	public $depth = 5;
 	/** @var bool */
-	public bool $flipped = false;
+	public $flipped = false;
 
 	/**
 	 * Pyramid constructor.

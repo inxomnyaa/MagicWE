@@ -27,17 +27,17 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 class UserSession extends Session implements JsonSerializable
 {
 	/** @var Player|null */
-	private ?Player $player = null;
+	private $player = null;
 	/** @var BossBar */
-	private BossBar $bossBar;
+	private $bossBar;
 	/** @var bool */
-	private bool $wandEnabled = true;
+	private $wandEnabled = true;
 	/** @var bool */
-	private bool $debugToolEnabled = true;
+	private $debugToolEnabled = true;
 	/** @var Brush[] */
-	private array $brushes = [];
+	private $brushes = [];
 	/** @var Language|null */
-	private ?Language $lang;
+	private $lang;
 
 	public function __construct(Player $player)
 	{

@@ -13,11 +13,11 @@ class MWEEditEvent extends MWEEvent implements Cancellable
 {
 
 	/** @var Block[] */
-	private array $oldBlocks;
+	private $oldBlocks;
 	/** @var Block[] */
-	private array $newBlocks;
+	private $newBlocks;
 	/** @var null|Session */
-	private ?Session $session;
+	private $session;
 
 	/**
 	 * MWEEditEvent constructor.

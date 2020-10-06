@@ -69,17 +69,17 @@ class Loader extends PluginBase
 	const FAKE_ENCH_ID = 201;
 	const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
 	/** @var Loader|null */
-	private static ?Loader $instance = null;
+	private static $instance = null;
 	/** @var null|ShapeRegistry */
-	public static ?ShapeRegistry $shapeRegistry = null;
+	public static $shapeRegistry = null;
 	/** @var null|ActionRegistry */
-	public static ?ActionRegistry $actionRegistry = null;
+	public static $actionRegistry = null;
 	/** @var Language */
-	private Language $baseLang;
+	private $baseLang;
 	/** @var string[] Donator names */
-	public array $donators = [];
+	public $donators = [];
 	/** @var string */
-	public string $donatorData = "";
+	public $donatorData = "";
 
 	/**
 	 * Returns an instance of the plugin
