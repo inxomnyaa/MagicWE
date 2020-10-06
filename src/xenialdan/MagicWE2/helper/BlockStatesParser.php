@@ -10,6 +10,7 @@ use InvalidStateException;
 use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
 use pocketmine\nbt\tag\ByteTag;
@@ -17,6 +18,8 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\convert\R12ToCurrentBlockMapEntry;
+use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -28,23 +31,19 @@ use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\Loader;
 use const pocketmine\RESOURCE_PATH;
 
-#use pocketmine\nbt\NetworkLittleEndianNBTStream;
-#use pocketmine\network\mcpe\NetworkBinaryStream;
-
 class BlockStatesParser
 {
 	/** @var R12ToCurrentBlockMapEntry[] */
-	private static array $legacyStateMap = [];
+	private static $legacyStateMap = [];
 	/** @var CompoundTag|null */
-	private static ?CompoundTag $allStates = null;
+	private static $allStates = null;
 	/** @var array */
-	private static array $aliasMap = [];
+	private static $aliasMap = [];
 	/** @var array */
-	private static array $rotationFlipMap = [];
+	private static $rotationFlipMap = [];
 	/** @var array */
-	private static array $doorRotationFlipMap = [];
-	/** @var array */
-	private static array $blockIdMap = [];
+	private static $doorRotationFlipMap = [];
+	private static $bedrockKnownStates;
 
 	/**
 	 * @param string|null $rotFlipMapPath
@@ -60,10 +59,10 @@ class BlockStatesParser
 		}//Silent return if already initialised
 		//////////////////
 
-		self::$legacyIdMap = LegacyBlockIdToStringIdMap::getInstance();
+		$legacyIdMap = LegacyBlockIdToStringIdMap::getInstance();
 		/** @var R12ToCurrentBlockMapEntry[] $legacyStateMap */
-		$legacyStateMap = [];
-		$legacyStateMapReader = new PacketSerializer(file_get_contents(\pocketmine\RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
+		self::$legacyStateMap = [];
+		$legacyStateMapReader = new PacketSerializer(file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
 		$nbtReader = new NetworkNbtSerializer();
 		while (!$legacyStateMapReader->feof()) {
 			$id = $legacyStateMapReader->getString();
@@ -90,10 +89,9 @@ class BlockStatesParser
 		foreach (self::$legacyStateMap as $pair) {
 			///
 			$states = clone $pair->getBlockState()->getCompoundTag('states');
-			$states->setName($pair->getId() . ":" . $pair->getMeta());
-			self::$allStates->setTag("allStates", $states);
+			self::$allStates->setTag($pair->getId() . ":" . $pair->getMeta(), $states);
 			///
-			$id = $legacyIdMap->stringToLegacy($pair->getId()) ?? null;
+			$id = $legacyIdMap->stringToLegacy($pair->getId());
 			if ($id === null) {
 				throw new \RuntimeException("No legacy ID matches " . $pair->getId());
 			}
@@ -110,16 +108,13 @@ class BlockStatesParser
 			foreach ($idToStatesMap[$mappedName] as $k) {
 				$networkState = self::$bedrockKnownStates[$k];
 				if ($mappedState->equals($networkState->getCompoundTag("block"))) {
-					$this->registerMapping($k, $id, $data);
+					#$this->registerMapping($k, $id, $data);
 					continue 2;
 				}
 			}
 			throw new \RuntimeException("Mapped new state does not appear in network table");
 		}
 
-		$blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
-		if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
-		self::$blockIdMap = json_decode($blockIdMap, true, 512, JSON_THROW_ON_ERROR);
 		//self::runTests();
 		if ($rotFlipMapPath !== null) {
 			$fileGetContents = file_get_contents($rotFlipMapPath);
@@ -166,9 +161,6 @@ class BlockStatesParser
 			$states->setName($legacyMapEntry->getId() . ":" . $legacyMapEntry->getMeta());
 			self::$allStates->setTag("allStates", $states);
         }
-        $blockIdMap = file_get_contents(RESOURCE_PATH . '/vanilla/block_id_map.json');
-        if ($blockIdMap === false) throw new PluginException("Block id mapping file (block_id_map) could not be loaded!");
-        self::$blockIdMap = json_decode($blockIdMap, true, 512, JSON_THROW_ON_ERROR);
         //self::runTests();
         if ($rotFlipMapPath !== null) {
             $fileGetContents = file_get_contents($rotFlipMapPath);
@@ -202,10 +194,10 @@ class BlockStatesParser
      * @param Block $block
      * @return string|null
      */
-    public static function getBlockIdMapName(Block $block)
-    {
-        return array_flip(self::$blockIdMap)[$block->getId()] ?? null;
-    }
+	public static function getBlockIdMapName(Block $block): ?string
+	{
+		return LegacyBlockIdToStringIdMap::getInstance()->legacyToString($block->getId());
+	}
 
     /**
      * @param array $aliasMap
