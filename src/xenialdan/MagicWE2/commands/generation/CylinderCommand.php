@@ -60,24 +60,24 @@ class CylinderCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $messages = [];
-            $error = false;
-            $blocks = strval($args["blocks"]);
-            $diameter = intval($args["diameter"]);
-            $height = intval($args["height"] ?? 1);
-            $newblocks = API::blockParser($blocks, $messages, $error);
-            foreach ($messages as $message) {
-                $sender->sendMessage($message);
-            }
-            if (!$error) {
-                $session = SessionHelper::getUserSession($sender);
-                if (is_null($session)) {
+			$messages = [];
+			$error = false;
+			$blocks = (string)$args["blocks"];
+			$diameter = (int)$args["diameter"];
+			$height = (int)($args["height"] ?? 1);
+			$newblocks = API::blockParser($blocks, $messages, $error);
+			foreach ($messages as $message) {
+				$sender->sendMessage($message);
+			}
+			if (!$error) {
+				$session = SessionHelper::getUserSession($sender);
+				if (is_null($session)) {
 					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-                }
-                $cyl = new Cylinder($sender->getPosition()->asVector3()->floor(), $height, $diameter);
+				}
+				$cyl = new Cylinder($sender->getPosition()->asVector3()->floor(), $height, $diameter);
 				$cylSelection = new Selection($session->getUUID(), $sender->getWorld());
 				$cylSelection->setShape($cyl);
-				API::fillAsync($cylSelection, $session, $newblocks, API::flagParser(explode(" ", strval($args["flags"]))));
+				API::fillAsync($cylSelection, $session, $newblocks, API::flagParser(explode(" ", (string)$args["flags"])));
 			} else {
 				throw new InvalidArgumentException("Could not fill with the selected blocks");
 			}

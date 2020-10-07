@@ -76,7 +76,6 @@ class SessionHelper
 		if ($save && $session instanceof UserSession) {
 			$session->save();
 		}
-		unset($session);
 	}
 
 	/**

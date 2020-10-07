@@ -123,12 +123,12 @@ class BrushProperties implements JsonSerializable
 	 */
     public function generateLore(): array
     {
-        $shapeProperties = array_map(function ($k, $v): string {
-            return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
-        }, array_keys($this->shapeProperties), $this->shapeProperties);
-        $actionProperties = array_map(function ($k, $v): string {
-            return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
-        }, array_keys($this->actionProperties), $this->actionProperties);
+        $shapeProperties = array_map(static function ($k, $v): string {
+			return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
+		}, array_keys($this->shapeProperties), $this->shapeProperties);
+		$actionProperties = array_map(static function ($k, $v): string {
+			return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
+		}, array_keys($this->actionProperties), $this->actionProperties);
         return array_merge(
             [
                 TF::GOLD . "Shape: {$this->getShapeName()}",

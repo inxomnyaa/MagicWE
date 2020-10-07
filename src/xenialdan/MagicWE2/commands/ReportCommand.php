@@ -47,15 +47,15 @@ class ReportCommand extends BaseCommand
             }
         }
         try {
-            $url = "Please report your bug with this link (link also in console)" . TF::EOL;
-            $url .= "https://github.com/thebigsmileXD/MagicWE2/issues/new?labels=Bug&body=";
-            $url .= urlencode(
-                "### Description" . TF::EOL . "<!-- DESCRIPTION OF YOUR ISSUE -->" .
-                TF::EOL .
-                TF::EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
-                TF::EOL . "---" .
+			$url = "Please report your bug with this link (link also in console)" . TF::EOL;
+			$url .= "https://github.com/thebigsmileXD/MagicWE2/issues/new?labels=Bug&body=";
+			$url .= urlencode(
+				"### Description" . TF::EOL . "<!-- DESCRIPTION OF YOUR ISSUE -->" .
+				TF::EOL .
+				TF::EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
+				TF::EOL . "---" .
 				TF::EOL . TF::clean(implode(TF::EOL, Loader::getInfo())));
-			$url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . strval($args["title"] ?? "")));
+			$url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . ($args["title"] ?? "")));
 
 			if (!$sender instanceof ConsoleCommandSender) $sender->sendMessage(Loader::PREFIX . $url);
 			Loader::getInstance()->getLogger()->alert($url);

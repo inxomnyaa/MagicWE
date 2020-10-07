@@ -57,7 +57,7 @@ class SetCommand extends BaseCommand
         try {
             $messages = [];
             $error = false;
-            $replaceBlocks = API::blockParser(strval($args["blocks"]), $messages, $error);
+			$replaceBlocks = API::blockParser((string)$args["blocks"], $messages, $error);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }
@@ -66,17 +66,17 @@ class SetCommand extends BaseCommand
                 if (is_null($session)) {
 					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
-                $selection = $session->getLatestSelection();
-                if (is_null($selection)) {
+				$selection = $session->getLatestSelection();
+				if (is_null($selection)) {
 					throw new SelectionException($lang->translateString('error.noselection'));
-                }
-                if (!$selection->isValid()) {
+				}
+				if (!$selection->isValid()) {
 					throw new SelectionException($lang->translateString('error.selectioninvalid'));
-                }
-                if ($selection->getWorld() !== $sender->getWorld()) {
+				}
+				if ($selection->getWorld() !== $sender->getWorld()) {
 					$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 				}
-				API::fillAsync($selection, $session, $replaceBlocks, API::flagParser(explode(" ", strval($args["flags"]))));
+				API::fillAsync($selection, $session, $replaceBlocks, API::flagParser(explode(" ", (string)$args["flags"])));
 			} else {
 				throw new InvalidArgumentException("Could not fill with the selected blocks");
 			}

@@ -128,7 +128,7 @@ final class BlockStatesParser
 	/**
 	 * @param array $aliasMap
 	 */
-	public function setAliasMap(array $aliasMap)
+	public function setAliasMap(array $aliasMap): void
 	{
 		self::$aliasMap = $aliasMap;
 	}
@@ -407,6 +407,7 @@ final class BlockStatesParser
 		}
 		return;//TODO
 		//test flip+rotation
+		/** @noinspection PhpUnreachableStatementInspection */
 		$tests2 = [
 			#"minecraft:wooden_slab[wood_type=oak]",
 			#"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
@@ -501,6 +502,7 @@ final class BlockStatesParser
 		var_dump("DONE");
 	}
 
+	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private static function doorEquals(int $currentoldDamage, CompoundTag $defaultStatesNamedTag, CompoundTag $clonedPrintedCompound, CompoundTag $finalStatesList): bool
 	{
 		if (
@@ -527,6 +529,7 @@ final class BlockStatesParser
 	 * @throws InvalidStateException
 	 * @throws AssumptionFailedError
 	 * @internal
+	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
 	private static function generateBlockStateAliasMapJson(): void
 	{

@@ -24,8 +24,8 @@ use xenialdan\MagicWE2\Loader;
 
 class BiomeInfoCommand extends BaseCommand
 {
-	const FLAG_T = "t";
-	const FLAG_P = "p";
+	public const FLAG_T = "t";
+	public const FLAG_P = "p";
 
 	/**
 	 * This is where all the arguments, permissions, sub-commands, etc would be registered
@@ -65,12 +65,12 @@ class BiomeInfoCommand extends BaseCommand
             $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
             $biomeNames = array_flip($biomeNames);
             unset($biomeNames[Biome::MAX_BIOMES]);
-            array_walk($biomeNames, function (&$value, $key) {
-                $value = Biome::getBiome($key)->getName();
-            });
-            if (!empty(($flags = ltrim(strval($args["flags"] ?? ""), "-")))) {
-                $flagArray = str_split($flags);
-                if (in_array(self::FLAG_T, $flagArray, true)) {
+			array_walk($biomeNames, static function (&$value, $key) {
+				$value = Biome::getBiome($key)->getName();
+			});
+			if (!empty(($flags = ltrim((string)($args["flags"] ?? ""), "-")))) {
+				$flagArray = str_split($flags);
+				if (in_array(self::FLAG_T, $flagArray, true)) {
 					$target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
 					if ($target === null) {
 						$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));

@@ -62,17 +62,17 @@ class CutCommand extends BaseCommand
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
 				throw new SelectionException($lang->translateString('error.noselection'));
-            }
-            if (!$selection->isValid()) {
+			}
+			if (!$selection->isValid()) {
 				throw new SelectionException($lang->translateString('error.selectioninvalid'));
-            }
-            if ($selection->getWorld() !== $sender->getWorld()) {
+			}
+			if ($selection->getWorld() !== $sender->getWorld()) {
 				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 			}
 			$hasFlags = isset($args["flags"]);
 			//TODO Temp hack - add cutAsync - Update 9th Feb. 2020 LEAVE THAT ALONE! IT WORKS, DO NOT TOUCH IT!
-			API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
-			API::fillAsync($selection, $session, [BlockFactory::getInstance()->get(BlockLegacyIds::AIR)], $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
+			API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
+			API::fillAsync($selection, $session, [BlockFactory::getInstance()->get(BlockLegacyIds::AIR)], $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

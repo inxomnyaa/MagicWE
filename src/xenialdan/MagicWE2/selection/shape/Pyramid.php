@@ -52,24 +52,24 @@ class Pyramid extends Shape
 	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
-        $this->validateChunkManager($manager);
-        $reduceXPerLayer = -($this->width / $this->height);
-        $reduceZPerLayer = -($this->depth / $this->height);
-        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
-        for ($x = intval(floor($centerVec2->x - $this->width / 2 - 1)); $x <= floor($centerVec2->x + $this->width / 2 + 1); $x++) {
-            for ($y = intval(floor($this->getPasteVector()->y)), $ry = 0; $y < floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
-                for ($z = intval(floor($centerVec2->y - $this->depth / 2 - 1)); $z <= floor($centerVec2->y + $this->depth / 2 + 1); $z++) {
-                    $vec2 = new Vector2($x, $z);
-                    $vec3 = new Vector3($x, $y, $z);
-                    if ($this->flipped) {
-                        $radiusLayerX = ($this->width + $reduceXPerLayer * ($this->height - $ry)) / 2;
-                        $radiusLayerZ = ($this->depth + $reduceZPerLayer * ($this->height - $ry)) / 2;
-                    } else {
-                        $radiusLayerX = ($this->width + $reduceXPerLayer * $ry) / 2;
+		$this->validateChunkManager($manager);
+		$reduceXPerLayer = -($this->width / $this->height);
+		$reduceZPerLayer = -($this->depth / $this->height);
+		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+		for ($x = (int)floor($centerVec2->x - $this->width / 2 - 1); $x <= floor($centerVec2->x + $this->width / 2 + 1); $x++) {
+			for ($y = (int)floor($this->getPasteVector()->y), $ry = 0; $y < floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+				for ($z = (int)floor($centerVec2->y - $this->depth / 2 - 1); $z <= floor($centerVec2->y + $this->depth / 2 + 1); $z++) {
+					$vec2 = new Vector2($x, $z);
+					$vec3 = new Vector3($x, $y, $z);
+					if ($this->flipped) {
+						$radiusLayerX = ($this->width + $reduceXPerLayer * ($this->height - $ry)) / 2;
+						$radiusLayerZ = ($this->depth + $reduceZPerLayer * ($this->height - $ry)) / 2;
+					} else {
+						$radiusLayerX = ($this->width + $reduceXPerLayer * $ry) / 2;
 						$radiusLayerZ = ($this->depth + $reduceZPerLayer * $ry) / 2;
 					}
 					//TODO hollow
-					if (floor(abs($centerVec2->x - $vec2->x)) >= $radiusLayerX or floor(abs($centerVec2->y - $vec2->y)) >= $radiusLayerZ)
+					if (floor(abs($centerVec2->x - $vec2->x)) >= $radiusLayerX || floor(abs($centerVec2->y - $vec2->y)) >= $radiusLayerZ)
 						continue;
 					$block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())/*->setComponents($vec3->x, $vec3->y, $vec3->z)*/
 					;
@@ -97,16 +97,16 @@ class Pyramid extends Shape
 	 * @throws Exception
 	 */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
-    {
-        $this->validateChunkManager($manager);
-        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
-        for ($x = intval(floor($centerVec2->x - $this->width / 2 - 1)); $x <= floor($centerVec2->x + $this->width / 2 + 1); $x++) {
-            for ($z = intval(floor($centerVec2->y - $this->depth / 2 - 1)); $z <= floor($centerVec2->y + $this->depth / 2 + 1); $z++) {
+	{
+		$this->validateChunkManager($manager);
+		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+		for ($x = (int)floor($centerVec2->x - $this->width / 2 - 1); $x <= floor($centerVec2->x + $this->width / 2 + 1); $x++) {
+			for ($z = (int)floor($centerVec2->y - $this->depth / 2 - 1); $z <= floor($centerVec2->y + $this->depth / 2 + 1); $z++) {
 				//TODO hollow
 				yield new Vector2($x, $z);
 			}
-        }
-    }
+		}
+	}
 
     /**
      * @param World|AsyncChunkManager $manager

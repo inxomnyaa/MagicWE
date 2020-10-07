@@ -97,17 +97,17 @@ class Brush extends WETool
 	public function getForm(bool $new = true, array $errors = []): CustomForm
 	{
 		try {
-			$errors = array_map(function ($value): string {
+			$errors = array_map(static function ($value): string {
 				return TF::EOL . TF::RED . $value;
 			}, $errors);
 			$brushProperties = $this->properties ?? new BrushProperties();
 			$form = new CustomForm("Brush settings");
 			// Shape
 			#$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
-            if ($new) {
-                $dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
-                foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
-                    if ($name === ShapeRegistry::CUSTOM) continue;
+			if ($new) {
+				$dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
+				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
+					if ($name === ShapeRegistry::CUSTOM) continue;
                     $dropdownShape->addOption($name, $class === $brushProperties->shape);
                 }
                 $form->addElement($dropdownShape);
@@ -151,25 +151,25 @@ class Brush extends WETool
                 $base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
                 foreach (array_slice($data, 7, null, true) as $i => $value) {
                     #var_dump($i, $value, gettype($value), gettype($base[lcfirst($form->getElement($i)->getText())]));
-                    if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = intval($value);
-                    $extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
-                }
-                #var_dump(__LINE__, $extraData);
-                //prepare data
-                $blocks = trim(TF::clean($blocks));
-                $filter = trim(TF::clean($filter));
+					if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
+					$extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
+				}
+				#var_dump(__LINE__, $extraData);
+				//prepare data
+				$blocks = trim(TF::clean($blocks));
+				$filter = trim(TF::clean($filter));
 
-                $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
-                $biomeNames = array_flip($biomeNames);
-                unset($biomeNames[Biome::MAX_BIOMES], $biomeNames[Biome::HELL]);
-				array_walk($biomeNames, function (&$value, $key) {
+				$biomeNames = (new ReflectionClass(Biome::class))->getConstants();
+				$biomeNames = array_flip($biomeNames);
+				unset($biomeNames[Biome::MAX_BIOMES], $biomeNames[Biome::HELL]);
+				array_walk($biomeNames, static function (&$value, $key) {
 					$value = Biome::getBiome($key)->getName();
 				});
 				$biomeId = array_search($biome, $biomeNames, true);
 
-                //error checks
-                $error = [];
-                try {
+				//error checks
+				$error = [];
+				try {
 					$m = [];
 					$e = false;
 					API::blockParser($blocks, $m, $e);
@@ -252,9 +252,9 @@ class Brush extends WETool
         #foreach (($defaultReplaced = array_merge(ShapeRegistry::getDefaultShapeProperties($shapeClass), $this->properties->shapeProperties)) as $name => $value) {
         $base = ShapeRegistry::getDefaultShapeProperties($shapeClass);
         foreach (($defaultReplaced = array_replace($base, array_intersect_key($this->properties->shapeProperties, $base))) as $name => $value) {
-            if (is_bool($value)) $form->addElement(new Toggle(ucfirst($name), (bool)$value));
-            else $form->addElement(new Input(ucfirst($name), $name . " (" . gettype($value) . ")", strval($value)));
-        }
+			if (is_bool($value)) $form->addElement(new Toggle(ucfirst($name), $value));
+			else $form->addElement(new Input(ucfirst($name), $name . " (" . gettype($value) . ")", (string)$value));
+		}
         #var_dump($this->properties->shapeProperties);
         #var_dump('Base', $base);
         #var_dump('Default Replaced', $defaultReplaced);
@@ -263,7 +263,7 @@ class Brush extends WETool
             $extraData = [];
             $names = array_keys($defaultReplaced);
             foreach ($data as $index => $value) {
-                if (is_int($base[$names[$index]])) $value = intval($value);
+				if (is_int($base[$names[$index]])) $value = (int)$value;
                 $extraData[$names[$index]] = $value;
             }
             $this->properties->shapeProperties = $extraData;

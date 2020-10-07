@@ -111,7 +111,7 @@ class BlockStatesEntry
 			if ($tag instanceof StringTag) {
 				$bsCompound->setString($tagName, $v);
 			} else if ($tag instanceof IntTag) {
-				$bsCompound->setInt($tagName, intval($v));
+				$bsCompound->setInt($tagName, (int)$v);
 			} else if ($tag instanceof ByteTag) {
 				if ($v === 1) $v = "true";
 				if ($v === 0) $v = "false";
@@ -157,7 +157,7 @@ class BlockStatesEntry
 				return $clone;
 			}
 			$flippedStates = $fromMap[$axis] ?? null;
-			if ($flippedStates === null && $axis !== FlipAction::AXIS_Y) {//ugly hack for y flip
+			if ($flippedStates === null /*&& $axis !== FlipAction::AXIS_Y*/) {//ugly hack for y flip
 				#var_dump("axis not in mirror map");
 				return $clone;
 			}
@@ -225,13 +225,11 @@ class BlockStatesEntry
                         $value = $flippedStates[$stateName];
                     }*/
 				}
-			} else {
-				if (isset($flippedStates)) $value = $flippedStates[$tagName] ?? $tag->getValue(); else throw new InvalidArgumentException("flippedStates is not set. Error should never occur, please use //report and send a stack trace");
-			}
+			} else if (isset($flippedStates)) $value = $flippedStates[$tagName] ?? $tag->getValue(); else throw new InvalidArgumentException("flippedStates is not set. Error should never occur, please use //report and send a stack trace");
 			if ($tag instanceof StringTag) {
 				$bsCompound->setString($tagName, $value);
 			} else if ($tag instanceof IntTag) {
-				$bsCompound->setInt($tagName, intval($value));
+				$bsCompound->setInt($tagName, (int)$value);
 			} else if ($tag instanceof ByteTag) {
 				if ($value === 1) $value = "true";
 				if ($value === 0) $value = "false";

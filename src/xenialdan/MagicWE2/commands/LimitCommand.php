@@ -51,8 +51,8 @@ class LimitCommand extends BaseCommand
                 $limit = Loader::getInstance()->getConfig()->get("limit", -1);
 				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.limit.current', [($limit < 0 ? ucfirst(Loader::getInstance()->getLanguage()->translateString('disabled')) : $limit)]));
 			} else {
-				Loader::getInstance()->getConfig()->set("limit", intval($args["limit"]));
-				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.limit.set', [intval($args["limit"])]));
+				Loader::getInstance()->getConfig()->set("limit", (int)$args["limit"]);
+				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.limit.set', [(int)$args["limit"]]));
 			}
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

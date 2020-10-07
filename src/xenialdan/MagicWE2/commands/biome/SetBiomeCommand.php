@@ -21,7 +21,7 @@ use xenialdan\MagicWE2\Loader;
 
 class SetBiomeCommand extends BaseCommand
 {
-	const FLAG_P = "p";
+	public const FLAG_P = "p";
 
 	/**
 	 * This is where all the arguments, permissions, sub-commands, etc would be registered
@@ -59,17 +59,17 @@ class SetBiomeCommand extends BaseCommand
             if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
-            $selection = $session->getLatestSelection();
-            if (is_null($selection)) {
+			$selection = $session->getLatestSelection();
+			if (is_null($selection)) {
 				throw new SelectionException($lang->translateString('error.noselection'));
-            }
-            if (!$selection->isValid()) {
+			}
+			if (!$selection->isValid()) {
 				throw new SelectionException($lang->translateString('error.selectioninvalid'));
-            }
+			}
 			if ($selection->getWorld() !== $sender->getWorld()) {
 				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 			}
-			$biomeId = intval($args["biome"]);
+			$biomeId = (int)$args["biome"];
 			API::setBiomeAsync($selection, $session, $biomeId);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

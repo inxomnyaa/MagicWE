@@ -61,17 +61,17 @@ class PasteCommand extends BaseCommand
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $clipboard = $session->getCurrentClipboard();
-            if (is_null($clipboard)) {
+			if (is_null($clipboard)) {
 				throw new SelectionException($lang->translateString('error.noclipboard'));
-            }
-            if (!$clipboard instanceof SingleClipboard) {//TODO check if i want to pass ANY clipboard instead
+			}
+			if (!$clipboard instanceof SingleClipboard) {//TODO check if i want to pass ANY clipboard instead
 				throw new SelectionException($lang->translateString('error.noclipboard'));
-            }
+			}
 			/*if (!API::hasFlag(API::flagParser(explode(" ", strval($args["flags"]))), API::FLAG_POSITION_RELATIVE)) {
 				$clipboard->setOffset(new Vector3(0,0,0));//TODO fix? Move to API
 			}*/
 			$hasFlags = isset($args["flags"]);
-			API::pasteAsync($clipboard, $session, $sender->getPosition(), $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
+			API::pasteAsync($clipboard, $session, $sender->getPosition(), $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

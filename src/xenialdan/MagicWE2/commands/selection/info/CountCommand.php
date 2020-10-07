@@ -61,7 +61,7 @@ class CountCommand extends BaseCommand
             $error = false;
             if (!empty($args["blocks"])) {
                 $messages = [];
-                API::blockParser(($filterBlocks = strval($args["blocks"])), $messages, $error);
+				API::blockParser(($filterBlocks = (string)$args["blocks"]), $messages, $error);
                 foreach ($messages as $message) {
                     $sender->sendMessage($message);
                 }

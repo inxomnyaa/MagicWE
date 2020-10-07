@@ -17,8 +17,8 @@ class CutAction extends TaskAction
 {
 	/** @var string */
 	public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} cut.';
-	/** @var bool */
-	public $addRevert = true;
+#	/** @var bool */
+#	public $addRevert = true;
 	/** @var bool */
 	public $addClipboard = true;
 

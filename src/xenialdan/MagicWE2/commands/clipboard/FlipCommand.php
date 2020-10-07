@@ -56,8 +56,8 @@ class FlipCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $axis = strval($args["axis"]);
-            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [$axis]));
+            $axis = (string)$args["axis"];
+			$sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [$axis]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));

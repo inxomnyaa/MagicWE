@@ -40,10 +40,10 @@ class Sphere extends Shape
 	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
-        $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->pasteVector->x - $this->diameter / 2 - 1)); $x <= floor($this->pasteVector->x + $this->diameter / 2 + 1); $x++) {
-            for ($y = intval(floor($this->pasteVector->y - $this->diameter / 2 - 1)); $y <= floor($this->pasteVector->y + $this->diameter / 2 + 1); $y++) {
-                for ($z = intval(floor($this->pasteVector->z - $this->diameter / 2 - 1)); $z <= floor($this->pasteVector->z + $this->diameter / 2 + 1); $z++) {
+		$this->validateChunkManager($manager);
+		for ($x = (int)floor($this->pasteVector->x - $this->diameter / 2 - 1); $x <= floor($this->pasteVector->x + $this->diameter / 2 + 1); $x++) {
+			for ($y = (int)floor($this->pasteVector->y - $this->diameter / 2 - 1); $y <= floor($this->pasteVector->y + $this->diameter / 2 + 1); $y++) {
+				for ($z = (int)floor($this->pasteVector->z - $this->diameter / 2 - 1); $z <= floor($this->pasteVector->z + $this->diameter / 2 + 1); $z++) {
 					$vec3 = new Vector3($x, $y, $z);
 					if ($vec3->distanceSquared($this->getPasteVector()) > (($this->diameter / 2) ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW) && $vec3->distanceSquared($this->getPasteVector()) <= ((($this->diameter / 2) - 1) ** 2)))
 						continue;
@@ -73,18 +73,18 @@ class Sphere extends Shape
 	 * @throws Exception
 	 */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
-    {
-        $this->validateChunkManager($manager);
-        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
-        for ($x = intval(floor($centerVec2->x - $this->diameter / 2 - 1)); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
-            for ($z = intval(floor($centerVec2->y - $this->diameter / 2 - 1)); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
-                $vec2 = new Vector2($x, $z);
-                if ($vec2->distanceSquared($centerVec2) > (($this->diameter / 2) ** 2) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
-                    continue;
-                yield $vec2;
-            }
-        }
-    }
+	{
+		$this->validateChunkManager($manager);
+		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+		for ($x = (int)floor($centerVec2->x - $this->diameter / 2 - 1); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
+			for ($z = (int)floor($centerVec2->y - $this->diameter / 2 - 1); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
+				$vec2 = new Vector2($x, $z);
+				if ($vec2->distanceSquared($centerVec2) > (($this->diameter / 2) ** 2) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
+					continue;
+				yield $vec2;
+			}
+		}
+	}
 
     /**
      * @param World|AsyncChunkManager $manager
@@ -127,7 +127,7 @@ class Sphere extends Shape
 
     public function getTotalCount(): int
     {
-        return (int)ceil((4 / 3) * pi() * (($this->diameter / 2) ** 3));
+		return (int)ceil((4 / 3) * M_PI * (($this->diameter / 2) ** 3));
     }
 
     public static function getName(): string

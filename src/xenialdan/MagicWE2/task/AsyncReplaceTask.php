@@ -64,7 +64,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 
-		$touchedChunks = array_map(function ($chunk) {
+		$touchedChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 
@@ -82,7 +82,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $replaceBlocks, $newBlocks, $changed));
 
 		$resultChunks = $manager->getChunks();
-		$resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
+		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
@@ -110,7 +110,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
 				$lastchunkx = $block->getPos()->x >> 4;
 				$lastchunkz = $block->getPos()->z >> 4;
-				if (is_null(($c = $manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4)))) {
+				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
@@ -151,7 +151,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$result = $this->getResult();
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
-		$undoChunks = array_map(function ($chunk) {
+		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];

@@ -16,6 +16,7 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
+use xenialdan\customui\API;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -66,14 +67,14 @@ use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Loader extends PluginBase
 {
-	const FAKE_ENCH_ID = 201;
-	const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
+	public const FAKE_ENCH_ID = 201;
+	public const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
 	/** @var Loader|null */
-	private static $instance = null;
+	private static $instance;
 	/** @var null|ShapeRegistry */
-	public static $shapeRegistry = null;
+	public static $shapeRegistry;
 	/** @var null|ActionRegistry */
-	public static $actionRegistry = null;
+	public static $actionRegistry;
 	/** @var Language */
 	private $baseLang;
 	/** @var string[] Donator names */
@@ -139,9 +140,9 @@ class Loader extends PluginBase
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
 		if ($fileGetContents === false) {
 			throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
-		} else {
-			BlockStatesParser::getInstance()->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
 		}
+
+		BlockStatesParser::getInstance()->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
 		#BlockStatesParser::printAllStates();
 		#BlockStatesParser::runTests();
 		#BlockStatesParser::generatePossibleStatesJson();
@@ -267,7 +268,7 @@ class Loader extends PluginBase
 			/* -- debugging -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 		]);
-		if (class_exists(\xenialdan\customui\API::class)) {
+		if (class_exists(API::class)) {
 			$this->getLogger()->notice("CustomUI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 				/* -- brush -- */
@@ -306,7 +307,7 @@ class Loader extends PluginBase
 
 	public function getToolDistance(): int
 	{
-		return intval($this->getConfig()->get("tool-range", 100));
+		return (int)$this->getConfig()->get("tool-range", 100);
 	}
 
 	/**
@@ -316,15 +317,15 @@ class Loader extends PluginBase
 	public static function getInfo(): array
 	{
 		return [
-			"| " . TF::GREEN . Loader::getInstance()->getFullName() . TF::RESET . " | Information |",
+			"| " . TF::GREEN . self::getInstance()->getFullName() . TF::RESET . " | Information |",
 			"| --- | --- |",
-			"| Website | " . Loader::getInstance()->getDescription()->getWebsite() . " |",
-			"| Version | " . Loader::getInstance()->getDescription()->getVersion() . " |",
-			"| Plugin API Version | " . implode(", ", Loader::getInstance()->getDescription()->getCompatibleApis()) . " |",
-			"| Authors | " . implode(", ", Loader::getInstance()->getDescription()->getAuthors()) . " |",
-			"| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(Loader::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Uses UI | " . (class_exists("xenialdan\\customui\\API") ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Phar | " . (strpos(Loader::getInstance()->getFile(), 'phar:') ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Website | " . self::getInstance()->getDescription()->getWebsite() . " |",
+			"| Version | " . self::getInstance()->getDescription()->getVersion() . " |",
+			"| Plugin API Version | " . implode(", ", self::getInstance()->getDescription()->getCompatibleApis()) . " |",
+			"| Authors | " . implode(", ", self::getInstance()->getDescription()->getAuthors()) . " |",
+			"| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(self::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Uses UI | " . (class_exists(API::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Phar | " . (strpos(self::getInstance()->getFile(), 'phar:') ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
 			"| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
 			"| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
 			"| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
@@ -352,11 +353,11 @@ class Loader extends PluginBase
 			"  {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}                ",
 			"{$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}       MagicWE v.2",
 			"{$colorAxe}####{$colorAxeSky}        by XenialDan"];
-		foreach (array_map(function ($line) {
+		foreach (array_map(static function ($line) {
 			return preg_replace_callback(
 				'/ +(?<![#§l5d6]] )(?= [#§l5d6]+)|(?<=[#§l5d6] ) +(?=\s)/u',
 				#'/ +(?<!# )(?= #+)|(?<=# ) +(?=\s)/',
-				function ($v) {
+				static function ($v) {
 					return substr(str_shuffle(str_pad('+*~', strlen($v[0]))), 0, strlen($v[0]));
 				},
 				TF::LIGHT_PURPLE . $line

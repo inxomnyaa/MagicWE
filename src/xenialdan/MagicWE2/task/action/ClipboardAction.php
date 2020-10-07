@@ -19,7 +19,7 @@ abstract class ClipboardAction
 	/** @var bool */
 	public $addClipboard = false;
 	/** @var null|Vector3 */
-	public $clipboardVector = null;
+	public $clipboardVector;
 
 	/**
 	 * @param string $sessionUUID
@@ -29,9 +29,9 @@ abstract class ClipboardAction
 	 * @param string[] $messages
 	 * @return Generator|Progress[]
 	 */
-	public abstract function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator;
+	abstract public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator;
 
-	public static abstract function getName(): string;
+	abstract public static function getName(): string;
 
 	/**
 	 * @param Vector3|null $clipboardVector
@@ -40,5 +40,5 @@ abstract class ClipboardAction
 	{
 		if ($clipboardVector instanceof Vector3) $clipboardVector = $clipboardVector->asVector3()->floor();
 		$this->clipboardVector = $clipboardVector;
-    }
+	}
 }

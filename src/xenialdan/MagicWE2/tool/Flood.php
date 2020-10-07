@@ -85,7 +85,7 @@ class Flood extends WETool
         foreach ($this->nextToCheck as $next) {
             $sides = iterator_to_array($this->getHorizontalSides($manager, $next->getPos()));
 			$walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
-				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
+				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->distanceSquared($this->getCenter()) <= ($this->limit / M_PI);
 			}));
         }
         $this->walked = array_merge($this->walked, $walkTo);
@@ -123,9 +123,9 @@ class Flood extends WETool
      */
     public function getTouchedChunks($chunkManager): array
     {
-        $this->validateChunkManager($chunkManager);
-        $maxRadius = sqrt($this->limit / pi());
-        $v2center = new Vector2($this->getCenter()->x, $this->getCenter()->z);
+		$this->validateChunkManager($chunkManager);
+		$maxRadius = sqrt($this->limit / M_PI);
+		$v2center = new Vector2($this->getCenter()->x, $this->getCenter()->z);
         $cv2center = new Vector2($this->getCenter()->x >> 4, $this->getCenter()->z >> 4);
         $maxX = ($v2center->x + $maxRadius) >> 4;
         $minX = ($v2center->x - $maxRadius) >> 4;

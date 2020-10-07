@@ -58,17 +58,17 @@ class CopyCommand extends BaseCommand
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection();
-            if (is_null($selection)) {
+			if (is_null($selection)) {
 				throw new SelectionException($lang->translateString('error.noselection'));
-            }
-            if (!$selection->isValid()) {
+			}
+			if (!$selection->isValid()) {
 				throw new SelectionException($lang->translateString('error.selectioninvalid'));
-            }
+			}
 			if ($selection->getWorld() !== $sender->getWorld()) {
 				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 			}
 			$hasFlags = isset($args["flags"]);
-			API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", strval($args["flags"]))) : API::FLAG_BASE);
+			API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

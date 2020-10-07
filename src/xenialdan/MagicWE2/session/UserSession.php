@@ -29,7 +29,7 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 class UserSession extends Session implements JsonSerializable
 {
 	/** @var Player|null */
-	private $player = null;
+	private $player;
 	/** @var BossBar */
 	private $bossBar;
 	/** @var bool */
@@ -86,63 +86,63 @@ class UserSession extends Session implements JsonSerializable
     }
 
     /**
-     * @param null|Player $player
-     */
-    public function setPlayer($player): void
-    {
-        $this->player = $player;
-    }
+	 * @param null|Player $player
+	 */
+	public function setPlayer($player): void
+	{
+		$this->player = $player;
+	}
 
-    /**
-     * @return null|Player
-     */
-    public function getPlayer()
-    {
-        return $this->player;
-    }
+	/**
+	 * @return null|Player
+	 */
+	public function getPlayer(): ?Player
+	{
+		return $this->player;
+	}
 
-    /**
-     * @return bool
-     */
-    public function isWandEnabled(): bool
-    {
-        return $this->wandEnabled;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isWandEnabled(): bool
+	{
+		return $this->wandEnabled;
+	}
 
-    /**
-     * @param bool $wandEnabled
-     * @return string
-     */
-    public function setWandEnabled(bool $wandEnabled)
-    {
-        $this->wandEnabled = $wandEnabled;
-        return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
-    }
+	/**
+	 * @param bool $wandEnabled
+	 * @return string
+	 */
+	public function setWandEnabled(bool $wandEnabled): string
+	{
+		$this->wandEnabled = $wandEnabled;
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+	}
 
-    /**
-     * @return bool
-     */
-    public function isDebugToolEnabled(): bool
-    {
-        return $this->debugToolEnabled;
-    }
+	/**
+	 * @return bool
+	 */
+	public function isDebugToolEnabled(): bool
+	{
+		return $this->debugToolEnabled;
+	}
 
-    /**
-     * @param bool $debugToolEnabled
-     * @return string
-     */
-    public function setDebugToolEnabled(bool $debugToolEnabled)
-    {
-        $this->debugToolEnabled = $debugToolEnabled;
-        return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
-    }
+	/**
+	 * @param bool $debugToolEnabled
+	 * @return string
+	 */
+	public function setDebugToolEnabled(bool $debugToolEnabled): string
+	{
+		$this->debugToolEnabled = $debugToolEnabled;
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+	}
 
-    /**
-     * @return BossBar
-     */
-    public function getBossBar(): BossBar
-    {
-        return $this->bossBar;
+	/**
+	 * @return BossBar
+	 */
+	public function getBossBar(): BossBar
+	{
+		return $this->bossBar;
     }
 
     /**
@@ -159,16 +159,16 @@ class UserSession extends Session implements JsonSerializable
 				throw new BrushException("Brush can not be restored - version mismatch");
 			}
 			/** @var BrushProperties $properties */
-			$properties = json_decode($entry->getString("properties"), true);
+			$properties = json_decode($entry->getString("properties"), true, 512, JSON_THROW_ON_ERROR);
 			$uuid = UUID::fromString($properties->uuid);
 			$brush = $this->getBrush($uuid);
 			if ($brush instanceof Brush) {
 				return $brush;
-            }
-            $brush = new Brush($properties);
-            $this->addBrush($brush);
-            return $brush;
-        }
+			}
+			$brush = new Brush($properties);
+			$this->addBrush($brush);
+			return $brush;
+		}
 		throw new BrushException("The item is not a valid brush!");
     }
 

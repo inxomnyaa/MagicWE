@@ -56,10 +56,10 @@ class Cuboid extends Shape
 	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
-        $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
-            for ($y = intval(floor($this->getMinVec3()->y)); $y <= floor($this->getMaxVec3()->y); $y++) {
-                for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
+		$this->validateChunkManager($manager);
+		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
+			for ($y = (int)floor($this->getMinVec3()->y); $y <= floor($this->getMaxVec3()->y); $y++) {
+				for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
 					$block = $manager->getBlockAt($x, $y, $z)/*->setComponents($x, $y, $z)*/
 					;
 					#var_dump("shape getblocks", $block);
@@ -88,14 +88,14 @@ class Cuboid extends Shape
 	 * @throws Exception
 	 */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
-    {
-        $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
-            for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
-                yield new Vector2($x, $z);
-            }
-        }
-    }
+	{
+		$this->validateChunkManager($manager);
+		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
+			for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
+				yield new Vector2($x, $z);
+			}
+		}
+	}
 
     /**
      * @param World|AsyncChunkManager $manager

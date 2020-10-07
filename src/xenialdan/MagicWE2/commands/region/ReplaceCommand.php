@@ -56,30 +56,30 @@ class ReplaceCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $messages = [];
-            $error = false;
-            $findBlocks = API::blockParser(strval($args["findblocks"]), $messages, $error);
-            $replaceBlocks = API::blockParser(strval($args["replaceblocks"]), $messages, $error);
-            foreach ($messages as $message) {
-                $sender->sendMessage($message);
-            }
-            $return = !$error;
-            if ($return) {
-                $session = SessionHelper::getUserSession($sender);
-                if (is_null($session)) {
+			$messages = [];
+			$error = false;
+			$findBlocks = API::blockParser((string)$args["findblocks"], $messages, $error);
+			$replaceBlocks = API::blockParser((string)$args["replaceblocks"], $messages, $error);
+			foreach ($messages as $message) {
+				$sender->sendMessage($message);
+			}
+			$return = !$error;
+			if ($return) {
+				$session = SessionHelper::getUserSession($sender);
+				if (is_null($session)) {
 					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-                }
-                $selection = $session->getLatestSelection();
-                if (is_null($selection)) {
+				}
+				$selection = $session->getLatestSelection();
+				if (is_null($selection)) {
 					throw new SelectionException($lang->translateString('error.noselection'));
-                }
-                if (!$selection->isValid()) {
+				}
+				if (!$selection->isValid()) {
 					throw new SelectionException($lang->translateString('error.selectioninvalid'));
-                }
-                if ($selection->getWorld() !== $sender->getWorld()) {
+				}
+				if ($selection->getWorld() !== $sender->getWorld()) {
 					$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 				}
-				API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, API::flagParser(explode(" ", strval($args["flags"]))));
+				API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, API::flagParser(explode(" ", (string)$args["flags"])));
 			} else {
 				throw new InvalidArgumentException("Could not replace with the selected blocks");
 			}

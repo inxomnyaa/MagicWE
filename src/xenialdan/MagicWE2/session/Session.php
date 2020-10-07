@@ -20,15 +20,15 @@ use xenialdan\MagicWE2\task\AsyncRevertTask;
 
 abstract class Session
 {
-	const MAX_CLIPBOARDS = 5;
-	const MAX_HISTORY = 32;
+	public const MAX_CLIPBOARDS = 5;
+	public const MAX_HISTORY = 32;
 	/** @var UUID */
 	private $uuid;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Selection[] */
 	private $selections = [];
 	/** @var UUID|null */
-	private $latestselection = null;
+	private $latestselection;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Clipboard[] */
 	private $clipboards = [];
@@ -49,59 +49,59 @@ abstract class Session
 
 	/**
      * @param UUID $uuid
-     */
-    public function setUUID(UUID $uuid): void
-    {
-        $this->uuid = $uuid;
-    }
+	 */
+	public function setUUID(UUID $uuid): void
+	{
+		$this->uuid = $uuid;
+	}
 
-    /**
-     * @param Selection $selection
-     * @return null|Selection
-     */
-    public function &addSelection(Selection $selection)
-    {
-        $this->selections[$selection->getUUID()->toString()] = $selection;
-        $this->setLatestSelectionUUID($selection->getUUID());
-        $selection = $this->getLatestSelection();
-        return $selection;
-    }
+	/**
+	 * @param Selection $selection
+	 * @return null|Selection
+	 */
+	public function &addSelection(Selection $selection): ?Selection
+	{
+		$this->selections[$selection->getUUID()->toString()] = $selection;
+		$this->setLatestSelectionUUID($selection->getUUID());
+		$selection = $this->getLatestSelection();
+		return $selection;
+	}
 
-    /**
-     * @param UUID $uuid
-     * @return null|Selection
-     */
-    public function &getSelectionByUUID(UUID $uuid)
-    {
-        $selection = $this->selections[$uuid->toString()] ?? null;
-        return $selection;
-    }
+	/**
+	 * @param UUID $uuid
+	 * @return null|Selection
+	 */
+	public function &getSelectionByUUID(UUID $uuid): ?Selection
+	{
+		$selection = $this->selections[$uuid->toString()] ?? null;
+		return $selection;
+	}
 
-    /**
-     * @param string $uuid
-     * @return null|Selection
-     */
-    public function &getSelectionByString(string $uuid)
-    {
-        $selection = $this->selections[$uuid] ?? null;
-        return $selection;
-    }
+	/**
+	 * @param string $uuid
+	 * @return null|Selection
+	 */
+	public function &getSelectionByString(string $uuid): ?Selection
+	{
+		$selection = $this->selections[$uuid] ?? null;
+		return $selection;
+	}
 
-    /**
-     * @return null|Selection
-     */
-    public function &getLatestSelection()
-    {
-        $latestSelectionUUID = $this->getLatestSelectionUUID();
-        if (is_null($latestSelectionUUID)) {
-            $selection = null;
-            return $selection;
-        }
-        $selection = $this->selections[$latestSelectionUUID->toString()] ?? null;
-        return $selection;
-    }
+	/**
+	 * @return null|Selection
+	 */
+	public function &getLatestSelection(): ?Selection
+	{
+		$latestSelectionUUID = $this->getLatestSelectionUUID();
+		if (is_null($latestSelectionUUID)) {
+			$selection = null;
+			return $selection;
+		}
+		$selection = $this->selections[$latestSelectionUUID->toString()] ?? null;
+		return $selection;
+	}
 
-    /**
+	/**
      * @return Selection[]
      */
     public function getSelections(): array
@@ -274,7 +274,7 @@ abstract class Session
         return Loader::getInstance()->getLanguage();
     }
 
-    public abstract function sendMessage(string $message): void;
+	abstract public function sendMessage(string $message): void;
 
     public function __toString()
     {

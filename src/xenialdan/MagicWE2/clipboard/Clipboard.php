@@ -14,17 +14,17 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 abstract class Clipboard implements Serializable
 {
-    const DIRECTION_DEFAULT = 1;
+	public const DIRECTION_DEFAULT = 1;
 
-    const FLIP_X = 0x01;
-	const FLIP_WEST = 0x01;
-	const FLIP_EAST = 0x01;
-	const FLIP_Y = 0x02;
-	const FLIP_UP = 0x02;
-	const FLIP_DOWN = 0x02;
-	const FLIP_Z = 0x03;
-	const FLIP_NORTH = 0x03;
-	const FLIP_SOUTH = 0x03;
+	public const FLIP_X = 0x01;
+	public const FLIP_WEST = 0x01;
+	public const FLIP_EAST = 0x01;
+	public const FLIP_Y = 0x02;
+	public const FLIP_UP = 0x02;
+	public const FLIP_DOWN = 0x02;
+	public const FLIP_Z = 0x03;
+	public const FLIP_NORTH = 0x03;
+	public const FLIP_SOUTH = 0x03;
 
 	/** @var int|null */
 	public $worldId;

@@ -35,10 +35,10 @@ class Cube extends Shape
 	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
-        $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
-            for ($y = intval(floor($this->getMinVec3()->y)), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
-                for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
+		$this->validateChunkManager($manager);
+		for ($x = (int)floor($this->getMinVec3()->x), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
+			for ($y = (int)floor($this->getMinVec3()->y), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
+				for ($z = (int)floor($this->getMinVec3()->z), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
 					$block = $manager->getBlockAt($x, $y, $z)/*->setComponents($x, $y, $z)*/
 					;
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
@@ -66,14 +66,14 @@ class Cube extends Shape
 	 * @throws Exception
 	 */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
-    {
-        $this->validateChunkManager($manager);
-        for ($x = intval(floor($this->getMinVec3()->x)); $x <= floor($this->getMaxVec3()->x); $x++) {
-            for ($z = intval(floor($this->getMinVec3()->z)); $z <= floor($this->getMaxVec3()->z); $z++) {
-                yield new Vector2($x, $z);
-            }
-        }
-    }
+	{
+		$this->validateChunkManager($manager);
+		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
+			for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
+				yield new Vector2($x, $z);
+			}
+		}
+	}
 
     /**
      * @param World|AsyncChunkManager $manager

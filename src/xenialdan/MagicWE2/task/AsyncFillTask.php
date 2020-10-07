@@ -60,7 +60,7 @@ class AsyncFillTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 
-		$touchedChunks = array_map(function ($chunk) {
+		$touchedChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 
@@ -75,7 +75,7 @@ class AsyncFillTask extends MWEAsyncTask
 		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $newBlocks, $changed));
 
 		$resultChunks = $manager->getChunks();
-		$resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
+		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
@@ -147,7 +147,7 @@ class AsyncFillTask extends MWEAsyncTask
 		$result = $this->getResult();
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
-		$undoChunks = array_map(function ($chunk) {
+		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4)
 		$oldBlocks = $result["oldBlocks"];

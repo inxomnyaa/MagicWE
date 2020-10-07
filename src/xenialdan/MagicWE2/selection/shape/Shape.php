@@ -19,7 +19,7 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 abstract class Shape implements Serializable
 {
 	/** @var null|Vector3 */
-	public $pasteVector = null;
+	public $pasteVector;
 
 	public function getPasteVector(): ?Vector3
 	{
@@ -104,7 +104,7 @@ abstract class Shape implements Serializable
 
     public function getShapeProperties(): array
     {
-        return array_diff(get_object_vars($this), get_class_vars(Shape::class));
+		return array_diff(get_object_vars($this), get_class_vars(__CLASS__));
     }
 
     /**

@@ -61,7 +61,7 @@ class LanguageCommand extends BaseCommand
             if (isset($args["language"])) {
                 /** @var LanguageArgument $languageArgument */
                 $languageArgument = $args["language"];
-                $session->setLanguage(strval($languageArgument));
+				$session->setLanguage((string)$languageArgument);
                 return;
             }
             $languages = Loader::getInstance()->getLanguageList();

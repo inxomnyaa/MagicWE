@@ -63,10 +63,10 @@ class CountAction extends TaskAction
             }
         }
         $messages[] = TF::DARK_AQUA . count($counts) . " blocks found in a total of $count blocks";
-        uasort($counts, function ($a, $b) {
-            if ($a === $b) return 0;
-            return ($a > $b) ? -1 : 1;
-        });
+        uasort($counts, static function ($a, $b) {
+			if ($a === $b) return 0;
+			return ($a > $b) ? -1 : 1;
+		});
         foreach ($counts as $block => $countb) {
             $messages[] = TF::AQUA . $countb . "x | " . round($countb / $count * 100) . "% | " . $block;
         }

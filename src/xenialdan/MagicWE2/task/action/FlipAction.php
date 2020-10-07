@@ -16,10 +16,10 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class FlipAction extends ClipboardAction
 {
-	const AXIS_X = "x";
-	const AXIS_Y = "y";
-	const AXIS_Z = "z";
-	const AXIS_XZ = "xz";
+	public const AXIS_X = "x";
+	public const AXIS_Y = "y";
+	public const AXIS_Z = "z";
+	public const AXIS_XZ = "xz";
 	/** @var bool */
 	public $addClipboard = true;
 	/** @var string */

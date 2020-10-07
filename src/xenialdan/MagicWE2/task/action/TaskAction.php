@@ -23,7 +23,7 @@ abstract class TaskAction
 	/** @var bool */
 	public $addClipboard = false;
 	/** @var null|Vector3 */
-	public $clipboardVector = null;
+	public $clipboardVector;
 
 	/**
 	 * @param string $sessionUUID
@@ -36,9 +36,9 @@ abstract class TaskAction
 	 * @param string[] $messages
      * @return Generator|Progress[]
      */
-    public abstract function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;
+	abstract public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;
 
-    public static abstract function getName(): string;
+	abstract public static function getName(): string;
 
     /**
      * @param Vector3|null $clipboardVector

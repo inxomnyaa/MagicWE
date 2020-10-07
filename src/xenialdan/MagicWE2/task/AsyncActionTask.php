@@ -87,7 +87,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
 		$touchedChunks = unserialize($this->touchedChunks, ['allowed_classes' => false]);
-		$touchedChunks = array_map(function ($chunk) {
+		$touchedChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, $touchedChunks);
 
@@ -110,7 +110,7 @@ class AsyncActionTask extends MWEAsyncTask
 		}
 
 		$resultChunks = $manager->getChunks();
-		$resultChunks = array_filter($resultChunks, function (Chunk $chunk) {
+		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed", "messages"));
@@ -134,7 +134,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$result = $this->getResult();
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
-		$undoChunks = array_map(function ($chunk) {
+		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
 		/** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere

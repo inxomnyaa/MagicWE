@@ -126,14 +126,14 @@ class AsyncCountTask extends MWEAsyncTask
 			$totalCount = $result["totalCount"];
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.count.success', [$this->generateTookString()]));
 			$session->sendMessage(TF::DARK_AQUA . $session->getLanguage()->translateString('task.count.result', [count($counts), $totalCount]));
-			uasort($counts, function ($a, $b) {
-                if ($a === $b) return 0;
-                return ($a > $b) ? -1 : 1;
-            });
-            foreach ($counts as $block => $count) {
-                $session->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
-            }
-        } catch (SessionException $e) {
+			uasort($counts, static function ($a, $b) {
+				if ($a === $b) return 0;
+				return ($a > $b) ? -1 : 1;
+			});
+			foreach ($counts as $block => $count) {
+				$session->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
+			}
+		} catch (SessionException $e) {
             Loader::getInstance()->getLogger()->logException($e);
         }
     }

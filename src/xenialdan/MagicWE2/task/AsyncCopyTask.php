@@ -61,7 +61,7 @@ class AsyncCopyTask extends MWEAsyncTask
     public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
-		$chunks = array_map(function ($chunk) {
+		$chunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->chunks, ['allowed_classes' => false]));//TODO test pm4
 		/** @var Selection $selection */

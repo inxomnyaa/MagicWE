@@ -30,7 +30,6 @@ class FloodCommand extends BaseCommand
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $sender->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
-        return;
         /*
         if (!$sender instanceof Player) return;
         /** @var Player $sender * /

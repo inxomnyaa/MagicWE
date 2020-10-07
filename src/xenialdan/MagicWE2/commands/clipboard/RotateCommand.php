@@ -57,8 +57,8 @@ class RotateCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $angle = intval($args["angle"]);
-            $aroundOrigin = $args["aroundOrigin"] ?? true;
+            $angle = (int)$args["angle"];
+			$aroundOrigin = $args["aroundOrigin"] ?? true;
             $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [$angle]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {

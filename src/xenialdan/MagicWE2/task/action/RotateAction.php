@@ -18,9 +18,9 @@ use xenialdan\MagicWE2\selection\shape\Cuboid;
 
 class RotateAction extends ClipboardAction
 {
-	const ROTATE_90 = 90;
-	const ROTATE_180 = 180;
-	const ROTATE_270 = 270;
+	public const ROTATE_90 = 90;
+	public const ROTATE_180 = 180;
+	public const ROTATE_270 = 270;
 	/** @var bool */
 	public $addClipboard = true;
 	/** @var string */

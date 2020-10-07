@@ -51,8 +51,8 @@ class SetRangeCommand extends BaseCommand
                 $range = Loader::getInstance()->getToolDistance();
 				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.current', [$range]));
 			} else {
-				Loader::getInstance()->getConfig()->set("tool-range", intval($args["range"]));
-				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.set', [intval($args["range"])]));
+				Loader::getInstance()->getConfig()->set("tool-range", (int)$args["range"]);
+				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.set', [(int)$args["range"]]));
 			}
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

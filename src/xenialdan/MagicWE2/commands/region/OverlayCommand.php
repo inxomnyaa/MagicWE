@@ -55,7 +55,7 @@ class OverlayCommand extends BaseCommand
         try {
             $messages = [];
             $error = false;
-            $blocks = API::blockParser(strval($args["blocks"]), $messages, $error);
+			$blocks = API::blockParser((string)$args["blocks"], $messages, $error);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }

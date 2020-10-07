@@ -62,11 +62,11 @@ class Ellipsoid extends Shape
         $targetY = $this->pasteVector->getY();
         $targetZ = $this->pasteVector->getZ();
 
-        for ($x = intval(floor($centerVec2->x - $this->width / 2 /*- 1*/)); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
-            $xSquared = ($targetX - $x) ** 2;
-            for ($y = intval(floor($this->getPasteVector()->y)) + 1, $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
-                $ySquared = ($targetY - $y + $yrad) ** 2;
-                for ($z = intval(floor($centerVec2->y - $this->depth / 2 /*- 1*/)); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
+        for ($x = (int)floor($centerVec2->x - $this->width / 2 /*- 1*/); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
+			$xSquared = ($targetX - $x) ** 2;
+			for ($y = (int)floor($this->getPasteVector()->y) + 1, $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+				$ySquared = ($targetY - $y + $yrad) ** 2;
+				for ($z = (int)floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
 					$zSquared = ($targetZ - $z) ** 2;
 
 					$vec3 = new Vector3($x, $y, $z);
@@ -109,15 +109,15 @@ class Ellipsoid extends Shape
         $targetX = $this->pasteVector->getX();
         $targetZ = $this->pasteVector->getZ();
 
-        for ($x = intval(floor($centerVec2->x - $this->width / 2 /*- 1*/)); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
-            $xSquared = ($targetX - $x) ** 2;
-            for ($z = intval(floor($centerVec2->y - $this->depth / 2 /*- 1*/)); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
-                $zSquared = ($targetZ - $z) ** 2;
-                if ($xSquared / $xradSquared + $zSquared / $zradSquared >= 1) continue;
-                //TODO hollow
-                yield new Vector2($x, $z);
-            }
-        }
+		for ($x = (int)floor($centerVec2->x - $this->width / 2 /*- 1*/); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
+			$xSquared = ($targetX - $x) ** 2;
+			for ($z = (int)floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
+				$zSquared = ($targetZ - $z) ** 2;
+				if ($xSquared / $xradSquared + $zSquared / $zradSquared >= 1) continue;
+				//TODO hollow
+				yield new Vector2($x, $z);
+			}
+		}
     }
 
     /**
@@ -161,7 +161,7 @@ class Ellipsoid extends Shape
 
     public function getTotalCount(): int
     {
-        return (int)floor(4 * pi() * (($this->width / 2) + 1) * (($this->height / 2) + 1) * (($this->depth / 2) + 1) / 3);
+		return (int)floor(4 * M_PI * (($this->width / 2) + 1) * (($this->height / 2) + 1) * (($this->depth / 2) + 1) / 3);
     }
 
     public static function getName(): string

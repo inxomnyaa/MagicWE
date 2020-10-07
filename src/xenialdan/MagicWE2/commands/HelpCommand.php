@@ -48,21 +48,19 @@ class HelpCommand extends BaseCommand
         try {
             $cmds = [];
             if (empty($args["command"])) {
-                foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), function (Command $command) use ($sender) {
-                    return strpos($command->getName(), "/") !== false && $command->testPermissionSilent($sender);
-                }) as $cmd) {
-                    /** @var Command $cmd */
-                    $cmds[$cmd->getName()] = $cmd;
-                }
-            } else {
-                if (($cmd = Loader::getInstance()->getServer()->getCommandMap()->getCommand("/" . str_replace("/", "", TF::clean(strval($args["command"]))))) instanceof Command) {
-                    /** @var Command $cmd */
-                    $cmds[$cmd->getName()] = $cmd;
-                } else {
-                    $sender->sendMessage(TF::RED . str_replace("/", "//", $lang->translateString("%commands.generic.notFound")));
-                    return;
-                }
-            }
+				foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), static function (Command $command) use ($sender) {
+					return strpos($command->getName(), "/") !== false && $command->testPermissionSilent($sender);
+				}) as $cmd) {
+					/** @var Command $cmd */
+					$cmds[$cmd->getName()] = $cmd;
+				}
+			} else if (($cmd = Loader::getInstance()->getServer()->getCommandMap()->getCommand("/" . str_replace("/", "", TF::clean((string)$args["command"])))) instanceof Command) {
+				/** @var Command $cmd */
+				$cmds[$cmd->getName()] = $cmd;
+			} else {
+				$sender->sendMessage(TF::RED . str_replace("/", "//", $lang->translateString("%commands.generic.notFound")));
+				return;
+			}
             foreach ($cmds as $command) {
                 $message = TF::LIGHT_PURPLE . "/" . $command->getName();
                 if (!empty(($aliases = $command->getAliases()))) {

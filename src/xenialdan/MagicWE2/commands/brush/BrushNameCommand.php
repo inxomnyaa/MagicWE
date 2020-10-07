@@ -61,11 +61,11 @@ class BrushNameCommand extends BaseSubCommand
             }
             $brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
             if ($brush instanceof Brush) {
-                if (empty($args["name"])) {
-                    $sender->sendMessage($brush->getName());
-                    return;
-                }
-				$name = strval($args["name"]);
+				if (empty($args["name"])) {
+					$sender->sendMessage($brush->getName());
+					return;
+				}
+				$name = (string)$args["name"];
 				$brush->properties->setCustomName($name);
 				$session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
 				$session->replaceBrush($brush);

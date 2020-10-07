@@ -107,22 +107,22 @@ class BrushCommand extends BaseCommand
 		}
 	}
 
-    /**
-     * @param UIElement[] $elements
-     * @param array $data
-     * @return array
-     */
-    public static function generateLore(array $elements, array $data)
-    {
-        $return = [];
-        foreach ($elements as $i => $element) {
-            if ($element instanceof Label) continue;
-            if ($element instanceof Toggle) {
-                $return[] = strval($element->getText() . ": " . ($data[$i] ? "Yes" : "No"));
-                continue;
-            }
-            $return[] = strval($element->getText() . ": " . $data[$i]);
-        }
-        return $return;
+	/**
+	 * @param UIElement[] $elements
+	 * @param array $data
+	 * @return array
+	 */
+	public static function generateLore(array $elements, array $data): array
+	{
+		$return = [];
+		foreach ($elements as $i => $element) {
+			if ($element instanceof Label) continue;
+			if ($element instanceof Toggle) {
+				$return[] = ($element->getText() . ": " . ($data[$i] ? "Yes" : "No"));
+				continue;
+			}
+			$return[] = ($element->getText() . ": " . $data[$i]);
+		}
+		return $return;
     }
 }

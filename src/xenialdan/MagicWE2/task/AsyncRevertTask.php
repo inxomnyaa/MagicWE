@@ -19,8 +19,8 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncRevertTask extends MWEAsyncTask
 {
 
-	const TYPE_UNDO = 0;
-	const TYPE_REDO = 1;
+	public const TYPE_UNDO = 0;
+	public const TYPE_REDO = 1;
 
 	/** @var string */
 	private $clipboard;
