@@ -24,7 +24,7 @@ class PlaceAllBlockstatesCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->setPermission("op");
+		$this->setPermission("we.command.test");
 	}
 
 	/**

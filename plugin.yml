@@ -122,4 +122,6 @@ permissions:
         children:
           we.command.utility.calculate:
             default: op
+      we.command.test:
+        default: op
 ...

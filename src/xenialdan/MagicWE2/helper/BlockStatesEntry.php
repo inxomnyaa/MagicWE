@@ -13,7 +13,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\plugin\PluginException;
-use pocketmine\utils\MainLogger;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 use RuntimeException;
 use Throwable;
@@ -49,8 +49,8 @@ class BlockStatesEntry
             else
                 $this->blockFull = $this->blockIdentifier;
         } catch (Throwable $e) {
-            MainLogger::getLogger()->logException($e);
-            $this->blockFull = $this->blockIdentifier;
+			Server::getInstance()->getLogger()->logException($e);
+			$this->blockFull = $this->blockIdentifier;
         }
 	}
 
