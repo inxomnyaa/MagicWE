@@ -61,7 +61,7 @@ class ChunkCommand extends BaseCommand
             if (is_null($selection)) {
                 throw new Error("No selection created - Check the console for errors");
             }
-            $chunk = $sender->getWorld()->getChunkAtPosition($sender);
+            $chunk = $sender->getWorld()->getChunkAtPosition($sender->getPosition());
             if (is_null($chunk)) {
                 throw new Error("Could not find a chunk at your position");
             }

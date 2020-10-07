@@ -83,10 +83,10 @@ class Flood extends WETool
         /** @var Block[] $walkTo */
         $walkTo = [];
         foreach ($this->nextToCheck as $next) {
-            $sides = iterator_to_array($this->getHorizontalSides($manager, $next));
-            $walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
+            $sides = iterator_to_array($this->getHorizontalSides($manager, $next->getPos()));
+			$walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
 				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->distanceSquared($this->getCenter()) <= ($this->limit / pi());
-            }));
+			}));
         }
         $this->walked = array_merge($this->walked, $walkTo);
         $this->nextToCheck = $walkTo;

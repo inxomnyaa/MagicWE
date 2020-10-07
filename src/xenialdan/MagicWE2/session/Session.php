@@ -248,6 +248,7 @@ abstract class Session
             $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.redo.none'));
             return;
         }
+        /** @var RevertClipboard $revertClipboard */
         $revertClipboard = $this->redoHistory->pop();
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));

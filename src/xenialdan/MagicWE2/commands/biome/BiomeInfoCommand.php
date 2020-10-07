@@ -76,12 +76,12 @@ class BiomeInfoCommand extends BaseCommand
 						$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
 						return;
 					}
-					$biomeId = $target->getPos()->getWorld()->getChunkAtPosition($target)->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
+					$biomeId = $target->getPos()->getWorld()->getChunkAtPosition($target->getPos())->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}
 				if (in_array(self::FLAG_P, $flagArray, true)) {
-					$biomeId = $sender->getWorld()->getChunkAtPosition($sender)->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
+					$biomeId = $sender->getWorld()->getChunkAtPosition($sender->getPosition())->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}

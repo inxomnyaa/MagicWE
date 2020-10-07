@@ -49,7 +49,7 @@ class AsyncPasteTask extends MWEAsyncTask
 	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, SingleClipboard $clipboard, int $flags)
     {
 		$this->start = microtime(true);
-		$this->offset = $selection->getShape()->getPasteVector()->add($clipboard->position)->floor();
+		$this->offset = $selection->getShape()->getPasteVector()->addVector($clipboard->position)->floor();
 		#var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->selection = serialize($selection);

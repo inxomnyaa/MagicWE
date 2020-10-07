@@ -201,7 +201,7 @@ class EventListener implements Listener
                 case ItemIds::BUCKET:
 				{
 					#if (){// && has perms
-					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE), $session);
+					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE), $session);
 					#}
 					break;
 				}
