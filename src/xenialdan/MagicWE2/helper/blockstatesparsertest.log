@@ -1,0 +1,274 @@
+2020-10-07 [20:44:07.359] [Server thread/DEBUG]: [MWE2] Search query: minecraft:tnt
+2020-10-07 [20:44:07.365] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:tnt"
+  "states" => TAG_Compound: value={
+    "allow_underwater_bit" => TAG_Byte: value=0
+    "explode_bit" => TAG_Byte: value=0
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.365] [Server thread/DEBUG]: Final block: Block[TNT] (46:0)
+2020-10-07 [20:44:07.366] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab
+2020-10-07 [20:44:07.366] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=0
+    "wood_type" => TAG_String: value="oak"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.367] [Server thread/DEBUG]: Final block: Block[Oak Slab] (158:0)
+2020-10-07 [20:44:07.367] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab_wrongname
+2020-10-07 [20:44:07.368] [Server thread/DEBUG]: Unable to resolve "wooden_slab_wrongname" to a valid item
+2020-10-07 [20:44:07.368] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[foo=bar]
+2020-10-07 [20:44:07.371] [Server thread/DEBUG]: Invalid state foo
+2020-10-07 [20:44:07.372] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[top_slot_bit=]
+2020-10-07 [20:44:07.383] [Server thread/DEBUG]: Empty value for state top_slot_bit
+2020-10-07 [20:44:07.384] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[top_slot_bit=true]
+2020-10-07 [20:44:07.513] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=1
+    "wood_type" => TAG_String: value="oak"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.513] [Server thread/DEBUG]: Final block: Block[Oak Slab] (158:8)
+2020-10-07 [20:44:07.513] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[top_slot_bit=false]
+2020-10-07 [20:44:07.619] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=0
+    "wood_type" => TAG_String: value="oak"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.620] [Server thread/DEBUG]: Final block: Block[Oak Slab] (158:0)
+2020-10-07 [20:44:07.620] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[wood_type=oak]
+2020-10-07 [20:44:07.638] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=0
+    "wood_type" => TAG_String: value="oak"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.639] [Server thread/DEBUG]: Final block: Block[Oak Slab] (158:0)
+2020-10-07 [20:44:07.639] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]
+2020-10-07 [20:44:07.650] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=0
+    "wood_type" => TAG_String: value="spruce"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.650] [Server thread/DEBUG]: Final block: Block[Spruce Slab] (158:1)
+2020-10-07 [20:44:07.650] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]
+2020-10-07 [20:44:07.656] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=1
+    "wood_type" => TAG_String: value="spruce"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.656] [Server thread/DEBUG]: Final block: Block[Spruce Slab] (158:9)
+2020-10-07 [20:44:07.657] [Server thread/DEBUG]: [MWE2] Search query: minecraft:end_rod[]
+2020-10-07 [20:44:07.666] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:end_rod"
+  "states" => TAG_Compound: value={
+    "facing_direction" => TAG_Int: value=0
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.666] [Server thread/DEBUG]: Final block: Block[End Rod] (208:0)
+2020-10-07 [20:44:07.666] [Server thread/DEBUG]: [MWE2] Search query: minecraft:end_rod[facing_direction=1]
+2020-10-07 [20:44:07.671] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:end_rod"
+  "states" => TAG_Compound: value={
+    "facing_direction" => TAG_Int: value=1
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.671] [Server thread/DEBUG]: Final block: Block[End Rod] (208:1)
+2020-10-07 [20:44:07.671] [Server thread/DEBUG]: [MWE2] Search query: minecraft:end_rod[block_light_level=14]
+2020-10-07 [20:44:07.672] [Server thread/DEBUG]: Invalid state block_light_level
+2020-10-07 [20:44:07.672] [Server thread/DEBUG]: [MWE2] Search query: minecraft:end_rod[block_light_level=13]
+2020-10-07 [20:44:07.672] [Server thread/DEBUG]: Invalid state block_light_level
+2020-10-07 [20:44:07.673] [Server thread/DEBUG]: [MWE2] Search query: minecraft:light_block[block_light_level=14]
+2020-10-07 [20:44:07.673] [Server thread/DEBUG]: Unable to resolve "light_block" to a valid item
+2020-10-07 [20:44:07.673] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone[]
+2020-10-07 [20:44:07.730] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:stone"
+  "states" => TAG_Compound: value={
+    "stone_type" => TAG_String: value="stone"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.731] [Server thread/DEBUG]: Final block: Block[Stone] (1:0)
+2020-10-07 [20:44:07.731] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone[stone_type=granite]
+2020-10-07 [20:44:07.736] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:stone"
+  "states" => TAG_Compound: value={
+    "stone_type" => TAG_String: value="granite"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.736] [Server thread/DEBUG]: Final block: Block[Granite] (1:1)
+2020-10-07 [20:44:07.736] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone[stone_type=andesite]
+2020-10-07 [20:44:07.749] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:stone"
+  "states" => TAG_Compound: value={
+    "stone_type" => TAG_String: value="andesite"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.749] [Server thread/DEBUG]: Final block: Block[Andesite] (1:5)
+2020-10-07 [20:44:07.749] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone[stone_type=wrongtag]
+2020-10-07 [20:44:07.750] [Server thread/DEBUG]: No block minecraft:stone matching minecraft:stone[stone_type=wrongtag] could be found
+2020-10-07 [20:44:07.750] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[top=true]
+2020-10-07 [20:44:07.777] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=1
+    "wood_type" => TAG_String: value="oak"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.777] [Server thread/DEBUG]: Final block: Block[Oak Slab] (158:8)
+2020-10-07 [20:44:07.777] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wooden_slab[top=true,type=spruce]
+2020-10-07 [20:44:07.783] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:wooden_slab"
+  "states" => TAG_Compound: value={
+    "top_slot_bit" => TAG_Byte: value=1
+    "wood_type" => TAG_String: value="spruce"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.784] [Server thread/DEBUG]: Final block: Block[Spruce Slab] (158:9)
+2020-10-07 [20:44:07.784] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone[type=granite]
+2020-10-07 [20:44:07.794] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:stone"
+  "states" => TAG_Compound: value={
+    "stone_type" => TAG_String: value="granite"
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.794] [Server thread/DEBUG]: Final block: Block[Granite] (1:1)
+2020-10-07 [20:44:07.794] [Server thread/DEBUG]: [MWE2] Search query: minecraft:bedrock[burn=true]
+2020-10-07 [20:44:07.810] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:bedrock"
+  "states" => TAG_Compound: value={
+    "infiniburn_bit" => TAG_Byte: value=1
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.810] [Server thread/DEBUG]: Final block: Block[Bedrock] (7:1)
+2020-10-07 [20:44:07.810] [Server thread/DEBUG]: [MWE2] Search query: minecraft:lever[direction=1]
+2020-10-07 [20:44:07.811] [Server thread/DEBUG]: No block minecraft:lever matching minecraft:lever[direction=1] could be found
+2020-10-07 [20:44:07.811] [Server thread/DEBUG]: [MWE2] Search query: minecraft:wheat[growth=3]
+2020-10-07 [20:44:07.820] [Server thread/DEBUG]: Undefined offset: 3
+2020-10-07 [20:44:07.820] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone_button[direction=1,pressed=true]
+2020-10-07 [20:44:07.826] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:stone_button"
+  "states" => TAG_Compound: value={
+    "button_pressed_bit" => TAG_Byte: value=1
+    "facing_direction" => TAG_Int: value=1
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.826] [Server thread/DEBUG]: Final block: Block[Stone Button] (77:9)
+2020-10-07 [20:44:07.827] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone_button[direction=0]
+2020-10-07 [20:44:07.852] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:stone_button"
+  "states" => TAG_Compound: value={
+    "button_pressed_bit" => TAG_Byte: value=0
+    "facing_direction" => TAG_Int: value=0
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.852] [Server thread/DEBUG]: Final block: Block[Stone Button] (77:0)
+2020-10-07 [20:44:07.853] [Server thread/DEBUG]: [MWE2] Search query: minecraft:stone_brick_stairs[direction=0]
+2020-10-07 [20:44:07.858] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:stone_brick_stairs"
+  "states" => TAG_Compound: value={
+    "upside_down_bit" => TAG_Byte: value=0
+    "weirdo_direction" => TAG_Int: value=0
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.859] [Server thread/DEBUG]: Final block: Block[Stone Brick Stairs] (109:0)
+2020-10-07 [20:44:07.859] [Server thread/DEBUG]: [MWE2] Search query: minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]
+2020-10-07 [20:44:07.874] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:trapdoor"
+  "states" => TAG_Compound: value={
+    "direction" => TAG_Int: value=0
+    "open_bit" => TAG_Byte: value=1
+    "upside_down_bit" => TAG_Byte: value=0
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.874] [Server thread/DEBUG]: Final block: Block[Oak Trapdoor] (96:8)
+2020-10-07 [20:44:07.874] [Server thread/DEBUG]: [MWE2] Search query: minecraft:birch_door
+2020-10-07 [20:44:07.875] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:birch_door"
+  "states" => TAG_Compound: value={
+    "direction" => TAG_Int: value=0
+    "door_hinge_bit" => TAG_Byte: value=0
+    "open_bit" => TAG_Byte: value=0
+    "upper_block_bit" => TAG_Byte: value=0
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.875] [Server thread/DEBUG]: Final block: Block[Birch Door] (194:0)
+2020-10-07 [20:44:07.875] [Server thread/DEBUG]: [MWE2] Search query: minecraft:iron_door[direction=1]
+2020-10-07 [20:44:07.876] [Server thread/DEBUG]: No block minecraft:iron_door matching minecraft:iron_door[direction=1] could be found
+2020-10-07 [20:44:07.876] [Server thread/DEBUG]: [MWE2] Search query: minecraft:birch_door[upper_block_bit=true]
+2020-10-07 [20:44:07.877] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:birch_door"
+  "states" => TAG_Compound: value={
+    "direction" => TAG_Int: value=0
+    "door_hinge_bit" => TAG_Byte: value=0
+    "open_bit" => TAG_Byte: value=0
+    "upper_block_bit" => TAG_Byte: value=1
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.877] [Server thread/DEBUG]: Final block: Block[Birch Door] (194:8)
+2020-10-07 [20:44:07.877] [Server thread/DEBUG]: [MWE2] Search query: minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]
+2020-10-07 [20:44:07.881] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:birch_door"
+  "states" => TAG_Compound: value={
+    "direction" => TAG_Int: value=0
+    "door_hinge_bit" => TAG_Byte: value=0
+    "open_bit" => TAG_Byte: value=0
+    "upper_block_bit" => TAG_Byte: value=1
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.882] [Server thread/DEBUG]: Final block: Block[Birch Door] (194:8)
+2020-10-07 [20:44:07.882] [Server thread/DEBUG]: [MWE2] Search query: minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]
+2020-10-07 [20:44:07.883] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:birch_door"
+  "states" => TAG_Compound: value={
+    "direction" => TAG_Int: value=0
+    "door_hinge_bit" => TAG_Byte: value=0
+    "open_bit" => TAG_Byte: value=0
+    "upper_block_bit" => TAG_Byte: value=1
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.883] [Server thread/DEBUG]: Final block: Block[Birch Door] (194:8)
+2020-10-07 [20:44:07.883] [Server thread/DEBUG]: [MWE2] Search query: minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]
+2020-10-07 [20:44:07.885] [Server thread/DEBUG]: TAG_Compound: value={
+  "name" => TAG_String: value="minecraft:birch_door"
+  "states" => TAG_Compound: value={
+    "direction" => TAG_Int: value=0
+    "door_hinge_bit" => TAG_Byte: value=0
+    "open_bit" => TAG_Byte: value=0
+    "upper_block_bit" => TAG_Byte: value=1
+  }
+  "version" => TAG_Int: value=17825806
+}
+2020-10-07 [20:44:07.885] [Server thread/DEBUG]: Final block: Block[Birch Door] (194:8)

@@ -12,9 +12,7 @@ use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
-use pocketmine\item\ItemBlock;
 use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -129,6 +127,15 @@ final class BlockStatesParser
 	}
 
 	/**
+	 * @param string $blockIdentifier
+	 * @return CompoundTag|null
+	 */
+	protected static function getDefaultStates(string $blockIdentifier): CompoundTag
+	{
+		return self::$legacyStateMap[$blockIdentifier][0]->getBlockState()->getCompoundTag('states');
+	}
+
+	/**
 	 * @param string $query
 	 * @param bool $multiple
 	 * @return Block[]
@@ -163,7 +170,7 @@ final class BlockStatesParser
 		}
 		$selectedBlockName = $matches[0][1];
 		$namespacedSelectedBlockName = "minecraft:" . $selectedBlockName;//TODO try to keep namespace "minecraft:" to support custom blocks
-		$defaultStatesNamedTag = self::$legacyStateMap[$namespacedSelectedBlockName][0]->getBlockState()->getCompoundTag("states");
+		$defaultStatesNamedTag = self::getDefaultStates($namespacedSelectedBlockName);
 		if (!$defaultStatesNamedTag instanceof CompoundTag) {
 			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
 		}
@@ -217,12 +224,11 @@ final class BlockStatesParser
 		//return found block(s)
 		$blocks = [];
 		//doors.. special blocks annoying -.- TODO 1.16 apparently fixed this shit! YAY TODO remove
-		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
-		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
-			/** @var ItemBlock $fromString */
-			$fromString = VanillaBlocks::fromString($selectedBlockName . "_block:8");
-			return [$fromString];
-		}
+//		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
+//		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
+//			$fromString = LegacyStringToItemParser::getInstance()->parse($selectedBlockName . "_block:8")->getBlock();
+//			return [$fromString];
+//		}
 		#var_dump((string)$finalStatesList);
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
@@ -257,9 +263,8 @@ final class BlockStatesParser
 	{
 		$name = self::getBlockIdMapName($block);
 		if ($name === null) return null;
-		/** @var string $name */
 		$damage = $block->getMeta();
-		$blockStates = clone self::$legacyStateMap[$name][$damage]->getBlockState();
+		$blockStates = clone self::$legacyStateMap[$name][$damage]->getBlockState()->getCompoundTag('states');
 		if ($blockStates === null) return null;
 		return new BlockStatesEntry($name, $blockStates, $block);
 	}
@@ -272,36 +277,35 @@ final class BlockStatesParser
 	 */
 	public static function printStates(BlockStatesEntry $entry, bool $skipDefaults): string
 	{
-		return $entry->blockStates->toString();//TODO
 		$printedCompound = $entry->blockStates;
 		$blockIdentifier = $entry->blockIdentifier;
-		$s = $failed = [];
-		foreach ($printedCompound as $statesTagEntry) {
+		$s = [];
+		foreach ($printedCompound as $statesTagEntryName => $statesTagEntry) {
 			/** @var CompoundTag $defaultStatesNamedTag */
-			$defaultStatesNamedTag = self::$legacyStateMap[$blockIdentifier][0];
-			$namedTag = $defaultStatesNamedTag->getTag($statesTagEntry->getName());
+			$defaultStatesNamedTag = self::getDefaultStates($blockIdentifier);
+			$namedTag = $defaultStatesNamedTag->getTag($statesTagEntryName);
 			if (!$namedTag instanceof ByteTag && !$namedTag instanceof StringTag && !$namedTag instanceof IntTag) {
 				continue;
 			}
 			//skip defaults
 			/** @var ByteTag|IntTag|StringTag $namedTag */
-			if ($skipDefaults && $namedTag->getValue() === $statesTagEntry->getValue()) continue;
+			if ($skipDefaults && $namedTag->equals($statesTagEntry)) continue;
 			//prepare string
 			if ($statesTagEntry instanceof ByteTag) {
-				$s[] = TF::RED . $statesTagEntry->getName() . "=" . ($statesTagEntry->getValue() ? TF::GREEN . "true" : TF::RED . "false") . TF::RESET;
+				$s[] = TF::RED . $statesTagEntryName . "=" . ($statesTagEntry->getValue() ? TF::GREEN . "true" : TF::RED . "false") . TF::RESET;
 			} else if ($statesTagEntry instanceof IntTag) {
-				$s[] = TF::BLUE . $statesTagEntry->getName() . "=" . TF::BLUE . strval($statesTagEntry->getValue()) . TF::RESET;
+				$s[] = TF::BLUE . $statesTagEntryName . "=" . TF::BLUE . $statesTagEntry->getValue() . TF::RESET;
 			} else if ($statesTagEntry instanceof StringTag) {
-				$s[] = TF::LIGHT_PURPLE . $statesTagEntry->getName() . "=" . TF::LIGHT_PURPLE . strval($statesTagEntry->getValue()) . TF::RESET;
+				$s[] = TF::LIGHT_PURPLE . $statesTagEntryName . "=" . TF::LIGHT_PURPLE . $statesTagEntry->getValue() . TF::RESET;
 			}
 		}
 		if (count($s) === 0) {
 			#Server::getInstance()->getLogger()->debug($blockIdentifier);
 			return $blockIdentifier;
-		} else {
-			#Server::getInstance()->getLogger()->debug($blockIdentifier . "[" . implode(",", $s) . "]");
-			return $blockIdentifier . "[" . implode(",", $s) . "]";
 		}
+
+		#Server::getInstance()->getLogger()->debug($blockIdentifier . "[" . implode(",", $s) . "]");
+		return $blockIdentifier . "[" . implode(",", $s) . "]";
 	}
 
 	/**
@@ -331,7 +335,7 @@ final class BlockStatesParser
 			"minecraft:tnt",
 			#"minecraft:wood",
 			#"minecraft:log",
-			#"minecraft:wooden_slab",
+			"minecraft:wooden_slab",
 			"minecraft:wooden_slab_wrongname",
 			"minecraft:wooden_slab[foo=bar]",
 			"minecraft:wooden_slab[top_slot_bit=]",
@@ -339,42 +343,43 @@ final class BlockStatesParser
 			"minecraft:wooden_slab[top_slot_bit=false]",
 			"minecraft:wooden_slab[wood_type=oak]",
 			#"minecraft:wooden_slab[wood_type=spruce]",
-			#"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]",
+			"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=false]",
 			"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
-			#"minecraft:end_rod[]",
-			#"minecraft:end_rod[facing_direction=1]",
-			#"minecraft:end_rod[block_light_level=14]",
-			#"minecraft:end_rod[block_light_level=13]",
-			#"minecraft:light_block[block_light_level=14]",
+			"minecraft:end_rod[]",
+			"minecraft:end_rod[facing_direction=1]",
+			"minecraft:end_rod[block_light_level=14]",
+			"minecraft:end_rod[block_light_level=13]",
+			"minecraft:light_block[block_light_level=14]",
 			"minecraft:stone[]",
 			"minecraft:stone[stone_type=granite]",
-			#"minecraft:stone[stone_type=andesite]",
+			"minecraft:stone[stone_type=andesite]",
 			"minecraft:stone[stone_type=wrongtag]",//seems to just not find a block at all. neat!
 			#//alias testing
-			#"minecraft:wooden_slab[top=true]",
-			#"minecraft:wooden_slab[top=true,type=spruce]",
-			#"minecraft:stone[type=granite]",
-			#"minecraft:bedrock[burn=true]",
-			#"minecraft:lever[direction=1]",
-			#"minecraft:wheat[growth=3]",
-			#"minecraft:stone_button[direction=1,pressed=true]",
-			#"minecraft:stone_button[direction=0]",
-			#"minecraft:stone_brick_stairs[direction=0]",
-			#"minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
-			#"minecraft:birch_door",
-			#"minecraft:iron_door[direction=1]",
-			#"minecraft:birch_door[upper_block_bit=true]",
-			#"minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
-			#"minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
-			#"minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
+			"minecraft:wooden_slab[top=true]",
+			"minecraft:wooden_slab[top=true,type=spruce]",
+			"minecraft:stone[type=granite]",
+			"minecraft:bedrock[burn=true]",
+			"minecraft:lever[direction=1]",
+			"minecraft:wheat[growth=3]",
+			"minecraft:stone_button[direction=1,pressed=true]",
+			"minecraft:stone_button[direction=0]",
+			"minecraft:stone_brick_stairs[direction=0]",
+			"minecraft:trapdoor[direction=0,open_bit=true,upside_down_bit=false]",
+			"minecraft:birch_door",
+			"minecraft:iron_door[direction=1]",
+			"minecraft:birch_door[upper_block_bit=true]",
+			"minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+			"minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
+			"minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
 		];
 		foreach ($tests as $test) {
 			try {
 				Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
 				foreach (self::fromString($test) as $block) {
 					assert($block instanceof Block);
-					#Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates(self::getStateByBlock($block), true));
-					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates(self::getStateByBlock($block), false));
+					$blockStatesEntry = self::getStateByBlock($block);
+					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, true));
+					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, false));
 					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
 				}
 			} catch (Exception $e) {
