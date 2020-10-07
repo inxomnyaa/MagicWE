@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\brush;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
-use Error;
 use Exception;
 use InvalidArgumentException;
 use muqsit\invmenu\InvMenu;
@@ -97,24 +95,17 @@ class BrushCommand extends BaseCommand
                     }
                     return null;
                 } catch (Exception $error) {
-                    $session->sendMessage(TF::RED . $lang->translateString('error'));
-                    $session->sendMessage(TF::RED . $error->getMessage());
-                }
-            });
-            $sender->sendForm($form);
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+					$session->sendMessage(TF::RED . $lang->translateString('error'));
+					$session->sendMessage(TF::RED . $error->getMessage());
+				}
+			});
+			$sender->sendForm($form);
+		} catch (Exception $error) {
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsage());
+		}
+	}
 
     /**
      * @param UIElement[] $elements

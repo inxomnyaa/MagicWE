@@ -12,7 +12,6 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
-use pocketmine\world\Position;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -62,8 +61,7 @@ class AsyncPasteTask extends MWEAsyncTask
 	 * Actions to execute when run
 	 *
 	 * @return void
-	 * @throws Exception
-	 * @throws AssumptionFailedError
+	 * @throws InvalidArgumentException
 	 */
 	public function onRun(): void
 	{
@@ -100,7 +98,6 @@ class AsyncPasteTask extends MWEAsyncTask
 	 * @param SingleClipboard $clipboard
 	 * @param null|int $changed
 	 * @return Generator|Block[]
-	 * @throws AssumptionFailedError
 	 * @throws InvalidArgumentException
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard, ?int &$changed): Generator
@@ -131,9 +128,9 @@ class AsyncPasteTask extends MWEAsyncTask
 				$block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
 			}*/
 			$new = $entry->toBlock();
-			$new->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
+			#$new->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
 			$old = $manager->getBlockAt($x, $y, $z);
-			$old->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
+			#$old->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
 			#var_dump("old", $old, "new", $new);
 			yield $old;
 			$manager->setBlockAt($x, $y, $z, $new);

@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use TypeError;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -36,7 +37,9 @@ class BrushNameCommand extends BaseSubCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param BaseArgument[] $args
-     */
+	 * @throws TypeError
+	 * @throws TypeError
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();

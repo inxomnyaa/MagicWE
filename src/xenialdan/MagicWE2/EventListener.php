@@ -7,6 +7,7 @@ use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
+use pocketmine\entity\InvalidSkinException;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
@@ -41,46 +42,50 @@ class EventListener implements Listener
 
 	/**
 	 * @param PlayerJoinEvent $event
-	 * @throws InvalidStateException
+	 * @throws AssumptionFailedError
+	 * @throws JsonException
 	 * @throws SessionException
-     */
+	 * @throws InvalidSkinException
+	 */
     public function onLogin(PlayerJoinEvent $event): void
-    {
-        if ($event->getPlayer()->hasPermission("we.session")) {
-            if (SessionHelper::hasSession($event->getPlayer()) && ($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
-                Loader::getInstance()->getLogger()->debug("Restored cached session for player {$session->getPlayer()->getName()}");
-            } else if (($session = SessionHelper::loadUserSession($event->getPlayer())) instanceof UserSession) {
-                Loader::getInstance()->getLogger()->debug("Restored session from file for player {$session->getPlayer()->getName()}");
-            } else ($session = SessionHelper::createUserSession($event->getPlayer()));
-        }
-    }
+	{
+		if ($event->getPlayer()->hasPermission("we.session")) {
+			if (SessionHelper::hasSession($event->getPlayer()) && ($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
+				Loader::getInstance()->getLogger()->debug("Restored cached session for player {$session->getPlayer()->getName()}");
+			} else if (($session = SessionHelper::loadUserSession($event->getPlayer())) instanceof UserSession) {
+				Loader::getInstance()->getLogger()->debug("Restored session from file for player {$session->getPlayer()->getName()}");
+			} else ($session = SessionHelper::createUserSession($event->getPlayer()));
+		}
+	}
 
-    /**
-     * @param PlayerQuitEvent $event
-     * @throws SessionException
-     */
-    public function onLogout(PlayerQuitEvent $event): void
-    {
-        if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
-            SessionHelper::destroySession($session);
-            unset($session);
-        }
-    }
+	/**
+	 * @param PlayerQuitEvent $event
+	 * @throws SessionException
+	 * @throws JsonException
+	 */
+	public function onLogout(PlayerQuitEvent $event): void
+	{
+		if (($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
+			SessionHelper::destroySession($session);
+			unset($session);
+		}
+	}
 
-    /**
-     * @param PlayerInteractEvent $event
-     * @throws Exception
-     */
-    public function onInteract(PlayerInteractEvent $event): void
-    {
-        try {
-            switch ($event->getAction()) {
-                case PlayerInteractEvent::RIGHT_CLICK_BLOCK:
-                {
-                    $this->onRightClickBlock($event);
-                    break;
-                }
-                case PlayerInteractEvent::LEFT_CLICK_BLOCK:
+	/**
+	 * @param PlayerInteractEvent $event
+	 * @throws AssumptionFailedError
+	 * @throws Error
+	 */
+	public function onInteract(PlayerInteractEvent $event): void
+	{
+		try {
+			switch ($event->getAction()) {
+				case PlayerInteractEvent::RIGHT_CLICK_BLOCK:
+				{
+					$this->onRightClickBlock($event);
+					break;
+				}
+				case PlayerInteractEvent::LEFT_CLICK_BLOCK:
 				{
 					$this->onLeftClickBlock($event);
 					break;
@@ -94,6 +99,7 @@ class EventListener implements Listener
 
 	/**
 	 * @param PlayerItemUseEvent $event
+	 * @throws AssumptionFailedError
 	 */
 	public function onItemRightClick(PlayerItemUseEvent $event): void
 	{
@@ -107,6 +113,8 @@ class EventListener implements Listener
 
 	/**
 	 * @param BlockBreakEvent $event
+	 * @throws AssumptionFailedError
+	 * @throws Error
 	 */
 	public function onBreak(BlockBreakEvent $event): void
 	{
@@ -166,7 +174,6 @@ class EventListener implements Listener
 	 * @throws InvalidStateException
 	 * @throws SessionException
 	 * @throws InvalidArgumentException
-	 * @throws UnexpectedTagTypeException
 	 * @throws AssumptionFailedError
 	 */
 	private function onRightClickBlock(PlayerInteractEvent $event): void
@@ -265,6 +272,7 @@ class EventListener implements Listener
 	 * @throws SessionException
 	 * @throws JsonException
 	 * @throws RuntimeException
+	 * @throws Exception
 	 */
 	private function onRightClickAir(PlayerItemUseEvent $event): void
 	{

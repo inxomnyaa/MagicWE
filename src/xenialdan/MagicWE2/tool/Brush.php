@@ -87,22 +87,23 @@ class Brush extends WETool
 		return $item;
 	}
 
-    /**
-     * @param bool $new true if creating new brush
-     * @param array $errors
-     * @return CustomForm
-     * @throws Exception
-     */
-    public function getForm(bool $new = true, array $errors = []): CustomForm
-    {
-        try {
-            $errors = array_map(function ($value): string {
-                return TF::EOL . TF::RED . $value;
-            }, $errors);
-            $brushProperties = $this->properties ?? new BrushProperties();
-            $form = new CustomForm("Brush settings");
-            // Shape
-            #$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
+	/**
+	 * @param bool $new true if creating new brush
+	 * @param array $errors
+	 * @return CustomForm
+	 * @throws Exception
+	 * @throws AssumptionFailedError
+	 */
+	public function getForm(bool $new = true, array $errors = []): CustomForm
+	{
+		try {
+			$errors = array_map(function ($value): string {
+				return TF::EOL . TF::RED . $value;
+			}, $errors);
+			$brushProperties = $this->properties ?? new BrushProperties();
+			$form = new CustomForm("Brush settings");
+			// Shape
+			#$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
             if ($new) {
                 $dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
                 foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {

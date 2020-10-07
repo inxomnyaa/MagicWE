@@ -6,7 +6,6 @@ namespace xenialdan\MagicWE2;
 
 use Exception;
 use InvalidArgumentException;
-use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\UnknownBlock;
@@ -422,7 +421,6 @@ class API
 	 * @throws RuntimeException
 	 * @throws InvalidArgumentException
 	 * @throws InvalidBlockStateException
-	 * @throws JsonException
 	 */
 	public static function blockParser(string $fullstring, array &$messages, bool &$error)
 	{

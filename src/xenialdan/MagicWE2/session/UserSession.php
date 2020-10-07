@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\session;
 use Ds\Deque;
 use Exception;
 use InvalidArgumentException;
+use JsonException;
 use JsonSerializable;
 use pocketmine\item\Item;
 use pocketmine\lang\Language;
@@ -15,6 +16,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
+use TypeError;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
@@ -205,24 +207,26 @@ class UserSession extends Session implements JsonSerializable
 					$this->getPlayer()->getInventory()->clear($slot);
 				}
 			}
-        }
-        if ($delete) $this->sendMessage($this->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
-        else $this->sendMessage($this->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
-    }
+		}
+		if ($delete) $this->sendMessage($this->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
+		else $this->sendMessage($this->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
+	}
 
-    /**
-     * TODO exception for not a brush
-     * @param Brush $brush UUID will be set automatically
-     * @return void
-     * @throws InvalidArgumentException
-     * @throws ActionNotFoundException
-     * @throws ShapeNotFoundException
-     */
-    public function replaceBrush(Brush $brush): void
-    {
-        $this->brushes[$brush->properties->uuid] = $brush;
-        $new = $brush->toItem();
-        foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
+	/**
+	 * TODO exception for not a brush
+	 * @param Brush $brush UUID will be set automatically
+	 * @return void
+	 * @throws ActionNotFoundException
+	 * @throws InvalidArgumentException
+	 * @throws ShapeNotFoundException
+	 * @throws JsonException
+	 * @throws TypeError
+	 */
+	public function replaceBrush(Brush $brush): void
+	{
+		$this->brushes[$brush->properties->uuid] = $brush;
+		$new = $brush->toItem();
+		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
 			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
 				if ($entry->getString("id") === $brush->properties->uuid) {
 					$this->getPlayer()->getInventory()->setItem($slot, $new);

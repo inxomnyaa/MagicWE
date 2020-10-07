@@ -117,7 +117,6 @@ class Loader extends PluginBase
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws PluginException
 	 * @throws RuntimeException
 	 * @throws JsonException
@@ -164,6 +163,7 @@ class Loader extends PluginBase
 	 * @throws InvalidArgumentException
 	 * @throws PluginException
 	 * @throws LanguageNotFoundException
+	 * @throws RuntimeException
 	 */
 	public function onEnable(): void
 	{

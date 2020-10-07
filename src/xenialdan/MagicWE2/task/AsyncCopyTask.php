@@ -1,11 +1,13 @@
-<?php
+<?php /** @noinspection PhpInternalEntityUsedInspection */
 
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
@@ -119,9 +121,13 @@ class AsyncCopyTask extends MWEAsyncTask
 			$clipboard = $result["clipboard"];
 			$totalCount = $result["totalCount"];
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
-            $session->addClipboard($clipboard);
-        } catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-        }
-    }
+			$session->addClipboard($clipboard);
+		} catch (SessionException $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+		} catch (InvalidArgumentException $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+		} catch (AssumptionFailedError $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+		}
+	}
 }
