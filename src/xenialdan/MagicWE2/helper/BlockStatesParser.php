@@ -10,11 +10,12 @@ use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
-use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
-use pocketmine\item\VanillaItems;
+use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
@@ -149,121 +150,94 @@ final class BlockStatesParser
 			return $blocks;
 		}
 
-		Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $query);
 		$blockData = strtolower(str_replace("minecraft:", "", $query));//TODO try to keep namespace "minecraft:" to support custom blocks
 		$re = '/([\w:]+)(?:\[([\w=,]*)\])?/m';
 		preg_match_all($re, $blockData, $matches, PREG_SET_ORDER, 0);
 		if (!isset($matches[0][1])) {
 			throw new InvalidArgumentException("Could not detect block id");
 		}
+
+		$block = LegacyStringToItemParser::getInstance()->parse($matches[0][1] ?? $query)->getBlock();
 		if (count($matches[0]) < 3) {
-			$items = VanillaItems::fromString($matches[0][1] ?? $query);
-			return [$items->getBlock()];
+			return [$block];
 		}
-		$selectedBlockName = "minecraft:" . $matches[0][1];//TODO try to keep namespace "minecraft:" to support custom blocks
-		$defaultStatesNamedTag = self::$legacyStateMap[$selectedBlockName][0] ?? null;
+		$selectedBlockName = $matches[0][1];
+		$namespacedSelectedBlockName = "minecraft:" . $selectedBlockName;//TODO try to keep namespace "minecraft:" to support custom blocks
+		$defaultStatesNamedTag = self::$legacyStateMap[$namespacedSelectedBlockName][0]->getBlockState()->getCompoundTag("states");
 		if (!$defaultStatesNamedTag instanceof CompoundTag) {
-			throw new InvalidArgumentException("Could not find default block states for $selectedBlockName");
+			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
 		}
 		$extraData = $matches[0][2] ?? "";
-		$explode = explode(",", $extraData);
+		$statesExploded = explode(",", $extraData);
 		$finalStatesList = clone $defaultStatesNamedTag;
-		var_dump($explode, $finalStatesList);
-		return [];
+		var_dump($statesExploded, $finalStatesList->toString());
 		#$finalStatesList->setName("states");
-		$availableAliases = [];//TODO map in init()! No need to recreate every time!
-		foreach ($finalStatesList as $state) {
-			if (array_key_exists($state->getName(), self::$aliasMap)) {
-				foreach (self::$aliasMap[$state->getName()]["alias"] as $alias) {
+		$availableAliases = [];//TODO map in init()! No need to recreate every time! EDIT 2k20: uhm what? @ my past self, why can't you explain properly?!
+		foreach ($finalStatesList as $stateName => $state) {
+			if (array_key_exists($stateName, self::$aliasMap)) {
+				foreach (self::$aliasMap[$stateName]["alias"] as $alias) {
 					//todo maybe check for duplicated alias here? "block state mapping invalid: duplicated alias detected"
-					$availableAliases[$alias] = $state->getName();
+					$availableAliases[$alias] = $stateName;
 				}
 			}
 		}
-		foreach ($explode as $boom) {
-			if (strpos($boom, "=") === false) continue;
-			[$k, $v] = explode("=", $boom);
-			$v = strtolower(trim($v));
-			if (strlen($v) < 1) {
-				throw new InvalidBlockStateException("Empty value for state $k");
+		foreach ($statesExploded as $stateKeyValuePair) {
+			if (strpos($stateKeyValuePair, "=") === false) continue;
+			[$stateName, $value] = explode("=", $stateKeyValuePair);
+			$value = strtolower(trim($value));
+			if ($value === '') {
+				throw new InvalidBlockStateException("Empty value for state $stateName");
 			}
 			//change blockstate alias to blockstate name
-			$k = $availableAliases[$k] ?? $k;
-			$tag = $finalStatesList->getTag($k);
+			$stateName = $availableAliases[$stateName] ?? $stateName;
+			//TODO maybe validate wrong states here? i.e. stone[type=wrongtype] => Exception, "wrongtype" is invalid value
+			$tag = $finalStatesList->getTag($stateName);
 			if ($tag === null) {
-				throw new InvalidBlockStateException("Invalid state $k");
+				throw new InvalidBlockStateException("Invalid state $stateName");
 			}
 			if ($tag instanceof StringTag) {
-				$finalStatesList->setString($tag->getName(), $v);
+				$finalStatesList->setString($stateName, $value);
 			} else if ($tag instanceof IntTag) {
-				$finalStatesList->setInt($tag->getName(), intval($v));
+				$finalStatesList->setInt($stateName, (int)$value);
 			} else if ($tag instanceof ByteTag) {
-				/** @noinspection TypeUnsafeComparisonInspection */
-				if ($v == 1) $v = "true";
-				/** @noinspection TypeUnsafeComparisonInspection */
-				if ($v == 0) $v = "false";
-				if ($v !== "true" && $v !== "false") {
-					throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+				if ($value === 1 || $value === '1' || $value === 'true') $value = 'true';
+				if ($value === 0 || $value === '0' || $value === 'false') $value = 'false';
+				if ($value !== "true" && $value !== "false") {
+					throw new InvalidBlockStateException("Invalid value $value for blockstate $stateName, must be \"true\" or \"false\"");
 				}
-				$finalStatesList->setByte($tag->getName(), $v === "true" ? 1 : 0);
+				$finalStatesList->setByte($stateName, $value === "true" ? 1 : 0);
 			} else {
 				throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
 			}
 		}
+		var_dump($finalStatesList->toString());
 		//print final list
 		//TODO remove. This crashes in AsyncTasks and is just for debug
-		#Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($selectedBlockName,$finalStatesList), false));
+		#Loader::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName,$finalStatesList), false));
 		//return found block(s)
 		$blocks = [];
-		//doors.. special blocks annoying -.-
-		$isDoor = strpos($selectedBlockName, "_door") !== false;
+		//doors.. special blocks annoying -.- TODO 1.16 apparently fixed this shit! YAY TODO remove
+		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
 		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
 			/** @var ItemBlock $fromString */
-			$fromString = ItemBlock::fromString($selectedBlockName . "_block:8");
-			return [$fromString->getBlock()];
+			$fromString = VanillaBlocks::fromString($selectedBlockName . "_block:8");
+			return [$fromString];
 		}
-		//TODO there must be a more efficient way to do this
-		//TODO Testing a new method here, still iterating over all entries, but skipping those with different id
 		#var_dump((string)$finalStatesList);
-		foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
-			[$mc, $currentoldName, $currentoldDamage] = explode(":", $oldNameAndMeta);//first is minecraft:
-			$currentoldName = $mc . ":" . $currentoldName;
-			if ($currentoldName !== $selectedBlockName) {//skip wrong blocks
-				continue;
-			}
-			$currentoldDamage = intval($currentoldDamage);
-			if ($currentoldDamage > 15) {
-				$currentoldDamage = $currentoldDamage & 0x0F;
-				#var_dump("META TOO BIG");
-				#continue;
-			}
-			/** @var CompoundTag $printedCompound */
-			$clonedPrintedCompound = clone $printedCompound;
-			$clonedPrintedCompound->setName($finalStatesList->getName());
-			if ($isDoor) {
-				$currentoldName = str_replace("_door", "_door_block", $currentoldName);
-				$oldNameAndMeta = str_replace("_door:", "_door_block:", $oldNameAndMeta);
-			}
-			if ($clonedPrintedCompound->equals($finalStatesList) || ($isDoor && self::doorEquals($currentoldDamage, $defaultStatesNamedTag, $clonedPrintedCompound, $finalStatesList))) {
+		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
+			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
+			if ($clonedPrintedCompound->equals($finalStatesList)) {
 				#Server::getInstance()->getLogger()->notice("FOUND!");
-				/** @var Item $items1 */
-				$items1 = Item::fromString($oldNameAndMeta);
-				#var_dump($oldNameAndMeta,$items1);
-				$block = $items1->getBlock();
-				var_dump($oldNameAndMeta, $items1, $block, $finalStatesList);
-				if ($isDoor) {
-					var_dump(
-						self::printStates(self::getStateByBlock($block), false),
-					#self::printStates(new BlockStatesEntry($currentoldName, $finalStatesList, $block), false)
-					);
-				}
+				$block = BlockFactory::getInstance()->get($block->getId(), $meta);
+				#var_dump($oldNameAndMeta,$block);
+				var_dump($block, $finalStatesList);
 				$blocks[] = $block;
 				#Server::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
-				#Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($selectedBlockName, $clonedPrintedCompound), true));//might cause loop lol
+				#Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName, $clonedPrintedCompound), true));//might cause loop lol
 			}
 		}
 		#if (empty($blocks)) return [Block::get(0)];//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
-		if (empty($blocks)) throw new InvalidArgumentException("No block $selectedBlockName matching $query could be found");//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
+		if (empty($blocks)) throw new InvalidArgumentException("No block $namespacedSelectedBlockName matching $query could be found");//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
 		if (count($blocks) === 1) return $blocks;
 		//"Hack" to get just one block if multiple results have been found. Most times this results in the default one (meta:0)
 		$smallestMeta = PHP_INT_MAX;
@@ -298,7 +272,7 @@ final class BlockStatesParser
 	 */
 	public static function printStates(BlockStatesEntry $entry, bool $skipDefaults): string
 	{
-		return implode(',', $entry->blockStates);//TODO
+		return $entry->blockStates->toString();//TODO
 		$printedCompound = $entry->blockStates;
 		$blockIdentifier = $entry->blockIdentifier;
 		$s = $failed = [];
@@ -351,6 +325,7 @@ final class BlockStatesParser
 
 	public static function runTests(): void
 	{
+		var_dump("Running tests");
 		//testing blockstate parser
 		$tests = [
 			"minecraft:tnt",
@@ -395,7 +370,7 @@ final class BlockStatesParser
 		];
 		foreach ($tests as $test) {
 			try {
-				Server::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
+				Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
 				foreach (self::fromString($test) as $block) {
 					assert($block instanceof Block);
 					#Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates(self::getStateByBlock($block), true));

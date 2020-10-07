@@ -137,8 +137,6 @@ class Loader extends PluginBase
 		$this->rotPath = self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		$this->doorRotPath = self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 
-		BlockStatesParser::getInstance()::runTests();
-
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
 		if ($fileGetContents === false) {
 			throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
@@ -280,6 +278,8 @@ class Loader extends PluginBase
 		} else {
 			$this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
 		}
+
+		BlockStatesParser::getInstance()::runTests();
 	}
 
 	public function onDisable(): void
