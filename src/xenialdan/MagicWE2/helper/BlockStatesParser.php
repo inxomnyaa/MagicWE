@@ -177,7 +177,7 @@ final class BlockStatesParser
 		$extraData = $matches[0][2] ?? "";
 		$statesExploded = explode(",", $extraData);
 		$finalStatesList = clone $defaultStatesNamedTag;
-		var_dump($statesExploded, $finalStatesList->toString());
+		#var_dump($statesExploded, $finalStatesList->toString());
 		#$finalStatesList->setName("states");
 		$availableAliases = [];//TODO map in init()! No need to recreate every time! EDIT 2k20: uhm what? @ my past self, why can't you explain properly?!
 		foreach ($finalStatesList as $stateName => $state) {
@@ -217,7 +217,7 @@ final class BlockStatesParser
 				throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
 			}
 		}
-		var_dump($finalStatesList->toString());
+		#var_dump($finalStatesList->toString());
 		//print final list
 		//TODO remove. This crashes in AsyncTasks and is just for debug
 		#Loader::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName,$finalStatesList), false));
@@ -236,7 +236,7 @@ final class BlockStatesParser
 				#Server::getInstance()->getLogger()->notice("FOUND!");
 				$block = BlockFactory::getInstance()->get($block->getId(), $meta);
 				#var_dump($oldNameAndMeta,$block);
-				var_dump($block, $finalStatesList);
+				#var_dump($block, $finalStatesList);
 				$blocks[] = $block;
 				#Server::getInstance()->getLogger()->debug(TF::GREEN . "Found block: " . TF::GOLD . $block);
 				#Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName, $clonedPrintedCompound), true));//might cause loop lol
@@ -314,15 +314,17 @@ final class BlockStatesParser
 	 */
 	public static function printAllStates(): void
 	{
-		foreach (self::$legacyStateMap as $legacyMapEntry) {
-			$currentoldName = $legacyMapEntry->getId();
-			$printedCompound = $legacyMapEntry->getBlockState()->getCompoundTag('states');
-			$bs = new BlockStatesEntry($currentoldName, $printedCompound);
-			Server::getInstance()->getLogger()->debug(self::printStates($bs, true));
-			try {
-				Server::getInstance()->getLogger()->debug(strval($bs));
-			} catch (RuntimeException $e) {
-				Server::getInstance()->getLogger()->logException($e);
+		foreach (self::$legacyStateMap as $name => $v) {
+			foreach ($v as $meta => $legacyMapEntry) {
+				$currentoldName = $legacyMapEntry->getId();
+				$printedCompound = $legacyMapEntry->getBlockState()->getCompoundTag('states');
+				$bs = new BlockStatesEntry($currentoldName, $printedCompound);
+				try {
+					Server::getInstance()->getLogger()->debug(self::printStates($bs, true));
+					Server::getInstance()->getLogger()->debug((string)$bs);
+				} catch (RuntimeException $e) {
+					Server::getInstance()->getLogger()->logException($e);
+				}
 			}
 		}
 	}

@@ -280,6 +280,7 @@ class Loader extends PluginBase
 		}
 
 		BlockStatesParser::getInstance()::runTests();
+		BlockStatesParser::getInstance()::printAllStates();
 	}
 
 	public function onDisable(): void
