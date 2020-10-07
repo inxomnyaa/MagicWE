@@ -153,7 +153,7 @@ class EventListener implements Listener
 					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
 					break;
 				}
-				$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+				$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getIdInfo()->getVariant());
 				break;
 			}
 		}
@@ -195,7 +195,7 @@ class EventListener implements Listener
                         $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                         break;
                     }
-                    $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+					$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getIdInfo()->getVariant());
                     break;
                 }
                 case ItemIds::BUCKET:
@@ -244,7 +244,7 @@ class EventListener implements Listener
                         $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
                         break;
                     }
-                    $event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getVariant());
+					$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getIdInfo()->getVariant());
                     break;
                 }
                 case ItemIds::BUCKET:

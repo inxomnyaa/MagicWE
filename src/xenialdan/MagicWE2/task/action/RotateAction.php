@@ -59,10 +59,6 @@ class RotateAction extends ClipboardAction
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		BlockFactory::getInstance();
-		if (!BlockStatesParser::isInit()) {
-			var_dump("reinit BlockStatesParser AGAIN");
-			BlockStatesParser::init();
-        }
         $clonedClipboard = clone $clipboard;
         $clonedClipboard->clear();
         $x = $y = $z = null;
@@ -97,8 +93,8 @@ class RotateAction extends ClipboardAction
             }
             #var_dump("$newX $y $newZ");
             $block1 = $blockEntry->toBlock();
-            $blockStatesEntry = BlockStatesParser::getStateByBlock($block1);
-            $rotated = $blockStatesEntry->rotate($this->rotation);
+			$blockStatesEntry = BlockStatesParser::getInstance()::getStateByBlock($block1);
+			$rotated = $blockStatesEntry->rotate($this->rotation);
             $block = $rotated->toBlock();
             $entry = BlockEntry::fromBlock($block);
             #var_dump($blockStatesEntry->__toString(), $rotated->__toString(), $entry);

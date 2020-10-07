@@ -10,7 +10,6 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
-use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -72,7 +71,6 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
-		if (!BlockStatesParser::isInit()) BlockStatesParser::init($this->rotFlipMapPath, $this->doorRotFlipMapPath);
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
 		/** @var SingleClipboard $clipboard */

@@ -110,6 +110,22 @@ final class BlockStatesParser
 	}
 
 	/**
+	 * @return array
+	 */
+	public static function getRotationFlipMap(): array
+	{
+		return self::$rotationFlipMap;
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function getDoorRotationFlipMap(): array
+	{
+		return self::$doorRotationFlipMap;
+	}
+
+	/**
 	 * @param array $aliasMap
 	 */
 	public function setAliasMap(array $aliasMap)
@@ -436,7 +452,7 @@ final class BlockStatesParser
 		//test doors because WTF they are weird
 		try {
 			for ($i = 0; $i < 15; $i++) {
-				$block = Block::get(BlockLegacyIds::IRON_DOOR_BLOCK, $i);
+				$block = BlockFactory::getInstance()->get(BlockLegacyIds::IRON_DOOR_BLOCK, $i);
 				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
 				$entry = self::getStateByBlock($block);
 				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
@@ -455,19 +471,16 @@ final class BlockStatesParser
 		$pasteZ = $position->getFloorZ();
 		$world = $position->getWorld();
 		$sorted = [];
-		foreach (self::$allStates as $oldNameAndMeta => $printedCompound) {
-			$currentoldName = rtrim(preg_replace("/(\d+)/", "", $oldNameAndMeta), ":");
-			$bs = new BlockStatesEntry($currentoldName, $printedCompound);
-			try {
-				#$block = array_values(self::fromString(TF::clean(strval($bs))))[0];
-				$block = $bs->toBlock();
-				$sorted[($block->getId() << 4) | $block->getMeta()] = $bs;
-			} catch (Exception $e) {
-				//skip blocks that pm does not know about
-				#$world->getServer()->broadcastMessage($e->getMessage());
+		foreach (self::$legacyStateMap as $name => $v) {
+			foreach ($v as $meta => $r12ToCurrentBlockMapEntry) {
+				try {
+					$sorted[] = (new BlockStatesEntry($name, $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states')))->toBlock();
+				} catch (Exception $e) {
+					//skip blocks that pm does not know about
+					#$world->getServer()->broadcastMessage($e->getMessage());
+				}
 			}
 		}
-		ksort($sorted);
 		$i = 0;
 		$limit = 50;
 		foreach ($sorted as $blockStatesEntry) {
@@ -521,67 +534,69 @@ final class BlockStatesParser
 		$config = new Config(Loader::getInstance()->getDataFolder() . "blockstate_alias_map.json");
 		$config->setAll([]);
 		$config->save();
-		foreach (self::$legacyStateMap as $legacyMapEntry) {
-			$states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
-			foreach ($states as $state) {
-				if (!$config->exists($state->getName())) {
-					$alias = $state->getName();
-					$fullReplace = [
-						"top" => "top",
-						"type" => "type",
-						"_age" => "age",
-						"age_" => "age",
-						"directions" => "vine_b",//hack for vine_directions => directions
-						"direction" => "direction",
-						"vine_b" => "directions",//hack for vine_directions => directions
-						"axis" => "axis",
-						"delay" => "delay",
-						"bite_counter" => "bites",
-						"count" => "count",
-						"pressed" => "pressed",
-						"upper_block" => "top",
-						"data" => "data",
-						"extinguished" => "off",
-						"color" => "color",
-						"block_light" => "light",
-						#"_lit"=>"lit",
-						#"lit_"=>"lit",
-						"liquid_depth" => "depth",
-						"upside_down" => "flipped",
-						"infiniburn" => "burn",
-					];
-					$partReplace = [
-						"_bit",
-						"piece",
-						"output_",
-						"level",
-						"amount",
-						"cauldron",
-						"allow",
-						"state",
-						"door",
-						"redstone",
-						"bamboo",
-						#"head",
-						"brewing_stand",
-						"item_frame",
-						"mushrooms",
-						"composter",
-						"coral",
-						"_2",
-						"_3",
-						"_4",
-						"end_portal",
-					];
-					foreach ($fullReplace as $stateAlias => $setTo)
-						if (strpos($alias, $stateAlias) !== false) {
-							$alias = $setTo;
-						}
-					foreach ($partReplace as $replace)
-						$alias = trim(trim(str_replace($replace, "", $alias), "_"));
-					$config->set($state->getName(), [
-						"alias" => [$alias],
-					]);
+		foreach (self::$legacyStateMap as $blockName => $v) {
+			foreach ($v as $meta => $legacyMapEntry) {
+				$states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
+				foreach ($states as $stateName => $state) {
+					if (!$config->exists($stateName)) {
+						$alias = $stateName;
+						$fullReplace = [
+							"top" => "top",
+							"type" => "type",
+							"_age" => "age",
+							"age_" => "age",
+							"directions" => "vine_b",//hack for vine_directions => directions
+							"direction" => "direction",
+							"vine_b" => "directions",//hack for vine_directions => directions
+							"axis" => "axis",
+							"delay" => "delay",
+							"bite_counter" => "bites",
+							"count" => "count",
+							"pressed" => "pressed",
+							"upper_block" => "top",
+							"data" => "data",
+							"extinguished" => "off",
+							"color" => "color",
+							"block_light" => "light",
+							#"_lit"=>"lit",
+							#"lit_"=>"lit",
+							"liquid_depth" => "depth",
+							"upside_down" => "flipped",
+							"infiniburn" => "burn",
+						];
+						$partReplace = [
+							"_bit",
+							"piece",
+							"output_",
+							"level",
+							"amount",
+							"cauldron",
+							"allow",
+							"state",
+							"door",
+							"redstone",
+							"bamboo",
+							#"head",
+							"brewing_stand",
+							"item_frame",
+							"mushrooms",
+							"composter",
+							"coral",
+							"_2",
+							"_3",
+							"_4",
+							"end_portal",
+						];
+						foreach ($fullReplace as $stateAlias => $setTo)
+							if (strpos($alias, $stateAlias) !== false) {
+								$alias = $setTo;
+							}
+						foreach ($partReplace as $replace)
+							$alias = trim(trim(str_replace($replace, "", $alias), "_"));
+						$config->set($stateName, [
+							"alias" => [$alias],
+						]);
+					}
 				}
 			}
 		}
@@ -605,18 +620,20 @@ final class BlockStatesParser
 		$config->setAll([]);
 		$config->save();
 		$all = [];
-		foreach (self::$legacyStateMap as $legacyMapEntry) {
-			$states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
-			foreach ($states as $state) {
-				if (!array_key_exists($state->getName(), $all)) {
-					$all[$state->getName()] = [];
-				}
-				if (!in_array($state->getValue(), $all[$state->getName()], true)) {
-					$all[$state->getName()][] = $state->getValue();
-					if (strpos($state->getName(), "_bit") !== false) {
-						var_dump("_bit");
-					} else {
-						var_dump("no _bit");
+		foreach (self::$legacyStateMap as $blockName => $v) {
+			foreach ($v as $meta => $legacyMapEntry) {
+				$states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
+				foreach ($states as $stateName => $state) {
+					if (!array_key_exists($stateName, $all)) {
+						$all[$stateName] = [];
+					}
+					if (!in_array($state->getValue(), $all[$stateName], true)) {
+						$all[$stateName][] = $state->getValue();
+						if (strpos($stateName, "_bit") !== false) {
+							var_dump("_bit");
+						} else {
+							var_dump("no _bit");
+						}
 					}
 				}
 			}
@@ -632,6 +649,7 @@ final class BlockStatesParser
 		$invoke = Closure::bind(function & () use ($property) {
 			return $this->$property;
 		}, $object, $object)->__invoke();
+		/** @noinspection PhpUnnecessaryLocalVariableInspection */
 		$value = &$invoke;
 
 		return $value;

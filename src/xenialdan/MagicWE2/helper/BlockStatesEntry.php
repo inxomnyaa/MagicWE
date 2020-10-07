@@ -75,8 +75,7 @@ class BlockStatesEntry
 	{
 		if ($this->block instanceof Block) return $this->block;
 		BlockFactory::getInstance();
-		if (!BlockStatesParser::isInit()) BlockStatesParser::init();
-		return array_values(BlockStatesParser::fromString($this->blockFull, false))[0];
+		return array_values(BlockStatesParser::getInstance()::fromString($this->blockFull, false))[0];
 	}
 
 	/**
@@ -97,34 +96,34 @@ class BlockStatesEntry
         $key = $idMapName . ":" . $block->getMeta();
         if (strpos($idMapName, "_door") !== false) {
             $fromMap = BlockStatesParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
-            #var_dump($fromMap);
-        } else {
-            $fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
-        }
-        if ($fromMap === null) return $clone;
-        $rotatedStates = $fromMap[$amount] ?? null;
-        if ($rotatedStates === null) return $clone;
-        //ugly hack to keep current ones
-        //TODO use the states compound tag
-        $bsCompound = $clone->blockStates;
-        $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
-        foreach ($rotatedStates as $k => $v) {
-            //TODO clean up.. new method?
-            $tag = $bsCompound->getTag($k);
-            if ($tag === null) {
-                throw new InvalidBlockStateException("Invalid state $k");
-            }
-            if ($tag instanceof StringTag) {
-                $bsCompound->setString($tag->getName(), $v);
-            } else if ($tag instanceof IntTag) {
-                $bsCompound->setInt($tag->getName(), intval($v));
-            } else if ($tag instanceof ByteTag) {
+			#var_dump($fromMap);
+		} else {
+			$fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
+		}
+		if ($fromMap === null) return $clone;
+		$rotatedStates = $fromMap[$amount] ?? null;
+		if ($rotatedStates === null) return $clone;
+		//ugly hack to keep current ones
+		//TODO use the states compound tag
+		$bsCompound = $clone->blockStates;
+		#$bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
+		foreach ($rotatedStates as $tagName => $v) {
+			//TODO clean up.. new method?
+			$tag = $bsCompound->getTag($tagName);
+			if ($tag === null) {
+				throw new InvalidBlockStateException("Invalid state $tagName");
+			}
+			if ($tag instanceof StringTag) {
+				$bsCompound->setString($tagName, $v);
+			} else if ($tag instanceof IntTag) {
+				$bsCompound->setInt($tagName, intval($v));
+			} else if ($tag instanceof ByteTag) {
                 if ($v === 1) $v = "true";
                 if ($v === 0) $v = "false";
                 if ($v !== "true" && $v !== "false") {
-                    throw new InvalidBlockStateException("Invalid value $v for blockstate $k, must be \"true\" or \"false\"");
+					throw new InvalidBlockStateException("Invalid value $v for blockstate $tagName, must be \"true\" or \"false\"");
                 }
-                $bsCompound->setByte($tag->getName(), $v === "true" ? 1 : 0);
+				$bsCompound->setByte($tagName, $v === "true" ? 1 : 0);
             } else {
                 throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
             }
@@ -172,7 +171,7 @@ class BlockStatesEntry
         //ugly hack to keep current ones
         //TODO use the states compound tag
         $bsCompound = clone $clone->blockStates;//TODO check if clone is necessary
-        $bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
+		#$bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
         if ($axis === FlipAction::AXIS_Y && !(//TODO maybe add vine + mushroom block directions
                 $bsCompound->hasTag("attachment") ||
                 $bsCompound->hasTag("facing_direction") ||
@@ -187,11 +186,11 @@ class BlockStatesEntry
             #var_dump("nothing can be flipped around y axis");
             return $clone;
         }
-        foreach ($bsCompound as $stateName => $tag) {
-            //TODO clean up.. new method?
-            if ($axis === FlipAction::AXIS_Y) {
-                $value = $tag->getValue();
-				switch ($stateName) {//TODO clean up oh my god
+		foreach ($bsCompound as $tagName => $tag) {
+			//TODO clean up.. new method?
+			if ($axis === FlipAction::AXIS_Y) {
+				$value = $tag->getValue();
+				switch ($tagName) {//TODO clean up oh my god
 					case "attachment":
 					{
 						if ($value === "standing") $value = "hanging";
@@ -233,19 +232,19 @@ class BlockStatesEntry
                     }*/
 				}
             } else {
-                if (isset($flippedStates)) $value = $flippedStates[$stateName] ?? $tag->getValue(); else throw new InvalidArgumentException("flippedStates is not set. Error should never occur, please use //report and send a stack trace");
+				if (isset($flippedStates)) $value = $flippedStates[$tagName] ?? $tag->getValue(); else throw new InvalidArgumentException("flippedStates is not set. Error should never occur, please use //report and send a stack trace");
             }
             if ($tag instanceof StringTag) {
-                $bsCompound->setString($tag->getName(), $value);
+				$bsCompound->setString($tagName, $value);
             } else if ($tag instanceof IntTag) {
-                $bsCompound->setInt($tag->getName(), intval($value));
+				$bsCompound->setInt($tagName, intval($value));
             } else if ($tag instanceof ByteTag) {
                 if ($value === 1) $value = "true";
                 if ($value === 0) $value = "false";
                 if ($value !== "true" && $value !== "false") {
-                    throw new InvalidBlockStateException("Invalid value $value for blockstate {$tag->getName()}, must be \"true\" or \"false\"");
+					throw new InvalidBlockStateException("Invalid value $value for blockstate $tagName, must be \"true\" or \"false\"");
                 }
-                $bsCompound->setByte($tag->getName(), $value === "true" ? 1 : 0);
+				$bsCompound->setByte($tagName, $value === "true" ? 1 : 0);
             } else {
                 throw new InvalidBlockStateException("Unknown tag of type " . get_class($tag) . " detected");
             }

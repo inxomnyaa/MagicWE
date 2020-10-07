@@ -41,19 +41,19 @@ class Cube extends Shape
                 for ($z = intval(floor($this->getMinVec3()->z)), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
 					$block = $manager->getBlockAt($x, $y, $z)/*->setComponents($x, $y, $z)*/
 					;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
+					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
+					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-                    if ($block->y >= World::Y_MAX || $block->y < 0) continue;//TODO check for removal because relative might be at other y
-                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->x > $this->getMinVec3()->getX() && $block->x < $this->getMaxVec3()->getX()) && ($block->y > $this->getMinVec3()->getY() && $block->y < $this->getMaxVec3()->getY()) && ($block->z > $this->getMinVec3()->getZ() && $block->z < $this->getMaxVec3()->getZ())) continue;
-                    if (empty($filterblocks)) yield $block;
-                    else {
-                        foreach ($filterblocks as $filterblock) {
-                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-                                yield $block;
-                        }
-                    }
-                }
+					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO check for removal because relative might be at other y
+					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPos()->x > $this->getMinVec3()->getX() && $block->getPos()->x < $this->getMaxVec3()->getX()) && ($block->getPos()->y > $this->getMinVec3()->getY() && $block->getPos()->y < $this->getMaxVec3()->getY()) && ($block->getPos()->z > $this->getMinVec3()->getZ() && $block->getPos()->z < $this->getMaxVec3()->getZ())) continue;
+					if (empty($filterblocks)) yield $block;
+					else {
+						foreach ($filterblocks as $filterblock) {
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+								yield $block;
+						}
+					}
+				}
             }
         }
     }

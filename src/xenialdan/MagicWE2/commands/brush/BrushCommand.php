@@ -79,7 +79,7 @@ class BrushCommand extends BaseCommand
                         }
                         case $lang->translateString('ui.brush.getsession'):
                         {
-                            $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST)->readonly(false);
+                            $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
                             foreach ($session->getBrushes() as $brush) {
                                 $menu->getInventory()->addItem($brush->toItem());
                             }

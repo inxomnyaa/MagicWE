@@ -427,16 +427,15 @@ class API
 	public static function blockParser(string $fullstring, array &$messages, bool &$error)
 	{
 		BlockFactory::getInstance();
-		BlockStatesParser::init(Loader::getRotFlipPath(), Loader::getDoorRotFlipPath());
-		$blocks = BlockStatesParser::fromString($fullstring, true);
+		$blocks = BlockStatesParser::getInstance()::fromString($fullstring, true);
 		foreach ($blocks as $block) {
 			if ($block instanceof UnknownBlock) {
 				$messages[] = TF::GOLD . $block . " is an unknown block";
 			}
 		}
 
-        return $blocks;
-    }
+		return $blocks;
+	}
 
     /**
      * Evaluate mathematics in a string

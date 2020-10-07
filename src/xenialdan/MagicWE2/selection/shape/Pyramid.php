@@ -66,25 +66,25 @@ class Pyramid extends Shape
                         $radiusLayerZ = ($this->depth + $reduceZPerLayer * ($this->height - $ry)) / 2;
                     } else {
                         $radiusLayerX = ($this->width + $reduceXPerLayer * $ry) / 2;
-                        $radiusLayerZ = ($this->depth + $reduceZPerLayer * $ry) / 2;
-                    }
-                    //TODO hollow
-                    if (floor(abs($centerVec2->x - $vec2->x)) >= $radiusLayerX or floor(abs($centerVec2->y - $vec2->y)) >= $radiusLayerZ)
-                        continue;
+						$radiusLayerZ = ($this->depth + $reduceZPerLayer * $ry) / 2;
+					}
+					//TODO hollow
+					if (floor(abs($centerVec2->x - $vec2->x)) >= $radiusLayerX or floor(abs($centerVec2->y - $vec2->y)) >= $radiusLayerZ)
+						continue;
 					$block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())/*->setComponents($vec3->x, $vec3->y, $vec3->z)*/
 					;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
-                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
+					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
+					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-                    if ($block->y >= World::Y_MAX || $block->y < 0) continue;//TODO fuufufufuuu
-                    if (empty($filterblocks)) yield $block;
-                    else {
-                        foreach ($filterblocks as $filterblock) {
-                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getVariant() === $filterblock->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-                                yield $block;
-                        }
-                    }
-                }
+					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fuufufufuuu
+					if (empty($filterblocks)) yield $block;
+					else {
+						foreach ($filterblocks as $filterblock) {
+							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
+								yield $block;
+						}
+					}
+				}
             }
         }
     }

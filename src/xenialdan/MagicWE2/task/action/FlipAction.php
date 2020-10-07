@@ -55,10 +55,6 @@ class FlipAction extends ClipboardAction
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		BlockFactory::getInstance();
-		if (!BlockStatesParser::isInit()) {
-			var_dump("reinit BlockStatesParser AGAIN");
-			BlockStatesParser::init();
-        }
         $clonedClipboard = clone $clipboard;
         $x = $y = $z = null;
         $maxX = $clipboard->selection->getSizeX() - 1;
@@ -74,8 +70,8 @@ class FlipAction extends ClipboardAction
                 $y = $maxY - $y;
             #var_dump("$x $y $z");
             $block1 = $blockEntry->toBlock();var_dump($block1);
-            $blockStatesEntry = BlockStatesParser::getStateByBlock($block1);
-            $mirrored = $blockStatesEntry->mirror($this->axis);
+			$blockStatesEntry = BlockStatesParser::getInstance()::getStateByBlock($block1);
+			$mirrored = $blockStatesEntry->mirror($this->axis);
             $block = $mirrored->toBlock();
             $entry = BlockEntry::fromBlock($block);
             var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $block);
