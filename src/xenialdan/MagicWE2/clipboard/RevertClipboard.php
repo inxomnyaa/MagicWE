@@ -62,7 +62,7 @@ class RevertClipboard extends Clipboard
 			$this->worldId,
 			$chunks,
 			$this->blocksAfter
-		] = unserialize($serialized, ['allowed_classes' => [__CLASS__]]);//TODO test pm4
+		] = unserialize($serialized/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
 		foreach ($chunks as $hash => $chunk)
 			$this->chunks[$hash] = FastChunkSerializer::deserialize($chunk);
 	}

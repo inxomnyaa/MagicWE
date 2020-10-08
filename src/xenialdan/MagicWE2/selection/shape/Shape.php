@@ -129,7 +129,7 @@ abstract class Shape implements Serializable
      */
     public function unserialize($serialized)
     {
-		$unserialize = unserialize($serialized, ['allowed_classes' => [__CLASS__]]);//TODO test pm4
+		$unserialize = unserialize($serialized/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
 		array_walk($unserialize, function ($value, $key) {
 			$this->$key = $value;
 		});

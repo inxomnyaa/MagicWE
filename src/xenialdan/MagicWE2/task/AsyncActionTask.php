@@ -86,7 +86,7 @@ class AsyncActionTask extends MWEAsyncTask
 	{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
-		$touchedChunks = unserialize($this->touchedChunks, ['allowed_classes' => false]);
+		$touchedChunks = unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/);
 		$touchedChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, $touchedChunks);
@@ -95,7 +95,7 @@ class AsyncActionTask extends MWEAsyncTask
 		unset($touchedChunks);
 
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);
 
 		$oldBlocks = new SingleClipboard($this->action->clipboardVector ?? new Vector3(0, 0, 0));//TODO Test if null V3 is ok //TODO test if the vector works
 		$oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
@@ -136,7 +136,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		/** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere
 		$oldBlocks = $result["oldBlocks"];
 		//TODO Test this new behaviour!
@@ -149,7 +149,7 @@ class AsyncActionTask extends MWEAsyncTask
 		}
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {

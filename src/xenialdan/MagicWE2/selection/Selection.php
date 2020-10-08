@@ -269,6 +269,7 @@ class Selection implements Serializable, JsonSerializable
 	 */
 	public function unserialize($serialized)
 	{
+		var_dump($serialized);
 		/** @var Vector3 $pos1 , $pos2 */
 		[
 			$this->worldId,
@@ -277,7 +278,7 @@ class Selection implements Serializable, JsonSerializable
 			$this->uuid,
 			$this->sessionUUID,
 			$this->shape
-		] = unserialize($serialized, ['allowed_classes' => [__CLASS__]]);//TODO test pm4
+		] = unserialize($serialized/*, ['allowed_classes' => [__CLASS__, Vector3::class,UUID::class,Shape::class]]*/);//TODO test pm4
 	}
 
 	/**

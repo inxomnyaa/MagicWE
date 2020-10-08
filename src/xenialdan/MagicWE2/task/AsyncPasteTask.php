@@ -65,7 +65,7 @@ class AsyncPasteTask extends MWEAsyncTask
 
 		$touchedChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		foreach ($touchedChunks as $chunk) {
 			/** @var Chunk $chunk */
 			var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
@@ -75,10 +75,10 @@ class AsyncPasteTask extends MWEAsyncTask
 		unset($touchedChunks);
 
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
 		/** @var SingleClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [SingleClipboard::class]]);//TODO test pm4
+		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
 		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $clipboard, $changed));
 
 		$resultChunks = $manager->getChunks();
@@ -162,11 +162,11 @@ class AsyncPasteTask extends MWEAsyncTask
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {

@@ -66,9 +66,9 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		/** @var SingleClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [SingleClipboard::class]]);//TODO test pm4
+		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
 		$clipboard->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
 		$messages = [];
 		/** @var Progress $progress */
@@ -99,7 +99,7 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 		$clipboard = $result["clipboard"];
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));

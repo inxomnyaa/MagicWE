@@ -66,18 +66,18 @@ class AsyncReplaceTask extends MWEAsyncTask
 
 		$touchedChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 
 		$manager = Shape::getChunkManager($touchedChunks);
 		unset($touchedChunks);
 
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
 		/** @var Block[] $replaceBlocks */
-		$replaceBlocks = unserialize($this->replaceBlocks, ['allowed_classes' => [Block::class]]);//TODO test pm4
+		$replaceBlocks = unserialize($this->replaceBlocks/*, ['allowed_classes' => [Block::class]]*/);//TODO test pm4
 		/** @var Block[] $newBlocks */
-		$newBlocks = unserialize($this->newBlocks, ['allowed_classes' => [Block::class]]);//TODO test pm4
+		$newBlocks = unserialize($this->newBlocks/*, ['allowed_classes' => [Block::class]]*/);//TODO test pm4
 
 		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $replaceBlocks, $newBlocks, $changed));
 
@@ -153,11 +153,11 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {

@@ -89,6 +89,6 @@ class SingleClipboard extends Clipboard
 			$this->entries,
 			$this->selection,
 			$this->position
-		] = unserialize($serialized, ['allowed_classes' => [BlockEntry::class, Selection::class, Vector3::class]]);
+		] = unserialize($serialized/*, ['allowed_classes' => [BlockEntry::class, Selection::class, Vector3::class]]*/);
     }
 }

@@ -14,6 +14,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -38,67 +39,73 @@ class AsyncFillTask extends MWEAsyncTask
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param Block[] $newBlocks
 	 * @param int $flags
-     * @throws Exception
-     */
-    public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
-    {
-        $this->start = microtime(true);
-        $this->sessionUUID = $sessionUUID->toString();
-        $this->selection = serialize($selection);
-        $this->touchedChunks = serialize($touchedChunks);
-        $this->newBlocks = serialize($newBlocks);
-        $this->flags = $flags;
-    }
+	 * @throws Exception
+	 */
+	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
+	{
+		$this->start = microtime(true);
+		$this->sessionUUID = $sessionUUID->toString();
+		$this->selection = igbinary_serialize($selection);
+		$this->touchedChunks = igbinary_serialize($touchedChunks);
+		$this->newBlocks = BlockPalette::encode($newBlocks);
+		var_dump($this->newBlocks);
+		$this->flags = $flags;
+	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function onRun(): void
+	/**
+	 * Actions to execute when run
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
 
 		$touchedChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4
+		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 
 		$manager = Shape::getChunkManager($touchedChunks);
 		unset($touchedChunks);
 
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
 		/** @var Block[] $newBlocks */
-		$newBlocks = unserialize($this->newBlocks, ['allowed_classes' => [Block::class]]);//TODO test pm4
+		$newBlocks = BlockPalette::decode($this->newBlocks);//TODO test pm4
 		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $newBlocks, $changed));
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isDirty();
 		});
-		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
+		#$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
+		$this->setResult([
+			"resultChunks" => igbinary_serialize($resultChunks),
+			"oldBlocks" => igbinary_serialize($oldBlocks),
+			"changed" => igbinary_serialize($changed)
+		]);
 	}
 
-    /**
-     * @param Selection $selection
-     * @param AsyncChunkManager $manager
-     * @param Block[] $newBlocks
-     * @param null|int $changed
-     * @return Generator|Block[]
-     * @throws Exception
-     */
-    private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): Generator
-    {
-        $blockCount = $selection->getShape()->getTotalCount();
-        $lastchunkx = $lastchunkz = null;
-        $lastprogress = 0;
-        $i = 0;
-        $changed = 0;
-        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
-        /** @var Block $block */
-        foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
+	/**
+	 * @param Selection $selection
+	 * @param AsyncChunkManager $manager
+	 * @param Block[] $newBlocks
+	 * @param null|int $changed
+	 * @return Generator|Block[]
+	 * @throws Exception
+	 */
+	private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): Generator
+	{
+		$blockCount = $selection->getShape()->getTotalCount();
+		$lastchunkx = $lastchunkz = null;
+		$lastprogress = 0;
+		$i = 0;
+		$changed = 0;
+		$this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
+		/** @var Block $block */
+		foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
 			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
 				$rel = $block->subtract($selection->shape->getPasteVector());
 				$block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
@@ -113,12 +120,13 @@ class AsyncFillTask extends MWEAsyncTask
 			}
 			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->x, $block->y, $block->z)*/
-			;
+			$res = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+			$res->position($block->getPos()->world, $block->getPos()->x, $block->getPos()->y, $block->getPos()->z);
+			yield $res;
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-            if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
-                $changed++;
-            }
+			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
+				$changed++;
+			}
 			///
 			$i++;
 			$progress = floor($i / $blockCount * 100);
@@ -149,11 +157,11 @@ class AsyncFillTask extends MWEAsyncTask
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->touchedChunks, ['allowed_classes' => false]));//TODO test pm4)
+		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4)
 		$oldBlocks = $result["oldBlocks"];
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {

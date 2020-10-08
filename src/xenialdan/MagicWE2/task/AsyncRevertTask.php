@@ -51,7 +51,7 @@ class AsyncRevertTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 		/** @var RevertClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [RevertClipboard::class]]);//TODO test pm4
+		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
 		$totalCount = count($clipboard->blocksAfter);
 		$manager = $clipboard::getChunkManager($clipboard->chunks);
 		$oldBlocks = [];
@@ -119,7 +119,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		}
 		$result = $this->getResult();
 		/** @var RevertClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard, ['allowed_classes' => [RevertClipboard::class]]);//TODO test pm4
+		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
 		$clipboard->chunks = $result["chunks"];
 		$totalCount = $result["totalCount"];
 		$changed = count($result["oldBlocks"]);

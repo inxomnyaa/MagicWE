@@ -63,9 +63,9 @@ class AsyncCopyTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 		$chunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->chunks, ['allowed_classes' => false]));//TODO test pm4
+		}, unserialize($this->chunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection, ['allowed_classes' => [Selection::class]]);//TODO test pm4
+		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		#var_dump("shape", $selection->getShape());
 		$manager = Shape::getChunkManager($chunks);
 		unset($chunks);
