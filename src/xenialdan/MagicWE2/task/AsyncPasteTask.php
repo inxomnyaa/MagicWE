@@ -121,7 +121,7 @@ class AsyncPasteTask extends MWEAsyncTask
 			}
 			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
 				$rel = $block->subtract($selection->shape->getPasteVector());
-				$block->setComponents($rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
+				$block = API::setComponents($block,$rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
 			}*/
 			$new = $entry->toBlock();
 			#$new->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());

@@ -45,16 +45,16 @@ class Flood extends WETool
 	 */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
-        $this->validateChunkManager($manager);
-        $this->y = $this->getCenter()->getFloorY();
-        $block = $manager->getBlockAt($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
-		//$block->setComponents($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
-        $this->walked[] = $block;
-        $this->nextToCheck = $this->walked;
-        foreach ($this->walk($manager) as $block) {
-            yield $block;
-        }
-    }
+		$this->validateChunkManager($manager);
+		$this->y = $this->getCenter()->getFloorY();
+		$block = $manager->getBlockAt($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
+		//$block = API::setComponents($block,$this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
+		$this->walked[] = $block;
+		$this->nextToCheck = $this->walked;
+		foreach ($this->walk($manager) as $block) {
+			yield $block;
+		}
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -104,11 +104,11 @@ class Flood extends WETool
     {
         $this->validateChunkManager($manager);
         foreach ([Facing::NORTH, Facing::SOUTH, Facing::WEST, Facing::EAST] as $vSide) {
-            $side = $vector3->getSide($vSide);
-            if ($manager->getChunk($side->x >> 4, $side->z >> 4) === null) continue;
-			//$block->setComponents($side->x, $side->y, $side->z);
+			$side = $vector3->getSide($vSide);
+			if ($manager->getChunk($side->x >> 4, $side->z >> 4) === null) continue;
+			//$block = API::setComponents($block,$side->x, $side->y, $side->z);
 			yield $manager->getBlockAt($side->getFloorX(), $side->getFloorY(), $side->getFloorZ());
-        }
+		}
     }
 
     public function getTotalCount(): int

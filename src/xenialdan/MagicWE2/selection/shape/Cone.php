@@ -62,8 +62,7 @@ class Cone extends Shape
 						$radiusLayer = ($this->diameter - $reducePerLayer * $ry) / 2;
 					if ($vec2->distanceSquared($centerVec2) > ($radiusLayer ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
 						continue;
-					$block = $manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ())/*->setComponents($vec3->x, $vec3->y, $vec3->z)*/
-					;
+					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), $vec3->x, $vec3->y, $vec3->z);
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 

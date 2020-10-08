@@ -54,7 +54,7 @@ class CutAction extends TaskAction
 		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
 			$new = clone $newBlocks[array_rand($newBlocks)];
             if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-            #$oldBlocks[] = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->setComponents($block->x, $block->y, $block->z);
+			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->x, $block->y, $block->z);
             $newv3 = $block->subtract($min)->floor();//TODO check if only used for clipboard
             $oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));
             $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);

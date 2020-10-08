@@ -9,6 +9,7 @@ use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -75,8 +76,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		$changed = 0;
 		$this->publishProgress([0, "Reverted $changed blocks out of $count"]);
 		foreach ($clipboard->blocksAfter as $block) {
-			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())*/
-			;
+			yield API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
@@ -95,8 +95,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		$changed = 0;
 		$this->publishProgress([0, "Redone $changed blocks out of $count"]);
 		foreach ($clipboard->blocksAfter as $block) {
-			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())*/
-			;
+			yield API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);

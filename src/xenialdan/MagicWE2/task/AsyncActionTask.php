@@ -144,8 +144,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$oldBlocksBlocks = [];
 		$x = $y = $z = null;
 		foreach ($oldBlocks->iterateEntries($x, $y, $z) as $entry) {
-			$oldBlocksBlocks[] = $entry->toBlock()/*->setComponents(intval($x), intval($y), intval($z))*/
-			;
+			$oldBlocksBlocks[] = API::setComponents($entry->toBlock(), (int)$x, (int)$y, (int)$z);
 		}
 		$changed = $result["changed"];
 		/** @var Selection $selection */

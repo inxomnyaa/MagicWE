@@ -11,6 +11,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -117,12 +118,11 @@ class AsyncReplaceTask extends MWEAsyncTask
 			}
 			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-			yield $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())/*->setComponents($block->x, $block->y, $block->z)*/
-			;
+			yield API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->x, $block->getPos()->y, $block->getPos()->z);
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-            if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
-                $changed++;
-            }
+			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
+				$changed++;
+			}
 			///
 			$i++;
 			$progress = floor($i / $blockCount * 100);

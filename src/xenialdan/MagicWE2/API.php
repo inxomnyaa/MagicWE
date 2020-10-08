@@ -523,4 +523,20 @@ class API
 		#$buffer = $nbt->write($treeRoot);
 		#return $treeRoot->getTag()->getValue();//TODO TEST PM4
 	}
+
+	/**
+	 * This replicates the behaviour of Vector3::setComponents in PM3
+	 * @param Block $block
+	 * @param int $x
+	 * @param int $y
+	 * @param int $z
+	 * @return Block
+	 */
+	public static function setComponents(Block $block, int $x, int $y, int $z): Block
+	{
+		$block->getPos()->x = $x;
+		$block->getPos()->y = $y;
+		$block->getPos()->z = $z;
+		return $block;
+	}
 }

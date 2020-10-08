@@ -41,10 +41,9 @@ class Custom extends Shape
     {
         $this->validateChunkManager($manager);
         foreach ($this->positions as $position) {
-            //TODO filterblocks
-			yield $manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ())/*->setComponents($position->x, $position->y, $position->z)*/
-			;
-        }
+			//TODO filterblocks
+			yield API::setComponents($manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()), $position->x, $position->y, $position->z);
+		}
     }
 
 	/**
