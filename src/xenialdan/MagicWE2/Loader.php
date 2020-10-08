@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2;
 use InvalidArgumentException;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
+use pocketmine\block\BlockFactory;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
@@ -281,7 +282,13 @@ class Loader extends PluginBase
 		}
 
 		BlockStatesParser::getInstance()::runTests();
-		BlockStatesParser::getInstance()::printAllStates();
+
+		$stone = BlockFactory::getInstance()->get(1);
+		var_dump($stone);
+		$stoneid = $stone->getFullId();
+		var_dump($stoneid);
+		$stone2 = BlockFactory::getInstance()->fromFullBlock($stoneid);
+		var_dump($stone2);
 	}
 
 	public function onDisable(): void

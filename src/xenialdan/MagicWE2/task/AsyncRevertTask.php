@@ -9,7 +9,6 @@ use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -51,17 +50,23 @@ class AsyncRevertTask extends MWEAsyncTask
     public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
+		var_dump(__LINE__);
 		/** @var RevertClipboard $clipboard */
 		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
 		$totalCount = count($clipboard->blocksAfter);
+		var_dump(__LINE__);
 		$manager = $clipboard::getChunkManager($clipboard->chunks);
 		$oldBlocks = [];
+		var_dump(__LINE__);
 		if ($this->type === self::TYPE_UNDO)
 			$oldBlocks = iterator_to_array($this->undoChunks($manager, $clipboard));
+		var_dump(__LINE__);
 		if ($this->type === self::TYPE_REDO)
 			$oldBlocks = iterator_to_array($this->redoChunks($manager, $clipboard));
+		var_dump(__LINE__);
 		$chunks = $manager->getChunks();
 		$this->setResult(compact("chunks", "oldBlocks", "totalCount"));
+		var_dump(__LINE__);
 	}
 
 	/**
@@ -73,10 +78,13 @@ class AsyncRevertTask extends MWEAsyncTask
 	private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
 		$count = count($clipboard->blocksAfter);
+		var_dump(__LINE__);
 		$changed = 0;
 		$this->publishProgress([0, "Reverted $changed blocks out of $count"]);
+		//$block is "data" array
 		foreach ($clipboard->blocksAfter as $block) {
-			yield API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+			yield $block;
+			$block = self::singleDataToBlock($block);//turn data into real block
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
@@ -94,8 +102,10 @@ class AsyncRevertTask extends MWEAsyncTask
 		$count = count($clipboard->blocksAfter);
 		$changed = 0;
 		$this->publishProgress([0, "Redone $changed blocks out of $count"]);
+		//$block is "data" array
 		foreach ($clipboard->blocksAfter as $block) {
-			yield API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+			yield $block;
+			$block = self::singleDataToBlock($block);//turn data into real block
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
@@ -122,7 +132,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		$clipboard->chunks = $result["chunks"];
 		$totalCount = $result["totalCount"];
 		$changed = count($result["oldBlocks"]);
-		$clipboard->blocksAfter = $result["oldBlocks"];
+		$clipboard->blocksAfter = $result["oldBlocks"];//already is a array of data
 		$world = $clipboard->getWorld();
 		foreach ($clipboard->chunks as $chunk) {
 			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);

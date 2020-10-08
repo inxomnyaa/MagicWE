@@ -118,7 +118,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 			}
 			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-			yield API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->x, $block->getPos()->y, $block->getPos()->z);
+			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->x, $block->getPos()->y, $block->getPos()->z));
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
 			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
 				$changed++;
@@ -154,7 +154,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
-		$oldBlocks = $result["oldBlocks"];
+		$oldBlocks = $result["oldBlocks"];//this is already as data
 		$changed = $result["changed"];
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4

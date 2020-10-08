@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\clipboard;
 
-use pocketmine\block\Block;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
@@ -13,14 +12,14 @@ class RevertClipboard extends Clipboard
 {
 	/** @var Chunk[] */
 	public $chunks = [];
-	/** @var Block[] */
+	/** @var array[] */
 	public $blocksAfter;
 
 	/**
 	 * RevertClipboard constructor.
 	 * @param int $worldId
 	 * @param Chunk[] $chunks
-	 * @param Block[] $blocksAfter
+	 * @param array[] $blocksAfter //CHANGED AS HACK
 	 */
 	public function __construct(int $worldId, array $chunks = [], array $blocksAfter = [])
 	{

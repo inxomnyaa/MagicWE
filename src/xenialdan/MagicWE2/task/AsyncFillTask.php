@@ -6,13 +6,12 @@ use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
-use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -85,7 +84,8 @@ class AsyncFillTask extends MWEAsyncTask
 		#$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 		$this->setResult([
 			"resultChunks" => $resultChunks,
-			"oldBlocks" => igbinary_serialize($oldBlocks),
+			#"oldBlocks" => igbinary_serialize($oldBlocks),
+			"oldBlocks" => $oldBlocks,
 			"changed" => $changed
 		]);
 	}
@@ -108,7 +108,6 @@ class AsyncFillTask extends MWEAsyncTask
 		$this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
 		/** @var Block $block */
 		foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
-			var_dump($block->getPos()->asVector3());
 			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
 				$rel = $block->subtract($selection->shape->getPasteVector());
 				$block = API::setComponents($block,$rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
@@ -123,8 +122,9 @@ class AsyncFillTask extends MWEAsyncTask
 			}
 			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-			$res = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-			yield [$res->getFullId(), $block->getPos()->asVector3()];
+			#yield self::undoBlockHackToArray($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->getPos());
+			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->x, $block->getPos()->y, $block->getPos()->z));
+			#yield $block;//backup
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
 			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
 				$changed++;
@@ -160,20 +160,21 @@ class AsyncFillTask extends MWEAsyncTask
 		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4)
-		$oldBlocks = igbinary_unserialize($result["oldBlocks"]);
-		$oldBlocks2 = [];
-		/**
-		 * @var int $fullId
-		 * @var Vector3 $pos
-		 */
-		foreach ($oldBlocks as [$fullId, $pos]) {
-			$b = BlockFactory::getInstance()->fromFullBlock($fullId);
-			$b->getPos()->x = $pos->x;
-			$b->getPos()->y = $pos->y;
-			$b->getPos()->z = $pos->z;
-			$oldBlocks2[] = $b;
-		}
-		var_dump($oldBlocks2);
+		#$oldBlocks = igbinary_unserialize($result["oldBlocks"]);
+		$oldBlocks = $result["oldBlocks"];//this is already a data map
+//		$oldBlocks2 = [];
+//		/**
+//		 * @var int $fullId
+//		 * @var Vector3 $pos
+//		 */
+//		foreach ($oldBlocks as [$fullId, $pos]) {
+//			$b = BlockFactory::getInstance()->fromFullBlock($fullId);
+//			$b->getPos()->x = $pos->x;
+//			$b->getPos()->y = $pos->y;
+//			$b->getPos()->z = $pos->z;
+//			$oldBlocks2[] = $b;
+//		}
+//		var_dump($oldBlocks2);
 
 		$changed = $result["changed"];
 		/** @var Selection $selection */
@@ -185,7 +186,7 @@ class AsyncFillTask extends MWEAsyncTask
 		}
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));
-			$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, $oldBlocks2));
+			$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, $oldBlocks));
 		}
 	}
 }

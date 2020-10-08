@@ -144,7 +144,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$oldBlocksBlocks = [];
 		$x = $y = $z = null;
 		foreach ($oldBlocks->iterateEntries($x, $y, $z) as $entry) {
-			$oldBlocksBlocks[] = API::setComponents($entry->toBlock(), (int)$x, (int)$y, (int)$z);
+			$oldBlocksBlocks[] = API::setComponents($entry->toBlock(), (int)$x, (int)$y, (int)$z);//turn BlockEntry to blocks
 		}
 		$changed = $result["changed"];
 		/** @var Selection $selection */
@@ -158,7 +158,7 @@ class AsyncActionTask extends MWEAsyncTask
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));
 			foreach ($result["messages"] ?? [] as $message) $session->sendMessage($message);
 			if ($this->action->addRevert)
-				$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, $oldBlocksBlocks));
+				$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, self::multipleBlocksToData($oldBlocksBlocks)));
 			if ($this->action->addClipboard)
 				$session->addClipboard($oldBlocks);
         }

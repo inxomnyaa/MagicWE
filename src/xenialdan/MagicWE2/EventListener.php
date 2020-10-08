@@ -119,7 +119,7 @@ class EventListener implements Listener
 	public function onBreak(BlockBreakEvent $event): void
 	{
 		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
-			$event->setCancelled();
+			$event->cancel();
 			try {
 				$this->onBreakBlock($event);
 			} catch (Exception $error) {
@@ -179,7 +179,7 @@ class EventListener implements Listener
 	private function onRightClickBlock(PlayerInteractEvent $event): void
 	{
 		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE))) {
-			$event->setCancelled();
+			$event->cancel();
 			$session = SessionHelper::getUserSession($event->getPlayer());
 			if (!$session instanceof UserSession) return;
 			switch ($event->getItem()->getId()) {
@@ -228,7 +228,7 @@ class EventListener implements Listener
 	private function onLeftClickBlock(PlayerInteractEvent $event): void
 	{
 		if (!is_null($event->getItem()->getNamedTag()->getTag(API::TAG_MAGIC_WE))) {
-			$event->setCancelled();
+			$event->cancel();
 			$session = SessionHelper::getUserSession($event->getPlayer());
 			if (!$session instanceof UserSession) return;
 			switch ($event->getItem()->getId()) {
@@ -277,7 +277,7 @@ class EventListener implements Listener
 	private function onRightClickAir(PlayerItemUseEvent $event): void
 	{
 		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
-			$event->setCancelled();
+			$event->cancel();
 			$session = SessionHelper::getUserSession($event->getPlayer());
 			if (!$session instanceof UserSession) return;
 			$target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
@@ -296,7 +296,7 @@ class EventListener implements Listener
     {
         try {
 			if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
-				$event->setCancelled();
+				$event->cancel();
 				$session = SessionHelper::getUserSession($event->getPlayer());
 				if (!$session instanceof UserSession) return;
 				$brush = $session->getBrushFromItem($event->getItem());
@@ -310,7 +310,7 @@ class EventListener implements Listener
 					$event->getPlayer()->sendForm($form);
 				}
 			} else if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE))) {
-				$event->setCancelled();
+				$event->cancel();
 				$event->getPlayer()->getInventory()->remove($event->getItem());
 			}
         } catch (Exception $e) {

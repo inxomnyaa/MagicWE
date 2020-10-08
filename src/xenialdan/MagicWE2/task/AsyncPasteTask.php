@@ -12,6 +12,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -127,7 +128,7 @@ class AsyncPasteTask extends MWEAsyncTask
 			#$new->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
 			#$old->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
 			#var_dump("old", $old, "new", $new);
-			yield $manager->getBlockAt($x, $y, $z);
+			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), $x, $y, $z));
 			$manager->setBlockAt($x, $y, $z, $new);
 			if ($manager->getBlockArrayAt($x, $y, $z) !== [$manager->getBlockAt($x, $y, $z)->getId(), $manager->getBlockAt($x, $y, $z)->getMeta()]) {//TODO remove? Just useless waste imo
 				$changed++;
@@ -163,7 +164,7 @@ class AsyncPasteTask extends MWEAsyncTask
 		$undoChunks = array_map(static function ($chunk) {
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
-		$oldBlocks = $result["oldBlocks"];
+		$oldBlocks = $result["oldBlocks"];//already data array
 		$changed = $result["changed"];
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
