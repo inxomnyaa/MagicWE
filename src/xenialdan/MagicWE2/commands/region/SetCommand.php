@@ -76,7 +76,8 @@ class SetCommand extends BaseCommand
 				if ($selection->getWorld() !== $sender->getWorld()) {
 					$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 				}
-				API::fillAsync($selection, $session, $replaceBlocks, API::flagParser(explode(" ", (string)$args["flags"])));
+				$hasFlags = isset($args["flags"]);
+				API::fillAsync($selection, $session, $replaceBlocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 			} else {
 				throw new InvalidArgumentException("Could not fill with the selected blocks");
 			}

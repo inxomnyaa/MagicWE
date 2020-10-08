@@ -79,7 +79,8 @@ class ReplaceCommand extends BaseCommand
 				if ($selection->getWorld() !== $sender->getWorld()) {
 					$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 				}
-				API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, API::flagParser(explode(" ", (string)$args["flags"])));
+				$hasFlags = isset($args["flags"]);
+				API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 			} else {
 				throw new InvalidArgumentException("Could not replace with the selected blocks");
 			}

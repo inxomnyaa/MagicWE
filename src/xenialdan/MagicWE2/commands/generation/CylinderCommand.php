@@ -77,7 +77,8 @@ class CylinderCommand extends BaseCommand
 				$cyl = new Cylinder($sender->getPosition()->asVector3()->floor(), $height, $diameter);
 				$cylSelection = new Selection($session->getUUID(), $sender->getWorld());
 				$cylSelection->setShape($cyl);
-				API::fillAsync($cylSelection, $session, $newblocks, API::flagParser(explode(" ", (string)$args["flags"])));
+				$hasFlags = isset($args["flags"]);
+				API::fillAsync($cylSelection, $session, $newblocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 			} else {
 				throw new InvalidArgumentException("Could not fill with the selected blocks");
 			}
