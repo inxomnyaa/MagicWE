@@ -12,10 +12,14 @@ projects:
       version: ^2.0.0
     - src: thebigsmilexd/customui/customui
       version: ^3.0.0
+      branch: PM4
     - src: thebigsmilexd/apibossbar/apibossbar
       version: ^0.0.5
+      branch: PM4
     - src: CortexPE/Commando/Commando
       version: ^0.5.0
+      branch: PM4
     - src: muqsit/invmenu/InvMenu
       version: ^2.0.0
+      branch: 4.0
 ...
