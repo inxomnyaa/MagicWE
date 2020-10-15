@@ -17,6 +17,7 @@ jobs:
     - name: Print php version
       run: |
         php -v
+        ls -r
     - name: wget virions, customui
       uses: wei/wget@v1
       with:
