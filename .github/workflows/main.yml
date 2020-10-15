@@ -35,6 +35,6 @@ jobs:
       with:
         args: -O vendor/InvMenu.phar https://poggit.pmmp.io/r/70989/InvMenu_dev-78.phar
     - name: Run PHPStan
-      uses: nxtlvlsoftware/pmmp-phpstan-action@3
+      uses: nxtlvlsoftware/pmmp-phpstan-action@4
       with:
         phpstan-config: phpstan.neon.dist
