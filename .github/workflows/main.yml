@@ -16,7 +16,7 @@ jobs:
         echo Directory made.
     - name: Print php version
       run: |
-        php -r 'var_dump(yaml_parse_file(".poggit.yml"))'
+        php -r 'var_dump(yaml_parse_file(".poggit.yml"));'
     - name: wget virions, customui
       uses: wei/wget@v1
       with:
