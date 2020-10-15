@@ -14,6 +14,9 @@ jobs:
         echo Making directory...
         mkdir vendor
         echo Directory made.
+    - name: Print php version
+      run: |
+        php -v
     - name: wget virions, customui
       uses: wei/wget@v1
       with:
