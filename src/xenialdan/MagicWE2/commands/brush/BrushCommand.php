@@ -32,7 +32,7 @@ class BrushCommand extends BaseCommand
      */
     protected function prepare(): void
     {
-        $this->registerSubCommand(new BrushNameCommand(Loader::getInstance(), "name", "Get name or rename a brush"));
+        $this->registerSubCommand(new BrushNameCommand("name", "Get name or rename a brush"));
 		$this->setPermission("we.command.brush");
     }
 

@@ -40,27 +40,27 @@ class BrushNameCommand extends BaseSubCommand
 	 * @throws TypeError
 	 * @throws TypeError
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-            $session = SessionHelper::getUserSession($sender);
-            if (!$session instanceof UserSession) {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
+			$session = SessionHelper::getUserSession($sender);
+			if (!$session instanceof UserSession) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
-            if ($brush instanceof Brush) {
+			}
+			$brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
+			if ($brush instanceof Brush) {
 				if (empty($args["name"])) {
 					$sender->sendMessage($brush->getName());
 					return;
