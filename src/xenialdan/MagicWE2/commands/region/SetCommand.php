@@ -30,8 +30,8 @@ class SetCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->registerArgument(0, new RawStringArgument("blocks", false));
-		$this->registerArgument(1, new TextArgument("flags", true));
+		$this->registerArgument(0, new RawStringArgument("blocks", true));
+		$this->registerArgument(1, new TextArgument("flags", false));
 		$this->setPermission("we.command.region.set");
 	}
 
