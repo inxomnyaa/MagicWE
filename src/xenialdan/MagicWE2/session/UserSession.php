@@ -32,10 +32,14 @@ class UserSession extends Session implements JsonSerializable
 	private $player;
 	/** @var BossBar */
 	private $bossBar;
+	/** @var BossBar */
+	private $wylaBossBar;
 	/** @var bool */
 	private $wandEnabled = true;
 	/** @var bool */
 	private $debugToolEnabled = true;
+	/** @var bool */
+	private $wylaEnabled = true;
 	/** @var Brush[] */
 	private $brushes = [];
 	/** @var Language|null */
@@ -48,16 +52,18 @@ class UserSession extends Session implements JsonSerializable
 		$this->setUUID($player->getUniqueId());
 		$this->bossBar = (new BossBar())->addPlayer($player);
 		$this->bossBar->hideFrom([$player]);
+		$this->wylaBossBar = (new BossBar())->addPlayer($player);
+		if (!$this->wylaEnabled) $this->wylaBossBar->hideFrom([$player]);
 		$this->undoHistory = new Deque();
 		$this->redoHistory = new Deque();
-        if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
-        Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
-    }
+		if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
+		Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
+	}
 
-    public function __destruct()
-    {
-        Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
-        $this->bossBar->removeAllPlayers();
+	public function __destruct()
+	{
+		Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
+		$this->bossBar->removeAllPlayers();
 	}
 
 	/**
@@ -83,9 +89,9 @@ class UserSession extends Session implements JsonSerializable
 			$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
 			$this->sendMessage(TF::RED . $this->getLanguage()->translateString("session.language.notfound", [$langShort]));
 		}
-    }
+	}
 
-    /**
+	/**
 	 * @param null|Player $player
 	 */
 	public function setPlayer($player): void
@@ -138,21 +144,52 @@ class UserSession extends Session implements JsonSerializable
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function isWYLAEnabled(): bool
+	{
+		return $this->wylaEnabled;
+	}
+
+	/**
+	 * @param bool $wylaEnabled
+	 * @return string
+	 */
+	public function setWYLAEnabled(bool $wylaEnabled): string
+	{
+		$this->wylaEnabled = $wylaEnabled;
+		if ($wylaEnabled) {
+			$this->wylaBossBar->showToAll();
+		} else {
+			$this->wylaBossBar->hideFromAll();
+		}
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.wyla.setenabled', [($wylaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+	}
+
+	/**
 	 * @return BossBar
 	 */
 	public function getBossBar(): BossBar
 	{
 		return $this->bossBar;
-    }
+	}
 
-    /**
-     * TODO exception for not a brush
-     * @param Item $item
-     * @return Brush
-     * @throws Exception
-     */
-    public function getBrushFromItem(Item $item): Brush
-    {
+	/**
+	 * @return BossBar
+	 */
+	public function getWYLABossBar(): BossBar
+	{
+		return $this->wylaBossBar;
+	}
+
+	/**
+	 * TODO exception for not a brush
+	 * @param Item $item
+	 * @return Brush
+	 * @throws Exception
+	 */
+	public function getBrushFromItem(Item $item): Brush
+	{
 		if ((($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) instanceof CompoundTag) {
 			$version = $entry->getInt("version", 0);
 			if ($version !== BrushProperties::VERSION) {
@@ -170,38 +207,38 @@ class UserSession extends Session implements JsonSerializable
 			return $brush;
 		}
 		throw new BrushException("The item is not a valid brush!");
-    }
+	}
 
-    /**
-     * TODO exception for not a brush
-     * @param UUID $uuid
-     * @return null|Brush
-     */
-    public function getBrush(UUID $uuid): ?Brush
-    {
-        return $this->brushes[$uuid->toString()] ?? null;
-    }
+	/**
+	 * TODO exception for not a brush
+	 * @param UUID $uuid
+	 * @return null|Brush
+	 */
+	public function getBrush(UUID $uuid): ?Brush
+	{
+		return $this->brushes[$uuid->toString()] ?? null;
+	}
 
-    /**
-     * TODO exception for not a brush
-     * @param Brush $brush UUID will be set automatically
-     * @return void
-     */
-    public function addBrush(Brush $brush): void
-    {
-        $this->brushes[$brush->properties->uuid] = $brush;
-        $this->sendMessage($this->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
-    }
+	/**
+	 * TODO exception for not a brush
+	 * @param Brush $brush UUID will be set automatically
+	 * @return void
+	 */
+	public function addBrush(Brush $brush): void
+	{
+		$this->brushes[$brush->properties->uuid] = $brush;
+		$this->sendMessage($this->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
+	}
 
-    /**
-     * @param Brush $brush UUID will be set automatically
-     * @param bool $delete If true, it will be removed from the session brushes
-     * @return void
-     */
-    public function removeBrush(Brush $brush, bool $delete = false): void
-    {
-        if ($delete) unset($this->brushes[$brush->properties->uuid]);
-        foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
+	/**
+	 * @param Brush $brush UUID will be set automatically
+	 * @param bool $delete If true, it will be removed from the session brushes
+	 * @return void
+	 */
+	public function removeBrush(Brush $brush, bool $delete = false): void
+	{
+		if ($delete) unset($this->brushes[$brush->properties->uuid]);
+		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
 			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
 				if ($entry->getString("id") === $brush->properties->uuid) {
 					$this->getPlayer()->getInventory()->clear($slot);
@@ -232,77 +269,77 @@ class UserSession extends Session implements JsonSerializable
 					$this->getPlayer()->getInventory()->setItem($slot, $new);
 				}
 			}
-        }
-    }
+		}
+	}
 
-    /**
-     * @return Brush[]
-     */
-    public function getBrushes(): array
-    {
-        return $this->brushes;
-    }
+	/**
+	 * @return Brush[]
+	 */
+	public function getBrushes(): array
+	{
+		return $this->brushes;
+	}
 
-    public function cleanupInventory(): void
-    {
-        foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-            /** @var CompoundTag $entry */
+	public function cleanupInventory(): void
+	{
+		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
+			/** @var CompoundTag $entry */
 			if (!is_null(($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)))) {
 				$this->getPlayer()->getInventory()->clear($slot);
 			}
 			if (!is_null(($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)))) {
 				$this->getPlayer()->getInventory()->clear($slot);
 			}
-        }
-    }
+		}
+	}
 
-    public function __toString()
-    {
-        return __CLASS__ .
-            " UUID: " . $this->getUUID()->__toString() .
-            " Player: " . $this->getPlayer()->getName() .
-            " Wand tool enabled: " . ($this->isWandEnabled() ? "enabled" : "disabled") .
-            " Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
-            " BossBar: " . $this->getBossBar()->entityId .
-            " Selections: " . count($this->getSelections()) .
-            " Latest: " . $this->getLatestSelectionUUID() .
-            " Clipboards: " . count($this->getClipboards()) .
-            " Current: " . $this->getCurrentClipboardIndex() .
-            " Undos: " . count($this->undoHistory) .
-            " Redos: " . count($this->redoHistory) .
-            " Brushes: " . count($this->brushes);
-    }
+	public function __toString()
+	{
+		return __CLASS__ .
+			" UUID: " . $this->getUUID()->__toString() .
+			" Player: " . $this->getPlayer()->getName() .
+			" Wand tool enabled: " . ($this->isWandEnabled() ? "enabled" : "disabled") .
+			" Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
+			" BossBar: " . $this->getBossBar()->entityId .
+			" Selections: " . count($this->getSelections()) .
+			" Latest: " . $this->getLatestSelectionUUID() .
+			" Clipboards: " . count($this->getClipboards()) .
+			" Current: " . $this->getCurrentClipboardIndex() .
+			" Undos: " . count($this->undoHistory) .
+			" Redos: " . count($this->redoHistory) .
+			" Brushes: " . count($this->brushes);
+	}
 
-    public function sendMessage(string $message): void
-    {
-        $this->player->sendMessage(Loader::PREFIX . $message);
-    }
+	public function sendMessage(string $message): void
+	{
+		$this->player->sendMessage(Loader::PREFIX . $message);
+	}
 
-    /**
-     * Specify data which should be serialized to JSON
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4.0
-     */
-    public function jsonSerialize()
-    {
-        return [
-            "uuid" => $this->getUUID()->toString(),
-            "wandEnabled" => $this->wandEnabled,
-            "debugToolEnabled" => $this->debugToolEnabled,
-            "brushes" => $this->brushes,
-            "latestSelection" => $this->getLatestSelection(),
-            "currentClipboard" => $this->getCurrentClipboard(),
-            "language" => $this->getLanguage()->getLang()
-        ];
-    }
+	/**
+	 * Specify data which should be serialized to JSON
+	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * which is a value of any type other than a resource.
+	 * @since 5.4.0
+	 */
+	public function jsonSerialize()
+	{
+		return [
+			"uuid" => $this->getUUID()->toString(),
+			"wandEnabled" => $this->wandEnabled,
+			"debugToolEnabled" => $this->debugToolEnabled,
+			"brushes" => $this->brushes,
+			"latestSelection" => $this->getLatestSelection(),
+			"currentClipboard" => $this->getCurrentClipboard(),
+			"language" => $this->getLanguage()->getLang()
+		];
+	}
 
-    public function save(): void
-    {
-        file_put_contents(Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
+	public function save(): void
+	{
+		file_put_contents(Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
 			$this->getPlayer()->getName() . ".json",
 			json_encode($this, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)
-        );
-    }
+		);
+	}
 }

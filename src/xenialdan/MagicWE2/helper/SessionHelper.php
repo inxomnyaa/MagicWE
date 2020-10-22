@@ -18,6 +18,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use RuntimeException;
+use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -52,6 +53,7 @@ class SessionHelper
 	{
 		if ($session instanceof UserSession) {
 			self::$userSessions->put($session->getUUID(), $session);
+			(new MWESessionLoadEvent(Loader::getInstance(), $session))->call();
 			if (!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))) {
 				$oldSkin = $player->getSkin();
 				$newSkin = new Skin($oldSkin->getSkinId(), $oldSkin->getSkinData(), Loader::getInstance()->donatorData, $oldSkin->getGeometryName(), $oldSkin->getGeometryData());

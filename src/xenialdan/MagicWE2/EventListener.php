@@ -24,6 +24,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\customui\windows\ModalForm;
+use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
@@ -47,7 +48,7 @@ class EventListener implements Listener
 	 * @throws SessionException
 	 * @throws InvalidSkinException
 	 */
-    public function onLogin(PlayerJoinEvent $event): void
+	public function onLogin(PlayerJoinEvent $event): void
 	{
 		if ($event->getPlayer()->hasPermission("we.session")) {
 			if (SessionHelper::hasSession($event->getPlayer()) && ($session = SessionHelper::getUserSession($event->getPlayer())) instanceof UserSession) {
@@ -56,6 +57,11 @@ class EventListener implements Listener
 				Loader::getInstance()->getLogger()->debug("Restored session from file for player {$session->getPlayer()->getName()}");
 			} else ($session = SessionHelper::createUserSession($event->getPlayer()));
 		}
+	}
+
+	public function onSessionLoad(MWESessionLoadEvent $event): void
+	{
+		Loader::getInstance()->wylaBossBar->addPlayer($event->getPlayer());
 	}
 
 	/**
@@ -155,8 +161,8 @@ class EventListener implements Listener
 				$selection->setPos1(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
 				break;
 			}
-            case ItemIds::STICK:
-            {
+			case ItemIds::STICK:
+			{
 				if (!$session->isDebugToolEnabled()) {
 					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
 					break;
@@ -196,16 +202,16 @@ class EventListener implements Listener
 					$selection->setPos2(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
 					break;
 				}
-                case ItemIds::STICK:
-                {
-                    if (!$session->isDebugToolEnabled()) {
-                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
-                        break;
-                    }
+				case ItemIds::STICK:
+				{
+					if (!$session->isDebugToolEnabled()) {
+						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
+						break;
+					}
 					$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getIdInfo()->getVariant());
-                    break;
-                }
-                case ItemIds::BUCKET:
+					break;
+				}
+				case ItemIds::BUCKET:
 				{
 					#if (){// && has perms
 					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE), $session);
@@ -245,16 +251,16 @@ class EventListener implements Listener
 					$selection->setPos1(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
 					break;
 				}
-                case ItemIds::STICK:
-                {
-                    if (!$session->isDebugToolEnabled()) {
-                        $session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
-                        break;
-                    }
+				case ItemIds::STICK:
+				{
+					if (!$session->isDebugToolEnabled()) {
+						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.debug.disabled"));
+						break;
+					}
 					$event->getPlayer()->sendMessage($event->getBlock()->__toString() . ', variant: ' . $event->getBlock()->getIdInfo()->getVariant());
-                    break;
-                }
-                case ItemIds::BUCKET:
+					break;
+				}
+				case ItemIds::BUCKET:
 				{
 					#if (){// && has perms
 					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE), $session);
@@ -287,14 +293,14 @@ class EventListener implements Listener
 				API::createBrush($target, $brush, $session);
 			}
 		}
-    }
+	}
 
-    /**
-     * @param PlayerDropItemEvent $event
-     */
-    public function onDropItem(PlayerDropItemEvent $event): void
-    {
-        try {
+	/**
+	 * @param PlayerDropItemEvent $event
+	 */
+	public function onDropItem(PlayerDropItemEvent $event): void
+	{
+		try {
 			if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
 				$event->cancel();
 				$session = SessionHelper::getUserSession($event->getPlayer());
@@ -313,7 +319,7 @@ class EventListener implements Listener
 				$event->cancel();
 				$event->getPlayer()->getInventory()->remove($event->getItem());
 			}
-        } catch (Exception $e) {
-        }
-    }
+		} catch (Exception $e) {
+		}
+	}
 }

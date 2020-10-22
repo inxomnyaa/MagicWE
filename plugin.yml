@@ -1,7 +1,7 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 10.0.3
+version: 10.1.0
 api: ["4.0.0"]
 php: "7.3"
 load: STARTUP
@@ -121,6 +121,8 @@ permissions:
         default: op
         children:
           we.command.utility.calculate:
+            default: op
+          we.command.utility.togglewyla:
             default: op
       we.command.test:
         default: op

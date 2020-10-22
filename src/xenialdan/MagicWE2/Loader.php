@@ -7,16 +7,19 @@ namespace xenialdan\MagicWE2;
 use InvalidArgumentException;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
+use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
+use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
+use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\customui\API;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
@@ -58,9 +61,11 @@ use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\tool\TogglewandCommand;
 use xenialdan\MagicWE2\commands\tool\WandCommand;
 use xenialdan\MagicWE2\commands\utility\CalculateCommand;
+use xenialdan\MagicWE2\commands\utility\ToggleWYLACommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
 use xenialdan\MagicWE2\exception\ShapeRegistryException;
+use xenialdan\MagicWE2\helper\BlockStatesEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
@@ -85,6 +90,8 @@ class Loader extends PluginBase
 
 	private $rotPath;
 	private $doorRotPath;
+	/** @var DiverseBossBar */
+	public $wylaBossBar;
 
 	/**
 	 * Returns an instance of the plugin
@@ -266,6 +273,7 @@ class Loader extends PluginBase
 			//new SnowCommand($this,"/snow", "Creates a snow layer cover in the selection"),
 			//new ThawCommand($this,"/thaw", "Thaws blocks in the selection"),
 			new CalculateCommand($this, "/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
+			new ToggleWYLACommand($this, "/togglewyla", "Toggle the WhatYou'reLookingAt bossbar", ["/wyla"]),
 			/* -- debugging -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 		]);
@@ -289,6 +297,33 @@ class Loader extends PluginBase
 		var_dump($stoneid);
 		$stone2 = BlockFactory::getInstance()->fromFullBlock($stoneid);
 		var_dump($stone2);
+		//register WYLA bar
+		$this->wylaBossBar = new DiverseBossBar();
+		$this->wylaBossBar->hideFromAll();
+		//WYLA updater
+		$this->getScheduler()->scheduleDelayedRepeatingTask(new class extends Task {
+
+			public function onRun(): void
+			{
+				$players = Loader::getInstance()->wylaBossBar->getPlayers();
+				foreach ($players as $player) {
+					if (!$player->isOnline() || !SessionHelper::hasSession($player) || !($session = SessionHelper::getUserSession($player))->isWYLAEnabled()) {
+						continue;
+					}
+					if (($block = $player->getTargetBlock(6)) instanceof Block && $block->getId() !== 0) {
+						Loader::getInstance()->wylaBossBar->showTo([$player]);
+						$stateEntry = BlockStatesParser::getStateByBlock($block);
+						$sub = $block->getName();
+						$title = strval($block);
+						if ($stateEntry instanceof BlockStatesEntry) {
+							$sub = implode("," . TF::EOL, explode(",", strval($stateEntry)));
+						}
+						Loader::getInstance()->wylaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub);
+					} else
+						Loader::getInstance()->wylaBossBar->hideFrom([$player]);
+				}
+			}
+		}, 60, 1);
 	}
 
 	public function onDisable(): void
