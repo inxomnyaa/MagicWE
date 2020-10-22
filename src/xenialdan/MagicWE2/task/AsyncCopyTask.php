@@ -98,15 +98,15 @@ class AsyncCopyTask extends MWEAsyncTask
 		foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
 			#var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
 			$newv3 = $block->getPos()->subtractVector($min)->floor();
-            $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getId(), $block->getMeta())));//TODO test tiles
-            #var_dump("copied selection block", $block);
-            $i++;
-            $progress = floor($i / $blockCount * 100);
-            if ($lastprogress < $progress) {//this prevents spamming packets
-                $this->publishProgress([$progress, "Running, copied $i blocks out of $blockCount"]);
-                $lastprogress = $progress;
-            }
-        }
+			$clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId())));//TODO test tiles
+			#var_dump("copied selection block", $block);
+			$i++;
+			$progress = floor($i / $blockCount * 100);
+			if ($lastprogress < $progress) {//this prevents spamming packets
+				$this->publishProgress([$progress, "Running, copied $i blocks out of $blockCount"]);
+				$lastprogress = $progress;
+			}
+		}
         return $i;
     }
 

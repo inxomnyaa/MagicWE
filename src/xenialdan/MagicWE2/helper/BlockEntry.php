@@ -71,7 +71,7 @@ class BlockEntry
 	public static function fromBlock(Block $block): self
 	{
 		BlockFactory::getInstance();
-		return new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getId(), $block->getMeta()));
+		return new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()));
 	}
 
 }
