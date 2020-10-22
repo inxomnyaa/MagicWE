@@ -42,7 +42,7 @@ class Custom extends Shape
         $this->validateChunkManager($manager);
         foreach ($this->positions as $position) {
 			//TODO filterblocks
-			yield API::setComponents($manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()), $position->x, $position->y, $position->z);
+			yield API::setComponents($manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()), (int)$position->x, (int)$position->y, (int)$position->z);
 		}
     }
 

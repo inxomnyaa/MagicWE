@@ -53,19 +53,19 @@ class CutAction extends TaskAction
 		$min = $selection->getShape()->getMinVec3();
 		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
 			$new = clone $newBlocks[array_rand($newBlocks)];
-            if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
+			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
 			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->x, $block->y, $block->z);
-            $newv3 = $block->subtract($min)->floor();//TODO check if only used for clipboard
-            $oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));
-            $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-            if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
-                $changed++;
-            }
-            $i++;
-            $progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
-            if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
-                yield $progress;
-                $lastProgress = $progress;
+			$newv3 = $block->getPos()->subtractVector($min)->floor();//TODO check if only used for clipboard
+			$oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));
+			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
+				$changed++;
+			}
+			$i++;
+			$progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
+			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
+				yield $progress;
+				$lastProgress = $progress;
             }
         }
     }

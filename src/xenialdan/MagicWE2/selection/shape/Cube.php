@@ -39,7 +39,7 @@ class Cube extends Shape
 		for ($x = (int)floor($this->getMinVec3()->x), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
 			for ($y = (int)floor($this->getMinVec3()->y), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
 				for ($z = (int)floor($this->getMinVec3()->z), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-					$block = API::setComponents($manager->getBlockAt($x, $y, $z), $x, $y, $z);
+					$block = API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z);
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 

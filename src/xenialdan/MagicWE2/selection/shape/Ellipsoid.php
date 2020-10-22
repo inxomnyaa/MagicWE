@@ -72,7 +72,7 @@ class Ellipsoid extends Shape
 					$vec3 = new Vector3($x, $y, $z);
 					//TODO hollow
 					if ($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) continue;
-					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), $vec3->x, $vec3->y, $vec3->z);
+					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int)$vec3->x, (int)$vec3->y, (int)$vec3->z);
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 

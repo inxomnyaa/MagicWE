@@ -32,13 +32,13 @@ class Cone extends Shape
 	 */
 	public function __construct(Vector3 $pasteVector, int $height, int $diameter, bool $flipped = false)
 	{
-        $this->pasteVector = $pasteVector;
-        $this->height = $height;
-        $this->diameter = $diameter;
-        $this->flipped = $flipped;
-    }
+		$this->pasteVector = $pasteVector;
+		$this->height = $height;
+		$this->diameter = $diameter;
+		$this->flipped = $flipped;
+	}
 
-    /**
+	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
@@ -46,8 +46,8 @@ class Cone extends Shape
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-    public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
-    {
+	public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
+	{
 		$this->validateChunkManager($manager);
 		$reducePerLayer = ($this->diameter / $this->height);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -62,7 +62,7 @@ class Cone extends Shape
 						$radiusLayer = ($this->diameter - $reducePerLayer * $ry) / 2;
 					if ($vec2->distanceSquared($centerVec2) > ($radiusLayer ** 2) || (API::hasFlag($flags, API::FLAG_HOLLOW_CLOSED) && ($ry !== 0 && $ry !== $this->height - 1) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2)) || ((API::hasFlag($flags, API::FLAG_HOLLOW) && $vec2->distanceSquared($centerVec2) <= ((($this->diameter / 2) - 1) ** 2))))
 						continue;
-					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), $vec3->x, $vec3->y, $vec3->z);
+					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int)$vec3->x, (int)$vec3->y, (int)$vec3->z);
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
@@ -75,9 +75,9 @@ class Cone extends Shape
 						}
 					}
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -86,7 +86,7 @@ class Cone extends Shape
 	 * @return Generator|Vector2[]
 	 * @throws Exception
 	 */
-    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -100,52 +100,52 @@ class Cone extends Shape
 		}
 	}
 
-    /**
-     * @param World|AsyncChunkManager $manager
-     * @return string[] fastSerialized chunks
-     * @throws Exception
-     */
-    public function getTouchedChunks($manager): array
-    {//TODO optimize to remove "corner" chunks
-        $this->validateChunkManager($manager);
-        $maxX = $this->getMaxVec3()->x >> 4;
-        $minX = $this->getMinVec3()->x >> 4;
-        $maxZ = $this->getMaxVec3()->z >> 4;
-        $minZ = $this->getMinVec3()->z >> 4;
-        $touchedChunks = [];
-        for ($x = $minX; $x <= $maxX; $x++) {
-            for ($z = $minZ; $z <= $maxZ; $z++) {
-                $chunk = $manager->getChunk($x, $z);
-                if ($chunk === null) {
-                    continue;
-                }
+	/**
+	 * @param World|AsyncChunkManager $manager
+	 * @return string[] fastSerialized chunks
+	 * @throws Exception
+	 */
+	public function getTouchedChunks($manager): array
+	{//TODO optimize to remove "corner" chunks
+		$this->validateChunkManager($manager);
+		$maxX = $this->getMaxVec3()->x >> 4;
+		$minX = $this->getMinVec3()->x >> 4;
+		$maxZ = $this->getMaxVec3()->z >> 4;
+		$minZ = $this->getMinVec3()->z >> 4;
+		$touchedChunks = [];
+		for ($x = $minX; $x <= $maxX; $x++) {
+			for ($z = $minZ; $z <= $maxZ; $z++) {
+				$chunk = $manager->getChunk($x, $z);
+				if ($chunk === null) {
+					continue;
+				}
 				print "Touched Chunk at: $x:$z" . PHP_EOL;
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
-            }
-        }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
-        return $touchedChunks;
-    }
+			}
+		}
+		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+		return $touchedChunks;
+	}
 
-    public function getAABB(): AxisAlignedBB
-    {
-        return new AxisAlignedBB(
-            floor($this->pasteVector->x - $this->diameter / 2),
-            $this->pasteVector->y,
-            floor($this->pasteVector->z - $this->diameter / 2),
-            -1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
-            -1 + $this->pasteVector->y + $this->height,
-            -1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
-        );
-    }
+	public function getAABB(): AxisAlignedBB
+	{
+		return new AxisAlignedBB(
+			floor($this->pasteVector->x - $this->diameter / 2),
+			$this->pasteVector->y,
+			floor($this->pasteVector->z - $this->diameter / 2),
+			-1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
+			-1 + $this->pasteVector->y + $this->height,
+			-1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
+		);
+	}
 
-    public function getTotalCount(): int
-    {
+	public function getTotalCount(): int
+	{
 		return (int)ceil((M_PI * (($this->diameter / 2) ** 2) * $this->height) / 3);
-    }
+	}
 
-    public static function getName(): string
-    {
-        return "Cone";
-    }
+	public static function getName(): string
+	{
+		return "Cone";
+	}
 }

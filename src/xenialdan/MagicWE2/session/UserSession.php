@@ -153,11 +153,13 @@ class UserSession extends Session implements JsonSerializable
 	 */
 	public function setWailaEnabled(bool $wailaEnabled): string
 	{
+		$player = $this->getPlayer();
+		if (!$player instanceof Player) return TF::RED . "Session has no player";
 		$this->wailaEnabled = $wailaEnabled;
 		if ($wailaEnabled) {
-			Loader::getInstance()->wailaBossBar->showTo([$this->getPlayer()]);
+			Loader::getInstance()->wailaBossBar->showTo([$player]);
 		} else {
-			Loader::getInstance()->wailaBossBar->hideFrom([$this->getPlayer()]);
+			Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 		}
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.waila.setenabled', [($wailaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
 	}

@@ -58,7 +58,9 @@ final class BlockStatesParser
 	{
 		/** @var R12ToCurrentBlockMapEntry[][] $legacyStateMap */
 		self::$legacyStateMap = [];
-		$legacyStateMapReader = new PacketSerializer(file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin"));
+		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
+		if ($contents === false) throw new PluginException("Can not get contents of r12_to_current_block_map");
+		$legacyStateMapReader = new PacketSerializer($contents);
 		$nbtReader = new NetworkNbtSerializer();
 		while (!$legacyStateMapReader->feof()) {
 			$id = $legacyStateMapReader->getString();
@@ -148,7 +150,7 @@ final class BlockStatesParser
 	 */
 	protected static function getDefaultStates(string $blockIdentifier): CompoundTag
 	{
-		return self::$legacyStateMap[$blockIdentifier][0]->getBlockState()->getCompoundTag('states');
+		return self::$legacyStateMap[$blockIdentifier][0]->getBlockState()->getCompoundTag('states') ?? new CompoundTag();
 	}
 
 	/**
@@ -207,7 +209,7 @@ final class BlockStatesParser
 		foreach ($statesExploded as $stateKeyValuePair) {
 			if (strpos($stateKeyValuePair, "=") === false) continue;
 			[$stateName, $value] = explode("=", $stateKeyValuePair);
-			$value = strtolower(trim($value));
+			$value = strtolower(trim((string)$value));
 			if ($value === '') {
 				throw new InvalidBlockStateException("Empty value for state $stateName");
 			}
@@ -223,8 +225,8 @@ final class BlockStatesParser
 			} else if ($tag instanceof IntTag) {
 				$finalStatesList->setInt($stateName, (int)$value);
 			} else if ($tag instanceof ByteTag) {
-				if ($value === 1 || $value === '1' || $value === 'true') $value = 'true';
-				if ($value === 0 || $value === '0' || $value === 'false') $value = 'false';
+				if ($value === '1' || $value === 'true') $value = 'true';
+				if ($value === '0' || $value === 'false') $value = 'false';
 				if ($value !== "true" && $value !== "false") {
 					throw new InvalidBlockStateException("Invalid value $value for blockstate $stateName, must be \"true\" or \"false\"");
 				}
@@ -629,10 +631,10 @@ final class BlockStatesParser
 				$states = clone $legacyMapEntry->getBlockState()->getCompoundTag('states');
 				foreach ($states as $stateName => $state) {
 					if (!array_key_exists($stateName, $all)) {
-						$all[$stateName] = [];
+						$all[(string)$stateName] = [];
 					}
 					if (!in_array($state->getValue(), $all[$stateName], true)) {
-						$all[$stateName][] = $state->getValue();
+						$all[(string)$stateName][] = $state->getValue();
 						if (strpos($stateName, "_bit") !== false) {
 							var_dump("_bit");
 						} else {
@@ -648,7 +650,13 @@ final class BlockStatesParser
 		unset($config);
 	}
 
-	public static function &readAnyValue($object, $property)
+	/**
+	 * Reads a value of an object, regardless of access modifiers
+	 * @param object $object
+	 * @param string $property
+	 * @return mixed
+	 */
+	public static function &readAnyValue($object, string $property)
 	{
 		$invoke = Closure::bind(function & () use ($property) {
 			return $this->$property;

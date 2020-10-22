@@ -123,7 +123,7 @@ class AsyncFillTask extends MWEAsyncTask
 			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
 			#yield self::undoBlockHackToArray($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->getPos());
-			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), $block->getPos()->x, $block->getPos()->y, $block->getPos()->z));
+			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), (int)$block->getPos()->x, (int)$block->getPos()->y, (int)$block->getPos()->z));
 			#yield $block;//backup
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
 			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
