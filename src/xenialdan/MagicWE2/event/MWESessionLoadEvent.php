@@ -36,9 +36,6 @@ class MWESessionLoadEvent extends MWEEvent
 	 */
 	public function getPlayer(): ?Player
 	{
-		if (($session = $this->getSession()) instanceof UserSession)
-			/** @var UserSession $session */
-			$session->getPlayer();
-		return null;
+		return $this->getSession() instanceof UserSession ? $this->session->getPlayer() : null;
 	}
 }

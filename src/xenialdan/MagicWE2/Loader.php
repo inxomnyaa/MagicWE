@@ -299,7 +299,7 @@ class Loader extends PluginBase
 		var_dump($stone2);
 		//register WYLA bar
 		$this->wylaBossBar = new DiverseBossBar();
-		$this->wylaBossBar->hideFromAll();
+		#$this->wylaBossBar->hideFromAll();
 		//WYLA updater
 		$this->getScheduler()->scheduleDelayedRepeatingTask(new class extends Task {
 
@@ -307,6 +307,7 @@ class Loader extends PluginBase
 			{
 				$players = Loader::getInstance()->wylaBossBar->getPlayers();
 				foreach ($players as $player) {
+					var_dump($player->getDisplayName());
 					if (!$player->isOnline() || !SessionHelper::hasSession($player) || !($session = SessionHelper::getUserSession($player))->isWYLAEnabled()) {
 						continue;
 					}

@@ -32,8 +32,6 @@ class UserSession extends Session implements JsonSerializable
 	private $player;
 	/** @var BossBar */
 	private $bossBar;
-	/** @var BossBar */
-	private $wylaBossBar;
 	/** @var bool */
 	private $wandEnabled = true;
 	/** @var bool */
@@ -52,8 +50,6 @@ class UserSession extends Session implements JsonSerializable
 		$this->setUUID($player->getUniqueId());
 		$this->bossBar = (new BossBar())->addPlayer($player);
 		$this->bossBar->hideFrom([$player]);
-		$this->wylaBossBar = (new BossBar())->addPlayer($player);
-		if (!$this->wylaEnabled) $this->wylaBossBar->hideFrom([$player]);
 		$this->undoHistory = new Deque();
 		$this->redoHistory = new Deque();
 		if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
@@ -159,9 +155,9 @@ class UserSession extends Session implements JsonSerializable
 	{
 		$this->wylaEnabled = $wylaEnabled;
 		if ($wylaEnabled) {
-			$this->wylaBossBar->showToAll();
+			Loader::getInstance()->wylaBossBar->showTo([$this->getPlayer()]);
 		} else {
-			$this->wylaBossBar->hideFromAll();
+			Loader::getInstance()->wylaBossBar->hideFrom([$this->getPlayer()]);
 		}
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.wyla.setenabled', [($wylaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
 	}
@@ -172,14 +168,6 @@ class UserSession extends Session implements JsonSerializable
 	public function getBossBar(): BossBar
 	{
 		return $this->bossBar;
-	}
-
-	/**
-	 * @return BossBar
-	 */
-	public function getWYLABossBar(): BossBar
-	{
-		return $this->wylaBossBar;
 	}
 
 	/**

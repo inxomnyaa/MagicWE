@@ -53,7 +53,6 @@ class SessionHelper
 	{
 		if ($session instanceof UserSession) {
 			self::$userSessions->put($session->getUUID(), $session);
-			(new MWESessionLoadEvent(Loader::getInstance(), $session))->call();
 			if (!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))) {
 				$oldSkin = $player->getSkin();
 				$newSkin = new Skin($oldSkin->getSkinId(), $oldSkin->getSkinData(), Loader::getInstance()->donatorData, $oldSkin->getGeometryName(), $oldSkin->getGeometryData());
@@ -92,7 +91,10 @@ class SessionHelper
 	{
 		if (!$player->hasPermission("we.session")) throw new SessionException(TF::RED . "You do not have the permission \"magicwe.session\"");
 		$session = new UserSession($player);
-		if ($add) self::addSession($session);
+		if ($add) {
+			self::addSession($session);
+			(new MWESessionLoadEvent(Loader::getInstance(), $session))->call();
+		}
 		return $session;
 	}
 
@@ -113,70 +115,70 @@ class SessionHelper
 	/**
 	 * @param Player $player
 	 * @return bool
-     */
-    public static function hasSession(Player $player): bool
-    {
-        try {
-            return self::getUserSession($player) instanceof UserSession;
-        } catch (SessionException $exception) {
-            return false;
-        }
-    }
+	 */
+	public static function hasSession(Player $player): bool
+	{
+		try {
+			return self::getUserSession($player) instanceof UserSession;
+		} catch (SessionException $exception) {
+			return false;
+		}
+	}
 
-    /**
-     * @param Player $player
-     * @return null|UserSession
-     * @throws SessionException
-     */
-    public static function getUserSession(Player $player): ?UserSession
-    {
-        if (self::$userSessions->isEmpty()) return null;
-        $filtered = self::$userSessions->filter(function (UUID $uuid, Session $session) use ($player) {
-            return $session instanceof UserSession && $session->getPlayer() === $player;
-        });
-        if ($filtered->isEmpty()) return null;
-        if (count($filtered) > 1) throw new SessionException("Multiple sessions found for player {$player->getName()}. This should never happen!");
-        return $filtered->values()->first();
-    }
+	/**
+	 * @param Player $player
+	 * @return null|UserSession
+	 * @throws SessionException
+	 */
+	public static function getUserSession(Player $player): ?UserSession
+	{
+		if (self::$userSessions->isEmpty()) return null;
+		$filtered = self::$userSessions->filter(function (UUID $uuid, Session $session) use ($player) {
+			return $session instanceof UserSession && $session->getPlayer() === $player;
+		});
+		if ($filtered->isEmpty()) return null;
+		if (count($filtered) > 1) throw new SessionException("Multiple sessions found for player {$player->getName()}. This should never happen!");
+		return $filtered->values()->first();
+	}
 
-    /**
-     * TODO cleanup or optimize
-     * @param UUID $uuid
-     * @return null|Session
-     * @throws SessionException
-     */
-    public static function getSessionByUUID(UUID $uuid): ?Session
-    {
-        $v = null;
-        if (self::$userSessions->hasKey($uuid)) {
-            $v = self::$userSessions->get($uuid, null);
-        } else if (self::$pluginSessions->hasKey($uuid)) {
-            $v = self::$pluginSessions->get($uuid, null);
-        } else {
-            /*
-             * Sadly, this part is necessary. If you use UUID::fromString, the object "id" in the map does not match anymore
-             */
-            $userFiltered = self::$userSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
-                return $uuid2->equals($uuid);
-            });
-            if (!$userFiltered->isEmpty()) $v = $userFiltered->values()->first();
-            else {
-                $pluginFiltered = self::$pluginSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
-                    return $uuid2->equals($uuid);
-                });
-                if (!$pluginFiltered->isEmpty()) $v = $pluginFiltered->values()->first();
-            }
-        }
-        if (!$v instanceof Session) throw new SessionException("Session with uuid {$uuid->toString()} not found");
-        return $v;
-    }
+	/**
+	 * TODO cleanup or optimize
+	 * @param UUID $uuid
+	 * @return null|Session
+	 * @throws SessionException
+	 */
+	public static function getSessionByUUID(UUID $uuid): ?Session
+	{
+		$v = null;
+		if (self::$userSessions->hasKey($uuid)) {
+			$v = self::$userSessions->get($uuid, null);
+		} else if (self::$pluginSessions->hasKey($uuid)) {
+			$v = self::$pluginSessions->get($uuid, null);
+		} else {
+			/*
+			 * Sadly, this part is necessary. If you use UUID::fromString, the object "id" in the map does not match anymore
+			 */
+			$userFiltered = self::$userSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
+				return $uuid2->equals($uuid);
+			});
+			if (!$userFiltered->isEmpty()) $v = $userFiltered->values()->first();
+			else {
+				$pluginFiltered = self::$pluginSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
+					return $uuid2->equals($uuid);
+				});
+				if (!$pluginFiltered->isEmpty()) $v = $pluginFiltered->values()->first();
+			}
+		}
+		if (!$v instanceof Session) throw new SessionException("Session with uuid {$uuid->toString()} not found");
+		return $v;
+	}
 
-    /**
-     * @return array|UserSession[]
-     */
-    public static function getUserSessions(): array
-    {
-        return self::$userSessions->values()->toArray();
+	/**
+	 * @return array|UserSession[]
+	 */
+	public static function getUserSessions(): array
+	{
+		return self::$userSessions->values()->toArray();
 	}
 
 	/**
@@ -204,13 +206,13 @@ class SessionHelper
 		$data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
 		if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
 			Loader::getInstance()->getLogger()->error("Could not load user session from json file {$path}: " . json_last_error_msg());
-            #unlink($path);//TODO make safe
-            return null;
-        }
-        $session = new UserSession($player);
-        try {
-            $session->setUUID(UUID::fromString($data["uuid"]));
-            $session->setWandEnabled($data["wandEnabled"]);
+			#unlink($path);//TODO make safe
+			return null;
+		}
+		$session = new UserSession($player);
+		try {
+			$session->setUUID(UUID::fromString($data["uuid"]));
+			$session->setWandEnabled($data["wandEnabled"]);
 			$session->setDebugToolEnabled($data["debugToolEnabled"]);
 			$session->setLanguage($data["language"]);
 			foreach ($data["brushes"] as $brushUUID => $brushJson) {
@@ -237,26 +239,27 @@ class SessionHelper
 							$latestSelection["pos2"]["x"],
 							$latestSelection["pos2"]["y"],
 							$latestSelection["pos2"]["z"]
-                        );
-                        $shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
-                        $pasteVector = $latestSelection["shape"]["pasteVector"];
-                        unset($latestSelection["shape"]["pasteVector"]);
-                        if (!is_null($pasteVector)) {
-                            $pasteV = new Vector3(...array_values($pasteVector));
-                            $shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
-                            $selection->setShape($shape);
-                            $session->addSelection($selection);
-                        }
-                    }
-                } catch (RuntimeException $e) {
-                }
-            }
-            //TODO clipboard
-        } catch (Exception $exception) {
-            return null;
-        }
-        self::addSession($session);
-        return $session;
-    }
+						);
+						$shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
+						$pasteVector = $latestSelection["shape"]["pasteVector"];
+						unset($latestSelection["shape"]["pasteVector"]);
+						if (!is_null($pasteVector)) {
+							$pasteV = new Vector3(...array_values($pasteVector));
+							$shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
+							$selection->setShape($shape);
+							$session->addSelection($selection);
+						}
+					}
+				} catch (RuntimeException $e) {
+				}
+			}
+			//TODO clipboard
+		} catch (Exception $exception) {
+			return null;
+		}
+		self::addSession($session);
+		(new MWESessionLoadEvent(Loader::getInstance(), $session))->call();
+		return $session;
+	}
 
 }
