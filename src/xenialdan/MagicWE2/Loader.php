@@ -19,7 +19,7 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
-use xenialdan\apibossbar\DiverseBossBar;
+use xenialdan\apibossbar\BossBar;
 use xenialdan\customui\API;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
@@ -90,7 +90,7 @@ class Loader extends PluginBase
 
 	private $rotPath;
 	private $doorRotPath;
-	/** @var DiverseBossBar */
+	/** @var BossBar */#BossBar
 	public $wylaBossBar;
 
 	/**
@@ -298,7 +298,8 @@ class Loader extends PluginBase
 		$stone2 = BlockFactory::getInstance()->fromFullBlock($stoneid);
 		var_dump($stone2);
 		//register WYLA bar
-		$this->wylaBossBar = new DiverseBossBar();
+		#$this->wylaBossBar = new DiverseBossBar();
+		$this->wylaBossBar = new BossBar();
 		#$this->wylaBossBar->hideFromAll();
 		//WYLA updater
 		$this->getScheduler()->scheduleDelayedRepeatingTask(new class extends Task {
@@ -307,21 +308,23 @@ class Loader extends PluginBase
 			{
 				$players = Loader::getInstance()->wylaBossBar->getPlayers();
 				foreach ($players as $player) {
-					var_dump($player->getDisplayName());
 					if (!$player->isOnline() || !SessionHelper::hasSession($player) || !($session = SessionHelper::getUserSession($player))->isWYLAEnabled()) {
+						Loader::getInstance()->wylaBossBar->hideFrom([$player]);
 						continue;
 					}
+					Loader::getInstance()->wylaBossBar->showTo([$player]);
 					if (($block = $player->getTargetBlock(6)) instanceof Block && $block->getId() !== 0) {
 						Loader::getInstance()->wylaBossBar->showTo([$player]);
 						$stateEntry = BlockStatesParser::getStateByBlock($block);
 						$sub = $block->getName();
 						$title = strval($block);
+						#var_dump(BlockStatesParser::printStates($stateEntry,false));
 						if ($stateEntry instanceof BlockStatesEntry) {
-							$sub = implode("," . TF::EOL, explode(",", strval($stateEntry)));
+							$sub = implode("," . TF::EOL, explode(",", strval(BlockStatesParser::printStates($stateEntry, false))));
 						}
-						Loader::getInstance()->wylaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub);
-					} else
-						Loader::getInstance()->wylaBossBar->hideFrom([$player]);
+						#Loader::getInstance()->wylaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub);
+						Loader::getInstance()->wylaBossBar->setTitle($title)->setSubTitle($sub);
+					}#else						Loader::getInstance()->wylaBossBar->hideFrom([$player]);
 				}
 			}
 		}, 60, 1);
