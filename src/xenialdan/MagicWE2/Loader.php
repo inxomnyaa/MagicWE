@@ -61,7 +61,7 @@ use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\tool\TogglewandCommand;
 use xenialdan\MagicWE2\commands\tool\WandCommand;
 use xenialdan\MagicWE2\commands\utility\CalculateCommand;
-use xenialdan\MagicWE2\commands\utility\ToggleWYLACommand;
+use xenialdan\MagicWE2\commands\utility\ToggleWailaCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
 use xenialdan\MagicWE2\exception\ShapeRegistryException;
@@ -91,7 +91,7 @@ class Loader extends PluginBase
 	private $rotPath;
 	private $doorRotPath;
 	/** @var BossBar */#BossBar
-	public $wylaBossBar;
+	public $wailaBossBar;
 
 	/**
 	 * Returns an instance of the plugin
@@ -273,7 +273,7 @@ class Loader extends PluginBase
 			//new SnowCommand($this,"/snow", "Creates a snow layer cover in the selection"),
 			//new ThawCommand($this,"/thaw", "Thaws blocks in the selection"),
 			new CalculateCommand($this, "/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
-			new ToggleWYLACommand($this, "/togglewyla", "Toggle the WhatYou'reLookingAt bossbar", ["/wyla"]),
+			new ToggleWailaCommand($this, "/togglewaila", "Toggle the What Am I Looking At utility", ["/waila", "/wyla"]),
 			/* -- debugging -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 		]);
@@ -297,24 +297,24 @@ class Loader extends PluginBase
 		var_dump($stoneid);
 		$stone2 = BlockFactory::getInstance()->fromFullBlock($stoneid);
 		var_dump($stone2);
-		//register WYLA bar
-		#$this->wylaBossBar = new DiverseBossBar();
-		$this->wylaBossBar = new BossBar();
-		#$this->wylaBossBar->hideFromAll();
-		//WYLA updater
+		//register WAILA bar
+		#$this->wailaBossBar = new DiverseBossBar();
+		$this->wailaBossBar = new BossBar();
+		#$this->wailaBossBar->hideFromAll();
+		//WAILA updater
 		$this->getScheduler()->scheduleDelayedRepeatingTask(new class extends Task {
 
 			public function onRun(): void
 			{
-				$players = Loader::getInstance()->wylaBossBar->getPlayers();
+				$players = Loader::getInstance()->wailaBossBar->getPlayers();
 				foreach ($players as $player) {
-					if (!$player->isOnline() || !SessionHelper::hasSession($player) || !($session = SessionHelper::getUserSession($player))->isWYLAEnabled()) {
-						Loader::getInstance()->wylaBossBar->hideFrom([$player]);
+					if (!$player->isOnline() || !SessionHelper::hasSession($player) || !($session = SessionHelper::getUserSession($player))->isWailaEnabled()) {
+						Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 						continue;
 					}
-					Loader::getInstance()->wylaBossBar->showTo([$player]);
+					Loader::getInstance()->wailaBossBar->showTo([$player]);
 					if (($block = $player->getTargetBlock(6)) instanceof Block && $block->getId() !== 0) {
-						Loader::getInstance()->wylaBossBar->showTo([$player]);
+						Loader::getInstance()->wailaBossBar->showTo([$player]);
 						$stateEntry = BlockStatesParser::getStateByBlock($block);
 						$sub = $block->getName();
 						$title = strval($block);
@@ -322,9 +322,9 @@ class Loader extends PluginBase
 						if ($stateEntry instanceof BlockStatesEntry) {
 							$sub = implode("," . TF::EOL, explode(",", strval(BlockStatesParser::printStates($stateEntry, false))));
 						}
-						#Loader::getInstance()->wylaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub);
-						Loader::getInstance()->wylaBossBar->setTitle($title)->setSubTitle($sub);
-					}#else						Loader::getInstance()->wylaBossBar->hideFrom([$player]);
+						#Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub);
+						Loader::getInstance()->wailaBossBar->setTitle($title)->setSubTitle($sub);
+					}#else						Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 				}
 			}
 		}, 60, 1);

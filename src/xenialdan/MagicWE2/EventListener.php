@@ -61,11 +61,11 @@ class EventListener implements Listener
 
 	public function onSessionLoad(MWESessionLoadEvent $event): void
 	{
-		Loader::getInstance()->wylaBossBar->addPlayer($event->getPlayer());
-		Loader::getInstance()->wylaBossBar->showTo([$event->getPlayer()]);
+		Loader::getInstance()->wailaBossBar->addPlayer($event->getPlayer());
+		Loader::getInstance()->wailaBossBar->showTo([$event->getPlayer()]);
 		$session = $event->getSession();
 		if ($session instanceof UserSession) {
-			$session->setWYLAEnabled(true);
+			$session->setWailaEnabled(true);
 		}
 	}
 

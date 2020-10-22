@@ -389,6 +389,7 @@ final class BlockStatesParser
 			"minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
 			"minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
 			"minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
+			"minecraft:campfire",
 		];
 		foreach ($tests as $test) {
 			try {

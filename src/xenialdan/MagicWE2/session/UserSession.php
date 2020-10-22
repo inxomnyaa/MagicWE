@@ -37,7 +37,7 @@ class UserSession extends Session implements JsonSerializable
 	/** @var bool */
 	private $debugToolEnabled = true;
 	/** @var bool */
-	private $wylaEnabled = true;
+	private $wailaEnabled = true;
 	/** @var Brush[] */
 	private $brushes = [];
 	/** @var Language|null */
@@ -142,24 +142,24 @@ class UserSession extends Session implements JsonSerializable
 	/**
 	 * @return bool
 	 */
-	public function isWYLAEnabled(): bool
+	public function isWailaEnabled(): bool
 	{
-		return $this->wylaEnabled;
+		return $this->wailaEnabled;
 	}
 
 	/**
-	 * @param bool $wylaEnabled
+	 * @param bool $wailaEnabled
 	 * @return string
 	 */
-	public function setWYLAEnabled(bool $wylaEnabled): string
+	public function setWailaEnabled(bool $wailaEnabled): string
 	{
-		$this->wylaEnabled = $wylaEnabled;
-		if ($wylaEnabled) {
-			Loader::getInstance()->wylaBossBar->showTo([$this->getPlayer()]);
+		$this->wailaEnabled = $wailaEnabled;
+		if ($wailaEnabled) {
+			Loader::getInstance()->wailaBossBar->showTo([$this->getPlayer()]);
 		} else {
-			Loader::getInstance()->wylaBossBar->hideFrom([$this->getPlayer()]);
+			Loader::getInstance()->wailaBossBar->hideFrom([$this->getPlayer()]);
 		}
-		return Loader::PREFIX . $this->getLanguage()->translateString('tool.wyla.setenabled', [($wylaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.waila.setenabled', [($wailaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
 	}
 
 	/**

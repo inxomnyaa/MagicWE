@@ -15,7 +15,7 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
-class ToggleWYLACommand extends BaseCommand
+class ToggleWailaCommand extends BaseCommand
 {
 	/**
 	 * This is where all the arguments, permissions, sub-commands, etc would be registered
@@ -23,7 +23,7 @@ class ToggleWYLACommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->setPermission("we.command.utility.togglewyla");
+		$this->setPermission("we.command.utility.togglewaila");
 	}
 
 	/**
@@ -50,7 +50,7 @@ class ToggleWYLACommand extends BaseCommand
 			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$sender->sendMessage($session->setWYLAEnabled(!$session->isWYLAEnabled()));
+			$sender->sendMessage($session->setWailaEnabled(!$session->isWailaEnabled()));
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

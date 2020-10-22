@@ -122,7 +122,7 @@ permissions:
         children:
           we.command.utility.calculate:
             default: op
-          we.command.utility.togglewyla:
+          we.command.utility.togglewaila:
             default: op
       we.command.test:
         default: op
