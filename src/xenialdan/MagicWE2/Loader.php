@@ -19,7 +19,7 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
-use xenialdan\apibossbar\BossBar;
+use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\customui\API;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
@@ -90,7 +90,7 @@ class Loader extends PluginBase
 
 	private $rotPath;
 	private $doorRotPath;
-	/** @var BossBar */#BossBar
+	/** @var DiverseBossBar */#BossBar
 	public $wailaBossBar;
 
 	/**
@@ -182,6 +182,7 @@ class Loader extends PluginBase
 		//$this->loadDonator();
 		$this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
 		if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
+		//PacketListener::register($this);//TODO currently this just doubles the debug spam
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 		$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 			/* -- selection -- */
@@ -291,17 +292,15 @@ class Loader extends PluginBase
 
 		BlockStatesParser::getInstance()::runTests();
 
-		$stone = BlockFactory::getInstance()->get(1);
+		$stone = BlockFactory::getInstance()->get(1, 1);
 		var_dump($stone);
 		$stoneid = $stone->getFullId();
 		var_dump($stoneid);
 		$stone2 = BlockFactory::getInstance()->fromFullBlock($stoneid);
 		var_dump($stone2);
 		//register WAILA bar
-		#$this->wailaBossBar = new DiverseBossBar();
-		$this->wailaBossBar = new BossBar();
+		$this->wailaBossBar = new DiverseBossBar();
 		$this->wailaBossBar->setPercentage(1.0);
-		#$this->wailaBossBar->hideFromAll();
 		//WAILA updater
 		$this->getScheduler()->scheduleDelayedRepeatingTask(new class extends Task {
 
@@ -313,19 +312,16 @@ class Loader extends PluginBase
 						Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 						continue;
 					}
-					Loader::getInstance()->wailaBossBar->showTo([$player]);
 					if (($block = $player->getTargetBlock(10)) instanceof Block && $block->getId() !== 0) {
 						Loader::getInstance()->wailaBossBar->showTo([$player]);
 						$stateEntry = BlockStatesParser::getStateByBlock($block);
 						$sub = $block->getName();
 						$title = strval($block);
-						#var_dump(BlockStatesParser::printStates($stateEntry,false));
 						if ($stateEntry instanceof BlockStatesEntry) {
 							$sub = implode("," . TF::EOL, explode(",", strval(BlockStatesParser::printStates($stateEntry, false))));
 						}
-						#Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub);
 						$distancePercentage = round(floor($block->getPos()->distance($player->getEyePos())) / 10, 1);
-						Loader::getInstance()->wailaBossBar->setTitle($title)->setSubTitle($sub)->setPercentage($distancePercentage);
+						Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
 					} else
 						Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 				}

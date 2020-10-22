@@ -14,7 +14,7 @@ projects:
       version: ^4.0.0
       branch: PM4
     - src: thebigsmilexd/apibossbar/apibossbar
-      version: ^0.1.1
+      version: ^0.1.2
       branch: PM4
     - src: CortexPE/Commando/Commando
       version: ^3.0.0
