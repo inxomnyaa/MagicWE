@@ -71,7 +71,8 @@ class BlockStatesEntry
 	{
 		if ($this->block instanceof Block) return $this->block;
 		BlockFactory::getInstance();
-		$this->block = array_values(BlockStatesParser::getInstance()::fromString($this->blockFull, false))[0];
+		$blocks = BlockStatesParser::getInstance()::fromString($this->blockFull, false);
+		$this->block = reset($blocks);
 		return $this->block;
 	}
 
