@@ -7,6 +7,7 @@ use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
+use pocketmine\block\BlockFactory;
 use pocketmine\entity\InvalidSkinException;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -15,6 +16,7 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\world\ChunkLoadEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
@@ -26,6 +28,7 @@ use RuntimeException;
 use xenialdan\customui\windows\ModalForm;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
@@ -320,6 +323,30 @@ class EventListener implements Listener
 				$event->getPlayer()->getInventory()->remove($event->getItem());
 			}
 		} catch (Exception $e) {
+		}
+	}
+
+	/**
+	 * @priority MONITOR
+	 * @param ChunkLoadEvent $event
+	 * @throws RuntimeException
+	 */
+	private function onWorldLoad(ChunkLoadEvent $event): void
+	{
+		Loader::getInstance()->getLogger()->notice("Ffejfkjefehwfjhwefjwehfjwehgfwhegfhwgfwgfewzhgfrwejhfwejhgfwehgf");
+		if (true) {
+			Loader::getInstance()->getLogger()->notice("Ffejfkjefehwfjhwefjwehfjwehgfwhegfhwgfwgfewzhgfrwejhfwejhgfwehgf");
+			#if($event->getWorld()->getFolderName() === Server::getInstance()->getWorldManager()->getDefaultWorld()->getFolderName()){
+			$chunk = $event->getChunk();
+			foreach ($chunk->getSubChunks() as $subChunk) {
+				var_dump($subChunk->getBlockLayers());
+				foreach ($subChunk->getBlockLayers() as $blockLayer) {
+					print_r($blockLayer->getPalette());
+					foreach ($blockLayer->getPalette() as $id) {
+						Loader::getInstance()->getLogger()->debug(BlockStatesParser::getInstance()->printStates(BlockStatesParser::getStateByBlock(BlockFactory::getInstance()->fromFullBlock($id)), false));
+					}
+				}
+			}
 		}
 	}
 }

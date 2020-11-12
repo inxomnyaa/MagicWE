@@ -8,7 +8,6 @@ use InvalidArgumentException;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
@@ -21,6 +20,8 @@ use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\customui\API;
+use xenialdan\libstructure\exception\StructureFileException;
+use xenialdan\libstructure\format\MCStructureFile;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -173,6 +174,7 @@ class Loader extends PluginBase
 	 * @throws PluginException
 	 * @throws LanguageNotFoundException
 	 * @throws RuntimeException
+	 * @throws StructureFileException
 	 */
 	public function onEnable(): void
 	{
@@ -290,14 +292,13 @@ class Loader extends PluginBase
 			$this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
 		}
 
-		BlockStatesParser::getInstance()::runTests();
+		//run tests
+		#BlockStatesParser::getInstance()::runTests();
+		$structureTest = MCStructureFile::parse($this->getDataFolder() . "test.mcstructure");
+		foreach ($structureTest->iterateBlocks(MCStructureFile::LAYER_BLOCKS) as $block) {
+			$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
+		}
 
-		$stone = BlockFactory::getInstance()->get(1, 1);
-		var_dump($stone);
-		$stoneid = $stone->getFullId();
-		var_dump($stoneid);
-		$stone2 = BlockFactory::getInstance()->fromFullBlock($stoneid);
-		var_dump($stone2);
 		//register WAILA bar
 		$this->wailaBossBar = new DiverseBossBar();
 		$this->wailaBossBar->setPercentage(1.0);

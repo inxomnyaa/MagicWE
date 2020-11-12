@@ -287,6 +287,25 @@ final class BlockStatesParser
 		return new BlockStatesEntry($name, $blockStates, $block);
 	}
 
+	public static function getStateByCompound(CompoundTag $compoundTag): ?BlockStatesEntry
+	{
+		$namespacedSelectedBlockName = $compoundTag->getString('name');
+		if ($namespacedSelectedBlockName === null) return null;
+		$states = $compoundTag->getCompoundTag('states') ?? self::getDefaultStates($namespacedSelectedBlockName);
+		if (!$states instanceof CompoundTag) {
+			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
+		}
+
+		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] ?? [] as $meta => $r12ToCurrentBlockMapEntry) {//??[] is to avoid crashes on newer blocks like light block
+			$clonedPrintedCompound = $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
+			if ($clonedPrintedCompound->equals($states)) {
+				#Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName, $clonedPrintedCompound), true));//might cause loop lol//todo rem
+				return new BlockStatesEntry($namespacedSelectedBlockName, $clonedPrintedCompound);
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * @param BlockStatesEntry $entry
 	 * @param bool $skipDefaults
