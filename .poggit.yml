@@ -9,10 +9,10 @@ projects:
     - "resources/magicwe_icon_wide.png"
     libs:
       - src: BlockHorizons/libschematic/libschematic
-      version: ^2.0.0
-    - src: thebigsmilexd/customui/customui
-      version: ^4.0.0
-      branch: PM4
+        version: ^2.0.0
+      - src: thebigsmilexd/customui/customui
+        version: ^4.0.0
+        branch: PM4
       - src: thebigsmilexd/apibossbar/apibossbar
         version: ^0.1.3
         branch: PM4
