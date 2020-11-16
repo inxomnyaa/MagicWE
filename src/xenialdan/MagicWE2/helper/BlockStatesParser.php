@@ -182,12 +182,12 @@ final class BlockStatesParser
 			throw new InvalidArgumentException("Could not detect block id");
 		}
 
-		$block = LegacyStringToItemParser::getInstance()->parse($matches[0][1] ?? $query)->getBlock();
+		$selectedBlockName = $matches[0][1];
+		$namespacedSelectedBlockName = "minecraft:" . $selectedBlockName;//TODO try to keep namespace "minecraft:" to support custom blocks
+		$block = LegacyStringToItemParser::getInstance()->parse($selectedBlockName)->getBlock();
 		if (count($matches[0]) < 3) {
 			return [$block];
 		}
-		$selectedBlockName = $matches[0][1];
-		$namespacedSelectedBlockName = "minecraft:" . $selectedBlockName;//TODO try to keep namespace "minecraft:" to support custom blocks
 		$defaultStatesNamedTag = self::getDefaultStates($namespacedSelectedBlockName);
 		if (!$defaultStatesNamedTag instanceof CompoundTag) {
 			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use Exception;
 use InvalidArgumentException;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
@@ -16,12 +17,11 @@ use pocketmine\plugin\PluginException;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
+use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
-use xenialdan\customui\API;
-use xenialdan\libstructure\exception\StructureFileException;
-use xenialdan\libstructure\format\MCStructureFile;
+use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -152,10 +152,6 @@ class Loader extends PluginBase
 		}
 
 		BlockStatesParser::getInstance()->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
-		#BlockStatesParser::printAllStates();
-		#BlockStatesParser::runTests();
-		#BlockStatesParser::generatePossibleStatesJson();
-		#BlockStatesParser::placeAllBlockstates(new Position());
 	}
 
 	/**
@@ -174,7 +170,6 @@ class Loader extends PluginBase
 	 * @throws PluginException
 	 * @throws LanguageNotFoundException
 	 * @throws RuntimeException
-	 * @throws StructureFileException
 	 */
 	public function onEnable(): void
 	{
@@ -280,7 +275,7 @@ class Loader extends PluginBase
 			/* -- debugging -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 		]);
-		if (class_exists(API::class)) {
+		if (class_exists("\\xenialdan\\customui\\API")) {
 			$this->getLogger()->notice("CustomUI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 				/* -- brush -- */
@@ -294,9 +289,18 @@ class Loader extends PluginBase
 
 		//run tests
 		#BlockStatesParser::getInstance()::runTests();
-		$structureTest = MCStructureFile::parse($this->getDataFolder() . "test.mcstructure");
-		foreach ($structureTest->iterateBlocks(MCStructureFile::LAYER_BLOCKS) as $block) {
-			$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
+		foreach (glob($this->getDataFolder() . "*.mcstructure") as $file) {
+			$this->getLogger()->debug(TextFormat::GOLD . "Parsing " . basename($file));
+			try {
+				$structure = new MCStructure();
+				$structure->parse($file);
+				//this will dump wrong blocks for now
+				foreach ($structure->blocks() as $block) {
+					$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
+				}
+			} catch (Exception $e) {
+				$this->getLogger()->debug($e->getMessage());
+			}
 		}
 
 		//register WAILA bar
