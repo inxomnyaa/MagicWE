@@ -4,7 +4,8 @@ main: xenialdan\MagicWE2\Loader
 version: 10.1.0
 api: ["4.0.0"]
 php: "7.3"
-load: STARTUP
+#load: STARTUP
+load: POSTWORLD
 authors:
   - XenialDan
 description: Lag free asynchronous world editor for PMMP with plenty of options

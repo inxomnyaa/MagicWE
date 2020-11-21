@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
+use pocketmine\block\tile\Tile;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
@@ -19,9 +20,9 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
-use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -69,6 +70,7 @@ use xenialdan\MagicWE2\exception\ShapeRegistryException;
 use xenialdan\MagicWE2\helper\BlockStatesEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\helper\StructureStore;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
@@ -152,6 +154,7 @@ class Loader extends PluginBase
 		}
 
 		BlockStatesParser::getInstance()->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+		#StructureStore::getInstance();
 	}
 
 	/**
@@ -289,14 +292,23 @@ class Loader extends PluginBase
 
 		//run tests
 		#BlockStatesParser::getInstance()::runTests();
-		foreach (glob($this->getDataFolder() . "*.mcstructure") as $file) {
-			$this->getLogger()->debug(TextFormat::GOLD . "Parsing " . basename($file));
+		$world = Loader::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
+		$spawn = $world->getSafeSpawn()->asVector3();
+		var_dump($spawn);
+		foreach (glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure") as $file) {
+			$this->getLogger()->debug(TextFormat::GOLD . "Loading " . basename($file));
 			try {
-				$structure = new MCStructure();
-				$structure->parse($file);
+				$structure = StructureStore::getInstance()->loadStructure(basename($file));
+				var_dump($structure);
 				//this will dump wrong blocks for now
 				foreach ($structure->blocks() as $block) {
 					$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
+					$world->setBlock($spawn->addVector($block->getPos()->asVector3()), $block);
+					if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world),$spawn)) instanceof Tile) {
+						$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+						if ($tileAt !== null) $world->removeTile($tileAt);
+						$world->addTile($tile);
+					}
 				}
 			} catch (Exception $e) {
 				$this->getLogger()->debug($e->getMessage());
