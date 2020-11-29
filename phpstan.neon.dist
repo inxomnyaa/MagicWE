@@ -6,7 +6,7 @@ parameters:
     ignoreErrors:
         - "#Cannot cast .*CortexPE\\Commando\\args\\BaseArgument to.*#"
         - "#Binary operation .* between .* and.*CortexPE\\Commando\\args\\BaseArgument.*#"
-        - "#Call to an undefined method .*::cancel()#"
+        - "#Call to an undefined method .*::cancel\(\)#"
 
     paths:
         - /source/src
