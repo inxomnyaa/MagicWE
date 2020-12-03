@@ -303,6 +303,8 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			" Player: " . $this->getPlayer()->getName() .
 			" Wand tool enabled: " . ($this->isWandEnabled() ? "enabled" : "disabled") .
 			" Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
+			" WAILA enabled: " . ($this->isWailaEnabled() ? "enabled" : "disabled") .
+			" Sidebar enabled: " . ($this->sidebarEnabled ? "enabled" : "disabled") .
 			" BossBar: " . $this->getBossBar()->entityId .
 			" Selections: " . count($this->getSelections()) .
 			" Latest: " . $this->getLatestSelectionUUID() .
@@ -331,6 +333,8 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			"uuid" => $this->getUUID()->toString(),
 			"wandEnabled" => $this->wandEnabled,
 			"debugToolEnabled" => $this->debugToolEnabled,
+			"wailaEnabled" => $this->wailaEnabled,
+			"sidebarEnabled" => $this->sidebarEnabled,
 			"brushes" => $this->brushes,
 			"latestSelection" => $this->getLatestSelection(),
 			"currentClipboard" => $this->getCurrentClipboard(),
