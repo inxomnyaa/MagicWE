@@ -20,5 +20,6 @@ parameters:
         - phar:///source/vendor/libschematic.phar/src
         - phar:///source/vendor/InvMenu.phar/src
         - phar:///source/vendor/libstructure.phar/src
+        - phar:///source/vendor/ScoreFactory.phar/src
     excludes_analyse:
         - source/vendor
