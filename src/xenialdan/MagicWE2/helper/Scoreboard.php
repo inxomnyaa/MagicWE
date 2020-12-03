@@ -27,13 +27,13 @@ class Scoreboard
 				if ($session->getLatestSelection() !== null) {
 					$line = 0;
 					$selection = $session->getLatestSelection();
-					ScoreFactory::setScoreLine($player, ++$line, TF::UNDERLINE . TF::GOLD . $session->getLanguage()->translateString("spacer", ["Selection"]));
+					ScoreFactory::setScoreLine($player, ++$line, TF::GOLD . $session->getLanguage()->translateString("spacer", ["Selection"]));
 					ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "Position: " . TF::RESET . "{$this->vecToString($selection->getPos1()->asVector3())} » {$this->vecToString($selection->getPos2()->asVector3())}");
 					ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "World: " . TF::RESET . $selection->getWorld()->getFolderName());
 					ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "Shape: " . TF::RESET . (new ReflectionClass($selection->shape))->getShortName());
 					ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "Size: " . TF::RESET . "{$this->vecToString(new Vector3($selection->getSizeX(),$selection->getSizeY(),$selection->getSizeZ()))} ({$selection->getShape()->getTotalCount()})");
 
-					ScoreFactory::setScoreLine($player, ++$line, TF::UNDERLINE . TF::GOLD . $session->getLanguage()->translateString("spacer", ["Settings"]));
+					ScoreFactory::setScoreLine($player, ++$line, TF::GOLD . $session->getLanguage()->translateString("spacer", ["Settings"]));
 					ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "Tool Range: " . TF::RESET . Loader::getInstance()->getToolDistance());
 					$editLimit = Loader::getInstance()->getEditLimit();
 					ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "Limit: " . TF::RESET . ($editLimit === -1 ? $this->boolToString(false) : $editLimit));
@@ -42,7 +42,7 @@ class Scoreboard
 					ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "WAILA: " . TF::RESET . $this->boolToString($session->isWailaEnabled()));
 
 					if (($cb = $session->getCurrentClipboard()) instanceof SingleClipboard) {
-						ScoreFactory::setScoreLine($player, ++$line, TF::UNDERLINE . TF::GOLD . $session->getLanguage()->translateString("spacer", ["Clipboard"]));
+						ScoreFactory::setScoreLine($player, ++$line, TF::GOLD . $session->getLanguage()->translateString("spacer", ["Clipboard"]));
 						/** @var SingleClipboard $cb */
 						if ($cb->customName !== "")
 							ScoreFactory::setScoreLine($player, ++$line, TF::ITALIC . "Name: " . TF::RESET . $cb->customName);
