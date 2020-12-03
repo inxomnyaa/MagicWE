@@ -21,7 +21,7 @@ class Scoreboard
 	public function handleScoreboard(UserSession $session): void
 	{
 		$player = $session->getPlayer();
-		if ($session->sidebarEnabled) {
+		if ($session->isSidebarEnabled()) {
 			ScoreFactory::setScore($player, Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . "Sidebar");
 			try {
 				if ($session->getLatestSelection() !== null) {

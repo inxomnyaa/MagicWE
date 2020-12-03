@@ -67,7 +67,7 @@ class EventListener implements Listener
 		if (Loader::hasScoreboard()) {
 			try {
 				/** @var UserSession $session */
-				if (($session = $event->getSession()) instanceof UserSession && $session->sidebarEnabled) $session->sidebar->handleScoreboard($session);
+				if (($session = $event->getSession()) instanceof UserSession && $session->isSidebarEnabled()) $session->sidebar->handleScoreboard($session);
 			} catch (InvalidArgumentException $e) {
 				Loader::getInstance()->getLogger()->logException($e);
 			}
