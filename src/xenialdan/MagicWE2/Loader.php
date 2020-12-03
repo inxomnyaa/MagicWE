@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2;
 
 use Exception;
 use InvalidArgumentException;
+use jackmd\scorefactory\ScoreFactory;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
@@ -99,6 +100,8 @@ class Loader extends PluginBase
 	private $doorRotPath;
 	/** @var DiverseBossBar */#BossBar
 	public $wailaBossBar;
+	/** @var null|string */
+	public static $scoreboardAPI;
 
 	/**
 	 * Returns an instance of the plugin
@@ -133,6 +136,14 @@ class Loader extends PluginBase
 	}
 
 	/**
+	 * @return bool
+	 */
+	public static function hasScoreboard(): bool
+	{
+		return self::$scoreboardAPI !== null;
+	}
+
+	/**
 	 * @throws PluginException
 	 * @throws RuntimeException
 	 * @throws JsonException
@@ -156,7 +167,9 @@ class Loader extends PluginBase
 			throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
 		}
 
-		BlockStatesParser::getInstance()->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+		/** @var BlockStatesParser $bsp */
+		$bsp = BlockStatesParser::getInstance();
+		$bsp->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
 		#StructureStore::getInstance();
 	}
 
@@ -292,6 +305,12 @@ class Loader extends PluginBase
 		} else {
 			$this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
 		}
+		if (class_exists("\\jackmd\\scorefactory\\ScoreFactory")) {
+			$this->getLogger()->notice("Scoreboard API found, can use scoreboards");
+			self::$scoreboardAPI = ScoreFactory::class;
+		} else {
+			$this->getLogger()->notice(TF::RED . "Scoreboard API NOT found, can NOT use scoreboards");
+		}
 
 		//run tests
 		#BlockStatesParser::getInstance()::runTests();
@@ -307,7 +326,7 @@ class Loader extends PluginBase
 				foreach ($structure->blocks() as $block) {
 					$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
 					$world->setBlock($spawn->addVector($block->getPos()->asVector3()), $block);
-					if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world),$spawn)) instanceof Tile) {
+					if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world), $spawn)) instanceof Tile) {
 						$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
 						if ($tileAt !== null) $world->removeTile($tileAt);
 						$world->addTile($tile);
@@ -373,6 +392,11 @@ class Loader extends PluginBase
 	public function getToolDistance(): int
 	{
 		return (int)$this->getConfig()->get("tool-range", 100);
+	}
+
+	public function getEditLimit(): int
+	{
+		return (int)$this->getConfig()->get("limit", -1);
 	}
 
 	/**

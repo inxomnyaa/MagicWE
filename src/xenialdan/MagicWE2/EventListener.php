@@ -7,7 +7,6 @@ use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
-use pocketmine\block\BlockFactory;
 use pocketmine\entity\InvalidSkinException;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -16,7 +15,6 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\event\world\ChunkLoadEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
@@ -26,9 +24,9 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\customui\windows\ModalForm;
+use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
-use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
@@ -66,6 +64,14 @@ class EventListener implements Listener
 	public function onSessionLoad(MWESessionLoadEvent $event): void
 	{
 		Loader::getInstance()->wailaBossBar->addPlayer($event->getPlayer());
+		if (Loader::hasScoreboard()) {
+			try {
+				/** @var UserSession $session */
+				if (($session = $event->getSession()) instanceof UserSession && $session->sidebarEnabled) $session->sidebar->handleScoreboard($session);
+			} catch (InvalidArgumentException $e) {
+				Loader::getInstance()->getLogger()->logException($e);
+			}
+		}
 	}
 
 	/**
@@ -327,27 +333,13 @@ class EventListener implements Listener
 		}
 	}
 
-	/**
-	 * @priority MONITOR
-	 * @param ChunkLoadEvent $event
-	 * @throws RuntimeException
-	 */
-	private function onWorldLoad(ChunkLoadEvent $event): void
+	public function onSelectionChange(MWESelectionChangeEvent $event): void
 	{
-		Loader::getInstance()->getLogger()->notice("Ffejfkjefehwfjhwefjwehfjwehgfwhegfhwgfwgfewzhgfrwejhfwejhgfwehgf");
-		if (true) {
-			Loader::getInstance()->getLogger()->notice("Ffejfkjefehwfjhwefjwehfjwehgfwhegfhwgfwgfewzhgfrwejhfwejhgfwehgf");
-			#if($event->getWorld()->getFolderName() === Server::getInstance()->getWorldManager()->getDefaultWorld()->getFolderName()){
-			$chunk = $event->getChunk();
-			foreach ($chunk->getSubChunks() as $subChunk) {
-				var_dump($subChunk->getBlockLayers());
-				foreach ($subChunk->getBlockLayers() as $blockLayer) {
-					print_r($blockLayer->getPalette());
-					foreach ($blockLayer->getPalette() as $id) {
-						Loader::getInstance()->getLogger()->debug(BlockStatesParser::getInstance()->printStates(BlockStatesParser::getStateByBlock(BlockFactory::getInstance()->fromFullBlock($id)), false));
-					}
-				}
-			}
+		Loader::getInstance()->getLogger()->debug("Called " . $event->getEventName());
+		Loader::getInstance()->getLogger()->debug(print_r($event, true));
+		if (($session = $event->getSession()) instanceof UserSession && ($player = $event->getPlayer()) !== null) {
+			/** @var UserSession $session */
+			$session->sidebar->handleScoreboard($session);
 		}
 	}
 }

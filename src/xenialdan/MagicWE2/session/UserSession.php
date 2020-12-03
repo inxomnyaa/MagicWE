@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\session;
 use Ds\Deque;
 use Exception;
 use InvalidArgumentException;
+use jackmd\scorefactory\ScoreFactory;
 use JsonException;
 use JsonSerializable;
 use pocketmine\item\Item;
@@ -22,22 +23,27 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
 use xenialdan\MagicWE2\exception\BrushException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
+use xenialdan\MagicWE2\helper\Scoreboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
-class UserSession extends Session implements JsonSerializable
+class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
 {
 	/** @var Player|null */
 	private $player;
 	/** @var BossBar */
 	private $bossBar;
+	/** @var Scoreboard|null */
+	public $sidebar;
 	/** @var bool */
 	private $wandEnabled = true;
 	/** @var bool */
 	private $debugToolEnabled = true;
 	/** @var bool */
 	private $wailaEnabled = true;
+	/** @var bool */
+	public $sidebarEnabled = true;//TODO settings/commands
 	/** @var Brush[] */
 	private $brushes = [];
 	/** @var Language|null */
@@ -50,9 +56,16 @@ class UserSession extends Session implements JsonSerializable
 		$this->setUUID($player->getUniqueId());
 		$this->bossBar = (new BossBar())->addPlayer($player);
 		$this->bossBar->hideFrom([$player]);
+		if (Loader::hasScoreboard()) {
+			$this->sidebar = new Scoreboard();
+		}
 		$this->undoHistory = new Deque();
 		$this->redoHistory = new Deque();
-		if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
+		try {
+			if (is_null($this->lang))
+				$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
+		} catch (LanguageNotFoundException $e) {
+		}
 		Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
 	}
 
@@ -60,6 +73,9 @@ class UserSession extends Session implements JsonSerializable
 	{
 		Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
 		$this->bossBar->removeAllPlayers();
+		if (Loader::hasScoreboard() && $this->sidebar !== null) {
+			ScoreFactory::removeScore($this->getPlayer());
+		}
 	}
 
 	/**
@@ -137,6 +153,31 @@ class UserSession extends Session implements JsonSerializable
 	{
 		$this->debugToolEnabled = $debugToolEnabled;
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSidebarEnabled(): bool
+	{
+		return $this->sidebarEnabled;
+	}
+
+	/**
+	 * @param bool $sidebarEnabled
+	 * @return string
+	 */
+	public function setSidebarEnabled(bool $sidebarEnabled): string
+	{
+		$player = $this->getPlayer();
+		if (!$player instanceof Player) return TF::RED . "Session has no player";
+		$this->sidebarEnabled = $sidebarEnabled;
+		if ($sidebarEnabled) {
+			$this->sidebar->handleScoreboard($this);
+		} else {
+			ScoreFactory::removeScore($player);
+		}
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.sidebar.setenabled', [($sidebarEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
 	}
 
 	/**
@@ -290,6 +331,8 @@ class UserSession extends Session implements JsonSerializable
 			" Player: " . $this->getPlayer()->getName() .
 			" Wand tool enabled: " . ($this->isWandEnabled() ? "enabled" : "disabled") .
 			" Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
+			" WAILA enabled: " . ($this->isWailaEnabled() ? "enabled" : "disabled") .
+			" Sidebar enabled: " . ($this->sidebarEnabled ? "enabled" : "disabled") .
 			" BossBar: " . $this->getBossBar()->entityId .
 			" Selections: " . count($this->getSelections()) .
 			" Latest: " . $this->getLatestSelectionUUID() .
@@ -318,6 +361,8 @@ class UserSession extends Session implements JsonSerializable
 			"uuid" => $this->getUUID()->toString(),
 			"wandEnabled" => $this->wandEnabled,
 			"debugToolEnabled" => $this->debugToolEnabled,
+			"wailaEnabled" => $this->wailaEnabled,
+			"sidebarEnabled" => $this->sidebarEnabled,
 			"brushes" => $this->brushes,
 			"latestSelection" => $this->getLatestSelection(),
 			"currentClipboard" => $this->getCurrentClipboard(),
