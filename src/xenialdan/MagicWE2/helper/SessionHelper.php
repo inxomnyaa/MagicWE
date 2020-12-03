@@ -216,6 +216,8 @@ class SessionHelper
 			$session->setUUID(UUID::fromString($data["uuid"]));
 			$session->setWandEnabled($data["wandEnabled"]);
 			$session->setDebugToolEnabled($data["debugToolEnabled"]);
+			$session->setWailaEnabled($data["wailaEnabled"]);
+			$session->setSidebarEnabled($data["sidebarEnabled"]);
 			$session->setLanguage($data["language"]);
 			foreach ($data["brushes"] as $brushUUID => $brushJson) {
 				try {

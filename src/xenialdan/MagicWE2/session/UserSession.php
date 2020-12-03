@@ -58,11 +58,14 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		$this->bossBar->hideFrom([$player]);
 		if (Loader::hasScoreboard()) {
 			$this->sidebar = new Scoreboard();
-			var_dump($this->sidebar);
 		}
 		$this->undoHistory = new Deque();
 		$this->redoHistory = new Deque();
-		if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
+		try {
+			if (is_null($this->lang))
+				$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
+		} catch (LanguageNotFoundException $e) {
+		}
 		Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
 	}
 
@@ -150,6 +153,31 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	{
 		$this->debugToolEnabled = $debugToolEnabled;
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSidebarEnabled(): bool
+	{
+		return $this->sidebarEnabled;
+	}
+
+	/**
+	 * @param bool $sidebarEnabled
+	 * @return string
+	 */
+	public function setSidebarEnabled(bool $sidebarEnabled): string
+	{
+		$player = $this->getPlayer();
+		if (!$player instanceof Player) return TF::RED . "Session has no player";
+		$this->sidebarEnabled = $sidebarEnabled;
+		if ($sidebarEnabled) {
+			$this->sidebar->handleScoreboard($this);
+		} else {
+			ScoreFactory::removeScore($player);
+		}
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.sidebar.setenabled', [($sidebarEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
 	}
 
 	/**
