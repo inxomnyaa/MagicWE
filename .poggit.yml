@@ -23,6 +23,6 @@ projects:
         version: ^4.0.1
         branch: "4.0"
       - src: thebigsmilexd/libstructure/libstructure
-        version: ^0.1.0
+        version: ^0.1.1
         branch: mcstructure
 ...
