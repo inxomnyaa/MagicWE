@@ -21,6 +21,6 @@ jobs:
         wget -P vendor --content-disposition -i virion_urls.txt
         rm virion_urls.txt
     - name: Run PHPStan
-      uses: nxtlvlsoftware/pmmp-phpstan-action@4
+      uses: larryTheCoder/pmmp-phpstan-action@master
       with:
         phpstan-config: phpstan.neon.dist
