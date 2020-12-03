@@ -11,6 +11,7 @@ use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
 use pocketmine\block\tile\Tile;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\ItemFlags;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\plugin\PluginBase;
@@ -84,14 +85,17 @@ class Loader extends PluginBase
 	public static $shapeRegistry;
 	/** @var null|ActionRegistry */
 	public static $actionRegistry;
+	/** @var Enchantment */
+	public static $ench;
 	/** @var Language */
 	private $baseLang;
 	/** @var string[] Donator names */
 	public $donators = [];
 	/** @var string */
 	public $donatorData = "";
-
+	/** @var string */
 	private $rotPath;
+	/** @var string */
 	private $doorRotPath;
 	/** @var DiverseBossBar */#BossBar
 	public $wailaBossBar;
@@ -137,8 +141,7 @@ class Loader extends PluginBase
 	public function onLoad(): void
 	{
 		self::$instance = $this;
-		$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
-		Enchantment::register($ench);
+		self::$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
 		self::$shapeRegistry = new ShapeRegistry();
 		self::$actionRegistry = new ActionRegistry();
 		SessionHelper::init();

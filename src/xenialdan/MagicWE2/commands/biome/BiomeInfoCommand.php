@@ -15,6 +15,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\biome\Biome;
+use pocketmine\world\biome\BiomeRegistry;
 use pocketmine\world\format\io\FastChunkSerializer;
 use ReflectionClass;
 use xenialdan\MagicWE2\exception\SelectionException;
@@ -66,7 +67,7 @@ class BiomeInfoCommand extends BaseCommand
             $biomeNames = array_flip($biomeNames);
             unset($biomeNames[Biome::MAX_BIOMES]);
 			array_walk($biomeNames, static function (&$value, $key) {
-				$value = Biome::getBiome($key)->getName();
+				$value = BiomeRegistry::getInstance()->getBiome($key)->getName();
 			});
 			if (!empty(($flags = ltrim((string)($args["flags"] ?? ""), "-")))) {
 				$flagArray = str_split($flags);
@@ -76,12 +77,12 @@ class BiomeInfoCommand extends BaseCommand
 						$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
 						return;
 					}
-					$biomeId = $target->getPos()->getWorld()->getChunkAtPosition($target->getPos())->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
+					$biomeId = $target->getPos()->getWorld()->getOrLoadChunkAtPosition($target->getPos())->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}
 				if (in_array(self::FLAG_P, $flagArray, true)) {
-					$biomeId = $sender->getWorld()->getChunkAtPosition($sender->getPosition())->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
+					$biomeId = $sender->getWorld()->getOrLoadChunkAtPosition($sender->getPosition())->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}

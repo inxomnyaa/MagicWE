@@ -12,6 +12,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\biome\Biome;
+use pocketmine\world\biome\BiomeRegistry;
 use ReflectionClass;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -48,7 +49,7 @@ class BiomeListCommand extends BaseCommand
                 $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomelist.title'));
                 foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
 					if ($value === Biome::MAX_BIOMES) continue;
-					$name = Biome::getBiome($value)->getName();
+					$name = BiomeRegistry::getInstance()->getBiome($value)->getName();
 					$session->sendMessage(TF::AQUA . $lang->translateString('command.biomelist.result.line', [$value, $name]));
 				}
 			} catch (SessionException $e) {

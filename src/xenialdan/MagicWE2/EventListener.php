@@ -47,9 +47,10 @@ class EventListener implements Listener
 	/**
 	 * @param PlayerJoinEvent $event
 	 * @throws AssumptionFailedError
-	 * @throws JsonException
-	 * @throws SessionException
 	 * @throws InvalidSkinException
+	 * @throws JsonException
+	 * @throws RuntimeException
+	 * @throws SessionException
 	 */
 	public function onLogin(PlayerJoinEvent $event): void
 	{

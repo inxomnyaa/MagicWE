@@ -84,8 +84,9 @@ class SessionHelper
 	 * @param Player $player
 	 * @param bool $add If true, the session will be cached in SessionHelper
 	 * @return UserSession
-	 * @throws SessionException
 	 * @throws InvalidSkinException
+	 * @throws RuntimeException
+	 * @throws SessionException
 	 */
 	public static function createUserSession(Player $player, bool $add = true): UserSession
 	{
@@ -192,9 +193,10 @@ class SessionHelper
 	/**
 	 * @param Player $player
 	 * @return UserSession|null
-	 * @throws JsonException
-	 * @throws InvalidSkinException
 	 * @throws AssumptionFailedError
+	 * @throws InvalidSkinException
+	 * @throws JsonException
+	 * @throws RuntimeException
 	 */
 	public static function loadUserSession(Player $player): ?UserSession
 	{

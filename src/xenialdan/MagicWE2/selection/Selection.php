@@ -266,6 +266,7 @@ class Selection implements Serializable, JsonSerializable
 	 * </p>
 	 * @return void
 	 * @since 5.1.0
+	 * @noinspection PhpMissingParamTypeInspection
 	 */
 	public function unserialize($serialized)
 	{

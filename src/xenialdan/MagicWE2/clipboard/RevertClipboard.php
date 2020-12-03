@@ -47,14 +47,15 @@ class RevertClipboard extends Clipboard
     }
 
     /**
-     * Constructs the object
-     * @link http://php.net/manual/en/serializable.unserialize.php
-     * @param string $serialized <p>
-     * The string representation of the object.
-     * </p>
-     * @return void
-     * @since 5.1.0
-     */
+	 * Constructs the object
+	 * @link http://php.net/manual/en/serializable.unserialize.php
+	 * @param string $serialized <p>
+	 * The string representation of the object.
+	 * </p>
+	 * @return void
+	 * @since 5.1.0
+	 * @noinspection PhpMissingParamTypeInspection
+	 */
     public function unserialize($serialized)
     {
 		[

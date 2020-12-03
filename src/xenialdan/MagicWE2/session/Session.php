@@ -232,8 +232,8 @@ abstract class Session
         $revertClipboard = $this->undoHistory->pop();
 		$world = $revertClipboard->getWorld();
         foreach ($revertClipboard->chunks as $hash => $chunk) {
-			$revertClipboard->chunks[$hash] = $world->getChunk($chunk->getX(), $chunk->getZ(), false);
-        }
+			$revertClipboard->chunks[$hash] = $world->getChunk($chunk->getX(), $chunk->getZ());
+		}
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
     }

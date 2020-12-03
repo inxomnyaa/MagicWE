@@ -10,7 +10,6 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -55,7 +54,7 @@ class DebugCommand extends BaseCommand
         /** @var Player $sender */
         try {
 			$item = ItemFactory::getInstance()->get(ItemIds::STICK);
-			$item->addEnchantment(new EnchantmentInstance(Enchantment::get(Loader::FAKE_ENCH_ID)));
+			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.debug'));
 			$item->setLore([
 				$lang->translateString('tool.debug.lore.1'),

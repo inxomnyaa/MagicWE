@@ -90,7 +90,7 @@ class UserSession extends Session implements JsonSerializable
 	/**
 	 * @param null|Player $player
 	 */
-	public function setPlayer($player): void
+	public function setPlayer(?Player $player): void
 	{
 		$this->player = $player;
 	}

@@ -675,7 +675,7 @@ final class BlockStatesParser
 	 * @param string $property
 	 * @return mixed
 	 */
-	public static function &readAnyValue($object, string $property)
+	public static function &readAnyValue(object $object, string $property)
 	{
 		$invoke = Closure::bind(function & () use ($property) {
 			return $this->$property;
