@@ -232,6 +232,13 @@ class SessionHelper
 					if (is_null($world)) {
 						$session->sendMessage(TF::RED . "The world of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
 					} else {
+						$shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
+						$pasteVector = $latestSelection["shape"]["pasteVector"];
+						unset($latestSelection["shape"]["pasteVector"]);
+						if (!is_null($pasteVector)) {
+							$pasteV = new Vector3(...array_values($pasteVector));
+							$shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
+						}
 						$selection = new Selection(
 							$session->getUUID(),
 							Server::getInstance()->getWorldManager()->getWorld($latestSelection["worldId"]),
@@ -240,15 +247,10 @@ class SessionHelper
 							$latestSelection["pos1"]["z"],
 							$latestSelection["pos2"]["x"],
 							$latestSelection["pos2"]["y"],
-							$latestSelection["pos2"]["z"]
+							$latestSelection["pos2"]["z"],
+							$shape ?? null
 						);
-						$shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
-						$pasteVector = $latestSelection["shape"]["pasteVector"];
-						unset($latestSelection["shape"]["pasteVector"]);
-						if (!is_null($pasteVector)) {
-							$pasteV = new Vector3(...array_values($pasteVector));
-							$shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
-							$selection->setShape($shape);
+						if ($selection instanceof Selection && $selection->isValid()) {
 							$session->addSelection($selection);
 						}
 					}

@@ -3,7 +3,7 @@ name: MagicWE2
 main: xenialdan\MagicWE2\Loader
 version: 10.1.0
 api: ["4.0.0"]
-php: "7.3"
+php: "7.4"
 #load: STARTUP
 load: POSTWORLD
 authors:

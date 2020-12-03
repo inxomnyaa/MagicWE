@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\session;
 use Ds\Deque;
 use Exception;
 use InvalidArgumentException;
+use jackmd\scorefactory\ScoreFactory;
 use JsonException;
 use JsonSerializable;
 use pocketmine\item\Item;
@@ -22,22 +23,27 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
 use xenialdan\MagicWE2\exception\BrushException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
+use xenialdan\MagicWE2\helper\Scoreboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
-class UserSession extends Session implements JsonSerializable
+class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
 {
 	/** @var Player|null */
 	private $player;
 	/** @var BossBar */
 	private $bossBar;
+	/** @var Scoreboard|null */
+	public $sidebar;
 	/** @var bool */
 	private $wandEnabled = true;
 	/** @var bool */
 	private $debugToolEnabled = true;
 	/** @var bool */
 	private $wailaEnabled = true;
+	/** @var bool */
+	public $sidebarEnabled = true;//TODO settings/commands
 	/** @var Brush[] */
 	private $brushes = [];
 	/** @var Language|null */
@@ -50,6 +56,10 @@ class UserSession extends Session implements JsonSerializable
 		$this->setUUID($player->getUniqueId());
 		$this->bossBar = (new BossBar())->addPlayer($player);
 		$this->bossBar->hideFrom([$player]);
+		if (Loader::hasScoreboard()) {
+			$this->sidebar = new Scoreboard();
+			var_dump($this->sidebar);
+		}
 		$this->undoHistory = new Deque();
 		$this->redoHistory = new Deque();
 		if (is_null($this->lang)) $this->setLanguage(Language::FALLBACK_LANGUAGE);
@@ -60,6 +70,9 @@ class UserSession extends Session implements JsonSerializable
 	{
 		Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
 		$this->bossBar->removeAllPlayers();
+		if (Loader::hasScoreboard() && $this->sidebar !== null) {
+			ScoreFactory::removeScore($this->getPlayer());
+		}
 	}
 
 	/**
