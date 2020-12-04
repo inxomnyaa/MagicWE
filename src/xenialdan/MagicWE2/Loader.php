@@ -11,6 +11,7 @@ use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
 use pocketmine\block\tile\Tile;
+use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\ItemFlags;
 use pocketmine\lang\Language;
@@ -153,6 +154,9 @@ class Loader extends PluginBase
 	{
 		self::$instance = $this;
 		self::$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
+		/** @var EnchantmentIdMap $enchantmapinstance */
+		$enchantmapinstance = EnchantmentIdMap::getInstance();
+		$enchantmapinstance->register(self::FAKE_ENCH_ID, self::$ench);
 		self::$shapeRegistry = new ShapeRegistry();
 		self::$actionRegistry = new ActionRegistry();
 		SessionHelper::init();
@@ -161,17 +165,17 @@ class Loader extends PluginBase
 
 		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
-		BlockStatesParser::getInstance()::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		BlockStatesParser::getInstance()::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		/** @var BlockStatesParser $blockstateparserInstance */
+		$blockstateparserInstance = BlockStatesParser::getInstance();
+		$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+		$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
 		if ($fileGetContents === false) {
 			throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
 		}
 
-		/** @var BlockStatesParser $bsp */
-		$bsp = BlockStatesParser::getInstance();
-		$bsp->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+		$blockstateparserInstance->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
 		#StructureStore::getInstance();
 	}
 
