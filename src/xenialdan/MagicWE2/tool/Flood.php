@@ -176,7 +176,7 @@ class Flood extends WETool
 	 */
 	public static function getChunkManager(array $chunks): AsyncChunkManager
 	{
-		$manager = new AsyncChunkManager(0);
+		$manager = new AsyncChunkManager();
 		foreach ($chunks as $chunk) {
 			$manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
 		}
