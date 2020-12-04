@@ -126,21 +126,21 @@ class Ellipsoid extends Shape
      */
     public function getTouchedChunks($manager): array
     {//TODO optimize to remove "corner" chunks
-        $this->validateChunkManager($manager);
-        $maxX = $this->getMaxVec3()->x >> 4;
-        $minX = $this->getMinVec3()->x >> 4;
-        $maxZ = $this->getMaxVec3()->z >> 4;
-        $minZ = $this->getMinVec3()->z >> 4;
-        $touchedChunks = [];
-        for ($x = $minX - 1; $x <= $maxX + 1; $x++) {
-            for ($z = $minZ - 1; $z <= $maxZ + 1; $z++) {
-                $chunk = $manager->getChunk($x, $z);
-                if ($chunk === null) {
-                    continue;
-                }
+		$this->validateChunkManager($manager);
+		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
+		$minX = $this->getMinVec3()->x >> 4;
+		$maxZ = ($this->getMaxVec3()->z + 1) >> 4;
+		$minZ = $this->getMinVec3()->z >> 4;
+		$touchedChunks = [];
+		for ($x = $minX - 1; $x <= $maxX + 1; $x++) {
+			for ($z = $minZ - 1; $z <= $maxZ + 1; $z++) {
+				$chunk = $manager->getChunk($x, $z);
+				if ($chunk === null) {
+					continue;
+				}
 				print "Touched Chunk at: $x:$z" . PHP_EOL;
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
-            }
+			}
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
         return $touchedChunks;

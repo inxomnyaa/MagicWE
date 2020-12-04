@@ -108,9 +108,9 @@ class Cone extends Shape
 	public function getTouchedChunks($manager): array
 	{//TODO optimize to remove "corner" chunks
 		$this->validateChunkManager($manager);
-		$maxX = $this->getMaxVec3()->x >> 4;
+		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
 		$minX = $this->getMinVec3()->x >> 4;
-		$maxZ = $this->getMaxVec3()->z >> 4;
+		$maxZ = ($this->getMaxVec3()->z + 1) >> 4;
 		$minZ = $this->getMinVec3()->z >> 4;
 		$touchedChunks = [];
 		for ($x = $minX; $x <= $maxX; $x++) {

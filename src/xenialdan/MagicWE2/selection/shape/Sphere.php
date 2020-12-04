@@ -28,9 +28,9 @@ class Sphere extends Shape
 	{
 		$this->pasteVector = $pasteVector;
 		$this->diameter = $diameter;
-    }
+	}
 
-    /**
+	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
@@ -38,8 +38,8 @@ class Sphere extends Shape
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-    public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
-    {
+	public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
+	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->pasteVector->x - $this->diameter / 2 - 1); $x <= floor($this->pasteVector->x + $this->diameter / 2 + 1); $x++) {
 			for ($y = (int)floor($this->pasteVector->y - $this->diameter / 2 - 1); $y <= floor($this->pasteVector->y + $this->diameter / 2 + 1); $y++) {
@@ -60,9 +60,9 @@ class Sphere extends Shape
 						}
 					}
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -71,7 +71,7 @@ class Sphere extends Shape
 	 * @return Generator|Vector2[]
 	 * @throws Exception
 	 */
-    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -85,52 +85,52 @@ class Sphere extends Shape
 		}
 	}
 
-    /**
-     * @param World|AsyncChunkManager $manager
-     * @return string[] fastSerialized chunks
-     * @throws Exception
-     */
-    public function getTouchedChunks($manager): array
-    {//TODO optimize to remove "corner" chunks
-        $this->validateChunkManager($manager);
-        $maxX = $this->getMaxVec3()->x >> 4;
-        $minX = $this->getMinVec3()->x >> 4;
-        $maxZ = $this->getMaxVec3()->z >> 4;
-        $minZ = $this->getMinVec3()->z >> 4;
-        $touchedChunks = [];
-        for ($x = $minX; $x <= $maxX; $x++) {
-            for ($z = $minZ; $z <= $maxZ; $z++) {
-                $chunk = $manager->getChunk($x, $z);
-                if ($chunk === null) {
-                    continue;
-                }
+	/**
+	 * @param World|AsyncChunkManager $manager
+	 * @return string[] fastSerialized chunks
+	 * @throws Exception
+	 */
+	public function getTouchedChunks($manager): array
+	{//TODO optimize to remove "corner" chunks
+		$this->validateChunkManager($manager);
+		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
+		$minX = $this->getMinVec3()->x >> 4;
+		$maxZ = ($this->getMaxVec3()->z + 1) >> 4;
+		$minZ = $this->getMinVec3()->z >> 4;
+		$touchedChunks = [];
+		for ($x = $minX; $x <= $maxX; $x++) {
+			for ($z = $minZ; $z <= $maxZ; $z++) {
+				$chunk = $manager->getChunk($x, $z);
+				if ($chunk === null) {
+					continue;
+				}
 				print "Touched Chunk at: $x:$z" . PHP_EOL;
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
-            }
-        }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
-        return $touchedChunks;
-    }
+			}
+		}
+		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+		return $touchedChunks;
+	}
 
-    public function getAABB(): AxisAlignedBB
-    {
-        return new AxisAlignedBB(
-            floor($this->pasteVector->x - $this->diameter / 2),
-            $this->pasteVector->y,
-            floor($this->pasteVector->z - $this->diameter / 2),
-            -1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
-            -1 + $this->pasteVector->y + $this->diameter,
-            -1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
-        );
-    }
+	public function getAABB(): AxisAlignedBB
+	{
+		return new AxisAlignedBB(
+			floor($this->pasteVector->x - $this->diameter / 2),
+			$this->pasteVector->y,
+			floor($this->pasteVector->z - $this->diameter / 2),
+			-1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
+			-1 + $this->pasteVector->y + $this->diameter,
+			-1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
+		);
+	}
 
-    public function getTotalCount(): int
-    {
+	public function getTotalCount(): int
+	{
 		return (int)ceil((4 / 3) * M_PI * (($this->diameter / 2) ** 3));
-    }
+	}
 
-    public static function getName(): string
-    {
-        return "Sphere";
-    }
+	public static function getName(): string
+	{
+		return "Sphere";
+	}
 }

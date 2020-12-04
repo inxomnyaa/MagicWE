@@ -27,9 +27,9 @@ class Custom extends Shape
 	{
 		$this->pasteVector = $pasteVector;
 		$this->positions = $positions;
-    }
+	}
 
-    /**
+	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
@@ -37,14 +37,14 @@ class Custom extends Shape
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-    public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
-    {
-        $this->validateChunkManager($manager);
-        foreach ($this->positions as $position) {
+	public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
+	{
+		$this->validateChunkManager($manager);
+		foreach ($this->positions as $position) {
 			//TODO filterblocks
 			yield API::setComponents($manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()), (int)$position->x, (int)$position->y, (int)$position->z);
 		}
-    }
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -53,69 +53,68 @@ class Custom extends Shape
 	 * @return Generator|Vector2[]
 	 * @throws Exception
 	 */
-    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
-    {
-        $this->validateChunkManager($manager);
-        /* Mapping: $walked[$hash]=true */
-        $walked = [];
-        foreach ($this->positions as $position) {
-            $hash = World::chunkHash($position->getFloorX(), $position->getFloorZ());
-            if (isset($walked[$hash])) continue;
-            $walked[$hash] = true;
-            yield new Vector2($position->x, $position->z);
-        }
-    }
+	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	{
+		$this->validateChunkManager($manager);
+		/* Mapping: $walked[$hash]=true */
+		$walked = [];
+		foreach ($this->positions as $position) {
+			$hash = World::chunkHash($position->getFloorX(), $position->getFloorZ());
+			if (isset($walked[$hash])) continue;
+			$walked[$hash] = true;
+			yield new Vector2($position->x, $position->z);
+		}
+	}
 
-    /**
-     * @param World|AsyncChunkManager $manager
-     * @return string[] fastSerialized chunks
-     * @throws Exception
-     */
-    public function getTouchedChunks($manager): array
-    {
-        $this->validateChunkManager($manager);
-        $touchedChunks = [];
-        foreach ($this->getLayer($manager) as $vector2) {
-            $x = $vector2->getFloorX() >> 4;
-            $z = $vector2->getFloorY() >> 4;
-            $chunk = $manager->getChunk($x, $z);
-            if ($chunk === null) {
-                continue;
-            }
+	/**
+	 * @param World|AsyncChunkManager $manager
+	 * @return string[] fastSerialized chunks
+	 * @throws Exception
+	 */
+	public function getTouchedChunks($manager): array
+	{
+		$this->validateChunkManager($manager);
+		$touchedChunks = [];
+		foreach ($this->getLayer($manager) as $vector2) {
+			$x = $vector2->getFloorX() >> 4;
+			$z = $vector2->getFloorY() >> 4;
+			if (isset($touchedChunks[World::chunkHash($x, $z)]) || ($chunk = $manager->getChunk($x, $z)) === null) {
+				continue;
+			}
 			print "Touched Chunk at: $x:$z" . PHP_EOL;
 			$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
-        }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
-        return $touchedChunks;
-    }
+		}
+		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+		return $touchedChunks;
+	}
 
-    public function getAABB(): AxisAlignedBB
-    {
-        $minX = $maxX = $minY = $maxY = $minZ = $maxZ = null;
-        foreach ($this->positions as $position) {
-            if (is_null($minX)) {
-                $minX = $maxX = $position->x;
-                $minY = $maxY = $position->y;
-                $minZ = $maxZ = $position->z;
-                continue;
-            }
-            $minX = min($minX, $position->x);
-            $minY = min($minY, $position->y);
-            $minZ = min($minZ, $position->z);
-            $maxX = max($maxX, $position->x);
-            $maxY = max($maxY, $position->y);
-            $maxZ = max($maxZ, $position->z);
-        }
-        return new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ);
-    }
+	public function getAABB(): AxisAlignedBB
+	{
+		$minX = $maxX = $minY = $maxY = $minZ = $maxZ = null;
+		foreach ($this->positions as $position) {
+			if (is_null($minX)) {
+				$minX = $maxX = $position->x;
+				$minY = $maxY = $position->y;
+				$minZ = $maxZ = $position->z;
+				continue;
+			}
+			$minX = min($minX, $position->x);
+			$minY = min($minY, $position->y);
+			$minZ = min($minZ, $position->z);
+			$maxX = max($maxX, $position->x);
+			$maxY = max($maxY, $position->y);
+			$maxZ = max($maxZ, $position->z);
+		}
+		return new AxisAlignedBB($minX, $minY, $minZ, $maxX, $maxY, $maxZ);
+	}
 
-    public function getTotalCount(): int
-    {
-        return count($this->positions);
-    }
+	public function getTotalCount(): int
+	{
+		return count($this->positions);
+	}
 
-    public static function getName(): string
-    {
-        return "Custom";
-    }
+	public static function getName(): string
+	{
+		return "Custom";
+	}
 }

@@ -227,7 +227,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 				throw new BrushException("Brush can not be restored - version mismatch");
 			}
 			/** @var BrushProperties $properties */
-			$properties = json_decode($entry->getString("properties"), true, 512, JSON_THROW_ON_ERROR);
+			$properties = json_decode($entry->getString("properties"), false, 512, JSON_THROW_ON_ERROR);
 			$uuid = UUID::fromString($properties->uuid);
 			$brush = $this->getBrush($uuid);
 			if ($brush instanceof Brush) {

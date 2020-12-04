@@ -103,21 +103,21 @@ class Cuboid extends Shape
      */
     public function getTouchedChunks($manager): array
     {
-        $this->validateChunkManager($manager);
-        $maxX = $this->getMaxVec3()->x >> 4;
-        $minX = $this->getMinVec3()->x >> 4;
-        $maxZ = $this->getMaxVec3()->z >> 4;
-        $minZ = $this->getMinVec3()->z >> 4;
-        $touchedChunks = [];
-        for ($x = $minX; $x <= $maxX; $x++) {
-            for ($z = $minZ; $z <= $maxZ; $z++) {
-                $chunk = $manager->getChunk($x, $z);
-                if ($chunk === null) {
-                    continue;
-                }
+		$this->validateChunkManager($manager);
+		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
+		$minX = $this->getMinVec3()->x >> 4;
+		$maxZ = ($this->getMaxVec3()->z + 1) >> 4;
+		$minZ = $this->getMinVec3()->z >> 4;
+		$touchedChunks = [];
+		for ($x = $minX; $x <= $maxX; $x++) {
+			for ($z = $minZ; $z <= $maxZ; $z++) {
+				$chunk = $manager->getChunk($x, $z);
+				if ($chunk === null) {
+					continue;
+				}
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
-            }
-        }
+			}
+		}
         return $touchedChunks;
     }
 
