@@ -18,7 +18,6 @@ use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use pocketmine\world\biome\Biome;
 use pocketmine\world\biome\BiomeRegistry;
 use ReflectionClass;
 use TypeError;
@@ -119,25 +118,25 @@ class Brush extends WETool
             $dropdownAction = new Dropdown("Action");
             foreach (ActionRegistry::getActions() as $name => $class) {
                 $dropdownAction->addOption($name, $class === $brushProperties->action);
-            }
-            $form->addElement($dropdownAction);
-            // Name
-            $form->addElement(new Input("Name", "Name", $new ? "" : $this->getName()));
-            // Blocks
-            $form->addElement(new Input((isset($errors['blocks']) ? TF::RED : "") . "Blocks" . ($errors['blocks'] ?? ""), "grass,stone:1", $brushProperties->blocks));
-            // Filter
-            $form->addElement(new Input((isset($errors['filter']) ? TF::RED : "") . "Filter" . ($errors['filter'] ?? ""), "air", $brushProperties->filter));
-            // Biome
-            $dropdownBiome = new Dropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""));
-            foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
-				if ($value === Biome::MAX_BIOMES || $value === BiomeIds::HELL) continue;
+			}
+			$form->addElement($dropdownAction);
+			// Name
+			$form->addElement(new Input("Name", "Name", $new ? "" : $this->getName()));
+			// Blocks
+			$form->addElement(new Input((isset($errors['blocks']) ? TF::RED : "") . "Blocks" . ($errors['blocks'] ?? ""), "grass,stone:1", $brushProperties->blocks));
+			// Filter
+			$form->addElement(new Input((isset($errors['filter']) ? TF::RED : "") . "Filter" . ($errors['filter'] ?? ""), "air", $brushProperties->filter));
+			// Biome
+			$dropdownBiome = new Dropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""));
+			foreach ((new ReflectionClass(BiomeIds::class))->getConstants() as $name => $value) {
+				if ($value === BiomeIds::HELL) continue;
 				$dropdownBiome->addOption(BiomeRegistry::getInstance()->getBiome($value)->getName(), $value === $brushProperties->biomeId);
 			}
-            $form->addElement($dropdownBiome);
-            // Hollow
-            $form->addElement(new Toggle("Hollow", $brushProperties->hollow));
-            // Extra properties
-            if (!$new) {
+			$form->addElement($dropdownBiome);
+			// Hollow
+			$form->addElement(new Toggle("Hollow", $brushProperties->hollow));
+			// Extra properties
+			if (!$new) {
 				foreach ($this->getExtradataForm($brushProperties->shape)->getContent() as $element) {
 					$form->addElement($element);
 				}
