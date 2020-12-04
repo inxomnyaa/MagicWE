@@ -37,7 +37,6 @@ class BlockStatesEntry
 	 */
 	public function __construct(string $blockIdentifier, CompoundTag $blockStates, ?Block $block = null)
 	{
-		if (strpos($blockIdentifier, "_door") !== false) var_dump($blockIdentifier);
 		$this->blockIdentifier = $blockIdentifier;
 		$this->blockStates = $blockStates;
 		$this->block = $block;

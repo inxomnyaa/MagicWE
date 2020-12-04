@@ -247,12 +247,12 @@ final class BlockStatesParser
 		//return found block(s)
 		$blocks = [];
 		//doors.. special blocks annoying -.- TODO 1.16 apparently fixed this shit! YAY TODO remove
-		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
+		/*$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
 		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
 			$fromString = $legacyStringToItemParser->parse($selectedBlockName . "_block:8")->getBlock();
 			var_dump($finalStatesList, $fromString);
 			return [$fromString];
-		}
+		}*/
 		#var_dump((string)$finalStatesList);
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');

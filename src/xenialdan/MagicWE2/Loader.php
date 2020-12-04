@@ -315,9 +315,7 @@ class Loader extends PluginBase
 		//run tests
 		#BlockStatesParser::getInstance()::runTests();
 		$world = Loader::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
-		$spawn = $world->getSafeSpawn()->asVector3()/*->add(3,3,3);*/
-		;
-		var_dump($spawn);
+		$spawn = $world->getSafeSpawn()->asVector3();
 		foreach (glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure") as $file) {
 			$this->getLogger()->debug(TextFormat::GOLD . "Loading " . basename($file));
 			try {

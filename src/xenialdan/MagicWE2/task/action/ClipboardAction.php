@@ -15,9 +15,9 @@ abstract class ClipboardAction
 	/** @var string */
 	public $prefix = "";
 	/** @var string */
-	public $completionString = '{%name} succeed, took {%took}, {%changed} entries out of {%total} changed.';
+	public string $completionString = '{%name} succeed, took {%took}, {%changed} entries out of {%total} changed.';
 	/** @var bool */
-	public $addClipboard = false;
+	public bool $addClipboard = false;
 	/** @var null|Vector3 */
 	public $clipboardVector;
 
