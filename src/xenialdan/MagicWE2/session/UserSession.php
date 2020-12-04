@@ -134,7 +134,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	public function setWandEnabled(bool $wandEnabled): string
 	{
 		$this->wandEnabled = $wandEnabled;
-		return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
 	/**
@@ -152,7 +152,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	public function setDebugToolEnabled(bool $debugToolEnabled): string
 	{
 		$this->debugToolEnabled = $debugToolEnabled;
-		return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
 	/**
@@ -177,7 +177,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		} else {
 			ScoreFactory::removeScore($player);
 		}
-		return Loader::PREFIX . $this->getLanguage()->translateString('tool.sidebar.setenabled', [($sidebarEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.sidebar.setenabled', [($sidebarEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
 	/**
@@ -202,7 +202,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		} else {
 			Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 		}
-		return Loader::PREFIX . $this->getLanguage()->translateString('tool.waila.setenabled', [($wailaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]) . TF::RESET . "!";
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.waila.setenabled', [($wailaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
 	/**
