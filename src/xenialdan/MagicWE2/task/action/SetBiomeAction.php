@@ -14,20 +14,20 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class SetBiomeAction extends TaskAction
 {
-    /** @var bool */
-    public $addRevert = false;
-    /** @var int */
-    private $biomeId;
+	/** @var bool */
+	public $addRevert = false;
+	/** @var int */
+	private $biomeId;
 
-    public function __construct(int $biomeId)
-    {
-        $this->biomeId = $biomeId;
-    }
+	public function __construct(int $biomeId)
+	{
+		$this->biomeId = $biomeId;
+	}
 
-    public static function getName(): string
-    {
-        return "Set biome";
-    }
+	public static function getName(): string
+	{
+		return "Set biome";
+	}
 
     /**
      * @param string $sessionUUID
@@ -41,17 +41,17 @@ class SetBiomeAction extends TaskAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard &$oldBlocksSingleClipboard, array &$messages = []): Generator
-    {
-        $changed = 0;
-        #$oldBlocks = [];
-        $count = null;
-        $lastProgress = new Progress(0, "");
-        foreach (($all = $selection->getShape()->getLayer($manager)) as $vec2) {
-            if (is_null($count)) $count = count(iterator_to_array($all));
-            $manager->getChunk($vec2->x >> 4, $vec2->y >> 4)->setBiomeId($vec2->x % 16, $vec2->y % 16, $this->biomeId);
-            $changed++;
-            $progress = new Progress($changed / $count, "Changed Biome for $changed/$count blocks");
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	{
+		$changed = 0;
+		#$oldBlocks = [];
+		$count = null;
+		$lastProgress = new Progress(0, "");
+		foreach (($all = $selection->getShape()->getLayer($manager)) as $vec2) {
+			if (is_null($count)) $count = count(iterator_to_array($all));
+			$manager->getChunk($vec2->x >> 4, $vec2->y >> 4)->setBiomeId($vec2->x % 16, $vec2->y % 16, $this->biomeId);
+			$changed++;
+			$progress = new Progress($changed / $count, "Changed Biome for $changed/$count blocks");
             if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
                 yield $progress;
                 $lastProgress = $progress;

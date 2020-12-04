@@ -37,21 +37,20 @@ class SetBlockAction extends TaskAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard &$oldBlocksSingleClipboard, array &$messages = []): Generator
-    {
-        $changed = 0;
-        $i = 0;
-        #$oldBlocks = [];
-        $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
-        foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
-            /** @var Block $new */
-            $new = clone $newBlocks[array_rand($newBlocks)];
-            if ($new->getId() === $block->getId() && $new->getDamage() === $block->getDamage()) continue;//skip same blocks
-            #$oldBlocks[] = $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
-            $oldBlocksSingleClipboard->addEntry($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), BlockEntry::fromBlock($block));
-            $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
-            if ($manager->getBlockArrayAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== [$block->getId(), $block->getDamage()]) {
+    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	{
+		$changed = 0;
+		$i = 0;
+		#$oldBlocks = [];
+		$count = $selection->getShape()->getTotalCount();
+		$lastProgress = new Progress(0, "");
+		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
+			$new = clone $newBlocks[array_rand($newBlocks)];
+			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
+			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->x, $block->y, $block->z);
+            $oldBlocksSingleClipboard->addEntry($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), BlockEntry::fromBlock($block));
+            $manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+            if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
                 $changed++;
             }
             $i++;

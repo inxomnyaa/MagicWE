@@ -3,7 +3,9 @@ parameters:
 
     checkMissingIterableValueType: false
 
-    ignoreErrors: []
+    ignoreErrors:
+        - "#Cannot cast CortexPE\\Commando\\args\\BaseArgument to.*#"
+        - "#Binary operation .* between .* and\n*.*CortexPE\\Commando\\args\\BaseArgument.*#"
 
     paths:
         - /source/src
@@ -16,5 +18,7 @@ parameters:
         - phar:///source/vendor/Commando.phar/src
         - phar:///source/vendor/libschematic.phar/src
         - phar:///source/vendor/InvMenu.phar/src
+        - phar:///source/vendor/libstructure.phar/src
+        - phar:///source/vendor/ScoreFactory.phar/src
     excludes_analyse:
         - source/vendor

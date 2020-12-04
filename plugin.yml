@@ -1,11 +1,13 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 10.0.2
-api: ["3.13"]
-load: STARTUP
+version: 10.1.1
+api: ["4.0.0"]
+php: "7.4"
+#load: STARTUP
+load: POSTWORLD
 authors:
-- XenialDan
+  - XenialDan
 description: Lag free asynchronous world editor for PMMP with plenty of options
 prefix: 'MWE2'
 website: https://github.com/thebigsmileXD/MagicWE2
@@ -121,4 +123,8 @@ permissions:
         children:
           we.command.utility.calculate:
             default: op
+          we.command.utility.togglewaila:
+            default: op
+      we.command.test:
+        default: op
 ...

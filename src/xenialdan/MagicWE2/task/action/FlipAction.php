@@ -16,26 +16,26 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class FlipAction extends ClipboardAction
 {
-    const AXIS_X = "x";
-    const AXIS_Y = "y";
-    const AXIS_Z = "z";
-    const AXIS_XZ = "xz";
-    /** @var bool */
-    public $addClipboard = true;
-    /** @var string */
-    public $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
-    /** @var string */
-    private $axis;
+	public const AXIS_X = "x";
+	public const AXIS_Y = "y";
+	public const AXIS_Z = "z";
+	public const AXIS_XZ = "xz";
+	/** @var bool */
+	public $addClipboard = true;
+	/** @var string */
+	public $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
+	/** @var string */
+	private $axis;
 
-    public function __construct(string $axis)
-    {
-        if ($axis !== self::AXIS_X && $axis !== self::AXIS_Y && $axis !== self::AXIS_Z && $axis !== self::AXIS_XZ) throw new InvalidArgumentException("Invalid axis $axis given");
-        $this->axis = $axis;
-    }
+	public function __construct(string $axis)
+	{
+		if ($axis !== self::AXIS_X && $axis !== self::AXIS_Y && $axis !== self::AXIS_Z && $axis !== self::AXIS_XZ) throw new InvalidArgumentException("Invalid axis $axis given");
+		$this->axis = $axis;
+	}
 
-    public static function getName(): string
-    {
-        return "Flip";
+	public static function getName(): string
+	{
+		return "Flip";
     }
 
     /**
@@ -47,20 +47,14 @@ class FlipAction extends ClipboardAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []): Generator
-    {
-        //TODO modify position. For now, just flip the blocks around their own axis
-        $changed = 0;
-        #$oldBlocks = [];
-        $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
-        if (!BlockFactory::isInit()) {
-            BlockFactory::init();
-        }
-        if (!BlockStatesParser::isInit()) {
-            var_dump("reinit BlockStatesParser AGAIN");
-            BlockStatesParser::init();
-        }
+    public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator
+	{
+		//TODO modify position. For now, just flip the blocks around their own axis
+		$changed = 0;
+		#$oldBlocks = [];
+		$count = $selection->getShape()->getTotalCount();
+		$lastProgress = new Progress(0, "");
+		BlockFactory::getInstance();
         $clonedClipboard = clone $clipboard;
         $x = $y = $z = null;
         $maxX = $clipboard->selection->getSizeX() - 1;
@@ -76,8 +70,8 @@ class FlipAction extends ClipboardAction
                 $y = $maxY - $y;
             #var_dump("$x $y $z");
             $block1 = $blockEntry->toBlock();var_dump($block1);
-            $blockStatesEntry = BlockStatesParser::getStateByBlock($block1);
-            $mirrored = $blockStatesEntry->mirror($this->axis);
+			$blockStatesEntry = BlockStatesParser::getInstance()::getStateByBlock($block1);
+			$mirrored = $blockStatesEntry->mirror($this->axis);
             $block = $mirrored->toBlock();
             $entry = BlockEntry::fromBlock($block);
             var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $block);
