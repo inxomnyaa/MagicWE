@@ -9,7 +9,7 @@ use pocketmine\command\CommandSender;
 
 class MirrorAxisArgument extends StringEnumArgument
 {
-    protected const VALUES = ["x" => "x", "z" => "z", "xz" => "xz"];
+    protected const VALUES = ["x" => "x", "z" => "z", "y" => "y", "xz" => "xz"];
 
     public function getTypeName(): string
     {

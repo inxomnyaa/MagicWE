@@ -21,13 +21,13 @@ class FlipAction extends ClipboardAction
 	public const AXIS_Z = "z";
 	public const AXIS_XZ = "xz";
 	/** @var bool */
-	public $addClipboard = true;
+	public bool $addClipboard = true;
 	/** @var string */
-	public $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
+	public string $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
 	/** @var string */
 	private $axis;
 
-	public function __construct(string $axis)
+	public function __construct(string $axis)//TODO use pm Axis
 	{
 		if ($axis !== self::AXIS_X && $axis !== self::AXIS_Y && $axis !== self::AXIS_Z && $axis !== self::AXIS_XZ) throw new InvalidArgumentException("Invalid axis $axis given");
 		$this->axis = $axis;
@@ -36,7 +36,7 @@ class FlipAction extends ClipboardAction
 	public static function getName(): string
 	{
 		return "Flip";
-    }
+	}
 
     /**
      * @param string $sessionUUID
@@ -69,12 +69,12 @@ class FlipAction extends ClipboardAction
             if ($this->axis === self::AXIS_Y)
                 $y = $maxY - $y;
             #var_dump("$x $y $z");
-            $block1 = $blockEntry->toBlock();var_dump($block1);
+			$block1 = $blockEntry->toBlock();
 			$blockStatesEntry = BlockStatesParser::getInstance()::getStateByBlock($block1);
 			$mirrored = $blockStatesEntry->mirror($this->axis);
             $block = $mirrored->toBlock();
             $entry = BlockEntry::fromBlock($block);
-            var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $block);
+			//var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $block);
             /** @var int $x */
             /** @var int $y */
             /** @var int $z */

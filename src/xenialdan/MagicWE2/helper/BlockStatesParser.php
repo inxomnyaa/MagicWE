@@ -275,7 +275,7 @@ final class BlockStatesParser
 		#Loader::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName,$finalStatesList), false));
 		//return found block(s)
 		$blocks = [];
-		//doors.. special blocks annoying -.- TODO 1.16 apparently fixed this shit! YAY TODO remove
+		//doors.. special blocks annoying -.-
 		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
 		if ($isDoor) {
 			return [self::buildDoor($namespacedSelectedBlockName, $finalStatesList)];

@@ -96,7 +96,6 @@ class BlockStatesEntry
 			$fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
 		}
 		if ($fromMap === null) return $clone;
-		var_dump("not null flipMap");
 		$rotatedStates = $fromMap[$amount] ?? null;
 		if ($rotatedStates === null) return $clone;
 		//ugly hack to keep current ones
