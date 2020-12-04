@@ -1,525 +1,311 @@
 {
   "age": {
-    "alias": [
-      "age"
-    ]
+    "alias": ["age"]
   },
   "age_bit": {
-    "alias": [
-      "age"
-    ]
+    "alias": ["age"]
   },
   "allow_underwater_bit": {
-    "alias": [
-      "underwater"
-    ]
+    "alias": ["underwater"]
   },
   "attached_bit": {
-    "alias": [
-      "attached"
-    ]
+    "alias": ["attached"]
   },
   "attachment": {
-    "alias": [
-      "attachment"
-    ]
+    "alias": ["attachment"]
   },
   "bamboo_leaf_size": {
-    "alias": [
-      "leaf_size"
-    ]
+    "alias": ["leaf_size"]
   },
   "bamboo_stalk_thickness": {
-    "alias": [
-      "stalk_thickness",
-      "thickness"
-    ]
+    "alias": ["stalk_thickness", "thickness"]
   },
   "bite_counter": {
-    "alias": [
-      "bites"
-    ]
+    "alias": ["bites"]
   },
   "block_light_level": {
-    "alias": [
-      "light"
-    ]
+    "alias": ["light"]
   },
   "brewing_stand_slot_a_bit": {
-    "alias": [
-      "slot_a"
-    ]
+    "alias": ["slot_a"]
   },
   "brewing_stand_slot_b_bit": {
-    "alias": [
-      "slot_b"
-    ]
+    "alias": ["slot_b"]
   },
   "brewing_stand_slot_c_bit": {
-    "alias": [
-      "slot_c"
-    ]
+    "alias": ["slot_c"]
   },
   "button_pressed_bit": {
-    "alias": [
-      "pressed"
-    ]
+    "alias": ["pressed"]
   },
   "cauldron_liquid": {
-    "alias": [
-      "liquid"
-    ]
+    "alias": ["liquid"]
   },
   "chemistry_table_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "chisel_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "cluster_count": {
-    "alias": [
-      "count"
-    ]
+    "alias": ["count"]
   },
   "color": {
-    "alias": [
-      "color"
-    ]
+    "alias": ["color"]
   },
   "color_bit": {
-    "alias": [
-      "color"
-    ]
+    "alias": ["color"]
   },
   "composter_fill_level": {
-    "alias": [
-      "fill"
-    ]
+    "alias": ["fill"]
   },
   "conditional_bit": {
-    "alias": [
-      "conditional"
-    ]
+    "alias": ["conditional"]
   },
   "coral_color": {
-    "alias": [
-      "color"
-    ]
+    "alias": ["color"]
   },
   "coral_direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "coral_fan_direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "coral_hang_type_bit": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "covered_bit": {
-    "alias": [
-      "covered"
-    ]
+    "alias": ["covered"]
   },
   "cracked_state": {
-    "alias": [
-      "cracked"
-    ]
+    "alias": ["cracked"]
   },
   "damage": {
-    "alias": [
-      "damage"
-    ]
+    "alias": ["damage"]
   },
   "dead_bit": {
-    "alias": [
-      "dead"
-    ]
+    "alias": ["dead"]
   },
   "deprecated": {
-    "alias": [
-      "deprecated"
-    ]
+    "alias": ["deprecated"]
   },
   "direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "dirt_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "disarmed_bit": {
-    "alias": [
-      "disarmed"
-    ]
+    "alias": ["disarmed"]
   },
   "door_hinge_bit": {
-    "alias": [
-      "hinge"
-    ]
+    "alias": ["hinge"]
   },
   "double_plant_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "drag_down": {
-    "alias": [
-      "drag_down"
-    ]
+    "alias": ["drag_down"]
   },
   "end_portal_eye_bit": {
-    "alias": [
-      "eye"
-    ]
+    "alias": ["eye"]
   },
   "explode_bit": {
-    "alias": [
-      "explode"
-    ]
+    "alias": ["explode"]
   },
   "extinguished": {
-    "alias": [
-      "off"
-    ]
+    "alias": ["off"]
   },
   "facing_direction": {
-    "alias": [
-      "direction",
-      "facing"
-    ]
+    "alias": ["direction", "facing"]
   },
   "fill_level": {
-    "alias": [
-      "fill"
-    ]
+    "alias": ["fill"]
   },
   "flower_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "ground_sign_direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "growth": {
-    "alias": [
-      "growth"
-    ]
+    "alias": ["growth"]
   },
   "hanging": {
-    "alias": [
-      "hanging"
-    ]
+    "alias": ["hanging"]
   },
   "head_piece_bit": {
-    "alias": [
-      "head"
-    ]
+    "alias": ["head"]
   },
   "height": {
-    "alias": [
-      "height"
-    ]
+    "alias": ["height"]
   },
   "huge_mushroom_bits": {
-    "alias": [
-      "huge"
-    ]
+    "alias": ["huge"]
   },
   "in_wall_bit": {
-    "alias": [
-      "in_wall"
-    ]
+    "alias": ["in_wall"]
   },
   "infiniburn_bit": {
-    "alias": [
-      "burn"
-    ]
+    "alias": ["burn"]
   },
   "item_frame_map_bit": {
-    "alias": [
-      "map"
-    ]
+    "alias": ["map"]
   },
   "kelp_age": {
-    "alias": [
-      "age"
-    ]
+    "alias": ["age"]
   },
   "lever_direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "liquid_depth": {
-    "alias": [
-      "depth"
-    ]
+    "alias": ["depth"]
   },
   "moisturized_amount": {
-    "alias": [
-      "moisturized",
-      "wetness"
-    ]
+    "alias": ["moisturized", "wetness"]
   },
   "monster_egg_stone_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "new_leaf_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "new_log_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "no_drop_bit": {
-    "alias": [
-      "no_drop"
-    ]
+    "alias": ["no_drop"]
   },
   "occupied_bit": {
-    "alias": [
-      "occupied"
-    ]
+    "alias": ["occupied"]
   },
   "old_leaf_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "old_log_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "open_bit": {
-    "alias": [
-      "open"
-    ]
+    "alias": ["open"]
   },
   "output_lit_bit": {
-    "alias": [
-      "lit",
-      "output_lit"
-    ]
+    "alias": ["lit", "output_lit"]
   },
   "output_subtract_bit": {
-    "alias": [
-      "subtract",
-      "output_subtract"
-    ]
+    "alias": ["subtract", "output_subtract"]
   },
   "persistent_bit": {
-    "alias": [
-      "persistent"
-    ]
+    "alias": ["persistent"]
   },
   "pillar_axis": {
-    "alias": [
-      "axis"
-    ]
+    "alias": ["axis"]
   },
   "portal_axis": {
-    "alias": [
-      "axis"
-    ]
+    "alias": ["axis"]
   },
   "powered_bit": {
-    "alias": [
-      "powered"
-    ]
+    "alias": ["powered"]
   },
   "prismarine_block_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "rail_data_bit": {
-    "alias": [
-      "data"
-    ]
+    "alias": ["data"]
   },
   "rail_direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "redstone_signal": {
-    "alias": [
-      "signal",
-      "redstone",
-      "power"
-    ]
+    "alias": ["signal", "redstone", "power"]
   },
   "repeater_delay": {
-    "alias": [
-      "delay"
-    ]
+    "alias": ["delay"]
   },
   "sand_stone_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "sand_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "sapling_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "sea_grass_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "sponge_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "stability": {
-    "alias": [
-      "stability"
-    ]
+    "alias": ["stability"]
   },
   "stability_check": {
-    "alias": [
-      "stability_check"
-    ]
+    "alias": ["stability_check"]
   },
   "stone_brick_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "stone_slab_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "stone_slab_type_2": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "stone_slab_type_3": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "stone_slab_type_4": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "stone_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "stripped_bit": {
-    "alias": [
-      "stripped"
-    ]
+    "alias": ["stripped"]
   },
   "structure_block_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "suspended_bit": {
-    "alias": [
-      "suspended"
-    ]
+    "alias": ["suspended"]
   },
   "tall_grass_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "toggle_bit": {
-    "alias": [
-      "toggle",
-      "toggled"
-    ]
+    "alias": ["toggle", "toggled"]
   },
   "top_slot_bit": {
-    "alias": [
-      "top"
-    ]
+    "alias": ["top"]
   },
   "torch_facing_direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "triggered_bit": {
-    "alias": [
-      "triggered"
-    ]
+    "alias": ["triggered"]
   },
   "turtle_egg_count": {
-    "alias": [
-      "count"
-    ]
+    "alias": ["count"]
   },
   "update_bit": {
-    "alias": [
-      "update"
-    ]
+    "alias": ["update"]
   },
   "upper_block_bit": {
-    "alias": [
-      "top"
-    ]
+    "alias": ["top"]
   },
   "upside_down_bit": {
-    "alias": [
-      "flipped"
-    ]
+    "alias": ["flipped"]
   },
   "vine_direction_bits": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "wall_block_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   },
   "weirdo_direction": {
-    "alias": [
-      "direction"
-    ]
+    "alias": ["direction"]
   },
   "wood_type": {
-    "alias": [
-      "type"
-    ]
+    "alias": ["type"]
   }
 }
