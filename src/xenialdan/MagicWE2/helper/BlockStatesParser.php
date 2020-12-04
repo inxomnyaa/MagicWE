@@ -12,8 +12,11 @@ use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\Door;
+use pocketmine\block\utils\BlockDataSerializer;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\item\LegacyStringToItemParser;
+use pocketmine\math\Facing;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
@@ -184,7 +187,9 @@ final class BlockStatesParser
 
 		$selectedBlockName = $matches[0][1];
 		$namespacedSelectedBlockName = "minecraft:" . $selectedBlockName;//TODO try to keep namespace "minecraft:" to support custom blocks
-		$block = LegacyStringToItemParser::getInstance()->parse($selectedBlockName)->getBlock();
+		/** @var LegacyStringToItemParser $legacyStringToItemParser */
+		$legacyStringToItemParser = LegacyStringToItemParser::getInstance();
+		$block = $legacyStringToItemParser->parse($selectedBlockName)->getBlock();
 		if (count($matches[0]) < 3) {
 			return [$block];
 		}
@@ -242,17 +247,20 @@ final class BlockStatesParser
 		//return found block(s)
 		$blocks = [];
 		//doors.. special blocks annoying -.- TODO 1.16 apparently fixed this shit! YAY TODO remove
-//		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
-//		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
-//			$fromString = LegacyStringToItemParser::getInstance()->parse($selectedBlockName . "_block:8")->getBlock();
-//			return [$fromString];
-//		}
+		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
+		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
+			$fromString = $legacyStringToItemParser->parse($selectedBlockName . "_block:8")->getBlock();
+			var_dump($finalStatesList, $fromString);
+			return [$fromString];
+		}
 		#var_dump((string)$finalStatesList);
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
 			if ($clonedPrintedCompound->equals($finalStatesList)) {
 				#Server::getInstance()->getLogger()->notice("FOUND!");
-				$block = BlockFactory::getInstance()->get($block->getId(), $meta);
+				/** @var BlockFactory $blockFactory */
+				$blockFactory = BlockFactory::getInstance();
+				$block = $blockFactory->get($block->getId(), $meta & 0xf);
 				#var_dump($oldNameAndMeta,$block);
 				#var_dump($block, $finalStatesList);
 				$blocks[] = $block;
@@ -294,6 +302,18 @@ final class BlockStatesParser
 		$states = $compoundTag->getCompoundTag('states') ?? self::getDefaultStates($namespacedSelectedBlockName);
 		if (!$states instanceof CompoundTag) {
 			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
+		}
+
+		if (strpos($namespacedSelectedBlockName, "_door") !== false) {
+			/** @var Door $door */
+			$door = self::fromString($namespacedSelectedBlockName)[0];
+			$door->setOpen($states->getByte("open_bit") === 1);
+			$door->setTop($states->getByte("upper_block_bit") === 1);
+			$door->setHingeRight($states->getByte("door_hinge_bit") === 1);
+			$direction = $states->getInt("direction");
+			$door->setFacing(Facing::rotateY(BlockDataSerializer::readLegacyHorizontalFacing($direction & 0x03), false));
+			//return self::getStateByBlock($door);
+			return new BlockStatesEntry($namespacedSelectedBlockName, $states, $door);
 		}
 
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] ?? [] as $meta => $r12ToCurrentBlockMapEntry) {//??[] is to avoid crashes on newer blocks like light block

@@ -4,39 +4,35 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
-use GlobalLogger;
-use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockIdentifier;
 use pocketmine\block\BlockLegacyIds;
-use pocketmine\block\UnknownBlock;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
-use pocketmine\utils\TextFormat;
-use xenialdan\MagicWE2\Loader;
 
 class BlockEntry
 {
-	/** @var int BlockRuntimeId TODO check if RuntimeBlockMapping is okay for that */
-	public $runtimeId;
+	/** @var int BlockFullId */
+	public $fullId;
 	/** @var CompoundTag|null */
 	public $nbt;
 
 	/**
 	 * BlockEntry constructor.
-	 * @param int $runtimeId
+	 * @param int $fullId
 	 * @param CompoundTag|null $nbt
 	 */
-	public function __construct(int $runtimeId, ?CompoundTag $nbt = null)
+	public function __construct(int $fullId, ?CompoundTag $nbt = null)
 	{
-		$this->runtimeId = $runtimeId;
+		$this->fullId = $fullId;
 		$this->nbt = $nbt;
 	}
 
 	public function validate(): bool
 	{
-		[$id, $meta] = RuntimeBlockMapping::getInstance()->fromRuntimeId($this->runtimeId);
+		/** @var BlockFactory $instance */
+		$instance = BlockFactory::getInstance();
+		$block = $instance->fromFullBlock($this->fullId);
+		[$id, $meta] = [$block->getId(), $block->getMeta()];
 		if ($id === BlockLegacyIds::INFO_UPDATE) {
 			return false;
 		}
@@ -48,8 +44,10 @@ class BlockEntry
 
 	public function __toString()
 	{
-		[$id, $meta] = RuntimeBlockMapping::getInstance()->fromRuntimeId($this->runtimeId);
-		$str = __CLASS__ . " " . $this->runtimeId . " [$id:$meta]";
+		/** @var BlockFactory $instance */
+		$instance = BlockFactory::getInstance();
+		$block = $instance->fromFullBlock($this->fullId);
+		$str = __CLASS__ . " " . $this->fullId . " [{$block->getId()}:{$block->getMeta()}]";
 		if ($this->nbt instanceof CompoundTag) {
 			$str .= " " . str_replace("\n", "", $this->nbt->toString());
 		}
@@ -58,20 +56,15 @@ class BlockEntry
 
 	public function toBlock(): Block
 	{
-		BlockFactory::getInstance();
-		[$id, $meta] = RuntimeBlockMapping::getInstance()->fromRuntimeId($this->runtimeId);
-		try {
-			return BlockFactory::getInstance()->get($id, $meta);
-		} catch (InvalidArgumentException $e) {
-			GlobalLogger::get()->debug(Loader::PREFIX . TextFormat::GRAY . " Couldn't find a registered block for $id:$meta, trying UnknownBlock!");
-		}
-		return new UnknownBlock(new BlockIdentifier($id, $meta));
+		/** @var BlockFactory $instance */
+		$instance = BlockFactory::getInstance();
+		return $instance->fromFullBlock($this->fullId);
 	}
 
 	public static function fromBlock(Block $block): self
 	{
 		BlockFactory::getInstance();
-		return new BlockEntry(RuntimeBlockMapping::getInstance()->toRuntimeId($block->getFullId()));
+		return new BlockEntry($block->getFullId());
 	}
 
 }

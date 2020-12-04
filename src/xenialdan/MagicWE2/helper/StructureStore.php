@@ -46,7 +46,6 @@ final class StructureStore
 		$path = Loader::getInstance()->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . $id . '.mcstructure';
 		$structure = new MCStructure();
 
-		var_dump($path);
 		$structure->parse($path);
 		$this->structures[$id] = $structure;
 		return $this->structures[$id];

@@ -336,7 +336,6 @@ class EventListener implements Listener
 	public function onSelectionChange(MWESelectionChangeEvent $event): void
 	{
 		Loader::getInstance()->getLogger()->debug("Called " . $event->getEventName());
-		Loader::getInstance()->getLogger()->debug(print_r($event, true));
 		if (($session = $event->getSession()) instanceof UserSession && ($player = $event->getPlayer()) !== null) {
 			/** @var UserSession $session */
 			$session->sidebar->handleScoreboard($session);
