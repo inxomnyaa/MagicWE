@@ -17,20 +17,20 @@ use xenialdan\MagicWE2\Loader;
 
 class ToggledebugCommand extends BaseCommand
 {
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->setPermission("we.command.tool.toggledebug");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->setPermission("we.command.tool.toggledebug");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
-	 */
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
@@ -46,15 +46,15 @@ class ToggledebugCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-			$session = SessionHelper::getUserSession($sender);
-			if (is_null($session)) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-			}
-			$sender->sendMessage($session->setDebugToolEnabled(!$session->isDebugToolEnabled()));
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+            $session = SessionHelper::getUserSession($sender);
+            if (is_null($session)) {
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+            }
+            $sender->sendMessage($session->setDebugToolEnabled(!$session->isDebugToolEnabled()));
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

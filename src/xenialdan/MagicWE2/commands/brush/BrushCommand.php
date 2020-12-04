@@ -33,7 +33,7 @@ class BrushCommand extends BaseCommand
     protected function prepare(): void
     {
         $this->registerSubCommand(new BrushNameCommand("name", "Get name or rename a brush"));
-		$this->setPermission("we.command.brush");
+        $this->setPermission("we.command.brush");
     }
 
     /**
@@ -95,34 +95,36 @@ class BrushCommand extends BaseCommand
                     }
                     return null;
                 } catch (Exception $error) {
-					$session->sendMessage(TF::RED . $lang->translateString('error'));
-					$session->sendMessage(TF::RED . $error->getMessage());
-				}
-			});
-			$sender->sendForm($form);
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                    $session->sendMessage(TF::RED . $lang->translateString('error'));
+                    $session->sendMessage(TF::RED . $error->getMessage());
+                }
+            });
+            $sender->sendForm($form);
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 
-	/**
-	 * @param UIElement[] $elements
-	 * @param array $data
-	 * @return array
-	 */
-	public static function generateLore(array $elements, array $data): array
-	{
-		$return = [];
-		foreach ($elements as $i => $element) {
-			if ($element instanceof Label) continue;
-			if ($element instanceof Toggle) {
-				$return[] = ($element->getText() . ": " . ($data[$i] ? "Yes" : "No"));
-				continue;
-			}
-			$return[] = ($element->getText() . ": " . $data[$i]);
-		}
-		return $return;
+    /**
+     * @param UIElement[] $elements
+     * @param array $data
+     * @return array
+     */
+    public static function generateLore(array $elements, array $data): array
+    {
+        $return = [];
+        foreach ($elements as $i => $element) {
+            if ($element instanceof Label) {
+                continue;
+            }
+            if ($element instanceof Toggle) {
+                $return[] = ($element->getText() . ": " . ($data[$i] ? "Yes" : "No"));
+                continue;
+            }
+            $return[] = ($element->getText() . ": " . $data[$i]);
+        }
+        return $return;
     }
 }

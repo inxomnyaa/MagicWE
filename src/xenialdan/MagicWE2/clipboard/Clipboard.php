@@ -14,67 +14,67 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 abstract class Clipboard implements Serializable
 {
-	public const DIRECTION_DEFAULT = 1;
+    public const DIRECTION_DEFAULT = 1;
 
-	public const FLIP_X = 0x01;
-	public const FLIP_WEST = 0x01;
-	public const FLIP_EAST = 0x01;
-	public const FLIP_Y = 0x02;
-	public const FLIP_UP = 0x02;
-	public const FLIP_DOWN = 0x02;
-	public const FLIP_Z = 0x03;
-	public const FLIP_NORTH = 0x03;
-	public const FLIP_SOUTH = 0x03;
+    public const FLIP_X = 0x01;
+    public const FLIP_WEST = 0x01;
+    public const FLIP_EAST = 0x01;
+    public const FLIP_Y = 0x02;
+    public const FLIP_UP = 0x02;
+    public const FLIP_DOWN = 0x02;
+    public const FLIP_Z = 0x03;
+    public const FLIP_NORTH = 0x03;
+    public const FLIP_SOUTH = 0x03;
 
-	/** @var int|null */
-	public $worldId;
-	/** @var string */
-	public $customName = "";
+    /** @var int|null */
+    public $worldId;
+    /** @var string */
+    public $customName = "";
 
-	/**
-	 * Creates a chunk manager used for async editing
-	 * @param Chunk[] $chunks
-	 * @return AsyncChunkManager
-	 */
-	public static function getChunkManager(array $chunks): AsyncChunkManager
-	{
-		$manager = new AsyncChunkManager();
-		foreach ($chunks as $chunk) {
-			$manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
-		}
-		return $manager;
-	}
+    /**
+     * Creates a chunk manager used for async editing
+     * @param Chunk[] $chunks
+     * @return AsyncChunkManager
+     */
+    public static function getChunkManager(array $chunks): AsyncChunkManager
+    {
+        $manager = new AsyncChunkManager();
+        foreach ($chunks as $chunk) {
+            $manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
+        }
+        return $manager;
+    }
 
     /**
      * @return World
      * @throws Exception
      */
     public function getWorld(): World
-	{
-		if (is_null($this->worldId)) {
-			throw new SelectionException("World is not set!");
-		}
-		$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
-		if (is_null($world)) {
-			throw new SelectionException("World is not found!");
-		}
-		return $world;
-	}
+    {
+        if (is_null($this->worldId)) {
+            throw new SelectionException("World is not set!");
+        }
+        $world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
+        if (is_null($world)) {
+            throw new SelectionException("World is not found!");
+        }
+        return $world;
+    }
 
-	/**
-	 * @param World $world
-	 */
-	public function setWorld(World $world): void
-	{
-		$this->worldId = $world->getId();
-	}
+    /**
+     * @param World $world
+     */
+    public function setWorld(World $world): void
+    {
+        $this->worldId = $world->getId();
+    }
 
     /**
      * @return int
      */
     public function getWorldId(): int
     {
-		return $this->worldId;
+        return $this->worldId;
     }
 
     /**

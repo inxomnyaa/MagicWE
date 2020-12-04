@@ -23,24 +23,24 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncCopyTask extends MWEAsyncTask
 {
 
-	/** @var string */
-	private $chunks;
-	/** @var string */
-	private $selection;
-	/** @var Vector3 */
-	private $offset;
-	/** @var int */
-	private $flags;
+    /** @var string */
+    private $chunks;
+    /** @var string */
+    private $selection;
+    /** @var Vector3 */
+    private $offset;
+    /** @var int */
+    private $flags;
 
-	/**
-	 * AsyncCopyTask constructor.
-	 * @param Selection $selection
-	 * @param Vector3 $offset
-	 * @param UUID $sessionUUID
-	 * @param string[] $chunks serialized chunks
-	 * @param int $flags
-	 * @throws Exception
-	 */
+    /**
+     * AsyncCopyTask constructor.
+     * @param Selection $selection
+     * @param Vector3 $offset
+     * @param UUID $sessionUUID
+     * @param string[] $chunks serialized chunks
+     * @param int $flags
+     * @throws Exception
+     */
     public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
     {
         $this->start = microtime(true);
@@ -58,23 +58,23 @@ class AsyncCopyTask extends MWEAsyncTask
      * @throws Exception
      */
     public function onRun(): void
-	{
-		$this->publishProgress([0, "Start"]);
-		$chunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
-		}, unserialize($this->chunks/*, ['allowed_classes' => false]*/));//TODO test pm4
-		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
-		#var_dump("shape", $selection->getShape());
-		$manager = Shape::getChunkManager($chunks);
-		unset($chunks);
-		#var_dump($this->offset);
-		$clipboard = new SingleClipboard($this->offset);
-		$clipboard->selection = $selection;
-		#$clipboard->setCenter(unserialize($this->offset));
-		$totalCount = $selection->getShape()->getTotalCount();
-		$copied = $this->copyBlocks($selection, $manager, $clipboard);
-		#$clipboard->setShape($selection->getShape());
+    {
+        $this->publishProgress([0, "Start"]);
+        $chunks = array_map(static function ($chunk) {
+            return FastChunkSerializer::deserialize($chunk);
+        }, unserialize($this->chunks/*, ['allowed_classes' => false]*/));//TODO test pm4
+        /** @var Selection $selection */
+        $selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+        #var_dump("shape", $selection->getShape());
+        $manager = Shape::getChunkManager($chunks);
+        unset($chunks);
+        #var_dump($this->offset);
+        $clipboard = new SingleClipboard($this->offset);
+        $clipboard->selection = $selection;
+        #$clipboard->setCenter(unserialize($this->offset));
+        $totalCount = $selection->getShape()->getTotalCount();
+        $copied = $this->copyBlocks($selection, $manager, $clipboard);
+        #$clipboard->setShape($selection->getShape());
         #$clipboard->chunks = $manager->getChunks();
         $this->setResult(compact("clipboard", "copied", "totalCount"));
     }
@@ -86,47 +86,49 @@ class AsyncCopyTask extends MWEAsyncTask
      * @return int
      * @throws Exception
      */
-	private function copyBlocks(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard): int
-	{
-		$blockCount = $selection->getShape()->getTotalCount();
-		$i = 0;
-		$lastprogress = 0;
-		$this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
-		$min = $selection->getShape()->getMinVec3();
-		/** @var Block $block */
-		foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
-			#var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
-			$newv3 = $block->getPos()->subtractVector($min)->floor();
-			$clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry($block->getFullId()));//TODO test tiles
-			#var_dump("copied selection block", $block);
-			$i++;
-			$progress = floor($i / $blockCount * 100);
-			if ($lastprogress < $progress) {//this prevents spamming packets
-				$this->publishProgress([$progress, "Running, copied $i blocks out of $blockCount"]);
-				$lastprogress = $progress;
-			}
-		}
+    private function copyBlocks(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard): int
+    {
+        $blockCount = $selection->getShape()->getTotalCount();
+        $i = 0;
+        $lastprogress = 0;
+        $this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
+        $min = $selection->getShape()->getMinVec3();
+        /** @var Block $block */
+        foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
+            #var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
+            $newv3 = $block->getPos()->subtractVector($min)->floor();
+            $clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry($block->getFullId()));//TODO test tiles
+            #var_dump("copied selection block", $block);
+            $i++;
+            $progress = floor($i / $blockCount * 100);
+            if ($lastprogress < $progress) {//this prevents spamming packets
+                $this->publishProgress([$progress, "Running, copied $i blocks out of $blockCount"]);
+                $lastprogress = $progress;
+            }
+        }
         return $i;
     }
 
     public function onCompletion(): void
-	{
-		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
-			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
-			$result = $this->getResult();
-			$copied = $result["copied"];
-			/** @var SingleClipboard $clipboard */
-			$clipboard = $result["clipboard"];
-			$totalCount = $result["totalCount"];
-			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
-			$session->addClipboard($clipboard);
-		} catch (SessionException $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-		} catch (InvalidArgumentException $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-		} catch (AssumptionFailedError $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-		}
-	}
+    {
+        try {
+            $session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+            if ($session instanceof UserSession) {
+                $session->getBossBar()->hideFromAll();
+            }
+            $result = $this->getResult();
+            $copied = $result["copied"];
+            /** @var SingleClipboard $clipboard */
+            $clipboard = $result["clipboard"];
+            $totalCount = $result["totalCount"];
+            $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
+            $session->addClipboard($clipboard);
+        } catch (SessionException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+        } catch (InvalidArgumentException $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+        } catch (AssumptionFailedError $e) {
+            Loader::getInstance()->getLogger()->logException($e);
+        }
+    }
 }

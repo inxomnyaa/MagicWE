@@ -21,21 +21,21 @@ use xenialdan\MagicWE2\Loader;
 class ReportCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new TextArgument("title", true));
-		$this->setPermission("we.command.report");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new TextArgument("title", true));
+        $this->setPermission("we.command.report");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -47,22 +47,25 @@ class ReportCommand extends BaseCommand
             }
         }
         try {
-			$url = "Please report your bug with this link (link also in console)" . TF::EOL;
-			$url .= "https://github.com/thebigsmileXD/MagicWE2/issues/new?labels=Bug&body=";
-			$url .= urlencode(
-				"### Description" . TF::EOL . "<!-- DESCRIPTION OF YOUR ISSUE -->" .
-				TF::EOL .
-				TF::EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
-				TF::EOL . "---" .
-				TF::EOL . TF::clean(implode(TF::EOL, Loader::getInfo())));
-			$url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . ($args["title"] ?? "")));
+            $url = "Please report your bug with this link (link also in console)" . TF::EOL;
+            $url .= "https://github.com/thebigsmileXD/MagicWE2/issues/new?labels=Bug&body=";
+            $url .= urlencode(
+                "### Description" . TF::EOL . "<!-- DESCRIPTION OF YOUR ISSUE -->" .
+                TF::EOL .
+                TF::EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
+                TF::EOL . "---" .
+                TF::EOL . TF::clean(implode(TF::EOL, Loader::getInfo()))
+            );
+            $url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . ($args["title"] ?? "")));
 
-			if (!$sender instanceof ConsoleCommandSender) $sender->sendMessage(Loader::PREFIX . $url);
-			Loader::getInstance()->getLogger()->alert($url);
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+            if (!$sender instanceof ConsoleCommandSender) {
+                $sender->sendMessage(Loader::PREFIX . $url);
+            }
+            Loader::getInstance()->getLogger()->alert($url);
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

@@ -6,5 +6,4 @@ use pocketmine\plugin\PluginException;
 
 class BrushException extends PluginException
 {
-
 }

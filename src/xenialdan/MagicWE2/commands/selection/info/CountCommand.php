@@ -26,21 +26,21 @@ use xenialdan\MagicWE2\task\AsyncActionTask;
 class CountCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new RawStringArgument("blocks", true));
-		$this->registerArgument(1, new TextArgument("flags", true));
-		$this->setPermission("we.command.selection.info.count");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new RawStringArgument("blocks", true));
+        $this->registerArgument(1, new TextArgument("flags", true));
+        $this->setPermission("we.command.selection.info.count");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
      * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
@@ -61,25 +61,27 @@ class CountCommand extends BaseCommand
             $error = false;
             if (!empty($args["blocks"])) {
                 $messages = [];
-				API::blockParser(($filterBlocks = (string)$args["blocks"]), $messages, $error);
+                API::blockParser(($filterBlocks = (string)$args["blocks"]), $messages, $error);
                 foreach ($messages as $message) {
                     $sender->sendMessage($message);
                 }
-            } else $filterBlocks = "";
+            } else {
+                $filterBlocks = "";
+            }
             if (!$error) {
                 $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {
-					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                    throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
                 $selection = $session->getLatestSelection();
                 if (is_null($selection)) {
-					throw new SelectionException($lang->translateString('error.noselection'));
+                    throw new SelectionException($lang->translateString('error.noselection'));
                 }
                 if (!$selection->isValid()) {
-					throw new SelectionException($lang->translateString('error.selectioninvalid'));
+                    throw new SelectionException($lang->translateString('error.selectioninvalid'));
                 }
                 if ($selection->getWorld() !== $sender->getWorld()) {
-					$session->sendMessage(TF::GOLD . $lang->translateString('warning.differentworld'));
+                    $session->sendMessage(TF::GOLD . $lang->translateString('warning.differentworld'));
                 }
                 Server::getInstance()->getAsyncPool()->submitTask(
                     new AsyncActionTask(
@@ -89,15 +91,15 @@ class CountCommand extends BaseCommand
                         $selection->getShape()->getTouchedChunks($selection->getWorld()),
                         "",
                         $filterBlocks
-					)
-				);
-			} else {
-				throw new InvalidArgumentException("Could not count the selected blocks");
-			}
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                    )
+                );
+            } else {
+                throw new InvalidArgumentException("Could not count the selected blocks");
+            }
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

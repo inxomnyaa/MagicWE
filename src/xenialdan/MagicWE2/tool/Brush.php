@@ -39,76 +39,81 @@ use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Brush extends WETool
 {
-	public const TAG_BRUSH_ID = "id";
-	public const TAG_BRUSH_PROPERTIES = "properties";
+    public const TAG_BRUSH_ID = "id";
+    public const TAG_BRUSH_PROPERTIES = "properties";
 
-	/** @var BrushProperties */
-	public $properties;
+    /** @var BrushProperties */
+    public $properties;
 
-	/**
-	 * Brush constructor.
-	 * @param BrushProperties $properties
-	 */
-	public function __construct(BrushProperties $properties)
-	{
-		$this->properties = $properties;
-	}
+    /**
+     * Brush constructor.
+     * @param BrushProperties $properties
+     */
+    public function __construct(BrushProperties $properties)
+    {
+        $this->properties = $properties;
+    }
 
-	public function getName(): string
-	{
-		return $this->properties->getName();
-	}
+    public function getName(): string
+    {
+        return $this->properties->getName();
+    }
 
-	/**
-	 * @return Item
-	 * @throws ActionNotFoundException
-	 * @throws InvalidArgumentException
-	 * @throws ShapeNotFoundException
-	 * @throws JsonException
-	 * @throws TypeError
-	 */
-	public function toItem(): Item
-	{
-		/** @var Durable $item */
-		$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_SHOVEL);
-		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
-		$uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
-		$this->properties->uuid = $uuid;
-		$properties = json_encode($this->properties, JSON_THROW_ON_ERROR);
-		if (!is_string($properties)) throw new InvalidArgumentException("Brush properties could not be decoded");
-		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_BRUSH,
-			CompoundTag::create()
-				->setString("id", $uuid)
-				->setInt("version", $this->properties->version)
-				->setString("properties", $properties)
-		);
-		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $this->getName());
-		$item->setLore($this->properties->generateLore());
-		$item->setUnbreakable();
-		return $item;
-	}
+    /**
+     * @return Item
+     * @throws ActionNotFoundException
+     * @throws InvalidArgumentException
+     * @throws ShapeNotFoundException
+     * @throws JsonException
+     * @throws TypeError
+     */
+    public function toItem(): Item
+    {
+        /** @var Durable $item */
+        $item = ItemFactory::getInstance()->get(ItemIds::WOODEN_SHOVEL);
+        $item->addEnchantment(new EnchantmentInstance(Loader::$ench));
+        $uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
+        $this->properties->uuid = $uuid;
+        $properties = json_encode($this->properties, JSON_THROW_ON_ERROR);
+        if (!is_string($properties)) {
+            throw new InvalidArgumentException("Brush properties could not be decoded");
+        }
+        $item->getNamedTag()->setTag(
+            API::TAG_MAGIC_WE_BRUSH,
+            CompoundTag::create()
+                ->setString("id", $uuid)
+                ->setInt("version", $this->properties->version)
+                ->setString("properties", $properties)
+        );
+        $item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $this->getName());
+        $item->setLore($this->properties->generateLore());
+        $item->setUnbreakable();
+        return $item;
+    }
 
-	/**
-	 * @param bool $new true if creating new brush
-	 * @param array $errors
-	 * @return CustomForm
-	 * @throws Exception
-	 * @throws AssumptionFailedError
-	 */
-	public function getForm(bool $new = true, array $errors = []): CustomForm
-	{
-		try {
-			$errors = array_map(static function ($value): string {
-				return TF::EOL . TF::RED . $value;
-			}, $errors);
-			$brushProperties = $this->properties ?? new BrushProperties();
-			$form = new CustomForm("Brush settings");
-			// Shape
-			#$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
-			if ($new) {
-				$dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
-				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
-					if ($name === ShapeRegistry::CUSTOM) continue;
+    /**
+     * @param bool $new true if creating new brush
+     * @param array $errors
+     * @return CustomForm
+     * @throws Exception
+     * @throws AssumptionFailedError
+     */
+    public function getForm(bool $new = true, array $errors = []): CustomForm
+    {
+        try {
+            $errors = array_map(static function ($value): string {
+                return TF::EOL . TF::RED . $value;
+            }, $errors);
+            $brushProperties = $this->properties ?? new BrushProperties();
+            $form = new CustomForm("Brush settings");
+            // Shape
+            #$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
+            if ($new) {
+                $dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
+                foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
+                    if ($name === ShapeRegistry::CUSTOM) {
+                        continue;
+                    }
                     $dropdownShape->addOption($name, $class === $brushProperties->shape);
                 }
                 $form->addElement($dropdownShape);
@@ -130,18 +135,20 @@ class Brush extends WETool
             // Biome
             $dropdownBiome = new Dropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""));
             foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
-				if ($value === Biome::MAX_BIOMES || $value === BiomeIds::HELL) continue;
-				$dropdownBiome->addOption(BiomeRegistry::getInstance()->getBiome($value)->getName(), $value === $brushProperties->biomeId);
-			}
+                if ($value === Biome::MAX_BIOMES || $value === BiomeIds::HELL) {
+                    continue;
+                }
+                $dropdownBiome->addOption(BiomeRegistry::getInstance()->getBiome($value)->getName(), $value === $brushProperties->biomeId);
+            }
             $form->addElement($dropdownBiome);
             // Hollow
             $form->addElement(new Toggle("Hollow", $brushProperties->hollow));
             // Extra properties
             if (!$new) {
-				foreach ($this->getExtradataForm($brushProperties->shape)->getContent() as $element) {
-					$form->addElement($element);
-				}
-			}
+                foreach ($this->getExtradataForm($brushProperties->shape)->getContent() as $element) {
+                    $form->addElement($element);
+                }
+            }
             // Function
             $form->setCallable(function (Player $player, $data) use ($form, $new) {
                 #var_dump(__LINE__, $data);
@@ -150,40 +157,48 @@ class Brush extends WETool
                 $extraData = [];
                 #var_dump(__LINE__, array_slice($data, 7));
                 $base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
-				foreach (array_slice($data, 7, null, true) as $i => $value) {
-					#var_dump($i, $value, gettype($value), gettype($base[lcfirst($form->getElement($i)->getText())]));
-					if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
-					$extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
-				}
-				#var_dump(__LINE__, $extraData);
-				//prepare data
-				$blocks = trim(TF::clean($blocks));
-				$filter = trim(TF::clean($filter));
+                foreach (array_slice($data, 7, null, true) as $i => $value) {
+                    #var_dump($i, $value, gettype($value), gettype($base[lcfirst($form->getElement($i)->getText())]));
+                    if (is_int($base[lcfirst($form->getElement($i)->getText())])) {
+                        $value = (int)$value;
+                    }
+                    $extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
+                }
+                #var_dump(__LINE__, $extraData);
+                //prepare data
+                $blocks = trim(TF::clean($blocks));
+                $filter = trim(TF::clean($filter));
 
-				$biomeNames = (new ReflectionClass(BiomeIds::class))->getConstants();
-				$biomeNames = array_flip($biomeNames);
-				unset($biomeNames[BiomeIds::HELL]);
-				array_walk($biomeNames, static function (&$value, $key) {
-					$value = BiomeRegistry::getInstance()->getBiome($key)->getName();
-				});
-				$biomeId = array_search($biome, $biomeNames, true);
+                $biomeNames = (new ReflectionClass(BiomeIds::class))->getConstants();
+                $biomeNames = array_flip($biomeNames);
+                unset($biomeNames[BiomeIds::HELL]);
+                array_walk($biomeNames, static function (&$value, $key) {
+                    $value = BiomeRegistry::getInstance()->getBiome($key)->getName();
+                });
+                $biomeId = array_search($biome, $biomeNames, true);
 
-				//error checks
-				$error = [];
-				try {
-					$m = [];
-					$e = false;
-					API::blockParser($blocks, $m, $e);
-					if ($e) throw new InvalidArgumentException(implode(TF::EOL, $m));
-					if (empty($blocks)) throw new AssumptionFailedError("Blocks cannot be empty!");
-				} catch (Exception $ex) {
+                //error checks
+                $error = [];
+                try {
+                    $m = [];
+                    $e = false;
+                    API::blockParser($blocks, $m, $e);
+                    if ($e) {
+                        throw new InvalidArgumentException(implode(TF::EOL, $m));
+                    }
+                    if (empty($blocks)) {
+                        throw new AssumptionFailedError("Blocks cannot be empty!");
+                    }
+                } catch (Exception $ex) {
                     $error['blocks'] = $ex->getMessage();
                 }
                 try {
                     $m = [];
                     $e = false;
                     API::blockParser($filter, $m, $e);
-					if ($e) throw new InvalidArgumentException(implode(TF::EOL, $m));
+                    if ($e) {
+                        throw new InvalidArgumentException(implode(TF::EOL, $m));
+                    }
                 } catch (Exception $ex) {
                     $error['filter'] = $ex->getMessage();
                 }
@@ -198,19 +213,26 @@ class Brush extends WETool
                     $error['action'] = $ex->getMessage();
                 }
                 try {
-					if (!is_int($biomeId)) throw new AssumptionFailedError("Biome not found");
+                    if (!is_int($biomeId)) {
+                        throw new AssumptionFailedError("Biome not found");
+                    }
                 } catch (Exception $ex) {
                     $error['biome'] = $ex->getMessage();
                 }
 
                 //Set properties (called before resending, so form contains errors)
-                if (!empty(trim(TF::clean($name)))) $this->properties->customName = $name;
+                if (!empty(trim(TF::clean($name)))) {
+                    $this->properties->customName = $name;
+                }
                 if (!isset($error['shape'])) {
                     $this->properties->shape = $shape;
-                    if (!$new && !empty($extraData))
+                    if (!$new && !empty($extraData)) {
                         $this->properties->shapeProperties = $extraData;
+                    }
                 }
-                if (!isset($error['action'])) $this->properties->action = $action;
+                if (!isset($error['action'])) {
+                    $this->properties->action = $action;
+                }
                 /*if (!isset($error['blocks']))*/
                 $this->properties->blocks = $blocks;
                 /*if (!isset($error['filter']))*/
@@ -229,7 +251,7 @@ class Brush extends WETool
                     $brush = $this;
                     $session = SessionHelper::getUserSession($player);
                     if (!$session instanceof UserSession) {
-						throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                        throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
                     }
                     if (!$new) {
                         $session->replaceBrush($brush);
@@ -243,7 +265,7 @@ class Brush extends WETool
             });
             return $form;
         } catch (Exception $e) {
-			throw new AssumptionFailedError("Could not create brush form");
+            throw new AssumptionFailedError("Could not create brush form");
         }
     }
 
@@ -253,9 +275,12 @@ class Brush extends WETool
         #foreach (($defaultReplaced = array_merge(ShapeRegistry::getDefaultShapeProperties($shapeClass), $this->properties->shapeProperties)) as $name => $value) {
         $base = ShapeRegistry::getDefaultShapeProperties($shapeClass);
         foreach (($defaultReplaced = array_replace($base, array_intersect_key($this->properties->shapeProperties, $base))) as $name => $value) {
-			if (is_bool($value)) $form->addElement(new Toggle(ucfirst($name), $value));
-			else $form->addElement(new Input(ucfirst($name), $name . " (" . gettype($value) . ")", (string)$value));
-		}
+            if (is_bool($value)) {
+                $form->addElement(new Toggle(ucfirst($name), $value));
+            } else {
+                $form->addElement(new Input(ucfirst($name), $name . " (" . gettype($value) . ")", (string)$value));
+            }
+        }
         #var_dump($this->properties->shapeProperties);
         #var_dump('Base', $base);
         #var_dump('Default Replaced', $defaultReplaced);
@@ -264,7 +289,9 @@ class Brush extends WETool
             $extraData = [];
             $names = array_keys($defaultReplaced);
             foreach ($data as $index => $value) {
-				if (is_int($base[$names[$index]])) $value = (int)$value;
+                if (is_int($base[$names[$index]])) {
+                    $value = (int)$value;
+                }
                 $extraData[$names[$index]] = $value;
             }
             $this->properties->shapeProperties = $extraData;
@@ -272,7 +299,7 @@ class Brush extends WETool
             $brush = $this;
             $session = SessionHelper::getUserSession($player);
             if (!$session instanceof UserSession) {
-				throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $this->properties->uuid = UUID::fromRandom()->toString();
             $session->addBrush($brush);

@@ -16,22 +16,22 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Ellipsoid extends Shape
 {
-	/** @var int */
-	public $width = 5;
-	/** @var int */
-	public $height = 5;
-	/** @var int */
-	public $depth = 5;
+    /** @var int */
+    public $width = 5;
+    /** @var int */
+    public $height = 5;
+    /** @var int */
+    public $depth = 5;
 
-	/**
-	 * Pyramid constructor.
-	 * @param Vector3 $pasteVector
-	 * @param int $width
-	 * @param int $height
-	 * @param int $depth
-	 */
-	public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
-	{
+    /**
+     * Pyramid constructor.
+     * @param Vector3 $pasteVector
+     * @param int $width
+     * @param int $height
+     * @param int $depth
+     */
+    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
+    {
         $this->pasteVector = $pasteVector;
         $this->width = $width;
         $this->height = $height;
@@ -39,13 +39,13 @@ class Ellipsoid extends Shape
     }
 
     /**
-	 * Returns the blocks by their actual position
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
-	 * @param int $flags
-	 * @return Generator|Block[]
-	 * @throws Exception
-	 */
+     * Returns the blocks by their actual position
+     * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+     * @param Block[] $filterblocks If not empty, applying a filter on the block list
+     * @param int $flags
+     * @return Generator|Block[]
+     * @throws Exception
+     */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
@@ -63,39 +63,49 @@ class Ellipsoid extends Shape
         $targetZ = $this->pasteVector->getZ();
 
         for ($x = (int)floor($centerVec2->x - $this->width / 2 /*- 1*/); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
-			$xSquared = ($targetX - $x) ** 2;
-			for ($y = (int)floor($this->getPasteVector()->y) + 1, $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
-				$ySquared = ($targetY - $y + $yrad) ** 2;
-				for ($z = (int)floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
-					$zSquared = ($targetZ - $z) ** 2;
+            $xSquared = ($targetX - $x) ** 2;
+            for ($y = (int)floor($this->getPasteVector()->y) + 1, $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+                $ySquared = ($targetY - $y + $yrad) ** 2;
+                for ($z = (int)floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
+                    $zSquared = ($targetZ - $z) ** 2;
 
-					$vec3 = new Vector3($x, $y, $z);
-					//TODO hollow
-					if ($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) continue;
-					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int)$vec3->x, (int)$vec3->y, (int)$vec3->z);
-					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
-					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
+                    $vec3 = new Vector3($x, $y, $z);
+                    //TODO hollow
+                    if ($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) {
+                        continue;
+                    }
+                    $block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int)$vec3->x, (int)$vec3->y, (int)$vec3->z);
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) {
+                        continue;
+                    }
+                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) {
+                        continue;
+                    }
 
-					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fuufufufuuu
-					if (empty($filterblocks)) yield $block;
-					else {
-						foreach ($filterblocks as $filterblock) {
-							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-								yield $block;
-						}
-					}
-				}
+                    if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) {
+                        continue;
+                    }//TODO fuufufufuuu
+                    if (empty($filterblocks)) {
+                        yield $block;
+                    } else {
+                        foreach ($filterblocks as $filterblock) {
+                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META))))) {
+                                yield $block;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-	/**
-	 * Returns a flat layer of all included x z positions in selection
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param int $flags
-	 * @return Generator|Vector2[]
-	 * @throws Exception
-	 */
+    /**
+     * Returns a flat layer of all included x z positions in selection
+     * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+     * @param int $flags
+     * @return Generator|Vector2[]
+     * @throws Exception
+     */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
@@ -108,15 +118,17 @@ class Ellipsoid extends Shape
         $targetX = $this->pasteVector->getX();
         $targetZ = $this->pasteVector->getZ();
 
-		for ($x = (int)floor($centerVec2->x - $this->width / 2 /*- 1*/); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
-			$xSquared = ($targetX - $x) ** 2;
-			for ($z = (int)floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
-				$zSquared = ($targetZ - $z) ** 2;
-				if ($xSquared / $xradSquared + $zSquared / $zradSquared >= 1) continue;
-				//TODO hollow
-				yield new Vector2($x, $z);
-			}
-		}
+        for ($x = (int)floor($centerVec2->x - $this->width / 2 /*- 1*/); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
+            $xSquared = ($targetX - $x) ** 2;
+            for ($z = (int)floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
+                $zSquared = ($targetZ - $z) ** 2;
+                if ($xSquared / $xradSquared + $zSquared / $zradSquared >= 1) {
+                    continue;
+                }
+                //TODO hollow
+                yield new Vector2($x, $z);
+            }
+        }
     }
 
     /**
@@ -138,8 +150,8 @@ class Ellipsoid extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-				print "Touched Chunk at: $x:$z" . PHP_EOL;
-				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
+                print "Touched Chunk at: $x:$z" . PHP_EOL;
+                $touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
@@ -160,7 +172,7 @@ class Ellipsoid extends Shape
 
     public function getTotalCount(): int
     {
-		return (int)floor(4 * M_PI * (($this->width / 2) + 1) * (($this->height / 2) + 1) * (($this->depth / 2) + 1) / 3);
+        return (int)floor(4 * M_PI * (($this->width / 2) + 1) * (($this->height / 2) + 1) * (($this->depth / 2) + 1) / 3);
     }
 
     public static function getName(): string

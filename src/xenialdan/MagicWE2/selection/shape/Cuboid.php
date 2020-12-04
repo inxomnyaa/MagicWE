@@ -16,22 +16,22 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Cuboid extends Shape
 {
-	/** @var int */
-	public $width = 5;
-	/** @var int */
-	public $height = 5;
-	/** @var int */
-	public $depth = 5;
+    /** @var int */
+    public $width = 5;
+    /** @var int */
+    public $height = 5;
+    /** @var int */
+    public $depth = 5;
 
-	/**
-	 * Cuboid constructor.
-	 * @param Vector3 $pasteVector
-	 * @param int $width
-	 * @param int $height
-	 * @param int $depth
-	 */
-	public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
-	{
+    /**
+     * Cuboid constructor.
+     * @param Vector3 $pasteVector
+     * @param int $width
+     * @param int $height
+     * @param int $depth
+     */
+    public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
+    {
         $this->pasteVector = $pasteVector;
         $this->width = $width;
         $this->height = $height;
@@ -40,61 +40,71 @@ class Cuboid extends Shape
 
     public static function constructFromPositions(Vector3 $pos1, Vector3 $pos2): self
     {
-		$width = (int)abs($pos1->getX() - $pos2->getX()) + 1;
-		$height = (int)abs($pos1->getY() - $pos2->getY()) + 1;
-		$depth = (int)abs($pos1->getZ() - $pos2->getZ()) + 1;
-		return new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, min($pos1->y, $pos2->y), ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
-	}
+        $width = (int)abs($pos1->getX() - $pos2->getX()) + 1;
+        $height = (int)abs($pos1->getY() - $pos2->getY()) + 1;
+        $depth = (int)abs($pos1->getZ() - $pos2->getZ()) + 1;
+        return new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, min($pos1->y, $pos2->y), ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
+    }
 
-	/**
-	 * Returns the blocks by their actual position
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
-	 * @param int $flags
-	 * @return Generator|Block[]
-	 * @throws Exception
-	 */
+    /**
+     * Returns the blocks by their actual position
+     * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+     * @param Block[] $filterblocks If not empty, applying a filter on the block list
+     * @param int $flags
+     * @return Generator|Block[]
+     * @throws Exception
+     */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
-		$this->validateChunkManager($manager);
-		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
-			for ($y = (int)floor($this->getMinVec3()->y); $y <= floor($this->getMaxVec3()->y); $y++) {
-				for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
-					$block = API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z);
-					#var_dump("shape getblocks", $block);
-					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
-					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
+        $this->validateChunkManager($manager);
+        for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
+            for ($y = (int)floor($this->getMinVec3()->y); $y <= floor($this->getMaxVec3()->y); $y++) {
+                for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
+                    $block = API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z);
+                    #var_dump("shape getblocks", $block);
+                    if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) {
+                        continue;
+                    }
+                    if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) {
+                        continue;
+                    }
 
-					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO check for removal because relative might be at other y
-					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPos()->x > $this->getMinVec3()->getX() && $block->getPos()->x < $this->getMaxVec3()->getX()) && ($block->getPos()->y > $this->getMinVec3()->getY() && $block->getPos()->y < $this->getMaxVec3()->getY()) && ($block->getPos()->z > $this->getMinVec3()->getZ() && $block->getPos()->z < $this->getMaxVec3()->getZ())) continue;
-					if (empty($filterblocks)) yield $block;
-					else {
-						foreach ($filterblocks as $filterblock) {
-							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-								yield $block;
-						}
-					}
-				}
+                    if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) {
+                        continue;
+                    }//TODO check for removal because relative might be at other y
+                    if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPos()->x > $this->getMinVec3()->getX() && $block->getPos()->x < $this->getMaxVec3()->getX()) && ($block->getPos()->y > $this->getMinVec3()->getY() && $block->getPos()->y < $this->getMaxVec3()->getY()) && ($block->getPos()->z > $this->getMinVec3()->getZ() && $block->getPos()->z < $this->getMaxVec3()->getZ())) {
+                        continue;
+                    }
+                    if (empty($filterblocks)) {
+                        yield $block;
+                    } else {
+                        foreach ($filterblocks as $filterblock) {
+                            if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META))))) {
+                                yield $block;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-	/**
-	 * Returns a flat layer of all included x z positions in selection
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param int $flags
-	 * @return Generator|Vector2[]
-	 * @throws Exception
-	 */
+    /**
+     * Returns a flat layer of all included x z positions in selection
+     * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+     * @param int $flags
+     * @return Generator|Vector2[]
+     * @throws Exception
+     */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
-	{
-		$this->validateChunkManager($manager);
-		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
-			for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
-				yield new Vector2($x, $z);
-			}
-		}
-	}
+    {
+        $this->validateChunkManager($manager);
+        for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
+            for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
+                yield new Vector2($x, $z);
+            }
+        }
+    }
 
     /**
      * @param World|AsyncChunkManager $manager
@@ -115,7 +125,7 @@ class Cuboid extends Shape
                 if ($chunk === null) {
                     continue;
                 }
-				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
+                $touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
             }
         }
         return $touchedChunks;

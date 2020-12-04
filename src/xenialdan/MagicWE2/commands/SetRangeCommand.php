@@ -20,21 +20,21 @@ use xenialdan\MagicWE2\Loader;
 class SetRangeCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new IntegerArgument("range", true));
-		$this->setPermission("we.command.setrange");
-		$this->setUsage("//setrange [range: int]");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new IntegerArgument("range", true));
+        $this->setPermission("we.command.setrange");
+        $this->setUsage("//setrange [range: int]");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
      * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
@@ -49,15 +49,15 @@ class SetRangeCommand extends BaseCommand
         try {
             if (empty($args["range"])) {
                 $range = Loader::getInstance()->getToolDistance();
-				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.current', [$range]));
-			} else {
-				Loader::getInstance()->getConfig()->set("tool-range", (int)$args["range"]);
-				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.set', [(int)$args["range"]]));
-			}
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.current', [$range]));
+            } else {
+                Loader::getInstance()->getConfig()->set("tool-range", (int)$args["range"]);
+                $sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.set', [(int)$args["range"]]));
+            }
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

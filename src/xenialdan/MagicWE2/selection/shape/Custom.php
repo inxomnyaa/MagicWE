@@ -15,44 +15,44 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 class Custom extends Shape
 {
-	/** @var Vector3[] */
-	public $positions = [];
+    /** @var Vector3[] */
+    public $positions = [];
 
-	/**
-	 * Custom constructor.
-	 * @param Vector3 $pasteVector
-	 * @param Vector3[] $positions
-	 */
-	public function __construct(Vector3 $pasteVector, array $positions)
-	{
-		$this->pasteVector = $pasteVector;
-		$this->positions = $positions;
+    /**
+     * Custom constructor.
+     * @param Vector3 $pasteVector
+     * @param Vector3[] $positions
+     */
+    public function __construct(Vector3 $pasteVector, array $positions)
+    {
+        $this->pasteVector = $pasteVector;
+        $this->positions = $positions;
     }
 
     /**
-	 * Returns the blocks by their actual position
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
-	 * @param int $flags
-	 * @return Generator|Block[]
-	 * @throws Exception
-	 */
+     * Returns the blocks by their actual position
+     * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+     * @param Block[] $filterblocks If not empty, applying a filter on the block list
+     * @param int $flags
+     * @return Generator|Block[]
+     * @throws Exception
+     */
     public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
         foreach ($this->positions as $position) {
-			//TODO filterblocks
-			yield API::setComponents($manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()), (int)$position->x, (int)$position->y, (int)$position->z);
-		}
+            //TODO filterblocks
+            yield API::setComponents($manager->getBlockAt($position->getFloorX(), $position->getFloorY(), $position->getFloorZ()), (int)$position->x, (int)$position->y, (int)$position->z);
+        }
     }
 
-	/**
-	 * Returns a flat layer of all included x z positions in selection
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param int $flags
-	 * @return Generator|Vector2[]
-	 * @throws Exception
-	 */
+    /**
+     * Returns a flat layer of all included x z positions in selection
+     * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+     * @param int $flags
+     * @return Generator|Vector2[]
+     * @throws Exception
+     */
     public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
     {
         $this->validateChunkManager($manager);
@@ -60,7 +60,9 @@ class Custom extends Shape
         $walked = [];
         foreach ($this->positions as $position) {
             $hash = World::chunkHash($position->getFloorX(), $position->getFloorZ());
-            if (isset($walked[$hash])) continue;
+            if (isset($walked[$hash])) {
+                continue;
+            }
             $walked[$hash] = true;
             yield new Vector2($position->x, $position->z);
         }
@@ -82,8 +84,8 @@ class Custom extends Shape
             if ($chunk === null) {
                 continue;
             }
-			print "Touched Chunk at: $x:$z" . PHP_EOL;
-			$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
+            print "Touched Chunk at: $x:$z" . PHP_EOL;
+            $touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
         }
         print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
         return $touchedChunks;

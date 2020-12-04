@@ -22,21 +22,21 @@ use xenialdan\MagicWE2\Loader;
 class OverlayCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new RawStringArgument("blocks", false));
-		$this->setPermission("we.command.region.overlay");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new RawStringArgument("blocks", false));
+        $this->setPermission("we.command.region.overlay");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -55,7 +55,7 @@ class OverlayCommand extends BaseCommand
         try {
             $messages = [];
             $error = false;
-			$blocks = API::blockParser((string)$args["blocks"], $messages, $error);
+            $blocks = API::blockParser((string)$args["blocks"], $messages, $error);
             foreach ($messages as $message) {
                 $sender->sendMessage($message);
             }
@@ -63,26 +63,26 @@ class OverlayCommand extends BaseCommand
             if ($return) {
                 $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {
-					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                    throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
                 }
                 $selection = $session->getLatestSelection();
                 if (is_null($selection)) {
-					throw new SelectionException($lang->translateString('error.noselection'));
+                    throw new SelectionException($lang->translateString('error.noselection'));
                 }
                 if (!$selection->isValid()) {
-					throw new SelectionException($lang->translateString('error.selectioninvalid'));
+                    throw new SelectionException($lang->translateString('error.selectioninvalid'));
                 }
                 if ($selection->getWorld() !== $sender->getWorld()) {
-					$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
-				}
-				#API::overlayReplaceAsync($selection, $session, [], $blocks, API::flagParser(explode(" ", strval($args["flags"]))));
-			} else {
-				throw new InvalidArgumentException("Could not replace with the selected blocks");
-			}
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                    $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
+                }
+                #API::overlayReplaceAsync($selection, $session, [], $blocks, API::flagParser(explode(" ", strval($args["flags"]))));
+            } else {
+                throw new InvalidArgumentException("Could not replace with the selected blocks");
+            }
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

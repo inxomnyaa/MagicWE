@@ -13,20 +13,20 @@ use pocketmine\utils\TextFormat as TF;
 class FloodCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->setPermission("we.command.tool.floodfill");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->setPermission("we.command.tool.floodfill");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
-	 */
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $sender->sendMessage(TF::RED . "TEMPORARILY DISABLED!");

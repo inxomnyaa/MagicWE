@@ -20,88 +20,88 @@ use xenialdan\MagicWE2\task\AsyncRevertTask;
 
 abstract class Session
 {
-	public const MAX_CLIPBOARDS = 5;
-	public const MAX_HISTORY = 32;
-	/** @var UUID */
-	private $uuid;
-	//todo change to a list of objects with a pointer of the latest action
-	/** @var Selection[] */
-	private $selections = [];
-	/** @var UUID|null */
-	private $latestselection;
-	//todo change to a list of objects with a pointer of the latest action
-	/** @var Clipboard[] */
-	private $clipboards = [];
-	/** @var int */
-	private $currentClipboard = -1;
-	/** @var Deque<RevertClipboard> */
-	public $undoHistory;
-	/** @var Deque<RevertClipboard> */
-	public $redoHistory;
+    public const MAX_CLIPBOARDS = 5;
+    public const MAX_HISTORY = 32;
+    /** @var UUID */
+    private $uuid;
+    //todo change to a list of objects with a pointer of the latest action
+    /** @var Selection[] */
+    private $selections = [];
+    /** @var UUID|null */
+    private $latestselection;
+    //todo change to a list of objects with a pointer of the latest action
+    /** @var Clipboard[] */
+    private $clipboards = [];
+    /** @var int */
+    private $currentClipboard = -1;
+    /** @var Deque<RevertClipboard> */
+    public $undoHistory;
+    /** @var Deque<RevertClipboard> */
+    public $redoHistory;
 
-	/**
-	 * @return UUID
-	 */
-	public function getUUID(): UUID
-	{
-		return $this->uuid;
-	}
+    /**
+     * @return UUID
+     */
+    public function getUUID(): UUID
+    {
+        return $this->uuid;
+    }
 
-	/**
+    /**
      * @param UUID $uuid
-	 */
-	public function setUUID(UUID $uuid): void
-	{
-		$this->uuid = $uuid;
-	}
+     */
+    public function setUUID(UUID $uuid): void
+    {
+        $this->uuid = $uuid;
+    }
 
-	/**
-	 * @param Selection $selection
-	 * @return null|Selection
-	 */
-	public function &addSelection(Selection $selection): ?Selection
-	{
-		$this->selections[$selection->getUUID()->toString()] = $selection;
-		$this->setLatestSelectionUUID($selection->getUUID());
-		$selection = $this->getLatestSelection();
-		return $selection;
-	}
+    /**
+     * @param Selection $selection
+     * @return null|Selection
+     */
+    public function &addSelection(Selection $selection): ?Selection
+    {
+        $this->selections[$selection->getUUID()->toString()] = $selection;
+        $this->setLatestSelectionUUID($selection->getUUID());
+        $selection = $this->getLatestSelection();
+        return $selection;
+    }
 
-	/**
-	 * @param UUID $uuid
-	 * @return null|Selection
-	 */
-	public function &getSelectionByUUID(UUID $uuid): ?Selection
-	{
-		$selection = $this->selections[$uuid->toString()] ?? null;
-		return $selection;
-	}
+    /**
+     * @param UUID $uuid
+     * @return null|Selection
+     */
+    public function &getSelectionByUUID(UUID $uuid): ?Selection
+    {
+        $selection = $this->selections[$uuid->toString()] ?? null;
+        return $selection;
+    }
 
-	/**
-	 * @param string $uuid
-	 * @return null|Selection
-	 */
-	public function &getSelectionByString(string $uuid): ?Selection
-	{
-		$selection = $this->selections[$uuid] ?? null;
-		return $selection;
-	}
+    /**
+     * @param string $uuid
+     * @return null|Selection
+     */
+    public function &getSelectionByString(string $uuid): ?Selection
+    {
+        $selection = $this->selections[$uuid] ?? null;
+        return $selection;
+    }
 
-	/**
-	 * @return null|Selection
-	 */
-	public function &getLatestSelection(): ?Selection
-	{
-		$latestSelectionUUID = $this->getLatestSelectionUUID();
-		if (is_null($latestSelectionUUID)) {
-			$selection = null;
-			return $selection;
-		}
-		$selection = $this->selections[$latestSelectionUUID->toString()] ?? null;
-		return $selection;
-	}
+    /**
+     * @return null|Selection
+     */
+    public function &getLatestSelection(): ?Selection
+    {
+        $latestSelectionUUID = $this->getLatestSelectionUUID();
+        if (is_null($latestSelectionUUID)) {
+            $selection = null;
+            return $selection;
+        }
+        $selection = $this->selections[$latestSelectionUUID->toString()] ?? null;
+        return $selection;
+    }
 
-	/**
+    /**
      * @return Selection[]
      */
     public function getSelections(): array
@@ -156,7 +156,9 @@ abstract class Session
     public function getClipboardByName(string $name): ?Clipboard
     {
         foreach ($this->clipboards as $clipboard) {
-            if ($clipboard->getCustomName() === $name) return $clipboard;
+            if ($clipboard->getCustomName() === $name) {
+                return $clipboard;
+            }
         }
         return null;
     }
@@ -198,10 +200,14 @@ abstract class Session
     public function addClipboard(Clipboard $clipboard, bool $setAsCurrent = true): int
     {
         $amount = array_push($this->clipboards, $clipboard);
-        if ($amount > self::MAX_CLIPBOARDS) array_shift($this->clipboards);
+        if ($amount > self::MAX_CLIPBOARDS) {
+            array_shift($this->clipboards);
+        }
         $i = array_search($clipboard, $this->clipboards, true);
         if ($i !== false) {
-            if ($setAsCurrent) $this->currentClipboard = (int)$i;
+            if ($setAsCurrent) {
+                $this->currentClipboard = (int)$i;
+            }
             return (int)$i;
         }
         return -1;
@@ -230,10 +236,10 @@ abstract class Session
         }
         /** @var RevertClipboard $revertClipboard */
         $revertClipboard = $this->undoHistory->pop();
-		$world = $revertClipboard->getWorld();
+        $world = $revertClipboard->getWorld();
         foreach ($revertClipboard->chunks as $hash => $chunk) {
-			$revertClipboard->chunks[$hash] = $world->getChunk($chunk->getX(), $chunk->getZ());
-		}
+            $revertClipboard->chunks[$hash] = $world->getChunk($chunk->getX(), $chunk->getZ());
+        }
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
     }
@@ -274,7 +280,7 @@ abstract class Session
         return Loader::getInstance()->getLanguage();
     }
 
-	abstract public function sendMessage(string $message): void;
+    abstract public function sendMessage(string $message): void;
 
     public function __toString()
     {

@@ -21,57 +21,57 @@ use xenialdan\MagicWE2\tool\Brush;
 
 class BrushNameCommand extends BaseSubCommand
 {
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new RawStringArgument("name", true));
-		$this->setPermission("we.command.brush.name");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new RawStringArgument("name", true));
+        $this->setPermission("we.command.brush.name");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
-	 * @throws TypeError
-	 * @throws TypeError
-	 */
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-	{
-		$lang = Loader::getInstance()->getLanguage();
-		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-			try {
-				$lang = SessionHelper::getUserSession($sender)->getLanguage();
-			} catch (SessionException $e) {
-			}
-		}
-		if (!$sender instanceof Player) {
-			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-			return;
-		}
-		/** @var Player $sender */
-		try {
-			$session = SessionHelper::getUserSession($sender);
-			if (!$session instanceof UserSession) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-			}
-			$brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
-			if ($brush instanceof Brush) {
-				if (empty($args["name"])) {
-					$sender->sendMessage($brush->getName());
-					return;
-				}
-				$name = (string)$args["name"];
-				$brush->properties->setCustomName($name);
-				$session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
-				$session->replaceBrush($brush);
-			}
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsageMessage());
-		}
-	}
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     * @throws TypeError
+     * @throws TypeError
+     */
+    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+    {
+        $lang = Loader::getInstance()->getLanguage();
+        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+            try {
+                $lang = SessionHelper::getUserSession($sender)->getLanguage();
+            } catch (SessionException $e) {
+            }
+        }
+        if (!$sender instanceof Player) {
+            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+            return;
+        }
+        /** @var Player $sender */
+        try {
+            $session = SessionHelper::getUserSession($sender);
+            if (!$session instanceof UserSession) {
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+            }
+            $brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
+            if ($brush instanceof Brush) {
+                if (empty($args["name"])) {
+                    $sender->sendMessage($brush->getName());
+                    return;
+                }
+                $name = (string)$args["name"];
+                $brush->properties->setCustomName($name);
+                $session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
+                $session->replaceBrush($brush);
+            }
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsageMessage());
+        }
+    }
 }

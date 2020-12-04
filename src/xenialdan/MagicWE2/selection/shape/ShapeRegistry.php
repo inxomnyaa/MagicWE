@@ -6,19 +6,19 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 
-class ShapeRegistry//todo use SingletonTrait
+class ShapeRegistry //todo use SingletonTrait
 {
-	/** @var string[] */
-	private static $shapes = [];
+    /** @var string[] */
+    private static $shapes = [];
 
-	public const CUBOID = "Cuboid";
-	public const CUBE = "Cube";
-	public const CUSTOM = "Custom";
-	public const CYLINDER = "Cylinder";
-	public const SPHERE = "Sphere";
-	public const CONE = "Cone";
-	public const PYRAMID = "Pyramid";
-	public const ELLIPSOID = "Ellipsoid";
+    public const CUBOID = "Cuboid";
+    public const CUBE = "Cube";
+    public const CUSTOM = "Custom";
+    public const CYLINDER = "Cylinder";
+    public const SPHERE = "Sphere";
+    public const CONE = "Cone";
+    public const PYRAMID = "Pyramid";
+    public const ELLIPSOID = "Ellipsoid";
 
     public function __construct()
     {
@@ -52,7 +52,9 @@ class ShapeRegistry//todo use SingletonTrait
      */
     public static function getShape(string $name): string
     {
-        if (isset(self::$shapes[$name])) return self::$shapes[$name];
+        if (isset(self::$shapes[$name])) {
+            return self::$shapes[$name];
+        }
         throw new ShapeNotFoundException("Shape $name not found");
     }
 
@@ -64,7 +66,9 @@ class ShapeRegistry//todo use SingletonTrait
     public static function getShapeName(string $shapeClass): string
     {
         $names = array_flip(self::$shapes);
-        if (isset($names[$shapeClass])) return $names[$shapeClass];
+        if (isset($names[$shapeClass])) {
+            return $names[$shapeClass];
+        }
         throw new ShapeNotFoundException("Shape $shapeClass not found");
     }
 
@@ -72,5 +76,4 @@ class ShapeRegistry//todo use SingletonTrait
     {
         return array_diff_key(get_class_vars($className), get_class_vars(Shape::class));
     }
-
 }

@@ -27,6 +27,6 @@ class RotateAngleArgument extends StringEnumArgument
      */
     public function parse(string $argument, CommandSender $sender)
     {
-		return (int)self::VALUES[(int)$argument];//TODO maybe make better?
-	}
+        return (int)self::VALUES[(int)$argument];//TODO maybe make better?
+    }
 }

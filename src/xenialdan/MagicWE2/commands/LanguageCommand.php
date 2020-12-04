@@ -23,21 +23,21 @@ use xenialdan\MagicWE2\Loader;
 class LanguageCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new LanguageArgument("language", true));
-		$this->setPermission("we.command.language");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new LanguageArgument("language", true));
+        $this->setPermission("we.command.language");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -56,12 +56,12 @@ class LanguageCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             if (isset($args["language"])) {
                 /** @var LanguageArgument $languageArgument */
                 $languageArgument = $args["language"];
-				$session->setLanguage((string)$languageArgument);
+                $session->setLanguage((string)$languageArgument);
                 return;
             }
             $languages = Loader::getInstance()->getLanguageList();
@@ -71,15 +71,17 @@ class LanguageCommand extends BaseCommand
             $dropdown->setOptionAsDefault($session->getLanguage()->getName());
             $form->addElement($dropdown);
             $form->setCallable(function (Player $player, $data) use ($session, $languages) {
-				$langShort = array_search($data[1], $languages, true);
-				if (!is_string($langShort)) throw new InvalidArgumentException("Invalid data received");
-				$session->setLanguage($langShort);
-			});
-			$sender->sendForm($form);
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                $langShort = array_search($data[1], $languages, true);
+                if (!is_string($langShort)) {
+                    throw new InvalidArgumentException("Invalid data received");
+                }
+                $session->setLanguage($langShort);
+            });
+            $sender->sendForm($form);
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

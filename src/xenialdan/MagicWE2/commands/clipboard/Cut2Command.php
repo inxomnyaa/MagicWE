@@ -24,21 +24,21 @@ use xenialdan\MagicWE2\task\AsyncActionTask;
 class Cut2Command extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new TextArgument("flags", true));
-		$this->setPermission("we.command.clipboard.cut");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new TextArgument("flags", true));
+        $this->setPermission("we.command.clipboard.cut");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -57,36 +57,36 @@ class Cut2Command extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-				throw new SelectionException($lang->translateString('error.noselection'));
+                throw new SelectionException($lang->translateString('error.noselection'));
             }
             if (!$selection->isValid()) {
-				throw new SelectionException($lang->translateString('error.selectioninvalid'));
+                throw new SelectionException($lang->translateString('error.selectioninvalid'));
             }
             if ($selection->getWorld() !== $sender->getWorld()) {
-				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
+                $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
             }
             #$hasFlags = isset($args["flags"]);
             $action = new CutAction();
-			$offset = $selection->getShape()->getMinVec3()->subtractVector($session->getPlayer()->getPosition()->asVector3()->floor())->floor();
-			$action->setClipboardVector($offset);
+            $offset = $selection->getShape()->getMinVec3()->subtractVector($session->getPlayer()->getPosition()->asVector3()->floor())->floor();
+            $action->setClipboardVector($offset);
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncActionTask(
                     $session->getUUID(),
                     $selection,
                     $action,
-					$selection->getShape()->getTouchedChunks($selection->getWorld()),
-					"air",//TODO option
-					""
-				)
-			);
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                    $selection->getShape()->getTouchedChunks($selection->getWorld()),
+                    "air",//TODO option
+                    ""
+                )
+            );
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

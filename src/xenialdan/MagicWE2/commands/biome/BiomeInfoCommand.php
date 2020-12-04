@@ -25,24 +25,24 @@ use xenialdan\MagicWE2\Loader;
 
 class BiomeInfoCommand extends BaseCommand
 {
-	public const FLAG_T = "t";
-	public const FLAG_P = "p";
+    public const FLAG_T = "t";
+    public const FLAG_P = "p";
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new TextArgument("flags", true));
-		$this->setPermission("we.command.biome.info");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new TextArgument("flags", true));
+        $this->setPermission("we.command.biome.info");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
@@ -61,49 +61,51 @@ class BiomeInfoCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
             $biomeNames = array_flip($biomeNames);
             unset($biomeNames[Biome::MAX_BIOMES]);
-			array_walk($biomeNames, static function (&$value, $key) {
-				$value = BiomeRegistry::getInstance()->getBiome($key)->getName();
-			});
-			if (!empty(($flags = ltrim((string)($args["flags"] ?? ""), "-")))) {
-				$flagArray = str_split($flags);
-				if (in_array(self::FLAG_T, $flagArray, true)) {
-					$target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
-					if ($target === null) {
-						$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
-						return;
-					}
-					$biomeId = $target->getPos()->getWorld()->getOrLoadChunkAtPosition($target->getPos())->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
-					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
-					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
-				}
-				if (in_array(self::FLAG_P, $flagArray, true)) {
-					$biomeId = $sender->getWorld()->getOrLoadChunkAtPosition($sender->getPosition())->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
-					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
-					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
-				}
+            array_walk($biomeNames, static function (&$value, $key) {
+                $value = BiomeRegistry::getInstance()->getBiome($key)->getName();
+            });
+            if (!empty(($flags = ltrim((string)($args["flags"] ?? ""), "-")))) {
+                $flagArray = str_split($flags);
+                if (in_array(self::FLAG_T, $flagArray, true)) {
+                    $target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
+                    if ($target === null) {
+                        $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
+                        return;
+                    }
+                    $biomeId = $target->getPos()->getWorld()->getOrLoadChunkAtPosition($target->getPos())->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
+                    $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
+                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
+                }
+                if (in_array(self::FLAG_P, $flagArray, true)) {
+                    $biomeId = $sender->getWorld()->getOrLoadChunkAtPosition($sender->getPosition())->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
+                    $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
+                    $session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
+                }
                 return;
             }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-				throw new SelectionException($lang->translateString('error.noselection'));
+                throw new SelectionException($lang->translateString('error.noselection'));
             }
             if (!$selection->isValid()) {
-				throw new SelectionException($lang->translateString('error.selectioninvalid'));
+                throw new SelectionException($lang->translateString('error.selectioninvalid'));
             }
             if ($selection->getWorld() !== $sender->getWorld()) {
-				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
+                $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
             }
             $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
             $biomes = [];
             foreach ($touchedChunks as $touchedChunk) {
-                for ($x = 0; $x < 16; $x++)
-                    for ($z = 0; $z < 16; $z++)
-						$biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
+                for ($x = 0; $x < 16; $x++) {
+                    for ($z = 0; $z < 16; $z++) {
+                        $biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
+                    }
+                }
             }
             $biomes = array_unique($biomes);
             $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.result', [count($biomes)]));

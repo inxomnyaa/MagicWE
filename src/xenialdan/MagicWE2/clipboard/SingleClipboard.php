@@ -12,49 +12,49 @@ use xenialdan\MagicWE2\selection\Selection;
 
 class SingleClipboard extends Clipboard
 {
-	/** @var BlockEntry[] */
-	private $entries = [];
-	/** @var Selection */
-	public $selection;
-	/** @var Vector3 */
-	public $position;
+    /** @var BlockEntry[] */
+    private $entries = [];
+    /** @var Selection */
+    public $selection;
+    /** @var Vector3 */
+    public $position;
 
-	/**
-	 * SingleClipboard constructor.
-	 * @param Vector3 $position
-	 */
-	public function __construct(Vector3 $position)
-	{
-		$this->position = $position->asVector3()->floor();
-	}
+    /**
+     * SingleClipboard constructor.
+     * @param Vector3 $position
+     */
+    public function __construct(Vector3 $position)
+    {
+        $this->position = $position->asVector3()->floor();
+    }
 
-	public function addEntry(int $x, int $y, int $z, BlockEntry $entry): void
-	{
-		$this->entries[World::blockHash($x, $y, $z)] = $entry;
-	}
+    public function addEntry(int $x, int $y, int $z, BlockEntry $entry): void
+    {
+        $this->entries[World::blockHash($x, $y, $z)] = $entry;
+    }
 
-	public function clear(): void
-	{
-		$this->entries = [];
-	}
+    public function clear(): void
+    {
+        $this->entries = [];
+    }
 
-	/**
-	 * @param int|null $x
-	 * @param int|null $y
-	 * @param int|null $z
-	 * @return Generator|BlockEntry[]
-	 */
-	public function iterateEntries(?int &$x, ?int &$y, ?int &$z): Generator
-	{
-		foreach ($this->entries as $hash => $entry) {
-			World::getBlockXYZ($hash, $x, $y, $z);
-			yield $entry;
-		}
-	}
+    /**
+     * @param int|null $x
+     * @param int|null $y
+     * @param int|null $z
+     * @return Generator|BlockEntry[]
+     */
+    public function iterateEntries(?int &$x, ?int &$y, ?int &$z): Generator
+    {
+        foreach ($this->entries as $hash => $entry) {
+            World::getBlockXYZ($hash, $x, $y, $z);
+            yield $entry;
+        }
+    }
 
-	public function getTotalCount(): int
-	{
-		return count($this->entries);
+    public function getTotalCount(): int
+    {
+        return count($this->entries);
     }
 
     /**
@@ -73,23 +73,23 @@ class SingleClipboard extends Clipboard
         ]);
     }
 
-	/**
-	 * Constructs the object
-	 * @link https://php.net/manual/en/serializable.unserialize.php
-	 * @param string $serialized <p>
-	 * The string representation of the object.
-	 * </p>
-	 * @return void
-	 * @since 5.1
-	 * @noinspection PhpMissingParamTypeInspection
-	 */
+    /**
+     * Constructs the object
+     * @link https://php.net/manual/en/serializable.unserialize.php
+     * @param string $serialized <p>
+     * The string representation of the object.
+     * </p>
+     * @return void
+     * @since 5.1
+     * @noinspection PhpMissingParamTypeInspection
+     */
     public function unserialize($serialized)
     {
         // TODO: Implement unserialize() method.
         [
-			$this->entries,
-			$this->selection,
-			$this->position
-		] = unserialize($serialized/*, ['allowed_classes' => [BlockEntry::class, Selection::class, Vector3::class]]*/);
+            $this->entries,
+            $this->selection,
+            $this->position
+        ] = unserialize($serialized/*, ['allowed_classes' => [BlockEntry::class, Selection::class, Vector3::class]]*/);
     }
 }

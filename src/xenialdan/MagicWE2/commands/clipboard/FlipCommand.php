@@ -24,21 +24,21 @@ use xenialdan\MagicWE2\task\AsyncClipboardActionTask;
 class FlipCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new MirrorAxisArgument("axis", false));
-		$this->setPermission("we.command.clipboard.flip");
-		//$this->setUsage("//flip <axis: X|Z|XZ>");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new MirrorAxisArgument("axis", false));
+        $this->setPermission("we.command.clipboard.flip");
+        //$this->setUsage("//flip <axis: X|Z|XZ>");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
      * @param BaseArgument[] $args
      */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
@@ -57,14 +57,14 @@ class FlipCommand extends BaseCommand
         /** @var Player $sender */
         try {
             $axis = (string)$args["axis"];
-			$sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [$axis]));
+            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [$axis]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $clipboard = $session->getCurrentClipboard();
             if (!$clipboard instanceof SingleClipboard) {
-				throw new SessionException($lang->translateString('error.noclipboard'));
+                throw new SessionException($lang->translateString('error.noclipboard'));
             }
             $action = new FlipAction($axis);
             #$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
@@ -72,15 +72,15 @@ class FlipCommand extends BaseCommand
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncClipboardActionTask(
                     $session->getUUID(),
-					$clipboard->selection,
-					$action,
-					$clipboard
-				)
-			);
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                    $clipboard->selection,
+                    $action,
+                    $clipboard
+                )
+            );
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

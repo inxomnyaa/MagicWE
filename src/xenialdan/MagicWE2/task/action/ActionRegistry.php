@@ -8,18 +8,18 @@ use xenialdan\MagicWE2\exception\ActionNotFoundException;
 
 class ActionRegistry
 {
-	/** @var string[] */
-	private static $actions = [];
+    /** @var string[] */
+    private static $actions = [];
 
-	public function __construct()
-	{
-		self::registerAction(SetBlockAction::getName(), SetBlockAction::class);
-		#self::registerAction(SetBiomeAction::getName(), SetBiomeAction::class);//TODO fix biome sending
-		#self::registerAction(ThawAction::getName(), ThawAction::class);//TODO re-implement when i can ignore damage values in Shape::getBlocks
-		self::registerAction(CountAction::getName(), CountAction::class);
-	}
+    public function __construct()
+    {
+        self::registerAction(SetBlockAction::getName(), SetBlockAction::class);
+        #self::registerAction(SetBiomeAction::getName(), SetBiomeAction::class);//TODO fix biome sending
+        #self::registerAction(ThawAction::getName(), ThawAction::class);//TODO re-implement when i can ignore damage values in Shape::getBlocks
+        self::registerAction(CountAction::getName(), CountAction::class);
+    }
 
-	public static function registerAction(string $name, string $class): void
+    public static function registerAction(string $name, string $class): void
     {
         self::$actions[$name] = $class;
     }
@@ -39,7 +39,9 @@ class ActionRegistry
      */
     public static function getAction(string $name): string
     {
-        if (isset(self::$actions[$name])) return self::$actions[$name];
+        if (isset(self::$actions[$name])) {
+            return self::$actions[$name];
+        }
         throw new ActionNotFoundException("Action $name not found");
     }
 
@@ -51,7 +53,9 @@ class ActionRegistry
     public static function getActionName(string $actionClass): string
     {
         $names = array_flip(self::$actions);
-        if (isset($names[$actionClass])) return $names[$actionClass];
+        if (isset($names[$actionClass])) {
+            return $names[$actionClass];
+        }
         throw new ActionNotFoundException("Action $actionClass not found");
     }
 
@@ -59,5 +63,4 @@ class ActionRegistry
     {
         return array_diff_key(get_class_vars($className), get_class_vars(TaskAction::class));
     }
-
 }

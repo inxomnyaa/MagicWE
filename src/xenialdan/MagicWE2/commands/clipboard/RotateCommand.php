@@ -24,21 +24,21 @@ use xenialdan\MagicWE2\task\AsyncClipboardActionTask;
 
 class RotateCommand extends BaseCommand
 {
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->registerArgument(0, new RotateAngleArgument("angle", false));
-		$this->registerArgument(1, new BooleanArgument("aroundOrigin", true));
-		$this->setPermission("we.command.clipboard.rotate");
-		//$this->setUsage("//rotate <degrees: 1|2|3|-1|-2|-3>");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws ArgumentOrderException
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->registerArgument(0, new RotateAngleArgument("angle", false));
+        $this->registerArgument(1, new BooleanArgument("aroundOrigin", true));
+        $this->setPermission("we.command.clipboard.rotate");
+        //$this->setUsage("//rotate <degrees: 1|2|3|-1|-2|-3>");
+    }
 
-	/**
-	 * @param CommandSender $sender
+    /**
+     * @param CommandSender $sender
      * @param string $aliasUsed
      * @param BaseArgument[] $args
      */
@@ -58,15 +58,15 @@ class RotateCommand extends BaseCommand
         /** @var Player $sender */
         try {
             $angle = (int)$args["angle"];
-			$aroundOrigin = $args["aroundOrigin"] ?? true;
+            $aroundOrigin = $args["aroundOrigin"] ?? true;
             $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [$angle]));
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $clipboard = $session->getCurrentClipboard();
             if (!$clipboard instanceof SingleClipboard) {
-				throw new SessionException($lang->translateString('error.noclipboard'));
+                throw new SessionException($lang->translateString('error.noclipboard'));
             }
             $action = new RotateAction($angle/*, $aroundOrigin*/);//TODO reenable origin support if error fixed: does not rotate. Let's see if PHPStan find it for me!
             #$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
@@ -74,15 +74,15 @@ class RotateCommand extends BaseCommand
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncClipboardActionTask(
                     $session->getUUID(),
-					$clipboard->selection,
-					$action,
-					$clipboard
-				)
-			);
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+                    $clipboard->selection,
+                    $action,
+                    $clipboard
+                )
+            );
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }

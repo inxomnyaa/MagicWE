@@ -19,20 +19,20 @@ use xenialdan\MagicWE2\Loader;
 class SizeCommand extends BaseCommand
 {
 
-	/**
-	 * This is where all the arguments, permissions, sub-commands, etc would be registered
-	 * @throws InvalidArgumentException
-	 */
-	protected function prepare(): void
-	{
-		$this->setPermission("we.command.selection.info.size");
-	}
+    /**
+     * This is where all the arguments, permissions, sub-commands, etc would be registered
+     * @throws InvalidArgumentException
+     */
+    protected function prepare(): void
+    {
+        $this->setPermission("we.command.selection.info.size");
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
-	 */
+    /**
+     * @param CommandSender $sender
+     * @param string $aliasUsed
+     * @param BaseArgument[] $args
+     */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
@@ -50,24 +50,24 @@ class SizeCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (is_null($session)) {
-				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $selection = $session->getLatestSelection();
             if (is_null($selection)) {
-				throw new SelectionException($lang->translateString('error.noselection'));
+                throw new SelectionException($lang->translateString('error.noselection'));
             }
             if (!$selection->isValid()) {
-				throw new SelectionException($lang->translateString('error.selectioninvalid'));
+                throw new SelectionException($lang->translateString('error.selectioninvalid'));
             }
-			if ($selection->getWorld() !== $sender->getWorld()) {
-				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
-			}
-			$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.size'));
-			$session->sendMessage(TF::AQUA . "Total: {$selection->getShape()->getTotalCount()} X: {$selection->getSizeX()} Y: {$selection->getSizeY()} Z: {$selection->getSizeZ()}");
-		} catch (Exception $error) {
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage($this->getUsage());
-		}
-	}
+            if ($selection->getWorld() !== $sender->getWorld()) {
+                $sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
+            }
+            $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.size'));
+            $session->sendMessage(TF::AQUA . "Total: {$selection->getShape()->getTotalCount()} X: {$selection->getSizeX()} Y: {$selection->getSizeY()} Z: {$selection->getSizeZ()}");
+        } catch (Exception $error) {
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+            $sender->sendMessage($this->getUsage());
+        }
+    }
 }
