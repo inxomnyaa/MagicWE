@@ -28,7 +28,7 @@ class RotateAction extends ClipboardAction
 	/** @var int */
 	private int $rotation;
 	/** @var bool */
-	public bool $aroundOrigin;
+	public bool $aroundOrigin = true;
 
 	public function __construct(int $rotation, bool $aroundOrigin = true)
 	{
@@ -51,7 +51,7 @@ class RotateAction extends ClipboardAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator
+	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []): Generator
 	{
 		//TODO modify position. For now, just flip the blocks around their own axis
 		$changed = 0;
@@ -137,7 +137,7 @@ class RotateAction extends ClipboardAction
 				$pos2 = $pos2->add(0, 0, $maxX);
 			}
 		}
-		$clonedSelection->setShape(Cuboid::constructFromPositions($pos1, $pos2));//TODO figure out how to keep the shape (not always Cuboid)
+		$clonedSelection->shape = (Cuboid::constructFromPositions($pos1, $pos2));//TODO figure out how to keep the shape (not always Cuboid)
 		$clonedClipboard->selection = $clonedSelection;
 		$clipboard = $clonedClipboard;
 	}

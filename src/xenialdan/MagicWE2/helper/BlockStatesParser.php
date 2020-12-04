@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\helper;
 
 use Closure;
 use Exception;
+use GlobalLogger;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
@@ -40,6 +41,11 @@ final class BlockStatesParser
 {
 	use SingletonTrait;
 
+	/** @var string */
+	public static $rotPath;
+	/** @var string */
+	public static $doorRotPath;
+
 	/** @var R12ToCurrentBlockMapEntry[][] *///TODO check type correct? phpstan!
 	private static $legacyStateMap;
 
@@ -52,8 +58,10 @@ final class BlockStatesParser
 
 	private function __construct()
 	{
-		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
-		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
+//		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
+//		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
+		$this->loadRotationAndFlipData(self::$rotPath);
+		$this->loadDoorRotationAndFlipData(self::$doorRotPath);
 		$this->loadLegacyMappings();
 	}
 
@@ -92,7 +100,7 @@ final class BlockStatesParser
 			}
 
 			self::$rotationFlipMap = json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR);
-			var_dump("Successfully loaded rotation_flip_data.json");
+			GlobalLogger::get()->debug("Successfully loaded rotation_flip_data.json");
 		}
 	}
 
@@ -110,7 +118,7 @@ final class BlockStatesParser
 			}
 
 			self::$doorRotationFlipMap = json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR);
-			var_dump("Successfully loaded door_data.json");
+			GlobalLogger::get()->debug("Successfully loaded door_data.json");
 		}
 	}
 
@@ -128,6 +136,27 @@ final class BlockStatesParser
 	public static function getDoorRotationFlipMap(): array
 	{
 		return self::$doorRotationFlipMap;
+	}
+
+	/**
+	 * @param string $namespacedSelectedBlockName
+	 * @param CompoundTag $states
+	 * @return Door
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws RuntimeException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 */
+	private static function buildDoor(string $namespacedSelectedBlockName, CompoundTag $states): Door
+	{
+		/** @var Door $door */
+		$door = self::fromString($namespacedSelectedBlockName)[0];
+		$door->setOpen($states->getByte("open_bit") === 1);
+		$door->setTop($states->getByte("upper_block_bit") === 1);
+		$door->setHingeRight($states->getByte("door_hinge_bit") === 1);
+		$direction = $states->getInt("direction");
+		$door->setFacing(Facing::rotateY(BlockDataSerializer::readLegacyHorizontalFacing($direction & 0x03), false));
+		return $door;
 	}
 
 	/**
@@ -247,12 +276,10 @@ final class BlockStatesParser
 		//return found block(s)
 		$blocks = [];
 		//doors.. special blocks annoying -.- TODO 1.16 apparently fixed this shit! YAY TODO remove
-		/*$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
-		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
-			$fromString = $legacyStringToItemParser->parse($selectedBlockName . "_block:8")->getBlock();
-			var_dump($finalStatesList, $fromString);
-			return [$fromString];
-		}*/
+		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
+		if ($isDoor) {
+			return [self::buildDoor($namespacedSelectedBlockName, $finalStatesList)];
+		}
 		#var_dump((string)$finalStatesList);
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
@@ -305,13 +332,7 @@ final class BlockStatesParser
 		}
 
 		if (strpos($namespacedSelectedBlockName, "_door") !== false) {
-			/** @var Door $door */
-			$door = self::fromString($namespacedSelectedBlockName)[0];
-			$door->setOpen($states->getByte("open_bit") === 1);
-			$door->setTop($states->getByte("upper_block_bit") === 1);
-			$door->setHingeRight($states->getByte("door_hinge_bit") === 1);
-			$direction = $states->getInt("direction");
-			$door->setFacing(Facing::rotateY(BlockDataSerializer::readLegacyHorizontalFacing($direction & 0x03), false));
+			$door = self::buildDoor($namespacedSelectedBlockName, $states);
 			//return self::getStateByBlock($door);
 			return new BlockStatesEntry($namespacedSelectedBlockName, $states, $door);
 		}

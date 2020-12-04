@@ -61,19 +61,20 @@ class RotateCommand extends BaseCommand
 			$aroundOrigin = $args["aroundOrigin"] ?? true;
             $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [$angle]));
             $session = SessionHelper::getUserSession($sender);
-            if (is_null($session)) {
+			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $clipboard = $session->getCurrentClipboard();
-            if (!$clipboard instanceof SingleClipboard) {
+			}
+			$clipboard = $session->getCurrentClipboard();
+			if (!$clipboard instanceof SingleClipboard) {
 				throw new SessionException($lang->translateString('error.noclipboard'));
-            }
-            $action = new RotateAction($angle/*, $aroundOrigin*/);//TODO reenable origin support if error fixed: does not rotate. Let's see if PHPStan find it for me!
-            #$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
-            #$action->setClipboardVector($offset);
-            Server::getInstance()->getAsyncPool()->submitTask(
-                new AsyncClipboardActionTask(
-                    $session->getUUID(),
+			}
+			$action = new RotateAction($angle/*, $aroundOrigin*/);//TODO reenable origin support if error fixed: does not rotate. Let's see if PHPStan find it for me!
+			#$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
+			#$action->setClipboardVector($offset);
+			var_dump($action);
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncClipboardActionTask(
+					$session->getUUID(),
 					$clipboard->selection,
 					$action,
 					$clipboard

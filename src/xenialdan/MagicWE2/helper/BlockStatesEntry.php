@@ -92,11 +92,11 @@ class BlockStatesEntry
 		$key = $idMapName . ":" . $block->getMeta();
 		if (strpos($idMapName, "_door") !== false) {
 			$fromMap = BlockStatesParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
-			#var_dump($fromMap);
 		} else {
 			$fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
 		}
 		if ($fromMap === null) return $clone;
+		var_dump("not null flipMap");
 		$rotatedStates = $fromMap[$amount] ?? null;
 		if ($rotatedStates === null) return $clone;
 		//ugly hack to keep current ones

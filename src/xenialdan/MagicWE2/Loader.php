@@ -95,9 +95,9 @@ class Loader extends PluginBase
 	/** @var string */
 	public $donatorData = "";
 	/** @var string */
-	private $rotPath;
+	private static $rotPath;
 	/** @var string */
-	private $doorRotPath;
+	private static $doorRotPath;
 	/** @var DiverseBossBar */#BossBar
 	public $wailaBossBar;
 	/** @var null|string */
@@ -125,13 +125,13 @@ class Loader extends PluginBase
 
 	public static function getRotFlipPath(): string
 	{
-		return self::getInstance()->rotPath;
+		return self::$rotPath;
 		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 	}
 
 	public static function getDoorRotFlipPath(): string
 	{
-		return self::getInstance()->doorRotPath;
+		return self::$doorRotPath;
 		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 	}
 
@@ -159,8 +159,10 @@ class Loader extends PluginBase
 		#$this->saveResource("rotation_flip_data.json", true);
 		$this->saveResource("blockstate_alias_map.json", true);
 
-		$this->rotPath = self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		$this->doorRotPath = self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		BlockStatesParser::getInstance()::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+		BlockStatesParser::getInstance()::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
 		if ($fileGetContents === false) {

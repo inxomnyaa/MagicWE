@@ -47,7 +47,7 @@ class FlipAction extends ClipboardAction
      * @return Generator|Progress[]
      * @throws Exception
      */
-    public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator
+    public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []): Generator
 	{
 		//TODO modify position. For now, just flip the blocks around their own axis
 		$changed = 0;
@@ -55,9 +55,9 @@ class FlipAction extends ClipboardAction
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		BlockFactory::getInstance();
-        $clonedClipboard = clone $clipboard;
-        $x = $y = $z = null;
-        $maxX = $clipboard->selection->getSizeX() - 1;
+		$clonedClipboard = clone $clipboard;
+		$x = $y = $z = null;
+		$maxX = $clipboard->selection->getSizeX() - 1;
         $maxY = $clipboard->selection->getSizeY() - 1;
         $maxZ = $clipboard->selection->getSizeZ() - 1;
         foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {
