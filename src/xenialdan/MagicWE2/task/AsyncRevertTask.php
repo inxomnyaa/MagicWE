@@ -50,23 +50,17 @@ class AsyncRevertTask extends MWEAsyncTask
     public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
-		var_dump(__LINE__);
 		/** @var RevertClipboard $clipboard */
 		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
 		$totalCount = count($clipboard->blocksAfter);
-		var_dump(__LINE__);
 		$manager = $clipboard::getChunkManager($clipboard->chunks);
 		$oldBlocks = [];
-		var_dump(__LINE__);
 		if ($this->type === self::TYPE_UNDO)
 			$oldBlocks = iterator_to_array($this->undoChunks($manager, $clipboard));
-		var_dump(__LINE__);
 		if ($this->type === self::TYPE_REDO)
 			$oldBlocks = iterator_to_array($this->redoChunks($manager, $clipboard));
-		var_dump(__LINE__);
 		$chunks = $manager->getChunks();
 		$this->setResult(compact("chunks", "oldBlocks", "totalCount"));
-		var_dump(__LINE__);
 	}
 
 	/**
@@ -78,7 +72,6 @@ class AsyncRevertTask extends MWEAsyncTask
 	private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
 		$count = count($clipboard->blocksAfter);
-		var_dump(__LINE__);
 		$changed = 0;
 		$this->publishProgress([0, "Reverted $changed blocks out of $count"]);
 		//$block is "data" array
