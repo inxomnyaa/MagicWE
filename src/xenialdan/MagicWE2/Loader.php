@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use Exception;
 use InvalidArgumentException;
+use jackmd\scorefactory\ScoreFactory;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
+use pocketmine\block\tile\Tile;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\ItemFlags;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\plugin\PluginBase;
@@ -17,10 +20,11 @@ use pocketmine\plugin\PluginException;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
+use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
-use xenialdan\customui\API;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -68,6 +72,7 @@ use xenialdan\MagicWE2\exception\ShapeRegistryException;
 use xenialdan\MagicWE2\helper\BlockStatesEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\helper\StructureStore;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
@@ -81,17 +86,22 @@ class Loader extends PluginBase
 	public static $shapeRegistry;
 	/** @var null|ActionRegistry */
 	public static $actionRegistry;
+	/** @var Enchantment */
+	public static $ench;
 	/** @var Language */
 	private $baseLang;
 	/** @var string[] Donator names */
 	public $donators = [];
 	/** @var string */
 	public $donatorData = "";
-
-	private $rotPath;
-	private $doorRotPath;
+	/** @var string */
+	private static $rotPath;
+	/** @var string */
+	private static $doorRotPath;
 	/** @var DiverseBossBar */#BossBar
 	public $wailaBossBar;
+	/** @var null|string */
+	public static $scoreboardAPI;
 
 	/**
 	 * Returns an instance of the plugin
@@ -115,14 +125,22 @@ class Loader extends PluginBase
 
 	public static function getRotFlipPath(): string
 	{
-		return self::getInstance()->rotPath;
+		return self::$rotPath;
 		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 	}
 
 	public static function getDoorRotFlipPath(): string
 	{
-		return self::getInstance()->doorRotPath;
+		return self::$doorRotPath;
 		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function hasScoreboard(): bool
+	{
+		return self::$scoreboardAPI !== null;
 	}
 
 	/**
@@ -134,27 +152,27 @@ class Loader extends PluginBase
 	public function onLoad(): void
 	{
 		self::$instance = $this;
-		$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, Enchantment::SLOT_ALL, Enchantment::SLOT_NONE, 1);
-		Enchantment::register($ench);
+		self::$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
 		self::$shapeRegistry = new ShapeRegistry();
 		self::$actionRegistry = new ActionRegistry();
 		SessionHelper::init();
 		#$this->saveResource("rotation_flip_data.json", true);
 		$this->saveResource("blockstate_alias_map.json", true);
 
-		$this->rotPath = self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		$this->doorRotPath = self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		BlockStatesParser::getInstance()::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+		BlockStatesParser::getInstance()::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
 		if ($fileGetContents === false) {
 			throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
 		}
 
-		BlockStatesParser::getInstance()->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
-		#BlockStatesParser::printAllStates();
-		#BlockStatesParser::runTests();
-		#BlockStatesParser::generatePossibleStatesJson();
-		#BlockStatesParser::placeAllBlockstates(new Position());
+		/** @var BlockStatesParser $bsp */
+		$bsp = BlockStatesParser::getInstance();
+		$bsp->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
+		#StructureStore::getInstance();
 	}
 
 	/**
@@ -278,7 +296,7 @@ class Loader extends PluginBase
 			/* -- debugging -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 		]);
-		if (class_exists(API::class)) {
+		if (class_exists("\\xenialdan\\customui\\API")) {
 			$this->getLogger()->notice("CustomUI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 				/* -- brush -- */
@@ -289,15 +307,38 @@ class Loader extends PluginBase
 		} else {
 			$this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
 		}
+		if (class_exists("\\jackmd\\scorefactory\\ScoreFactory")) {
+			$this->getLogger()->notice("Scoreboard API found, can use scoreboards");
+			self::$scoreboardAPI = ScoreFactory::class;
+		} else {
+			$this->getLogger()->notice(TF::RED . "Scoreboard API NOT found, can NOT use scoreboards");
+		}
 
-		BlockStatesParser::getInstance()::runTests();
+		//run tests
+		#BlockStatesParser::getInstance()::runTests();
+		$world = Loader::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
+		$spawn = $world->getSafeSpawn()->asVector3();
+		foreach (glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure") as $file) {
+			$this->getLogger()->debug(TextFormat::GOLD . "Loading " . basename($file));
+			try {
+				/** @var StructureStore $instance */
+				$instance = StructureStore::getInstance();
+				$structure = $instance->loadStructure(basename($file));
+				//this will dump wrong blocks for now
+				foreach ($structure->blocks() as $block) {
+					#$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
+					$world->setBlock(($at = $spawn->addVector($block->getPos()->asVector3())), $block);
+					if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world), $at)) instanceof Tile) {
+						$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+						if ($tileAt !== null) $world->removeTile($tileAt);
+						$world->addTile($tile);
+					}
+				}
+			} catch (Exception $e) {
+				$this->getLogger()->debug($e->getMessage());
+			}
+		}
 
-		$stone = BlockFactory::getInstance()->get(1, 1);
-		var_dump($stone);
-		$stoneid = $stone->getFullId();
-		var_dump($stoneid);
-		$stone2 = BlockFactory::getInstance()->fromFullBlock($stoneid);
-		var_dump($stone2);
 		//register WAILA bar
 		$this->wailaBossBar = new DiverseBossBar();
 		$this->wailaBossBar->setPercentage(1.0);
@@ -353,6 +394,11 @@ class Loader extends PluginBase
 	public function getToolDistance(): int
 	{
 		return (int)$this->getConfig()->get("tool-range", 100);
+	}
+
+	public function getEditLimit(): int
+	{
+		return (int)$this->getConfig()->get("limit", -1);
 	}
 
 	/**

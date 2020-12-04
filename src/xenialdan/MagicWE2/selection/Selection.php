@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\selection;
 
 use Exception;
-use InvalidArgumentException;
 use JsonSerializable;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
@@ -14,7 +13,9 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\Position;
 use pocketmine\world\World;
+use RuntimeException;
 use Serializable;
+use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -51,19 +52,19 @@ class Selection implements Serializable, JsonSerializable
 	 * @param ?int $maxX
 	 * @param ?int $maxY
 	 * @param ?int $maxZ
-	 * @throws InvalidArgumentException
-	 * @throws AssumptionFailedError
+	 * @param ?Shape $shape
 	 */
-	public function __construct(UUID $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null)
+	public function __construct(UUID $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null, ?Shape $shape = null)
 	{
 		$this->sessionUUID = $sessionUUID;
-		$this->setWorld($world);
+		$this->worldId = $world->getId();
 		if (isset($minX, $minY, $minZ)) {
-			$this->setPos1(new Position($minX, $minY, $minZ, $world));
+			$this->pos1 = (new Vector3($minX, $minY, $minZ))->floor();
 		}
 		if (isset($maxX, $maxY, $maxZ)) {
-			$this->setPos2(new Position($maxX, $maxY, $maxZ, $world));
+			$this->pos2 = (new Vector3($maxX, $maxY, $maxZ))->floor();
 		}
+		if ($shape !== null) $this->shape = $shape;
 		$this->setUUID(UUID::fromRandom());
 	}
 
@@ -89,6 +90,10 @@ class Selection implements Serializable, JsonSerializable
 	public function setWorld(World $world): void
 	{
 		$this->worldId = $world->getId();
+		try {
+			($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_WORLD))->call();
+		} catch (RuntimeException $e) {
+		}
 	}
 
 	/**
@@ -120,7 +125,13 @@ class Selection implements Serializable, JsonSerializable
 			$this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
 		try {
 			$session = SessionHelper::getSessionByUUID($this->sessionUUID);
-			if ($session instanceof Session) $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos1.set', [$this->pos1->getX(), $this->pos1->getY(), $this->pos1->getZ()]));
+			if ($session instanceof Session) {
+				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos1.set', [$this->pos1->getX(), $this->pos1->getY(), $this->pos1->getZ()]));
+				try {
+					($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS1))->call();
+				} catch (RuntimeException $e) {
+				}
+			}
 		} catch (SessionException $e) {
 			//TODO log? kick?
 		}
@@ -155,7 +166,13 @@ class Selection implements Serializable, JsonSerializable
 			$this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
 		try {
 			$session = SessionHelper::getSessionByUUID($this->sessionUUID);
-			if ($session instanceof Session) $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos2.set', [$this->pos2->getX(), $this->pos2->getY(), $this->pos2->getZ()]));
+			if ($session instanceof Session) {
+				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos2.set', [$this->pos2->getX(), $this->pos2->getY(), $this->pos2->getZ()]));
+				try {
+					($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS2))->call();
+				} catch (RuntimeException $e) {
+				}
+			}
 		} catch (SessionException $e) {
 			//TODO log? kick?
 		}
@@ -177,6 +194,10 @@ class Selection implements Serializable, JsonSerializable
 	public function setShape(Shape $shape): void
 	{
 		$this->shape = $shape;
+		try {
+			($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();
+		} catch (RuntimeException $e) {
+		}//might cause duplicated call
 	}
 
 	/**
@@ -266,6 +287,7 @@ class Selection implements Serializable, JsonSerializable
 	 * </p>
 	 * @return void
 	 * @since 5.1.0
+	 * @noinspection PhpMissingParamTypeInspection
 	 */
 	public function unserialize($serialized)
 	{

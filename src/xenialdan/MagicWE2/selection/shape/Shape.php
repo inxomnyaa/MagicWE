@@ -38,7 +38,7 @@ abstract class Shape implements Serializable
      */
     public static function getChunkManager(array $chunks): AsyncChunkManager
     {
-        $manager = new AsyncChunkManager(0);
+        $manager = new AsyncChunkManager();
         foreach ($chunks as $chunk) {
             $manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
         }
@@ -119,14 +119,15 @@ abstract class Shape implements Serializable
     }
 
     /**
-     * Constructs the object
-     * @link http://php.net/manual/en/serializable.unserialize.php
-     * @param string $serialized <p>
-     * The string representation of the object.
-     * </p>
-     * @return void
-     * @since 5.1.0
-     */
+	 * Constructs the object
+	 * @link http://php.net/manual/en/serializable.unserialize.php
+	 * @param string $serialized <p>
+	 * The string representation of the object.
+	 * </p>
+	 * @return void
+	 * @since 5.1.0
+	 * @noinspection PhpMissingParamTypeInspection
+	 */
     public function unserialize($serialized)
     {
 		$unserialize = unserialize($serialized/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4

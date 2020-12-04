@@ -6,8 +6,8 @@ namespace xenialdan\MagicWE2\tool;
 
 use InvalidArgumentException;
 use JsonSerializable;
+use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\biome\Biome;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\selection\shape\Shape;
@@ -40,7 +40,7 @@ class BrushProperties implements JsonSerializable
 	/** @var string */
 	public $filter = "";
 	/** @var int */
-	public $biomeId = Biome::PLAINS;
+	public $biomeId = BiomeIds::PLAINS;
 	/** @var string */
 	public $uuid;
 

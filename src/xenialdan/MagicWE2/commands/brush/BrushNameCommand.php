@@ -9,7 +9,6 @@ use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Exception;
-use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -25,7 +24,6 @@ class BrushNameCommand extends BaseSubCommand
 	/**
 	 * This is where all the arguments, permissions, sub-commands, etc would be registered
 	 * @throws ArgumentOrderException
-	 * @throws InvalidArgumentException
 	 */
 	protected function prepare(): void
 	{

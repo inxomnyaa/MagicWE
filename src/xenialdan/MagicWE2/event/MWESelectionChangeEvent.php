@@ -3,59 +3,51 @@
 namespace xenialdan\MagicWE2\event;
 
 use pocketmine\player\Player;
-use pocketmine\plugin\Plugin;
+use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
 
 class MWESelectionChangeEvent extends MWEEvent
 {
-	/** @var Selection */
-	private $oldSelection;
-	/** @var Selection */
-	private $newSelection;
-	/** @var Session|null */
-	private $session;
+	public const TYPE_PLUGIN = 0;
+	public const TYPE_POS1 = 1;
+	public const TYPE_POS2 = 2;
+	public const TYPE_WORLD = 3;
+	public const TYPE_SHAPE = 4;
 
-	public function __construct(Plugin $plugin, Selection $oldSelection, Selection $newSelection, ?Session $session)
+	private Selection $selection;
+	private ?Session $session;
+	private int $type;
+
+	public function __construct(Selection $selection, int $type)
 	{
-		parent::__construct($plugin);
-		$this->oldSelection = $oldSelection;
-		$this->newSelection = $newSelection;
-		$this->session = $session;
+		parent::__construct(Loader::getInstance());
+		$this->selection = $selection;
+		$this->type = $type;
+		try {
+			$this->session = SessionHelper::getSessionByUUID($selection->sessionUUID);
+		} catch (SessionException $e) {
+		}
 	}
 
 	/**
-     * @return Selection
-     */
-    public function getOldSelection(): Selection
-    {
-        return $this->oldSelection;
-    }
+	 * @return Selection
+	 */
+	public function getSelection(): Selection
+	{
+		return $this->selection;
+	}
 
-    /**
-     * @param Selection $oldSelection
-     */
-    public function setOldSelection(Selection $oldSelection): void
-    {
-        $this->oldSelection = $oldSelection;
-    }
-
-    /**
-     * @return Selection
-     */
-    public function getNewSelection(): Selection
-    {
-        return $this->newSelection;
-    }
-
-    /**
-     * @param Selection $newSelection
-     */
-    public function setNewSelection(Selection $newSelection): void
-    {
-        $this->newSelection = $newSelection;
-    }
+	/**
+	 * @param Selection $selection
+	 */
+	public function setSelection(Selection $selection): void
+	{
+		$this->selection = $selection;
+	}
 
     /**
      * @return null|Session
@@ -66,23 +58,21 @@ class MWESelectionChangeEvent extends MWEEvent
     }
 
     /**
-     * @return null|Player
-     */
-    public function getPlayer(): ?Player
-    {
-        if (($session = $this->getSession()) instanceof UserSession)
-            /** @var UserSession $session */
-            $session->getPlayer();
-        return null;
-    }
+	 * @return null|Player
+	 */
+	public function getPlayer(): ?Player
+	{
+		if (($session = $this->getSession()) instanceof UserSession)
+			/** @var UserSession $session */
+			return $session->getPlayer();
+		return null;
+	}
 
-    /**
-     * @param null|Player $player
-     */
-    public function setPlayer(?Player $player): void
-    {
-        if (($session = $this->getSession()) instanceof UserSession)
-            /** @var UserSession $session */
-            $session->setPlayer($player);
-    }
+	/**
+	 * @return int
+	 */
+	public function getType(): int
+	{
+		return $this->type;
+	}
 }

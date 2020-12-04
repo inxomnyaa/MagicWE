@@ -24,6 +24,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\customui\windows\ModalForm;
+use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -44,9 +45,10 @@ class EventListener implements Listener
 	/**
 	 * @param PlayerJoinEvent $event
 	 * @throws AssumptionFailedError
-	 * @throws JsonException
-	 * @throws SessionException
 	 * @throws InvalidSkinException
+	 * @throws JsonException
+	 * @throws RuntimeException
+	 * @throws SessionException
 	 */
 	public function onLogin(PlayerJoinEvent $event): void
 	{
@@ -62,6 +64,14 @@ class EventListener implements Listener
 	public function onSessionLoad(MWESessionLoadEvent $event): void
 	{
 		Loader::getInstance()->wailaBossBar->addPlayer($event->getPlayer());
+		if (Loader::hasScoreboard()) {
+			try {
+				/** @var UserSession $session */
+				if (($session = $event->getSession()) instanceof UserSession && $session->isSidebarEnabled()) $session->sidebar->handleScoreboard($session);
+			} catch (InvalidArgumentException $e) {
+				Loader::getInstance()->getLogger()->logException($e);
+			}
+		}
 	}
 
 	/**
@@ -320,6 +330,15 @@ class EventListener implements Listener
 				$event->getPlayer()->getInventory()->remove($event->getItem());
 			}
 		} catch (Exception $e) {
+		}
+	}
+
+	public function onSelectionChange(MWESelectionChangeEvent $event): void
+	{
+		Loader::getInstance()->getLogger()->debug("Called " . $event->getEventName());
+		if (($session = $event->getSession()) instanceof UserSession && ($player = $event->getPlayer()) !== null) {
+			/** @var UserSession $session */
+			$session->sidebar->handleScoreboard($session);
 		}
 	}
 }

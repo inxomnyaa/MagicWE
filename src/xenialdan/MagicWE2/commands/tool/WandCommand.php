@@ -11,7 +11,6 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\item\Durable;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -57,7 +56,7 @@ class WandCommand extends BaseCommand
         try {
 			/** @var Durable $item */
 			$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_AXE);
-			$item->addEnchantment(new EnchantmentInstance(Enchantment::get(Loader::FAKE_ENCH_ID)));
+			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 			$item->setUnbreakable(true);
 			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.wand'));
 			$item->setLore([

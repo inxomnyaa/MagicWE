@@ -6,7 +6,7 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 
-class ShapeRegistry
+class ShapeRegistry//todo use SingletonTrait
 {
 	/** @var string[] */
 	private static $shapes = [];

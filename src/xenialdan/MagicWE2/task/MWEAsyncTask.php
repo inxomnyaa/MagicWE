@@ -47,6 +47,7 @@ abstract class MWEAsyncTask extends AsyncTask
 	 */
 	public static function singleBlockToData(Block $block, ?Position $position = null): array
 	{
+		/** @noinspection PhpInternalEntityUsedInspection */
 		return [$block->getFullId(), $position ?? $block->getPos()];
 	}
 

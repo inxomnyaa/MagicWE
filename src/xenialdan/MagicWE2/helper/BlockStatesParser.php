@@ -6,14 +6,18 @@ namespace xenialdan\MagicWE2\helper;
 
 use Closure;
 use Exception;
+use GlobalLogger;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\Door;
+use pocketmine\block\utils\BlockDataSerializer;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\item\LegacyStringToItemParser;
+use pocketmine\math\Facing;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
@@ -37,6 +41,11 @@ final class BlockStatesParser
 {
 	use SingletonTrait;
 
+	/** @var string */
+	public static $rotPath;
+	/** @var string */
+	public static $doorRotPath;
+
 	/** @var R12ToCurrentBlockMapEntry[][] *///TODO check type correct? phpstan!
 	private static $legacyStateMap;
 
@@ -49,8 +58,10 @@ final class BlockStatesParser
 
 	private function __construct()
 	{
-		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
-		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
+//		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
+//		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
+		$this->loadRotationAndFlipData(self::$rotPath);
+		$this->loadDoorRotationAndFlipData(self::$doorRotPath);
 		$this->loadLegacyMappings();
 	}
 
@@ -89,7 +100,7 @@ final class BlockStatesParser
 			}
 
 			self::$rotationFlipMap = json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR);
-			var_dump("Successfully loaded rotation_flip_data.json");
+			GlobalLogger::get()->debug("Successfully loaded rotation_flip_data.json");
 		}
 	}
 
@@ -107,7 +118,7 @@ final class BlockStatesParser
 			}
 
 			self::$doorRotationFlipMap = json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR);
-			var_dump("Successfully loaded door_data.json");
+			GlobalLogger::get()->debug("Successfully loaded door_data.json");
 		}
 	}
 
@@ -125,6 +136,27 @@ final class BlockStatesParser
 	public static function getDoorRotationFlipMap(): array
 	{
 		return self::$doorRotationFlipMap;
+	}
+
+	/**
+	 * @param string $namespacedSelectedBlockName
+	 * @param CompoundTag $states
+	 * @return Door
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws RuntimeException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 */
+	private static function buildDoor(string $namespacedSelectedBlockName, CompoundTag $states): Door
+	{
+		/** @var Door $door */
+		$door = self::fromString($namespacedSelectedBlockName)[0];
+		$door->setOpen($states->getByte("open_bit") === 1);
+		$door->setTop($states->getByte("upper_block_bit") === 1);
+		$door->setHingeRight($states->getByte("door_hinge_bit") === 1);
+		$direction = $states->getInt("direction");
+		$door->setFacing(Facing::rotateY(BlockDataSerializer::readLegacyHorizontalFacing($direction & 0x03), false));
+		return $door;
 	}
 
 	/**
@@ -182,12 +214,14 @@ final class BlockStatesParser
 			throw new InvalidArgumentException("Could not detect block id");
 		}
 
-		$block = LegacyStringToItemParser::getInstance()->parse($matches[0][1] ?? $query)->getBlock();
+		$selectedBlockName = $matches[0][1];
+		$namespacedSelectedBlockName = "minecraft:" . $selectedBlockName;//TODO try to keep namespace "minecraft:" to support custom blocks
+		/** @var LegacyStringToItemParser $legacyStringToItemParser */
+		$legacyStringToItemParser = LegacyStringToItemParser::getInstance();
+		$block = $legacyStringToItemParser->parse($selectedBlockName)->getBlock();
 		if (count($matches[0]) < 3) {
 			return [$block];
 		}
-		$selectedBlockName = $matches[0][1];
-		$namespacedSelectedBlockName = "minecraft:" . $selectedBlockName;//TODO try to keep namespace "minecraft:" to support custom blocks
 		$defaultStatesNamedTag = self::getDefaultStates($namespacedSelectedBlockName);
 		if (!$defaultStatesNamedTag instanceof CompoundTag) {
 			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
@@ -241,18 +275,19 @@ final class BlockStatesParser
 		#Loader::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName,$finalStatesList), false));
 		//return found block(s)
 		$blocks = [];
-		//doors.. special blocks annoying -.- TODO 1.16 apparently fixed this shit! YAY TODO remove
-//		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
-//		if ($isDoor && $finalStatesList->getByte("upper_block_bit") === 1) {
-//			$fromString = LegacyStringToItemParser::getInstance()->parse($selectedBlockName . "_block:8")->getBlock();
-//			return [$fromString];
-//		}
+		//doors.. special blocks annoying -.-
+		$isDoor = strpos($namespacedSelectedBlockName, "_door") !== false;
+		if ($isDoor) {
+			return [self::buildDoor($namespacedSelectedBlockName, $finalStatesList)];
+		}
 		#var_dump((string)$finalStatesList);
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
 			if ($clonedPrintedCompound->equals($finalStatesList)) {
 				#Server::getInstance()->getLogger()->notice("FOUND!");
-				$block = BlockFactory::getInstance()->get($block->getId(), $meta);
+				/** @var BlockFactory $blockFactory */
+				$blockFactory = BlockFactory::getInstance();
+				$block = $blockFactory->get($block->getId(), $meta & 0xf);
 				#var_dump($oldNameAndMeta,$block);
 				#var_dump($block, $finalStatesList);
 				$blocks[] = $block;
@@ -285,6 +320,31 @@ final class BlockStatesParser
 		$blockStates = clone self::$legacyStateMap[$name][$damage]->getBlockState()->getCompoundTag('states');
 		if ($blockStates === null) return null;
 		return new BlockStatesEntry($name, $blockStates, $block);
+	}
+
+	public static function getStateByCompound(CompoundTag $compoundTag): ?BlockStatesEntry
+	{
+		$namespacedSelectedBlockName = $compoundTag->getString('name');
+		if ($namespacedSelectedBlockName === null) return null;
+		$states = $compoundTag->getCompoundTag('states') ?? self::getDefaultStates($namespacedSelectedBlockName);
+		if (!$states instanceof CompoundTag) {
+			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
+		}
+
+		if (strpos($namespacedSelectedBlockName, "_door") !== false) {
+			$door = self::buildDoor($namespacedSelectedBlockName, $states);
+			//return self::getStateByBlock($door);
+			return new BlockStatesEntry($namespacedSelectedBlockName, $states, $door);
+		}
+
+		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] ?? [] as $meta => $r12ToCurrentBlockMapEntry) {//??[] is to avoid crashes on newer blocks like light block
+			$clonedPrintedCompound = $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
+			if ($clonedPrintedCompound->equals($states)) {
+				#Server::getInstance()->getLogger()->notice(self::printStates(new BlockStatesEntry($namespacedSelectedBlockName, $clonedPrintedCompound), true));//might cause loop lol//todo rem
+				return new BlockStatesEntry($namespacedSelectedBlockName, $clonedPrintedCompound);
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -656,7 +716,7 @@ final class BlockStatesParser
 	 * @param string $property
 	 * @return mixed
 	 */
-	public static function &readAnyValue($object, string $property)
+	public static function &readAnyValue(object $object, string $property)
 	{
 		$invoke = Closure::bind(function & () use ($property) {
 			return $this->$property;

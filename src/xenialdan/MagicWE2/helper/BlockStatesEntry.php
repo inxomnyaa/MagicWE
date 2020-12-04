@@ -37,7 +37,6 @@ class BlockStatesEntry
 	 */
 	public function __construct(string $blockIdentifier, CompoundTag $blockStates, ?Block $block = null)
 	{
-		if (strpos($blockIdentifier, "_door") !== false) var_dump($blockIdentifier);
 		$this->blockIdentifier = $blockIdentifier;
 		$this->blockStates = $blockStates;
 		$this->block = $block;
@@ -93,7 +92,6 @@ class BlockStatesEntry
 		$key = $idMapName . ":" . $block->getMeta();
 		if (strpos($idMapName, "_door") !== false) {
 			$fromMap = BlockStatesParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
-			#var_dump($fromMap);
 		} else {
 			$fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
 		}

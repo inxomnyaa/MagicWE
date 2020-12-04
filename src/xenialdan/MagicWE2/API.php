@@ -99,13 +99,13 @@ class API
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $newblocks, $flags));
-        } catch (Exception $e) {
-            $session->sendMessage($e->getMessage());
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
-        }
-        return true;
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $newblocks, $flags));
+		} catch (Exception $e) {
+			$session->sendMessage($e->getMessage());
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -131,11 +131,11 @@ class API
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
-            Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $oldBlocks, $newBlocks, $flags));
-        } catch (Exception $e) {
-            $session->sendMessage($e->getMessage());
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $oldBlocks, $newBlocks, $flags));
+		} catch (Exception $e) {
+			$session->sendMessage($e->getMessage());
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
 		}
 		return true;
 	}
@@ -158,11 +158,11 @@ class API
 			$offset = new Vector3(0, 0, 0);
 			if ($session instanceof UserSession) {
 				/** @var Player $player */
-                $player = $session->getPlayer();
-                /*if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE)*///TODO relative or not by flags
-                $offset = $selection->getShape()->getMinVec3()->subtractVector($player->getPosition()->asVector3()->floor())->floor();//TODO figure out wrong offset
-                $session->getBossBar()->showTo([$player]);
-            }
+				$player = $session->getPlayer();
+				/*if (!self::hasFlag($flags, self::FLAG_POSITION_RELATIVE)*///TODO relative or not by flags
+				$offset = $selection->getShape()->getMinVec3()->subtractVector($player->getPosition()->asVector3()->floor())->floor();//TODO figure out wrong offset
+				$session->getBossBar()->showTo([$player]);
+			}
 			#var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
 			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getWorld()), $flags));
 		} catch (Exception $e) {
@@ -206,36 +206,36 @@ class API
 			$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
 			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard));
 		} catch (Exception $e) {
-            $session->sendMessage($e->getMessage());
-            Loader::getInstance()->getLogger()->logException($e);
-            return false;
-        }
-        return true;
-    }
+			$session->sendMessage($e->getMessage());
+			Loader::getInstance()->getLogger()->logException($e);
+			return false;
+		}
+		return true;
+	}
 
-    /**
-     * @param ChunkManager $manager
-     * @param AxisAlignedBB $aabb
-     * @return string[]
-     */
-    private static function getAABBTouchedChunksTemp(ChunkManager $manager, AxisAlignedBB $aabb): array
-    {
-        $maxX = $aabb->maxX >> 4;
-        $minX = $aabb->minX >> 4;
-        $maxZ = $aabb->maxZ >> 4;
-        $minZ = $aabb->minZ >> 4;
-        $touchedChunks = [];
-        for ($x = $minX; $x <= $maxX; $x++) {
-            for ($z = $minZ; $z <= $maxZ; $z++) {
-                $chunk = $manager->getChunk($x, $z);
-                if ($chunk === null) {
-                    continue;
-                }
+	/**
+	 * @param ChunkManager $manager
+	 * @param AxisAlignedBB $aabb
+	 * @return string[]
+	 */
+	private static function getAABBTouchedChunksTemp(ChunkManager $manager, AxisAlignedBB $aabb): array
+	{
+		$maxX = $aabb->maxX >> 4;
+		$minX = $aabb->minX >> 4;
+		$maxZ = $aabb->maxZ >> 4;
+		$minZ = $aabb->minZ >> 4;
+		$touchedChunks = [];
+		for ($x = $minX; $x <= $maxX; $x++) {
+			for ($z = $minZ; $z <= $maxZ; $z++) {
+				$chunk = $manager->getChunk($x, $z);
+				if ($chunk === null) {
+					continue;
+				}
 				print __METHOD__ . " Touched Chunk at: $x:$z" . PHP_EOL;
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
-            }
-        }
-        print  __METHOD__ . " Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+			}
+		}
+		print  __METHOD__ . " Touched chunks count: " . count($touchedChunks) . PHP_EOL;
 		return $touchedChunks;
 	}
 
@@ -311,47 +311,47 @@ class API
 		$actionClass = $brush->properties->action;
 		//TODO remove hack
 		if ($actionClass === SetBiomeAction::class) $brush->properties->actionProperties["biomeId"] = $brush->properties->biomeId;
-        /** @var TaskAction $action */
-        $action = new $actionClass(...array_values($brush->properties->actionProperties));
-        $action->prefix = "Brush";
-        Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getWorld()), $brush->properties->blocks, $brush->properties->filter));
-    }
+		/** @var TaskAction $action */
+		$action = new $actionClass(...array_values($brush->properties->actionProperties));
+		$action->prefix = "Brush";
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getWorld()), $brush->properties->blocks, $brush->properties->filter));
+	}
 
-    /**
-     * @param Block $target
-     * @param CompoundTag $settings
-     * @param Session $session
-     * @param int $flags
-     * @return bool
-     */
-    public static function floodArea(Block $target, CompoundTag $settings, Session $session, int $flags = self::FLAG_BASE): bool
-    { //TODO
-        if (!$settings instanceof CompoundTag) return false;
-        $session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
-        return false;/*
+	/**
+	 * @param Block $target
+	 * @param CompoundTag $settings
+	 * @param Session $session
+	 * @param int $flags
+	 * @return bool
+	 */
+	public static function floodArea(Block $target, CompoundTag $settings, Session $session, int $flags = self::FLAG_BASE): bool
+	{ //TODO
+		if (!$settings instanceof CompoundTag) return false;
+		$session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
+		return false;/*
         $shape = ShapeRegistry::getShape($target->getWorld(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));
         $shape->setCenter($target->asVector3());//TODO fix the offset?: if you have a uneven number, the center actually is between 2 blocks
         $messages = [];
         $error = false;
         return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flags);*/
-    }
+	}
 
-    /// SCHEMATIC RELATED API PART
+	/// SCHEMATIC RELATED API PART
 
-    /**
-     * @return Clipboard[]
-     */
-    public static function getSchematics(): array
-    {
-        return self::$schematics;
-    }
+	/**
+	 * @return Clipboard[]
+	 */
+	public static function getSchematics(): array
+	{
+		return self::$schematics;
+	}
 
-    /**
-     * @param Clipboard[] $schematics
-     */
-    public static function setSchematics(array $schematics): void
-    {
-        self::$schematics = $schematics;
+	/**
+	 * @param Clipboard[] $schematics
+	 */
+	public static function setSchematics(array $schematics): void
+	{
+		self::$schematics = $schematics;
 	}
 
 	/* HELPER FUNCTIONS API PART */
@@ -374,29 +374,29 @@ class API
 					$flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_AIR;
 					break;
 				case  "-a":
-                    $flagmeta ^= self::FLAG_BASE << self::FLAG_PASTE_WITHOUT_AIR;
-                    break;
-                case  "-h":
-                    $flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW;
-                    break;
-                case  "-hc":
-                    $flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW_CLOSED;
-                    break;
-                case  "-n":
-                    $flagmeta ^= self::FLAG_BASE << self::FLAG_NATURAL;
-                    break;
-                case  "-p":
-                    $flagmeta ^= self::FLAG_BASE << self::FLAG_POSITION_RELATIVE;
-                    break;
-                case  "-v":
-                    $flagmeta ^= self::FLAG_BASE << self::FLAG_VARIANT;
-                    break;
-                case  "-m":
-                    $flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_META;
-                    break;
-                default:
-                    Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
-            }
+					$flagmeta ^= self::FLAG_BASE << self::FLAG_PASTE_WITHOUT_AIR;
+					break;
+				case  "-h":
+					$flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW;
+					break;
+				case  "-hc":
+					$flagmeta ^= self::FLAG_BASE << self::FLAG_HOLLOW_CLOSED;
+					break;
+				case  "-n":
+					$flagmeta ^= self::FLAG_BASE << self::FLAG_NATURAL;
+					break;
+				case  "-p":
+					$flagmeta ^= self::FLAG_BASE << self::FLAG_POSITION_RELATIVE;
+					break;
+				case  "-v":
+					$flagmeta ^= self::FLAG_BASE << self::FLAG_VARIANT;
+					break;
+				case  "-m":
+					$flagmeta ^= self::FLAG_BASE << self::FLAG_KEEP_META;
+					break;
+				default:
+					Server::getInstance()->getLogger()->warning("The flag $flag is unknown");
+			}
 		}
 		return $flagmeta;
 	}
@@ -435,29 +435,29 @@ class API
 		return $blocks;
 	}
 
-    /**
-     * Evaluate mathematics in a string
-     * https://stackoverflow.com/a/54684348/4532380
-     * @param string $str
-     * @return float|int
-     * @throws CalculationException
-     */
-    public static function evalAsMath(string $str)
-    {
-        $error = false;
-        $div_mul = false;
-        $add_sub = false;
-        $result = 0;
+	/**
+	 * Evaluate mathematics in a string
+	 * https://stackoverflow.com/a/54684348/4532380
+	 * @param string $str
+	 * @return float|int
+	 * @throws CalculationException
+	 */
+	public static function evalAsMath(string $str)
+	{
+		$error = false;
+		$div_mul = false;
+		$add_sub = false;
+		$result = 0;
 
 		$str = preg_replace('/[^\d.+\-*\/]/', '', $str);
 		$str = rtrim(trim($str, '/*+'), '-');
 
-        if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
-            $div_mul = true;
-            $operators = ['*', '/'];
-            while (!$error && !empty($operators)) {
-                $operator = array_pop($operators);
-                while ($operator && strpos($str, $operator) !== false) {
+		if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
+			$div_mul = true;
+			$operators = ['*', '/'];
+			while (!$error && !empty($operators)) {
+				$operator = array_pop($operators);
+				while ($operator && strpos($str, $operator) !== false) {
 					$regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
 					preg_match($regex, $str, $matches);
 					if (isset($matches[1], $matches[2])) {
@@ -474,16 +474,16 @@ class API
 						$str = preg_replace($regex, (string)$result, $str, 1);
 						$str = str_replace(['++', '--', '-+', '+-'], ['+', '+', '-', '-'], $str);
 					} else {
-                        $error = true;
-                    }
-                }
-            }
-        }
+						$error = true;
+					}
+				}
+			}
+		}
 
-        if (!$error && (strpos($str, '+') !== false || strpos($str, '-') !== false)) {
+		if (!$error && (strpos($str, '+') !== false || strpos($str, '-') !== false)) {
 			$add_sub = true;
 			preg_match_all('/([\d.]+|[+\-])/', $str, $matches);
-            if (isset($matches[0])) {
+			if (isset($matches[0])) {
 				$result = 0;
 				$operator = '+';
 				$tokens = $matches[0];
@@ -495,22 +495,22 @@ class API
 					}
 				}
 			}
-        }
+		}
 
-        if (!$error && !$div_mul && !$add_sub) {
-            $result = (float)$str;
-        }
+		if (!$error && !$div_mul && !$add_sub) {
+			$result = (float)$str;
+		}
 
-        if ($error) throw new CalculationException("Expression contains an error");
+		if ($error) throw new CalculationException("Expression contains an error");
 
-        return $result;
-    }
+		return $result;
+	}
 
-    /**
-     * Parses a CompoundTag into an array
-     * @param CompoundTag $compoundTag
-     * @return array
-     */
+	/**
+	 * Parses a CompoundTag into an array
+	 * @param CompoundTag $compoundTag
+	 * @return array
+	 */
 	public static function compoundToArray(CompoundTag $compoundTag): array
 	{
 		$a = [];
@@ -534,9 +534,7 @@ class API
 	 */
 	public static function setComponents(Block $block, int $x, int $y, int $z): Block
 	{
-		$block->getPos()->x = $x;
-		$block->getPos()->y = $y;
-		$block->getPos()->z = $z;
+		[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z];
 		return $block;
 	}
 }

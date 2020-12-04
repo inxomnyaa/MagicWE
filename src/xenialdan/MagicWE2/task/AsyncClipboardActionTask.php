@@ -10,6 +10,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -27,6 +28,9 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	/** @var string */
 	private $clipboard;
 
+	private string $rotPath;
+	private string $doorRotPath;
+
 	/**
 	 * AsyncClipboardActionTask constructor.
 	 * @param UUID $sessionUUID
@@ -36,21 +40,24 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	 */
 	public function __construct(UUID $sessionUUID, Selection $selection, ClipboardAction $action, SingleClipboard $clipboard)
 	{
-        $this->start = microtime(true);
-        $this->sessionUUID = $sessionUUID->toString();
-        $this->selection = serialize($selection);//TODO check if needed, $clipboard already holds the selection
-        $this->clipboard = serialize($clipboard);//TODO check if this even needs to be serialized
-        $this->action = $action;
+		$this->start = microtime(true);
+		$this->sessionUUID = $sessionUUID->toString();
+		$this->selection = serialize($selection);//TODO check if needed, $clipboard already holds the selection
+		$this->clipboard = serialize($clipboard);//TODO check if this even needs to be serialized
+		$this->action = $action;
 
-        try {
-            $session = SessionHelper::getSessionByUUID($sessionUUID);
-            if ($session instanceof UserSession) {
-                $player = $session->getPlayer();
-                /** @var Player $player */
-                $session->getBossBar()->showTo([$player]);
-                $session->getBossBar()->setTitle("Running {$action::getName()} clipboard action");//TODO better string
-            }
-        } catch (SessionException $e) {
+		$this->rotPath = Loader::getRotFlipPath();
+		$this->doorRotPath = Loader::getDoorRotFlipPath();
+
+		try {
+			$session = SessionHelper::getSessionByUUID($sessionUUID);
+			if ($session instanceof UserSession) {
+				$player = $session->getPlayer();
+				/** @var Player $player */
+				$session->getBossBar()->showTo([$player]);
+				$session->getBossBar()->setTitle("Running {$action::getName()} clipboard action");//TODO better string
+			}
+		} catch (SessionException $e) {
             Loader::getInstance()->getLogger()->logException($e);
         }
     }
@@ -64,6 +71,8 @@ class AsyncClipboardActionTask extends MWEAsyncTask
     public function onRun(): void
 	{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
+		BlockStatesParser::$doorRotPath = $this->doorRotPath;
+		BlockStatesParser::$rotPath = $this->rotPath;
 
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4

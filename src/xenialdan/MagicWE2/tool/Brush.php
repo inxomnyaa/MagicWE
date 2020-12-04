@@ -7,8 +7,8 @@ namespace xenialdan\MagicWE2\tool;
 use Exception;
 use InvalidArgumentException;
 use JsonException;
+use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\item\Durable;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -19,6 +19,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\biome\Biome;
+use pocketmine\world\biome\BiomeRegistry;
 use ReflectionClass;
 use TypeError;
 use xenialdan\customui\elements\Dropdown;
@@ -70,7 +71,7 @@ class Brush extends WETool
 	{
 		/** @var Durable $item */
 		$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_SHOVEL);
-		$item->addEnchantment(new EnchantmentInstance(Enchantment::get(Loader::FAKE_ENCH_ID)));
+		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 		$uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
 		$this->properties->uuid = $uuid;
 		$properties = json_encode($this->properties, JSON_THROW_ON_ERROR);
@@ -129,9 +130,9 @@ class Brush extends WETool
             // Biome
             $dropdownBiome = new Dropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""));
             foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
-                if ($value === Biome::MAX_BIOMES || $value === Biome::HELL) continue;
-                $dropdownBiome->addOption(Biome::getBiome($value)->getName(), $value === $brushProperties->biomeId);
-            }
+				if ($value === Biome::MAX_BIOMES || $value === BiomeIds::HELL) continue;
+				$dropdownBiome->addOption(BiomeRegistry::getInstance()->getBiome($value)->getName(), $value === $brushProperties->biomeId);
+			}
             $form->addElement($dropdownBiome);
             // Hollow
             $form->addElement(new Toggle("Hollow", $brushProperties->hollow));
@@ -149,8 +150,8 @@ class Brush extends WETool
                 $extraData = [];
                 #var_dump(__LINE__, array_slice($data, 7));
                 $base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
-                foreach (array_slice($data, 7, null, true) as $i => $value) {
-                    #var_dump($i, $value, gettype($value), gettype($base[lcfirst($form->getElement($i)->getText())]));
+				foreach (array_slice($data, 7, null, true) as $i => $value) {
+					#var_dump($i, $value, gettype($value), gettype($base[lcfirst($form->getElement($i)->getText())]));
 					if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
 					$extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
 				}
@@ -159,11 +160,11 @@ class Brush extends WETool
 				$blocks = trim(TF::clean($blocks));
 				$filter = trim(TF::clean($filter));
 
-				$biomeNames = (new ReflectionClass(Biome::class))->getConstants();
+				$biomeNames = (new ReflectionClass(BiomeIds::class))->getConstants();
 				$biomeNames = array_flip($biomeNames);
-				unset($biomeNames[Biome::MAX_BIOMES], $biomeNames[Biome::HELL]);
+				unset($biomeNames[BiomeIds::HELL]);
 				array_walk($biomeNames, static function (&$value, $key) {
-					$value = Biome::getBiome($key)->getName();
+					$value = BiomeRegistry::getInstance()->getBiome($key)->getName();
 				});
 				$biomeId = array_search($biome, $biomeNames, true);
 
