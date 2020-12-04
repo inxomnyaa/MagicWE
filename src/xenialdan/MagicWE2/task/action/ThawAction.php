@@ -27,46 +27,46 @@ class ThawAction extends TaskAction
     }
 
     /**
-     * @param string $sessionUUID
-     * @param Selection $selection
-     * @param AsyncChunkManager $manager
-     * @param null|int $changed
-     * @param Block[] $newBlocks
-     * @param Block[] $blockFilter
-     * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
-     * @param string[] $messages
-     * @return Generator|Progress[]
-     * @throws Exception
-     */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard &$oldBlocksSingleClipboard, array &$messages = []): Generator
-    {
-        $changed = 0;
-        $i = 0;
-        #$oldBlocks = [];
-        $count = $selection->getShape()->getTotalCount();
-        $lastProgress = new Progress(0, "");
+	 * @param string $sessionUUID
+	 * @param Selection $selection
+	 * @param AsyncChunkManager $manager
+	 * @param null|int $changed
+	 * @param Block[] $newBlocks
+	 * @param Block[] $blockFilter
+	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
+	 * @param string[] $messages
+	 * @return Generator|Progress[]
+	 * @throws Exception
+	 * @noinspection SuspiciousAssignmentsInspection
+	 */
+	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	{
+		$changed = 0;
+		$i = 0;
+		#$oldBlocks = [];
+		$count = $selection->getShape()->getTotalCount();
+		$lastProgress = new Progress(0, "");
 
-        $m = [];
-        $e = false;
-        $blockFilter = API::blockParser("snow_block,snow_layer,ice", $m, $e);
-        $newBlocks = API::blockParser("air,air,water", $m, $e);
-        foreach ($blockFilter as $ib => $blockF) {
-            foreach ($selection->getShape()->getBlocks($manager, [$blockF]) as $block) {
-                /** @var Block $new */
-                $new = clone $newBlocks[$ib];
-                #$oldBlocks[] = $manager->getBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ())->setComponents($block->x, $block->y, $block->z);
-                $oldBlocksSingleClipboard->addEntry($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), BlockEntry::fromBlock($block));
-                $manager->setBlockAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ(), $new);
-                if ($manager->getBlockIdAt($block->getFloorX(), $block->getFloorY(), $block->getFloorZ()) !== $block->getId()) {
-                    $changed++;
-                }
-                $i++;
-                $progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
-                if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
-                    yield $progress;
-                    $lastProgress = $progress;
-                }
-            }
+		$m = [];
+		$e = false;
+		$blockFilter = API::blockParser("snow_block,snow_layer,ice", $m, $e);
+		$newBlocks = API::blockParser("air,air,water", $m, $e);
+		foreach ($blockFilter as $ib => $blockF) {
+			foreach ($selection->getShape()->getBlocks($manager, [$blockF]) as $block) {
+				$new = clone $newBlocks[$ib];
+				#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->x, $block->y, $block->z);
+				$oldBlocksSingleClipboard->addEntry($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), BlockEntry::fromBlock($block));
+				$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+				if ($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->getId() !== $block->getId()) {
+					$changed++;
+				}
+				$i++;
+				$progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
+				if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
+					yield $progress;
+					$lastProgress = $progress;
+				}
+			}
         }
     }
 }

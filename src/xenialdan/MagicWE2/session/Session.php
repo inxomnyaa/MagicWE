@@ -7,10 +7,10 @@ namespace xenialdan\MagicWE2\session;
 use Ds\Deque;
 use Exception;
 use InvalidArgumentException;
-use pocketmine\lang\BaseLang;
+use pocketmine\lang\Language;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\utils\UUID;
+use pocketmine\uuid\UUID;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -20,88 +20,88 @@ use xenialdan\MagicWE2\task\AsyncRevertTask;
 
 abstract class Session
 {
-    const MAX_CLIPBOARDS = 5;
-    const MAX_HISTORY = 32;
-    /** @var UUID */
-    private $uuid;
-    //todo change to a list of objects with a pointer of the latest action
-    /** @var Selection[] */
-    private $selections = [];
-    /** @var UUID|null */
-    private $latestselection = null;
-    //todo change to a list of objects with a pointer of the latest action
-    /** @var Clipboard[] */
-    private $clipboards = [];
-    /** @var int */
-    private $currentClipboard = -1;
-    /** @var Deque<RevertClipboard> */
-    public $undoHistory;
-    /** @var Deque<RevertClipboard> */
-    public $redoHistory;
+	public const MAX_CLIPBOARDS = 5;
+	public const MAX_HISTORY = 32;
+	/** @var UUID */
+	private $uuid;
+	//todo change to a list of objects with a pointer of the latest action
+	/** @var Selection[] */
+	private $selections = [];
+	/** @var UUID|null */
+	private $latestselection;
+	//todo change to a list of objects with a pointer of the latest action
+	/** @var Clipboard[] */
+	private $clipboards = [];
+	/** @var int */
+	private $currentClipboard = -1;
+	/** @var Deque<RevertClipboard> */
+	public $undoHistory;
+	/** @var Deque<RevertClipboard> */
+	public $redoHistory;
 
-    /**
-     * @return UUID
-     */
-    public function getUUID(): UUID
-    {
-        return $this->uuid;
-    }
+	/**
+	 * @return UUID
+	 */
+	public function getUUID(): UUID
+	{
+		return $this->uuid;
+	}
 
-    /**
+	/**
      * @param UUID $uuid
-     */
-    public function setUUID(UUID $uuid): void
-    {
-        $this->uuid = $uuid;
-    }
+	 */
+	public function setUUID(UUID $uuid): void
+	{
+		$this->uuid = $uuid;
+	}
 
-    /**
-     * @param Selection $selection
-     * @return null|Selection
-     */
-    public function &addSelection(Selection $selection)
-    {
-        $this->selections[$selection->getUUID()->toString()] = $selection;
-        $this->setLatestSelectionUUID($selection->getUUID());
-        $selection = $this->getLatestSelection();
-        return $selection;
-    }
+	/**
+	 * @param Selection $selection
+	 * @return null|Selection
+	 */
+	public function &addSelection(Selection $selection): ?Selection
+	{
+		$this->selections[$selection->getUUID()->toString()] = $selection;
+		$this->setLatestSelectionUUID($selection->getUUID());
+		$selection = $this->getLatestSelection();
+		return $selection;
+	}
 
-    /**
-     * @param UUID $uuid
-     * @return null|Selection
-     */
-    public function &getSelectionByUUID(UUID $uuid)
-    {
-        $selection = $this->selections[$uuid->toString()] ?? null;
-        return $selection;
-    }
+	/**
+	 * @param UUID $uuid
+	 * @return null|Selection
+	 */
+	public function &getSelectionByUUID(UUID $uuid): ?Selection
+	{
+		$selection = $this->selections[$uuid->toString()] ?? null;
+		return $selection;
+	}
 
-    /**
-     * @param string $uuid
-     * @return null|Selection
-     */
-    public function &getSelectionByString(string $uuid)
-    {
-        $selection = $this->selections[$uuid] ?? null;
-        return $selection;
-    }
+	/**
+	 * @param string $uuid
+	 * @return null|Selection
+	 */
+	public function &getSelectionByString(string $uuid): ?Selection
+	{
+		$selection = $this->selections[$uuid] ?? null;
+		return $selection;
+	}
 
-    /**
-     * @return null|Selection
-     */
-    public function &getLatestSelection()
-    {
-        $latestSelectionUUID = $this->getLatestSelectionUUID();
-        if (is_null($latestSelectionUUID)) {
-            $selection = null;
-            return $selection;
-        }
-        $selection = $this->selections[$latestSelectionUUID->toString()] ?? null;
-        return $selection;
-    }
+	/**
+	 * @return null|Selection
+	 */
+	public function &getLatestSelection(): ?Selection
+	{
+		$latestSelectionUUID = $this->getLatestSelectionUUID();
+		if (is_null($latestSelectionUUID)) {
+			$selection = null;
+			return $selection;
+		}
+		$selection = $this->selections[$latestSelectionUUID->toString()] ?? null;
+		return $selection;
+	}
 
-    /**
+	/**
      * @return Selection[]
      */
     public function getSelections(): array
@@ -230,10 +230,10 @@ abstract class Session
         }
         /** @var RevertClipboard $revertClipboard */
         $revertClipboard = $this->undoHistory->pop();
-        $level = $revertClipboard->getLevel();
+		$world = $revertClipboard->getWorld();
         foreach ($revertClipboard->chunks as $hash => $chunk) {
-            $revertClipboard->chunks[$hash] = $level->getChunk($chunk->getX(), $chunk->getZ(), false);
-        }
+			$revertClipboard->chunks[$hash] = $world->getChunk($chunk->getX(), $chunk->getZ());
+		}
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
     }
@@ -248,6 +248,7 @@ abstract class Session
             $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.redo.none'));
             return;
         }
+        /** @var RevertClipboard $revertClipboard */
         $revertClipboard = $this->redoHistory->pop();
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
@@ -266,14 +267,14 @@ abstract class Session
     }
 
     /**
-     * @return BaseLang
+     * @return Language
      */
-    public function getLanguage(): BaseLang
+    public function getLanguage(): Language
     {
         return Loader::getInstance()->getLanguage();
     }
 
-    public abstract function sendMessage(string $message): void;
+	abstract public function sendMessage(string $message): void;
 
     public function __toString()
     {

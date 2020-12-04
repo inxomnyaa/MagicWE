@@ -6,7 +6,7 @@ namespace xenialdan\MagicWE2\tool;
 
 use InvalidArgumentException;
 use JsonSerializable;
-use pocketmine\level\biome\Biome;
+use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
@@ -20,39 +20,39 @@ use xenialdan\MagicWE2\task\action\TaskAction;
 class BrushProperties implements JsonSerializable
 {
 
-    public const VERSION = 1;
-    /** @var int */
-    public $version = self::VERSION;
-    /** @var string */
-    public $customName = "";
-    /** @var string */
-    public $shape = Sphere::class;
-    /** @var array */
-    public $shapeProperties = [];
-    /** @var string */
-    public $action = SetBlockAction::class;
-    /** @var array */
-    public $actionProperties = [];
-    /** @var bool */
-    public $hollow = false;//TODO consider moving into shape properties
-    /** @var string */
-    public $blocks = "stone";
-    /** @var string */
-    public $filter = "";
-    /** @var int */
-    public $biomeId = Biome::PLAINS;
-    /** @var string */
-    public $uuid;
+	public const VERSION = 1;
+	/** @var int */
+	public $version = self::VERSION;
+	/** @var string */
+	public $customName = "";
+	/** @var string */
+	public $shape = Sphere::class;
+	/** @var array */
+	public $shapeProperties = [];
+	/** @var string */
+	public $action = SetBlockAction::class;
+	/** @var array */
+	public $actionProperties = [];
+	/** @var bool */
+	public $hollow = false;//TODO consider moving into shape properties
+	/** @var string */
+	public $blocks = "stone";
+	/** @var string */
+	public $filter = "";
+	/** @var int */
+	public $biomeId = BiomeIds::PLAINS;
+	/** @var string */
+	public $uuid;
 
-    /**
-     * Specify data which should be serialized to JSON
-     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4.0
-     */
-    public function jsonSerialize()
-    {
+	/**
+	 * Specify data which should be serialized to JSON
+	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * which is a value of any type other than a resource.
+	 * @since 5.4.0
+	 */
+	public function jsonSerialize()
+	{
         return (array)$this;
     }
 
@@ -116,18 +116,19 @@ class BrushProperties implements JsonSerializable
     }
 
     /**
-     * @return array
-     * @throws ActionNotFoundException
-     * @throws ShapeNotFoundException
-     */
+	 * @return array
+	 * @throws ActionNotFoundException
+	 * @throws ShapeNotFoundException
+	 * @noinspection NestedTernaryOperatorInspection
+	 */
     public function generateLore(): array
     {
-        $shapeProperties = array_map(function ($k, $v): string {
-            return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
-        }, array_keys($this->shapeProperties), $this->shapeProperties);
-        $actionProperties = array_map(function ($k, $v): string {
-            return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
-        }, array_keys($this->actionProperties), $this->actionProperties);
+        $shapeProperties = array_map(static function ($k, $v): string {
+			return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
+		}, array_keys($this->shapeProperties), $this->shapeProperties);
+		$actionProperties = array_map(static function ($k, $v): string {
+			return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
+		}, array_keys($this->actionProperties), $this->actionProperties);
         return array_merge(
             [
                 TF::GOLD . "Shape: {$this->getShapeName()}",

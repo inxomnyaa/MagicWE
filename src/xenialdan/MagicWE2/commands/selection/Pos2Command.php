@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\selection;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use Error;
 use Exception;
+use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -21,19 +21,20 @@ use xenialdan\MagicWE2\session\UserSession;
 class Pos2Command extends BaseCommand
 {
 
-    /**
-     * This is where all the arguments, permissions, sub-commands, etc would be registered
-     */
-    protected function prepare(): void
-    {
-        $this->setPermission("we.command.selection.pos");
-    }
+	/**
+	 * This is where all the arguments, permissions, sub-commands, etc would be registered
+	 * @throws InvalidArgumentException
+	 */
+	protected function prepare(): void
+	{
+		$this->setPermission("we.command.selection.pos");
+	}
 
-    /**
-     * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
-     */
+	/**
+	 * @param CommandSender $sender
+	 * @param string $aliasUsed
+	 * @param BaseArgument[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
@@ -51,18 +52,14 @@ class Pos2Command extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
-            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getLevel())); // TODO check if the selection inside of the session updates
+            $selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getWorld())); // TODO check if the selection inside of the session updates
             if (is_null($selection)) {
                 throw new Error("No selection created - Check the console for errors");
             }
             $selection->setPos2($sender->getPosition());
         } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
             $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
             $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
             $sender->sendMessage($this->getUsage());

@@ -17,7 +17,7 @@ class LanguageArgument extends StringEnumArgument
 
     public function parse(string $argument, CommandSender $sender)
     {
-        return array_search($argument, Loader::getInstance()->getLanguageList());
+        return array_search($argument, Loader::getInstance()->getLanguageList(), true);
     }
 
     public function getEnumValues(): array

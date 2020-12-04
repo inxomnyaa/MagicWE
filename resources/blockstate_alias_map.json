@@ -197,7 +197,8 @@
   },
   "facing_direction": {
     "alias": [
-      "direction"
+      "direction",
+      "facing"
     ]
   },
   "fill_level": {

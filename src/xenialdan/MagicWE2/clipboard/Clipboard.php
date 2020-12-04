@@ -5,75 +5,76 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\clipboard;
 
 use Exception;
-use pocketmine\level\format\Chunk;
-use pocketmine\level\Level;
 use pocketmine\Server;
+use pocketmine\world\format\Chunk;
+use pocketmine\world\World;
 use Serializable;
+use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 abstract class Clipboard implements Serializable
 {
-    const DIRECTION_DEFAULT = 1;
+	public const DIRECTION_DEFAULT = 1;
 
-    const FLIP_X = 0x01;
-    const FLIP_WEST = 0x01;
-    const FLIP_EAST = 0x01;
-    const FLIP_Y = 0x02;
-    const FLIP_UP = 0x02;
-    const FLIP_DOWN = 0x02;
-    const FLIP_Z = 0x03;
-    const FLIP_NORTH = 0x03;
-    const FLIP_SOUTH = 0x03;
+	public const FLIP_X = 0x01;
+	public const FLIP_WEST = 0x01;
+	public const FLIP_EAST = 0x01;
+	public const FLIP_Y = 0x02;
+	public const FLIP_UP = 0x02;
+	public const FLIP_DOWN = 0x02;
+	public const FLIP_Z = 0x03;
+	public const FLIP_NORTH = 0x03;
+	public const FLIP_SOUTH = 0x03;
 
-    /** @var int|null */
-    public $levelid;
-    /** @var string */
-    public $customName = "";
+	/** @var int|null */
+	public $worldId;
+	/** @var string */
+	public $customName = "";
+
+	/**
+	 * Creates a chunk manager used for async editing
+	 * @param Chunk[] $chunks
+	 * @return AsyncChunkManager
+	 */
+	public static function getChunkManager(array $chunks): AsyncChunkManager
+	{
+		$manager = new AsyncChunkManager();
+		foreach ($chunks as $chunk) {
+			$manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
+		}
+		return $manager;
+	}
 
     /**
-     * Creates a chunk manager used for async editing
-     * @param Chunk[] $chunks
-     * @return AsyncChunkManager
-     */
-    public static function getChunkManager(array $chunks): AsyncChunkManager
-    {
-        $manager = new AsyncChunkManager(0);
-        foreach ($chunks as $chunk) {
-            $manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
-        }
-        return $manager;
-    }
-
-    /**
-     * @return Level
+     * @return World
      * @throws Exception
      */
-    public function getLevel(): Level
-    {
-        if (is_null($this->levelid)) {
-            throw new Exception("Level is not set!");
-        }
-        $level = Server::getInstance()->getLevel($this->levelid);
-        if (is_null($level)) {
-            throw new Exception("Level is not found!");
-        }
-        return $level;
-    }
+    public function getWorld(): World
+	{
+		if (is_null($this->worldId)) {
+			throw new SelectionException("World is not set!");
+		}
+		$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
+		if (is_null($world)) {
+			throw new SelectionException("World is not found!");
+		}
+		return $world;
+	}
 
-    /**
-     * @param Level $level
-     */
-    public function setLevel(Level $level): void
-    {
-        $this->levelid = $level->getId();
-    }
+	/**
+	 * @param World $world
+	 */
+	public function setWorld(World $world): void
+	{
+		$this->worldId = $world->getId();
+	}
 
     /**
      * @return int
      */
-    public function getLevelId(): int
+    public function getWorldId(): int
     {
-        return $this->levelid;
+		return $this->worldId;
     }
 
     /**

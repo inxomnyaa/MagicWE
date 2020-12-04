@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\brush;
 
-use ArgumentCountError;
 use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
-use CortexPE\Commando\exception\SubCommandCollision;
-use Error;
 use Exception;
+use InvalidArgumentException;
 use muqsit\invmenu\InvMenu;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\customui\elements\Button;
 use xenialdan\customui\elements\Label;
@@ -30,12 +28,12 @@ class BrushCommand extends BaseCommand
 {
     /**
      * This is where all the arguments, permissions, sub-commands, etc would be registered
-     * @throws SubCommandCollision
+     * @throws InvalidArgumentException
      */
     protected function prepare(): void
     {
         $this->registerSubCommand(new BrushNameCommand("name", "Get name or rename a brush"));
-        $this->setPermission("we.command.brush");
+		$this->setPermission("we.command.brush");
     }
 
     /**
@@ -60,7 +58,7 @@ class BrushCommand extends BaseCommand
         try {
             $session = SessionHelper::getUserSession($sender);
             if (!$session instanceof UserSession) {
-                throw new Exception($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
+                throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             $form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.content'));
             $form->addButton(new Button($lang->translateString('ui.brush.create')));
@@ -79,7 +77,7 @@ class BrushCommand extends BaseCommand
                         }
                         case $lang->translateString('ui.brush.getsession'):
                         {
-                            $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST)->readonly(false);
+                            $menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
                             foreach ($session->getBrushes() as $brush) {
                                 $menu->getInventory()->addItem($brush->toItem());
                             }
@@ -97,41 +95,34 @@ class BrushCommand extends BaseCommand
                     }
                     return null;
                 } catch (Exception $error) {
-                    $session->sendMessage(TF::RED . $lang->translateString('error'));
-                    $session->sendMessage(TF::RED . $error->getMessage());
-                }
-            });
-            $sender->sendForm($form);
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (ArgumentCountError $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+					$session->sendMessage(TF::RED . $lang->translateString('error'));
+					$session->sendMessage(TF::RED . $error->getMessage());
+				}
+			});
+			$sender->sendForm($form);
+		} catch (Exception $error) {
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsage());
+		}
+	}
 
-    /**
-     * @param UIElement[] $elements
-     * @param array $data
-     * @return array
-     */
-    public static function generateLore(array $elements, array $data)
-    {
-        $return = [];
-        foreach ($elements as $i => $element) {
-            if ($element instanceof Label) continue;
-            if ($element instanceof Toggle) {
-                $return[] = strval($element->getText() . ": " . ($data[$i] ? "Yes" : "No"));
-                continue;
-            }
-            $return[] = strval($element->getText() . ": " . $data[$i]);
-        }
-        return $return;
+	/**
+	 * @param UIElement[] $elements
+	 * @param array $data
+	 * @return array
+	 */
+	public static function generateLore(array $elements, array $data): array
+	{
+		$return = [];
+		foreach ($elements as $i => $element) {
+			if ($element instanceof Label) continue;
+			if ($element instanceof Toggle) {
+				$return[] = ($element->getText() . ": " . ($data[$i] ? "Yes" : "No"));
+				continue;
+			}
+			$return[] = ($element->getText() . ": " . $data[$i]);
+		}
+		return $return;
     }
 }
