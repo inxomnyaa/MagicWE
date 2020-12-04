@@ -9,7 +9,7 @@ load: POSTWORLD
 authors:
   - XenialDan
 description: Lag free asynchronous world editor for PMMP with plenty of options
-prefix: 'MWE2'
+prefix: "MWE2"
 website: https://github.com/thebigsmileXD/MagicWE2
 permissions:
   we.session:
@@ -127,4 +127,3 @@ permissions:
             default: op
       we.command.test:
         default: op
-...
