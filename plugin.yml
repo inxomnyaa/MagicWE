@@ -1,11 +1,9 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 10.1.1
+version: 10.1.2
 api: ["4.0.0"]
 php: "7.4"
-#load: STARTUP
-load: POSTWORLD
 authors:
   - XenialDan
 description: Lag free asynchronous world editor for PMMP with plenty of options
@@ -18,113 +16,102 @@ permissions:
     default: false
   we.command:
     default: op
-    children:
-      we.command.donate:
-        default: true
-      we.command.language:
-        default: op
-      we.command.help:
-        default: op
-      we.command.info:
-        default: true
-      we.command.limit:
-        default: op
-      we.command.report:
-        default: op
-      we.command.setrange:
-        default: op
-      we.command.version:
-        default: op
-      we.command.biome:
-        default: op
-        children:
-          we.command.biome.info:
-            default: op
-          we.command.biome.list:
-            default: op
-          we.command.biome.set:
-            default: op
-      we.command.brush:
-        default: op
-        children:
-          we.command.brush.name:
-            default: op
-      we.command.clipboard:
-        default: op
-        children:
-          we.command.clipboard.clear:
-            default: op
-          we.command.clipboard.copy:
-            default: op
-          we.command.clipboard.cut:
-            default: op
-          we.command.clipboard.flip:
-            default: op
-          we.command.clipboard.paste:
-            default: op
-          we.command.clipboard.rotate:
-            default: op
-      we.command.generation:
-        default: op
-        children:
-          we.command.generation.cyl:
-            default: op
-      we.command.history:
-        default: op
-        children:
-          we.command.history.clear:
-            default: op
-          we.command.history.redo:
-            default: op
-          we.command.history.undo:
-            default: op
-      we.command.region:
-        default: op
-        children:
-          we.command.region.overlay:
-            default: op
-          we.command.region.replace:
-            default: op
-          we.command.region.set:
-            default: op
-      we.command.selection:
-        default: op
-        children:
-          we.command.selection.chunk:
-            default: op
-          we.command.selection.hpos:
-            default: op
-          we.command.selection.pos:
-            default: op
-          we.command.selection.info:
-            default: op
-            children:
-              we.command.selection.info.count:
-                default: op
-              we.command.selection.info.listchunks:
-                default: op
-              we.command.selection.info.size:
-                default: op
-      we.command.tool:
-        default: op
-        children:
-          we.command.tool.debug:
-            default: op
-          we.command.tool.floodfill:
-            default: op
-          we.command.tool.toggledebug:
-            default: op
-          we.command.tool.togglewand:
-            default: op
-          we.command.tool.wand:
-            default: op
-      we.command.utility:
-        default: op
-        children:
-          we.command.utility.calculate:
-            default: op
-          we.command.utility.togglewaila:
-            default: op
-      we.command.test:
-        default: op
+  we.command.donate:
+    default: true
+  we.command.language:
+    default: op
+  we.command.help:
+    default: op
+  we.command.info:
+    default: true
+  we.command.limit:
+    default: op
+  we.command.report:
+    default: op
+  we.command.setrange:
+    default: op
+  we.command.version:
+    default: op
+  we.command.biome:
+    default: op
+  we.command.biome.info:
+    default: op
+  we.command.biome.list:
+    default: op
+  we.command.biome.set:
+    default: op
+  we.command.brush:
+    default: op
+  we.command.brush.name:
+    default: op
+  we.command.clipboard:
+    default: op
+  we.command.clipboard.clear:
+    default: op
+  we.command.clipboard.copy:
+    default: op
+  we.command.clipboard.cut:
+    default: op
+  we.command.clipboard.flip:
+    default: op
+  we.command.clipboard.paste:
+    default: op
+  we.command.clipboard.rotate:
+    default: op
+  we.command.generation:
+    default: op
+  we.command.generation.cyl:
+    default: op
+  we.command.history:
+    default: op
+  we.command.history.clear:
+    default: op
+  we.command.history.redo:
+    default: op
+  we.command.history.undo:
+    default: op
+  we.command.region:
+    default: op
+  we.command.region.overlay:
+    default: op
+  we.command.region.replace:
+    default: op
+  we.command.region.set:
+    default: op
+  we.command.selection:
+    default: op
+  we.command.selection.chunk:
+    default: op
+  we.command.selection.hpos:
+    default: op
+  we.command.selection.pos:
+    default: op
+  we.command.selection.info:
+    default: op
+  we.command.selection.info.count:
+    default: op
+  we.command.selection.info.listchunks:
+    default: op
+  we.command.selection.info.size:
+    default: op
+  we.command.tool:
+    default: op
+  we.command.tool.debug:
+    default: op
+  we.command.tool.floodfill:
+    default: op
+  we.command.tool.toggledebug:
+    default: op
+  we.command.tool.togglewand:
+    default: op
+  we.command.tool.wand:
+    default: op
+  we.command.utility:
+    default: op
+  we.command.utility.calculate:
+    default: op
+  we.command.utility.togglewaila:
+    default: op
+  we.command.test:
+    default: op
 ...
