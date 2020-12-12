@@ -38,12 +38,13 @@ abstract class Shape implements Serializable
      */
     public static function getChunkManager(array $chunks): AsyncChunkManager
     {
-        $manager = new AsyncChunkManager();
-        foreach ($chunks as $chunk) {
-            $manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
-        }
-        return $manager;
-    }
+		$manager = new AsyncChunkManager();
+		foreach ($chunks as $hash => $chunk) {
+			World::getXZ($hash, $chunkX, $chunkZ);
+			$manager->setChunk($chunkX, $chunkZ, $chunk);
+		}
+		return $manager;
+	}
 
     /**
      * @param mixed $manager
