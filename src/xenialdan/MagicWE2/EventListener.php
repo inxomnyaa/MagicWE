@@ -66,8 +66,9 @@ class EventListener implements Listener
 		Loader::getInstance()->wailaBossBar->addPlayer($event->getPlayer());
 		if (Loader::hasScoreboard()) {
 			try {
+				if (($session = $event->getSession()) instanceof UserSession && $session->isSidebarEnabled())
 				/** @var UserSession $session */
-				if (($session = $event->getSession()) instanceof UserSession && $session->isSidebarEnabled()) $session->sidebar->handleScoreboard($session);
+				$session->sidebar->handleScoreboard($session);
 			} catch (InvalidArgumentException $e) {
 				Loader::getInstance()->getLogger()->logException($e);
 			}

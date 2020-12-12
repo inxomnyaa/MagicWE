@@ -55,7 +55,7 @@ class ReportCommand extends BaseCommand
 				TF::EOL . "<!-- DO NOT CHANGE MANUALLY -->" .
 				TF::EOL . "---" .
 				TF::EOL . TF::clean(implode(TF::EOL, Loader::getInfo())));
-			$url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . ($args["title"] ?? "")));
+			$url .= "&title=" . urlencode(TF::clean("[" . Loader::getInstance()->getDescription()->getVersion() . "] " . ((string)($args["title"] ?? ""))));
 
 			if (!$sender instanceof ConsoleCommandSender) $sender->sendMessage(Loader::PREFIX . $url);
 			Loader::getInstance()->getLogger()->alert($url);

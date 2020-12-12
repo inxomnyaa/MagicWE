@@ -322,26 +322,28 @@ class Loader extends PluginBase
 		#BlockStatesParser::getInstance()::runTests();
 		$world = Loader::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
 		$spawn = $world->getSafeSpawn()->asVector3();
-		foreach (glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure") as $file) {
-			$this->getLogger()->debug(TextFormat::GOLD . "Loading " . basename($file));
-			try {
-				/** @var StructureStore $instance */
-				$instance = StructureStore::getInstance();
-				$structure = $instance->loadStructure(basename($file));
-				//this will dump wrong blocks for now
-				foreach ($structure->blocks() as $block) {
-					#$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
-					$world->setBlock(($at = $spawn->addVector($block->getPos()->asVector3())), $block);
-					if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world), $at)) instanceof Tile) {
-						$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-						if ($tileAt !== null) $world->removeTile($tileAt);
-						$world->addTile($tile);
+		$structureFiles = glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure");
+		if($structureFiles !== false)
+			foreach ($structureFiles as $file) {
+				$this->getLogger()->debug(TextFormat::GOLD . "Loading " . basename($file));
+				try {
+					/** @var StructureStore $instance */
+					$instance = StructureStore::getInstance();
+					$structure = $instance->loadStructure(basename($file));
+					//this will dump wrong blocks for now
+					foreach ($structure->blocks() as $block) {
+						#$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
+						$world->setBlock(($at = $spawn->addVector($block->getPos()->asVector3())), $block);
+						if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world), $at)) instanceof Tile) {
+							$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+							if ($tileAt !== null) $world->removeTile($tileAt);
+							$world->addTile($tile);
+						}
 					}
+				} catch (Exception $e) {
+					$this->getLogger()->debug($e->getMessage());
 				}
-			} catch (Exception $e) {
-				$this->getLogger()->debug($e->getMessage());
 			}
-		}
 
 		//register WAILA bar
 		$this->wailaBossBar = new DiverseBossBar();

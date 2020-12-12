@@ -457,12 +457,12 @@ class API
 			$operators = ['*', '/'];
 			while (!$error && !empty($operators)) {
 				$operator = array_pop($operators);
-				while ($operator && strpos($str, $operator) !== false) {
+				while ($operator !== null && strpos($str, $operator) !== false) {
 					$regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
 					preg_match($regex, $str, $matches);
 					if (isset($matches[1], $matches[2])) {
-						if ($operator === '+') $result = (float)$matches[1] + (float)$matches[2];
-						if ($operator === '-') $result = (float)$matches[1] - (float)$matches[2];
+						//if ($operator === '+') $result = (float)$matches[1] + (float)$matches[2];
+						//if ($operator === '-') $result = (float)$matches[1] - (float)$matches[2];
 						if ($operator === '*') $result = (float)$matches[1] * (float)$matches[2];
 						if ($operator === '/') {
 							if ((float)$matches[2]) {
