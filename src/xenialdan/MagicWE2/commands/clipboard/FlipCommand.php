@@ -55,17 +55,17 @@ class FlipCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $axis = (string)$args["axis"];
+			$axis = (string)$args["axis"];//TODO change to Axis[]
 			$sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [$axis]));
-            $session = SessionHelper::getUserSession($sender);
-            if (is_null($session)) {
+			$session = SessionHelper::getUserSession($sender);
+			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $clipboard = $session->getCurrentClipboard();
-            if (!$clipboard instanceof SingleClipboard) {
+			}
+			$clipboard = $session->getCurrentClipboard();
+			if (!$clipboard instanceof SingleClipboard) {
 				throw new SessionException($lang->translateString('error.noclipboard'));
-            }
-            $action = new FlipAction($axis);
+			}
+			$action = new FlipAction($axis);
             #$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
             #$action->setClipboardVector($offset);
             Server::getInstance()->getAsyncPool()->submitTask(

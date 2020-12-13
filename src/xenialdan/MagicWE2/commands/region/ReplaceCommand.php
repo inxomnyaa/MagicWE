@@ -57,8 +57,8 @@ class ReplaceCommand extends BaseCommand
         try {
 			$messages = [];
 			$error = false;
-			$findBlocks = API::blockParser((string)$args["findblocks"], $messages, $error);
-			$replaceBlocks = API::blockParser((string)$args["replaceblocks"], $messages, $error);
+			$findBlocks = API::blockParser((string)$args["findblocks"], $messages, $error);//TODO change to Palette
+			$replaceBlocks = API::blockParser((string)$args["replaceblocks"], $messages, $error);//TODO change to Palette
 			foreach ($messages as $message) {
 				$sender->sendMessage($message);
 			}

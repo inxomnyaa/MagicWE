@@ -59,12 +59,12 @@ class CountCommand extends BaseCommand
         try {
             $error = false;
             if (!empty($args["blocks"])) {
-                $messages = [];
-				API::blockParser(($filterBlocks = (string)$args["blocks"]), $messages, $error);
-                foreach ($messages as $message) {
-                    $sender->sendMessage($message);
-                }
-            } else $filterBlocks = "";
+				$messages = [];
+				API::blockParser(($filterBlocks = (string)$args["blocks"]), $messages, $error);//TODO change to Palette
+				foreach ($messages as $message) {
+					$sender->sendMessage($message);
+				}
+			} else $filterBlocks = "";
             if (!$error) {
                 $session = SessionHelper::getUserSession($sender);
                 if (is_null($session)) {

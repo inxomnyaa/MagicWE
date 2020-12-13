@@ -34,8 +34,6 @@ class BrushNameCommand extends BaseSubCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
-	 * @throws TypeError
-	 * @throws TypeError
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
@@ -62,12 +60,11 @@ class BrushNameCommand extends BaseSubCommand
 					$sender->sendMessage($brush->getName());
 					return;
 				}
-				$name = (string)$args["name"];
-				$brush->properties->setCustomName($name);
+				$brush->properties->setCustomName((string)$args["name"]);
 				$session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
 				$session->replaceBrush($brush);
 			}
-		} catch (Exception $error) {
+		} catch (Exception | TypeError $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
 			$sender->sendMessage($this->getUsageMessage());

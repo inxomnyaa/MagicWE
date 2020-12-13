@@ -28,7 +28,7 @@ class CopyCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->registerArgument(0, new TextArgument("flags", true));
+		$this->registerArgument(0, new TextArgument("flags", true));//TODO add FlagArgument (parse returns array with flags)
 		$this->setPermission("we.command.clipboard.copy");
 	}
 

@@ -29,7 +29,7 @@ class SetBiomeCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->registerArgument(0, new IntegerArgument("biome", false));
+		$this->registerArgument(0, new IntegerArgument("biome", false));//TODO add BiomeArgument
 		//TODO flags
 		$this->setPermission("we.command.biome.set");
 	}

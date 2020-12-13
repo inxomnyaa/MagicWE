@@ -70,8 +70,9 @@ class CutCommand extends BaseCommand
 			}
 			$hasFlags = isset($args["flags"]);
 			//TODO Temp hack - add cutAsync - Update 9th Feb. 2020 LEAVE THAT ALONE! IT WORKS, DO NOT TOUCH IT!
-			API::copyAsync($selection, $session, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
-			API::fillAsync($selection, $session, [BlockFactory::getInstance()->get(BlockLegacyIds::AIR, 0)], $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
+			$flags = $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE;
+			API::copyAsync($selection, $session, $flags);
+			API::fillAsync($selection, $session, [BlockFactory::getInstance()->get(BlockLegacyIds::AIR, 0)], $flags);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

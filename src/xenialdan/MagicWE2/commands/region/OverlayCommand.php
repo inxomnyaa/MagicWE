@@ -52,19 +52,19 @@ class OverlayCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $messages = [];
-            $error = false;
-			$blocks = API::blockParser((string)$args["blocks"], $messages, $error);
-            foreach ($messages as $message) {
-                $sender->sendMessage($message);
-            }
-            $return = !$error;
-            if ($return) {
-                $session = SessionHelper::getUserSession($sender);
-                if (is_null($session)) {
+			$messages = [];
+			$error = false;
+			$blocks = API::blockParser((string)$args["blocks"], $messages, $error);//TODO change to Palette
+			foreach ($messages as $message) {
+				$sender->sendMessage($message);
+			}
+			$return = !$error;
+			if ($return) {
+				$session = SessionHelper::getUserSession($sender);
+				if (is_null($session)) {
 					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-                }
-                $selection = $session->getLatestSelection();
+				}
+				$selection = $session->getLatestSelection();
                 if (is_null($selection)) {
 					throw new SelectionException($lang->translateString('error.noselection'));
                 }

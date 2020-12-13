@@ -61,7 +61,7 @@ class CylinderCommand extends BaseCommand
         try {
 			$messages = [];
 			$error = false;
-			$blocks = (string)$args["blocks"];
+			$blocks = (string)$args["blocks"];//TODO change to Palette
 			$diameter = (int)$args["diameter"];
 			$height = (int)($args["height"] ?? 1);
 			$newblocks = API::blockParser($blocks, $messages, $error);
