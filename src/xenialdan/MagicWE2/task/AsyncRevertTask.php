@@ -66,7 +66,8 @@ class AsyncRevertTask extends MWEAsyncTask
 	/**
 	 * @param AsyncChunkManager $manager
 	 * @param RevertClipboard $clipboard
-	 * @return Generator|Block[]
+	 * @return Generator|array[]
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 * @throws InvalidArgumentException
 	 */
 	private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
@@ -87,7 +88,8 @@ class AsyncRevertTask extends MWEAsyncTask
 	/**
 	 * @param AsyncChunkManager $manager
 	 * @param RevertClipboard $clipboard
-	 * @return Generator|Block[]
+	 * @return Generator|array[]
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 * @throws InvalidArgumentException
 	 */
 	private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator

@@ -10,9 +10,15 @@ use pocketmine\world\World;
 
 class RevertClipboard extends Clipboard
 {
-	/** @var Chunk[] */
+	/**
+	 * @var Chunk[]
+	 * @phpstan-var array<int, Chunk>
+	 */
 	public $chunks = [];
-	/** @var array[] */
+	/**
+	 * @var array[]
+	 * @phpstan-var array<array{int, Position|null}>
+	 */
 	public $blocksAfter;
 
 	/**
@@ -20,6 +26,7 @@ class RevertClipboard extends Clipboard
 	 * @param int $worldId
 	 * @param Chunk[] $chunks
 	 * @param array[] $blocksAfter //CHANGED AS HACK
+	 * @phpstan-param array<array{int, Position|null}> $blocksAfter
 	 */
 	public function __construct(int $worldId, array $chunks = [], array $blocksAfter = [])
 	{
