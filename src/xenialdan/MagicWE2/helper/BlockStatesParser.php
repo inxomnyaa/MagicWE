@@ -178,7 +178,7 @@ final class BlockStatesParser
 
 	/**
 	 * @param string $blockIdentifier
-	 * @return CompoundTag|null
+	 * @return CompoundTag
 	 */
 	protected static function getDefaultStates(string $blockIdentifier): CompoundTag
 	{
@@ -324,8 +324,8 @@ final class BlockStatesParser
 
 	public static function getStateByCompound(CompoundTag $compoundTag): ?BlockStatesEntry
 	{
-		$namespacedSelectedBlockName = $compoundTag->getString('name');
-		if ($namespacedSelectedBlockName === null) return null;
+		$namespacedSelectedBlockName = $compoundTag->getString('name', "");
+		if ($namespacedSelectedBlockName === "") return null;
 		$states = $compoundTag->getCompoundTag('states') ?? self::getDefaultStates($namespacedSelectedBlockName);
 		if (!$states instanceof CompoundTag) {
 			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
@@ -471,61 +471,61 @@ final class BlockStatesParser
 		return;//TODO
 		//test flip+rotation
 		/** @noinspection PhpUnreachableStatementInspection */
-		$tests2 = [
-			#"minecraft:wooden_slab[wood_type=oak]",
-			#"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
-			#"minecraft:end_rod[]",
-			#"minecraft:end_rod[facing_direction=1]",
-			#"minecraft:end_rod[facing_direction=2]",
-			#"minecraft:stone_brick_stairs[direction=0]",
-			#"minecraft:stone_brick_stairs[direction=1]",
-			#"minecraft:stone_brick_stairs[direction=1,upside_down_bit=true]",
-			#"stone_brick_stairs[direction=1,upside_down_bit=true]",
-			#"minecraft:ladder[facing_direction=3]",
-			#"minecraft:magenta_glazed_terracotta[facing_direction=2]",
-			#"minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]",
-			#"minecraft:birch_door",
-			#"minecraft:birch_door[direction=1]",
-			#"minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
-			#"minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
-			"minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
-		];
-		foreach ($tests2 as $test) {
-			try {
-				Server::getInstance()->getLogger()->debug(TF::GOLD . "Rotation query: " . TF::LIGHT_PURPLE . $test);
-				$block = self::fromString($test)[0];
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "From block: " . TF::AQUA . $block);
-				$state = self::getStateByBlock($block)->rotate(90);
-				assert($state->toBlock() instanceof Block);
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Rotated block: " . TF::AQUA . $state->toBlock());
+		// $tests2 = [
+		// 	#"minecraft:wooden_slab[wood_type=oak]",
+		// 	#"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
+		// 	#"minecraft:end_rod[]",
+		// 	#"minecraft:end_rod[facing_direction=1]",
+		// 	#"minecraft:end_rod[facing_direction=2]",
+		// 	#"minecraft:stone_brick_stairs[direction=0]",
+		// 	#"minecraft:stone_brick_stairs[direction=1]",
+		// 	#"minecraft:stone_brick_stairs[direction=1,upside_down_bit=true]",
+		// 	#"stone_brick_stairs[direction=1,upside_down_bit=true]",
+		// 	#"minecraft:ladder[facing_direction=3]",
+		// 	#"minecraft:magenta_glazed_terracotta[facing_direction=2]",
+		// 	#"minecraft:trapdoor[direction=3,open_bit=true,upside_down_bit=false]",
+		// 	#"minecraft:birch_door",
+		// 	#"minecraft:birch_door[direction=1]",
+		// 	#"minecraft:birch_door[direction=1,door_hinge_bit=false,open_bit=false,upper_block_bit=true]",
+		// 	#"minecraft:birch_door[door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
+		// 	"minecraft:birch_door[direction=3,door_hinge_bit=false,open_bit=true,upper_block_bit=true]",
+		// ];
+		// foreach ($tests2 as $test) {
+		// 	try {
+		// 		Server::getInstance()->getLogger()->debug(TF::GOLD . "Rotation query: " . TF::LIGHT_PURPLE . $test);
+		// 		$block = self::fromString($test)[0];
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "From block: " . TF::AQUA . $block);
+		// 		$state = self::getStateByBlock($block)->rotate(90);
+		// 		assert($state->toBlock() instanceof Block);
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Rotated block: " . TF::AQUA . $state->toBlock());
 
-				Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query x: " . TF::LIGHT_PURPLE . $test);
-				$state = self::getStateByBlock($block)->mirror("x");
-				assert($state->toBlock() instanceof Block);
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block x: " . TF::AQUA . $state->toBlock());
+		// 		Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query x: " . TF::LIGHT_PURPLE . $test);
+		// 		$state = self::getStateByBlock($block)->mirror("x");
+		// 		assert($state->toBlock() instanceof Block);
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block x: " . TF::AQUA . $state->toBlock());
 
-				Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query y: " . TF::LIGHT_PURPLE . $test);
-				$state = self::getStateByBlock($block)->mirror("y");
-				assert($state->toBlock() instanceof Block);
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block y: " . TF::AQUA . $state->toBlock());
-			} catch (Exception $e) {
-				Server::getInstance()->getLogger()->debug($e->getMessage());
-				continue;
-			}
-		}
-		//test doors because WTF they are weird
-		try {
-			for ($i = 0; $i < 15; $i++) {
-				$block = BlockFactory::getInstance()->get(BlockLegacyIds::IRON_DOOR_BLOCK, $i);
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
-				$entry = self::getStateByBlock($block);
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry->blockStates);
-				Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, false));
-			}
-		} catch (Exception $e) {
-			Server::getInstance()->getLogger()->debug($e->getMessage());
-		}
+		// 		Server::getInstance()->getLogger()->debug(TF::GOLD . "Mirror query y: " . TF::LIGHT_PURPLE . $test);
+		// 		$state = self::getStateByBlock($block)->mirror("y");
+		// 		assert($state->toBlock() instanceof Block);
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Flipped block y: " . TF::AQUA . $state->toBlock());
+		// 	} catch (Exception $e) {
+		// 		Server::getInstance()->getLogger()->debug($e->getMessage());
+		// 		continue;
+		// 	}
+		// }
+		// //test doors because WTF they are weird
+		// try {
+		// 	for ($i = 0; $i < 15; $i++) {
+		// 		$block = BlockFactory::getInstance()->get(BlockLegacyIds::IRON_DOOR_BLOCK, $i);
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $block);
+		// 		$entry = self::getStateByBlock($block);
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry);
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . $entry->blockStates);
+		// 		Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($entry, false));
+		// 	}
+		// } catch (Exception $e) {
+		// 	Server::getInstance()->getLogger()->debug($e->getMessage());
+		// }
 	}
 
 	public static function placeAllBlockstates(Position $position): void

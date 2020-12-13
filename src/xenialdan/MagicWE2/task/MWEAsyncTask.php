@@ -43,7 +43,7 @@ abstract class MWEAsyncTask extends AsyncTask
 	 * Turns A block into an array that doesn't get fucked by anonymous classes when serialized
 	 * @param Block $block
 	 * @param Position|null $position
-	 * @return array
+	 * @return array{int, Position|null}
 	 */
 	public static function singleBlockToData(Block $block, ?Position $position = null): array
 	{
@@ -54,7 +54,7 @@ abstract class MWEAsyncTask extends AsyncTask
 	/**
 	 * Turns ALL blocks into an array that doesn't get fucked by anonymous classes when serialized
 	 * @param Block[] $blocks
-	 * @return array
+	 * @return array<array{int, Position|null}>
 	 */
 	public static function multipleBlocksToData(array $blocks): array
 	{
@@ -66,7 +66,7 @@ abstract class MWEAsyncTask extends AsyncTask
 
 	/**
 	 * Turns a SINGLE array from singleBlockToData back into a block
-	 * @param array $data
+	 * @param array{int, Position|null} $data
 	 * @return Block
 	 */
 	protected static function singleDataToBlock(array $data): Block
@@ -83,7 +83,7 @@ abstract class MWEAsyncTask extends AsyncTask
 
 	/**
 	 * Turns back MULTIPLE data from singleBlockToData into blocks
-	 * @param array $hackedBlockData
+	 * @param array<array{int, Position|null}> $hackedBlockData
 	 * @return Block[]
 	 */
 	public static function multipleDataToBlocks(array $hackedBlockData): array

@@ -48,10 +48,10 @@ class CalculateCommand extends BaseCommand
             }
         }
 		try {
-			$sender->sendMessage($args["expression"] . " = " . API::evalAsMath((string)$args["expression"]));
+			$sender->sendMessage((string)$args["expression"] . " = " . API::evalAsMath((string)$args["expression"]));
 		} catch (CalculationException $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage(Loader::PREFIX . TF::RED . $args["expression"]);
+			$sender->sendMessage(Loader::PREFIX . TF::RED . (string)$args["expression"]);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

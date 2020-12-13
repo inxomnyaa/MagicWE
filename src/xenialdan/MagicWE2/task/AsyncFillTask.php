@@ -84,7 +84,6 @@ class AsyncFillTask extends MWEAsyncTask
 		#$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 		$this->setResult([
 			"resultChunks" => $resultChunks,
-			#"oldBlocks" => igbinary_serialize($oldBlocks),
 			"oldBlocks" => $oldBlocks,
 			"changed" => $changed
 		]);
@@ -95,7 +94,8 @@ class AsyncFillTask extends MWEAsyncTask
 	 * @param AsyncChunkManager $manager
 	 * @param Block[] $newBlocks
 	 * @param null|int $changed
-	 * @return Generator|Block[]
+	 * @return Generator|array[]
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 * @throws Exception
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): Generator

@@ -95,7 +95,8 @@ class AsyncReplaceTask extends MWEAsyncTask
      * @param array $replaceBlocks
      * @param Block[] $newBlocks
      * @param null|int $changed
-     * @return Generator|Block[]
+     * @return Generator|array[]
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
      * @throws Exception
      */
     private function execute(Selection $selection, AsyncChunkManager $manager, array $replaceBlocks, array $newBlocks, ?int &$changed): Generator
