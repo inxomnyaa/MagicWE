@@ -4,8 +4,7 @@ parameters:
     checkMissingIterableValueType: false
 
     ignoreErrors:
-        - "#Cannot cast CortexPE\\Commando\\args\\BaseArgument to.*#"
-        - "#Binary operation .* between .* and\n*.*CortexPE\\Commando\\args\\BaseArgument.*#"
+        - "#Cannot cast (.*?)Argument to (.*?)#"
 
     paths:
         - /source/src
