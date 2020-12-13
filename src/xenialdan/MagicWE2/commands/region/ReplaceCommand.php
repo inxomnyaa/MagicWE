@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\region;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
@@ -38,9 +37,9 @@ class ReplaceCommand extends BaseCommand
 
 	/**
 	 * @param CommandSender $sender
-     * @param string $aliasUsed
-     * @param BaseArgument[] $args
-     */
+	 * @param string $aliasUsed
+	 * @param mixed[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();

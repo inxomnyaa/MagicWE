@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
@@ -35,8 +34,8 @@ class SetRangeCommand extends BaseCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-     * @param BaseArgument[] $args
-     */
+	 * @param mixed[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();

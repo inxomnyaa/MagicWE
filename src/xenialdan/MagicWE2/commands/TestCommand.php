@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -35,11 +33,7 @@ class TestCommand extends BaseCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
-	 * @throws AssumptionFailedError
-	 * @throws AssumptionFailedError
-	 * @throws AssumptionFailedError
-	 * @throws AssumptionFailedError
+	 * @param mixed[] $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{

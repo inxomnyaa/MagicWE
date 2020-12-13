@@ -11,21 +11,23 @@ class MirrorAxisArgument extends StringEnumArgument
 {
     protected const VALUES = ["x" => "x", "z" => "z", "y" => "y", "xz" => "xz"];
 
-    public function getTypeName(): string
-    {
-        return "string";
-    }
+	public function getTypeName(): string
+	{
+		return "string";
+	}
 
-    public function getEnumName(): string
-    {
-        return "axis";
-    }
+	public function getEnumName(): string
+	{
+		return "axis";
+	}
 
-    /**
-     * @inheritDoc
-     */
-    public function parse(string $argument, CommandSender $sender)
-    {
-        return $argument;//TODO very sloppy -.-
-    }
+	/**
+	 * @param string $argument
+	 * @param CommandSender $sender
+	 * @return string //TODO consider changing to Axis
+	 */
+	public function parse(string $argument, CommandSender $sender)
+	{
+		return (string)$this->getValue($argument);
+	}
 }

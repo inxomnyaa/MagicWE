@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\generation;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\args\TextArgument;
@@ -42,7 +41,7 @@ class CylinderCommand extends BaseCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+	 * @param mixed[] $args
 	 * @throws AssumptionFailedError
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void

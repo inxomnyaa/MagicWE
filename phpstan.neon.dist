@@ -3,8 +3,7 @@ parameters:
 
     checkMissingIterableValueType: false
 
-    ignoreErrors:
-        - "#Cannot cast (.*?)Argument to (.*?)#"
+    ignoreErrors: []
 
     paths:
         - /source/src

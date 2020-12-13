@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\biome;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use Exception;
 use InvalidArgumentException;
@@ -33,7 +32,7 @@ class BiomeListCommand extends BaseCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+	 * @param mixed[] $args
 	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {

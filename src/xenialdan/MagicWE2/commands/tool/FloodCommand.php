@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\tool;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
@@ -25,7 +24,7 @@ class FloodCommand extends BaseCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+	 * @param mixed[] $args
 	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\brush;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
@@ -34,7 +33,7 @@ class BrushNameCommand extends BaseSubCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
+	 * @param mixed[] $args
 	 * @throws TypeError
 	 * @throws TypeError
 	 */

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\clipboard;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Exception;
@@ -39,8 +38,8 @@ class FlipCommand extends BaseCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-     * @param BaseArgument[] $args
-     */
+	 * @param mixed[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();

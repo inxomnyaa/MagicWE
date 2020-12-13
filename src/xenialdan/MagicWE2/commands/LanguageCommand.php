@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands;
 
-use CortexPE\Commando\args\BaseArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Exception;
@@ -37,8 +36,8 @@ class LanguageCommand extends BaseCommand
 	/**
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
-	 * @param BaseArgument[] $args
-     */
+	 * @param mixed[] $args
+	 */
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         $lang = Loader::getInstance()->getLanguage();
@@ -59,11 +58,11 @@ class LanguageCommand extends BaseCommand
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
             }
             if (isset($args["language"])) {
-                /** @var LanguageArgument $languageArgument */
-                $languageArgument = $args["language"];
-				$session->setLanguage((string)$languageArgument);
-                return;
-            }
+				/** @var string $languageArgument */
+				$languageArgument = $args["language"];
+				$session->setLanguage($languageArgument);
+				return;
+			}
             $languages = Loader::getInstance()->getLanguageList();
             $form = new CustomForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.language.title'));
             $form->addElement(new Label($lang->translateString('ui.language.label')));

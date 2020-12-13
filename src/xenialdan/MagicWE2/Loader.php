@@ -475,7 +475,8 @@ class Loader extends PluginBase
 
 	/**
 	 * Get a list of available languages
-	 * @return array
+	 * @return string[]
+	 * @phpstan-return array<string, string> code=>name
 	 * @throws LanguageNotFoundException
 	 */
 	public function getLanguageList(): array
