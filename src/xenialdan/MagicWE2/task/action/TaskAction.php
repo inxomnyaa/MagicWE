@@ -24,6 +24,9 @@ abstract class TaskAction
 	public $addClipboard = false;
 	/** @var null|Vector3 */
 	public $clipboardVector;
+	//TODO add $flags and define available flags in child classes
+	//public $flags
+	//protected const AVAILABLE_FLAGS = [];(can be overwritten), access with static::AVAILABLE_FLAGS
 
 	/**
 	 * @param string $sessionUUID
