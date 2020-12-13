@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
-use Exception;
 use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
-use pocketmine\block\tile\Tile;
 use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\ItemFlags;
@@ -18,14 +16,13 @@ use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\plugin\PluginBase;
 use pocketmine\plugin\PluginException;
-use pocketmine\scheduler\Task;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
-use pocketmine\utils\TextFormat;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
+use xenialdan\customui\API as CustomUIAPI;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -73,8 +70,8 @@ use xenialdan\MagicWE2\exception\ShapeRegistryException;
 use xenialdan\MagicWE2\helper\BlockStatesEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
-use xenialdan\MagicWE2\helper\StructureStore;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
+use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
 class Loader extends PluginBase
@@ -300,7 +297,7 @@ class Loader extends PluginBase
 			/* -- debugging -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 		]);
-		if (class_exists("\\xenialdan\\customui\\API")) {
+		if (class_exists(CustomUIAPI::class)) {
 			$this->getLogger()->notice("CustomUI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 				/* -- brush -- */
@@ -311,81 +308,79 @@ class Loader extends PluginBase
 		} else {
 			$this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
 		}
-		if (class_exists("\\jackmd\\scorefactory\\ScoreFactory")) {
+		if (class_exists(ScoreFactory::class)) {
 			$this->getLogger()->notice("Scoreboard API found, can use scoreboards");
 			self::$scoreboardAPI = ScoreFactory::class;
 		} else {
 			$this->getLogger()->notice(TF::RED . "Scoreboard API NOT found, can NOT use scoreboards");
 		}
-
-		//run tests
-		#BlockStatesParser::getInstance()::runTests();
-		$world = Loader::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
-		$spawn = $world->getSafeSpawn()->asVector3();
-		$structureFiles = glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure");
-		if($structureFiles !== false)
-			foreach ($structureFiles as $file) {
-				$this->getLogger()->debug(TextFormat::GOLD . "Loading " . basename($file));
-				try {
-					/** @var StructureStore $instance */
-					$instance = StructureStore::getInstance();
-					$structure = $instance->loadStructure(basename($file));
-					//this will dump wrong blocks for now
-					foreach ($structure->blocks() as $block) {
-						#$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
-						$world->setBlock(($at = $spawn->addVector($block->getPos()->asVector3())), $block);
-						if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world), $at)) instanceof Tile) {
-							$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-							if ($tileAt !== null) $world->removeTile($tileAt);
-							$world->addTile($tile);
-						}
-					}
-				} catch (Exception $e) {
-					$this->getLogger()->debug($e->getMessage());
-				}
-			}
+//		.mcstructure loading tests
+//		$world = self::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
+//		if ($world !== null) {
+//			$spawn = $world->getSafeSpawn()->asVector3();
+//			$structureFiles = glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure");
+//			if ($structureFiles !== false)
+//				foreach ($structureFiles as $file) {
+//					$this->getLogger()->debug(TF::GOLD . "Loading " . basename($file));
+//					try {
+//						/** @var StructureStore $instance */
+//						$instance = StructureStore::getInstance();
+//						$structure = $instance->loadStructure(basename($file));
+//						//this will dump wrong blocks for now
+//						foreach ($structure->blocks() as $block) {
+//							#$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
+//							$world->setBlock(($at = $spawn->addVector($block->getPos()->asVector3())), $block);
+//							if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world), $at)) instanceof Tile) {
+//								$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+//								if ($tileAt !== null) $world->removeTile($tileAt);
+//								$world->addTile($tile);
+//							}
+//						}
+//					} catch (Exception $e) {
+//						$this->getLogger()->debug($e->getMessage());
+//					}
+//				}
+//		}
 
 		//register WAILA bar
 		$this->wailaBossBar = new DiverseBossBar();
 		$this->wailaBossBar->setPercentage(1.0);
 		//WAILA updater
-		$this->getScheduler()->scheduleDelayedRepeatingTask(new class extends Task {
-
-			public function onRun(): void
-			{
-				$players = Loader::getInstance()->wailaBossBar->getPlayers();
-				foreach ($players as $player) {
-					if (!$player->isOnline() || !SessionHelper::hasSession($player) || !($session = SessionHelper::getUserSession($player))->isWailaEnabled()) {
-						Loader::getInstance()->wailaBossBar->hideFrom([$player]);
-						continue;
-					}
-					if (($block = $player->getTargetBlock(10)) instanceof Block && $block->getId() !== 0) {
-						Loader::getInstance()->wailaBossBar->showTo([$player]);
-						$stateEntry = BlockStatesParser::getStateByBlock($block);
-						$sub = $block->getName();
-						$title = strval($block);
-						if ($stateEntry instanceof BlockStatesEntry) {
-							$sub = implode("," . TF::EOL, explode(",", strval(BlockStatesParser::printStates($stateEntry, false))));
-						}
-						$distancePercentage = round(floor($block->getPos()->distance($player->getEyePos())) / 10, 1);
-						Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
-					} else
-						Loader::getInstance()->wailaBossBar->hideFrom([$player]);
+		$this->getScheduler()->scheduleDelayedRepeatingTask(new ClosureTask(function (): void {
+			$players = Loader::getInstance()->wailaBossBar->getPlayers();
+			foreach ($players as $player) {
+				if (!$player->isOnline() || !SessionHelper::hasSession($player) || (($session = SessionHelper::getUserSession($player)) instanceof UserSession && !$session->isWailaEnabled())) {
+					Loader::getInstance()->wailaBossBar->hideFrom([$player]);
+					continue;
 				}
+				if (($block = $player->getTargetBlock(10)) instanceof Block && $block->getId() !== 0) {
+					Loader::getInstance()->wailaBossBar->showTo([$player]);
+					$stateEntry = BlockStatesParser::getStateByBlock($block);
+					$sub = $block->getName();
+					$title = (string)$block;
+					if ($stateEntry instanceof BlockStatesEntry) {
+						$sub = implode("," . TF::EOL, explode(",", BlockStatesParser::printStates($stateEntry, false)));
+					}
+					$distancePercentage = round(floor($block->getPos()->distance($player->getEyePos())) / 10, 1);
+					Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
+				} else
+					Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 			}
-		}, 60, 1);
+		}), 60, 1);
 	}
 
 	public function onDisable(): void
 	{
-		#$this->getLogger()->debug("Destroying Sessions");
-		foreach (SessionHelper::getPluginSessions() as $session) {
-			SessionHelper::destroySession($session, false);
+		try {
+			foreach (SessionHelper::getPluginSessions() as $session) {
+				SessionHelper::destroySession($session, false);
+			}
+			foreach (SessionHelper::getUserSessions() as $session) {
+				SessionHelper::destroySession($session);
+			}
+		} catch (JsonException $e) {
+			$this->getLogger()->logException($e);
 		}
-		foreach (SessionHelper::getUserSessions() as $session) {
-			SessionHelper::destroySession($session);
-		}
-		#$this->getLogger()->debug("Sessions successfully destroyed");
 	}
 
 	/**
@@ -421,8 +416,9 @@ class Loader extends PluginBase
 			"| Plugin API Version | " . implode(", ", self::getInstance()->getDescription()->getCompatibleApis()) . " |",
 			"| Authors | " . implode(", ", self::getInstance()->getDescription()->getAuthors()) . " |",
 			"| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(self::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Uses UI | " . (class_exists(API::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Phar | " . (strpos(self::getInstance()->getFile(), 'phar:') ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Uses UI | " . (class_exists(CustomUIAPI::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Uses ScoreFactory | " . (class_exists(ScoreFactory::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Phar | " . (strpos(self::getInstance()->getFile(), 'phar:') !== false ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
 			"| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
 			"| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
 			"| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
