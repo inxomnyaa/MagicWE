@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\clipboard;
 
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
 
 class RevertClipboard extends Clipboard

@@ -9,6 +9,7 @@ use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
+use pocketmine\world\Position;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
