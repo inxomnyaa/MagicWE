@@ -4,9 +4,11 @@ projects:
     path: ""
     icon: "resources/magicwe_icon_square_small.png"
     excludeFiles:
-    - "resources/magicwe_icon_square.png"
-    - "resources/magicwe_icon_square_small.png"
-    - "resources/magicwe_icon_wide.png"
+      - "resources/magicwe_icon_square.png"
+      - "resources/magicwe_icon_square_small.png"
+      - "resources/magicwe_icon_wide.png"
+    lint:
+      phpstan: false
     libs:
       - src: BlockHorizons/libschematic/libschematic
         version: ^2.0.0
