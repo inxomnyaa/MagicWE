@@ -172,7 +172,7 @@ class Flood extends WETool
 	/**
 	 * Creates a chunk manager used for async editing
 	 * @param Chunk[] $chunks
-	 * @phpstan-param  array<int, Chunk>
+	 * @phpstan-param array<int, Chunk> $chunks
 	 * @return AsyncChunkManager
 	 */
 	public static function getChunkManager(array $chunks): AsyncChunkManager

@@ -96,7 +96,7 @@ class AsyncFillTask extends MWEAsyncTask
 	 * @param Block[] $newBlocks
 	 * @param null|int $changed
 	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
+	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 * @throws Exception
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): Generator

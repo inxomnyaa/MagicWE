@@ -91,7 +91,7 @@ class AsyncPasteTask extends MWEAsyncTask
 	 * @param SingleClipboard $clipboard
 	 * @param null|int $changed
 	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
+	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 * @throws InvalidArgumentException
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard, ?int &$changed): Generator

@@ -16,7 +16,7 @@ class RevertClipboard extends Clipboard
 	public $chunks = [];
 	/**
 	 * @var array[]
-	 * @phpstan-var array<array{int, Position|null}>
+	 * @phpstan-var array<array{int, \pocketmine\world\Position|null}>
 	 */
 	public $blocksAfter;
 
@@ -25,7 +25,7 @@ class RevertClipboard extends Clipboard
 	 * @param int $worldId
 	 * @param Chunk[] $chunks
 	 * @param array[] $blocksAfter //CHANGED AS HACK
-	 * @phpstan-param array<array{int, Position|null}> $blocksAfter
+	 * @phpstan-param array<array{int, \pocketmine\world\Position|null}> $blocksAfter
 	 */
 	public function __construct(int $worldId, array $chunks = [], array $blocksAfter = [])
 	{
