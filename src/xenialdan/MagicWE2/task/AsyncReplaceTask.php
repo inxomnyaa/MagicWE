@@ -9,9 +9,9 @@ use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use pocketmine\world\Position;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -163,7 +163,8 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {
-			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+			World::getXZ($hash, $x, $z);
+			$world->setChunk($x, $z, $chunk, false);
 		}
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.replace.success', [$this->generateTookString(), $changed, $totalCount]));

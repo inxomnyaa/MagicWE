@@ -11,6 +11,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -67,13 +68,14 @@ class ListChunksCommand extends BaseCommand
             foreach ($touchedChunks as $chunkHash => $touchedChunk) {
 				$chunk = FastChunkSerializer::deserialize($touchedChunk);
 				$biomes = [];
-                for ($x = 0; $x < 16; $x++)
-                    for ($z = 0; $z < 16; $z++)
+				for ($x = 0; $x < 16; $x++)
+					for ($z = 0; $z < 16; $z++)
 						$biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
 				$biomes = array_unique($biomes);
 				$biomecount = count($biomes);
 				$biomes = implode(", ", $biomes);
-				$session->sendMessage(TF::AQUA . "ID: {$chunkHash} | X: {$chunk->getX()} Z: {$chunk->getZ()} | Subchunks: {$chunk->getHeight()} | Biomes: ($biomecount) $biomes");
+				World::getXZ($chunkHash, $cx, $cz);
+				$session->sendMessage(TF::AQUA . "ID: {$chunkHash} | X: {$cx} Z: {$cz} | Subchunks: {$chunk->getHeight()} | Biomes: ($biomecount) $biomes");
 			}
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

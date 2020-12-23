@@ -5,14 +5,13 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use InvalidArgumentException;
-use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use pocketmine\world\Position;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -65,13 +64,9 @@ class AsyncPasteTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 
-		$touchedChunks = array_map(static function ($chunk) {
+		$touchedChunks = array_map(static function ($chunk) {//todo add hash as key
 			return FastChunkSerializer::deserialize($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
-		foreach ($touchedChunks as $chunk) {
-			/** @var Chunk $chunk */
-			var_dump("deserialize Chunk x " . $chunk->getX() . " z " . $chunk->getZ());
-		}//TODO REMOVE
 
 		$manager = Shape::getChunkManager($touchedChunks);
 		unset($touchedChunks);
@@ -173,7 +168,8 @@ class AsyncPasteTask extends MWEAsyncTask
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {
-			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+			World::getXZ($hash, $x, $z);
+			$world->setChunk($x, $z, $chunk, false);
 		}
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));

@@ -11,6 +11,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -152,7 +153,8 @@ class AsyncActionTask extends MWEAsyncTask
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {
-			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+			World::getXZ($hash, $x, $z);
+			$world->setChunk($x, $z, $chunk, false);
 		}
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));

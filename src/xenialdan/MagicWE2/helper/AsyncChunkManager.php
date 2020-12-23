@@ -8,10 +8,10 @@ use pocketmine\world\SimpleChunkManager;
 class AsyncChunkManager extends SimpleChunkManager
 {
 
-    public function getBlockArrayAt(int $x, int $y, int $z): array
-    {
-        return [$this->getBlockAt($x, $y, $z)->getId(), $this->getBlockAt($x, $y, $z)->getMeta()];
-    }
+    public function getBlockArrayAt(int $x, int $y, int $z): array//TODO replace with getFullBlock
+	{
+		return [$this->getBlockAt($x, $y, $z)->getId(), $this->getBlockAt($x, $y, $z)->getMeta()];
+	}
 
     /**
      * @return Chunk[]

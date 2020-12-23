@@ -11,6 +11,7 @@ use pocketmine\lang\Language;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
+use pocketmine\world\World;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -232,7 +233,8 @@ abstract class Session
         $revertClipboard = $this->undoHistory->pop();
 		$world = $revertClipboard->getWorld();
         foreach ($revertClipboard->chunks as $hash => $chunk) {
-			$revertClipboard->chunks[$hash] = $world->getChunk($chunk->getX(), $chunk->getZ());
+			World::getXZ($hash, $x, $z);
+			$revertClipboard->chunks[$hash] = $world->getChunk($x, $z);
 		}
         Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
         $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));

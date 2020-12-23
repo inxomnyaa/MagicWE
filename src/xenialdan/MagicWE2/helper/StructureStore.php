@@ -43,7 +43,7 @@ final class StructureStore
 	{
 		$id = pathinfo($filename, PATHINFO_FILENAME);
 		if (!$override && array_key_exists($id, $this->structures)) throw new InvalidArgumentException("Can not override $id");
-		$path = Loader::getInstance()->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . $id . '.mcstructure';
+		$path = Loader::getInstance()->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . $id . '.mcstructure';//TODO redundant?
 		$structure = new MCStructure();
 
 		$structure->parse($path);

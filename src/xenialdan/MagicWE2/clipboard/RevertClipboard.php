@@ -6,8 +6,6 @@ namespace xenialdan\MagicWE2\clipboard;
 
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
-use pocketmine\world\Position;
-use pocketmine\world\World;
 
 class RevertClipboard extends Clipboard
 {
@@ -44,15 +42,16 @@ class RevertClipboard extends Clipboard
      */
     public function serialize()
     {
-        $chunks = [];
-        foreach ($this->chunks as $chunk)
-			$chunks[World::chunkHash($chunk->getX(), $chunk->getZ())] = FastChunkSerializer::serialize($chunk);
-        return serialize([
+		$chunks = [];
+		foreach ($this->chunks as $hash => $chunk) {
+			$chunks[$hash] = FastChunkSerializer::serialize($chunk);
+		}
+		return serialize([
 			$this->worldId,
 			$chunks,
 			$this->blocksAfter
 		]);
-    }
+	}
 
     /**
 	 * Constructs the object

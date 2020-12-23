@@ -5,11 +5,10 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use InvalidArgumentException;
-use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\uuid\UUID;
-use pocketmine\world\Position;
+use pocketmine\world\World;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -130,8 +129,9 @@ class AsyncRevertTask extends MWEAsyncTask
 		$changed = count($result["oldBlocks"]);
 		$clipboard->blocksAfter = $result["oldBlocks"];//already is a array of data
 		$world = $clipboard->getWorld();
-		foreach ($clipboard->chunks as $chunk) {
-			$world->setChunk($chunk->getX(), $chunk->getZ(), $chunk, false);
+		foreach ($clipboard->chunks as $hash => $chunk) {
+			World::getXZ($hash, $x, $z);
+			$world->setChunk($x, $z, $chunk, false);
 		}
 		if (!is_null($session)) {
 			switch ($this->type) {
@@ -140,8 +140,8 @@ class AsyncRevertTask extends MWEAsyncTask
 					$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.undo.success', [$this->generateTookString(), $changed, $totalCount]));
 					$session->redoHistory->push($clipboard);
 					break;
-                }
-                case self::TYPE_REDO:
+				}
+				case self::TYPE_REDO:
                 {
                     $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
                     $session->undoHistory->push($clipboard);
