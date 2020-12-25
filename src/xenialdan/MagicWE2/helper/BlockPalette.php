@@ -32,11 +32,11 @@ class BlockPalette
 
 	/**
 	 * @param string $blocksQuery
-	 * @return static
+	 * @return BlockPalette
 	 * @throws InvalidArgumentException
 	 * @throws BlockQueryAlreadyParsedException
 	 */
-	public static function fromString(string $blocksQuery): self
+	public static function fromString(string $blocksQuery): BlockPalette
 	{
 		$palette = self::CREATE();
 
@@ -56,7 +56,7 @@ class BlockPalette
 		return $palette;
 	}
 
-	public function addBlockQuery(BlockQuery $query)
+	public function addBlockQuery(BlockQuery $query): void
 	{
 		$this->randomBlockQueries->add($query, $query->weight);
 	}

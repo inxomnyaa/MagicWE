@@ -42,53 +42,48 @@ class CountCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-			$error = false;
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
 			if (isset($args["blocks"])) {
 				$filterBlocks = $args["blocks"];
 			} else $filterBlocks = BlockPalette::CREATE();
-			if (!$error) {
-				$session = SessionHelper::getUserSession($sender);
-				if (is_null($session)) {
-					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-				}
-				$selection = $session->getLatestSelection();
-				if (is_null($selection)) {
-					throw new SelectionException($lang->translateString('error.noselection'));
-				}
-				if (!$selection->isValid()) {
-					throw new SelectionException($lang->translateString('error.selectioninvalid'));
-                }
-                if ($selection->getWorld() !== $sender->getWorld()) {
-					$session->sendMessage(TF::GOLD . $lang->translateString('warning.differentworld'));
-                }
-                Server::getInstance()->getAsyncPool()->submitTask(
-                    new AsyncActionTask(
-						$session->getUUID(),
-						$selection,
-						new CountAction(),
-						$selection->getShape()->getTouchedChunks($selection->getWorld()),
-						BlockPalette::CREATE(),
-						$filterBlocks
-					)
-				);
-			} else {
-				throw new InvalidArgumentException("Could not count the selected blocks");
+			$session = SessionHelper::getUserSession($sender);
+			if (is_null($session)) {
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
+			$selection = $session->getLatestSelection();
+			if (is_null($selection)) {
+				throw new SelectionException($lang->translateString('error.noselection'));
+			}
+			if (!$selection->isValid()) {
+				throw new SelectionException($lang->translateString('error.selectioninvalid'));
+			}
+			if ($selection->getWorld() !== $sender->getWorld()) {
+				$session->sendMessage(TF::GOLD . $lang->translateString('warning.differentworld'));
+			}
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncActionTask(
+					$session->getUUID(),
+					$selection,
+					new CountAction(),
+					$selection->getShape()->getTouchedChunks($selection->getWorld()),
+					BlockPalette::CREATE(),
+					$filterBlocks
+				)
+			);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

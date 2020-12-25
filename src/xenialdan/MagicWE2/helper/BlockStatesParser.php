@@ -276,7 +276,7 @@ final class BlockStatesParser
 				$blocks[] = $block;
 			}
 		}
-		if (empty($blocks) && !$block instanceof Block) throw new InvalidArgumentException("No block $namespacedSelectedBlockName matching $query->query could be found");//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
+		if (count($blocks) < 1) throw new InvalidArgumentException("No block $namespacedSelectedBlockName matching $query->query could be found");//no block found //TODO r12 map only has blocks up to id 255. On 4.0.0, return Item::fromString()?
 		if (count($blocks) === 1) {
 			$block = $blocks[0];
 			$query->blockFullId = $block->getFullId();
