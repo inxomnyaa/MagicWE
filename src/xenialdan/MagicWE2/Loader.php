@@ -174,6 +174,7 @@ class Loader extends PluginBase
 
 		$blockstateparserInstance->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
 		#StructureStore::getInstance();
+		$blockstateparserInstance::runTests();//TODO REMOVE, DEBUG!!!!!!!
 	}
 
 	/**

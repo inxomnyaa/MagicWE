@@ -15,6 +15,7 @@ use pocketmine\world\World;
 use Serializable;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 
 abstract class Shape implements Serializable
 {
@@ -57,15 +58,15 @@ abstract class Shape implements Serializable
 
     abstract public function getTotalCount(): int;
 
-    /**
+	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-    abstract public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator;
+	abstract public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator;
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection

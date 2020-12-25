@@ -13,6 +13,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 
 class Cube extends Shape
 {
@@ -28,26 +29,26 @@ class Cube extends Shape
 	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-    public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
-    {
+	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->getMinVec3()->x), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
 			for ($y = (int)floor($this->getMinVec3()->y), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {
 				for ($z = (int)floor($this->getMinVec3()->z), $rz = 0; $z <= floor($this->getMaxVec3()->z); $z++, $rz++) {
-					$block = API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z);
+					$block = API::setComponents($manager->getBlockAt($x, $y, $z), $x, $y, $z);
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
 					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO check for removal because relative might be at other y
 					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPos()->x > $this->getMinVec3()->getX() && $block->getPos()->x < $this->getMaxVec3()->getX()) && ($block->getPos()->y > $this->getMinVec3()->getY() && $block->getPos()->y < $this->getMaxVec3()->getY()) && ($block->getPos()->z > $this->getMinVec3()->getZ() && $block->getPos()->z < $this->getMaxVec3()->getZ())) continue;
-					if (empty($filterblocks)) yield $block;
+					if ($filterblocks->empty()) yield $block;
 					else {
-						foreach ($filterblocks as $filterblock) {
+						foreach ($filterblocks->palette() as $filterblock) {
 							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
 								yield $block;
 						}

@@ -13,6 +13,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 
 class Sphere extends Shape
 {
@@ -33,12 +34,12 @@ class Sphere extends Shape
 	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
+	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->pasteVector->x - $this->diameter / 2 - 1); $x <= floor($this->pasteVector->x + $this->diameter / 2 + 1); $x++) {
@@ -52,9 +53,9 @@ class Sphere extends Shape
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
 					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fufufufuuu
-					if (empty($filterblocks)) yield $block;
+					if ($filterblocks->empty()) yield $block;
 					else {
-						foreach ($filterblocks as $filterblock) {
+						foreach ($filterblocks->palette() as $filterblock) {
 							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
 								yield $block;
 						}

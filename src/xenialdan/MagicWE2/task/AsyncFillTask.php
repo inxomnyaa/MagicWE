@@ -5,6 +5,7 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use MultipleIterator;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
@@ -31,7 +32,9 @@ class AsyncFillTask extends MWEAsyncTask
 	private $selection;
 	/** @var int */
 	private $flags;
-	/** @var string */
+	///** @var string */
+	//private $newBlocks;
+	/** @var BlockPalette */
 	private $newBlocks;
 
 	/**
@@ -39,17 +42,18 @@ class AsyncFillTask extends MWEAsyncTask
 	 * @param UUID $sessionUUID
 	 * @param Selection $selection
 	 * @param string[] $touchedChunks serialized chunks
-	 * @param Block[] $newBlocks
+	 * @param BlockPalette $newBlocks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
+	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $newBlocks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->selection = igbinary_serialize($selection);
 		$this->touchedChunks = igbinary_serialize($touchedChunks);
-		$this->newBlocks = BlockPalette::encode($newBlocks);
+		//$this->newBlocks = BlockPalette::encode($newBlocks);
+		$this->newBlocks = $newBlocks;//TODO check if serializes
 		var_dump($this->newBlocks);
 		$this->flags = $flags;
 	}
@@ -74,9 +78,10 @@ class AsyncFillTask extends MWEAsyncTask
 		/** @var Selection $selection */
 		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
-		/** @var Block[] $newBlocks */
-		$newBlocks = BlockPalette::decode($this->newBlocks);//TODO test pm4
-		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $newBlocks, $changed));
+		///** @var Block[] $newBlocks */
+		//$newBlocks = BlockPalette::decode($this->newBlocks);//TODO test pm4
+		//$oldBlocks = iterator_to_array($this->execute($selection, $manager, $newBlocks, $changed));
+		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $this->newBlocks, $changed));
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
@@ -93,13 +98,13 @@ class AsyncFillTask extends MWEAsyncTask
 	/**
 	 * @param Selection $selection
 	 * @param AsyncChunkManager $manager
-	 * @param Block[] $newBlocks
+	 * @param BlockPalette $newBlocks
 	 * @param null|int $changed
 	 * @return Generator|array[]
 	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 * @throws Exception
 	 */
-	private function execute(Selection $selection, AsyncChunkManager $manager, array $newBlocks, ?int &$changed): Generator
+	private function execute(Selection $selection, AsyncChunkManager $manager, BlockPalette $newBlocks, ?int &$changed): Generator
 	{
 		$blockCount = $selection->getShape()->getTotalCount();
 		$lastchunkx = $lastchunkz = null;
@@ -107,8 +112,14 @@ class AsyncFillTask extends MWEAsyncTask
 		$i = 0;
 		$changed = 0;
 		$this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
-		/** @var Block $block */
-		foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
+		$iterators = new MultipleIterator();
+		$iterators->attachIterator($selection->getShape()->getBlocks($manager, BlockPalette::CREATE(), $this->flags));
+		$iterators->attachIterator($newBlocks->blocks($blockCount));
+		foreach ($iterators as [$block, $new]) {
+			/**
+			 * @var Block $block
+			 * @var Block $new
+			 */
 			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
 				$rel = $block->subtract($selection->shape->getPasteVector());
 				$block = API::setComponents($block,$rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
@@ -121,8 +132,7 @@ class AsyncFillTask extends MWEAsyncTask
 					continue;
 				}
 			}
-			$new = clone $newBlocks[array_rand($newBlocks)];
-			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
+			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks//TODO better method
 			#yield self::undoBlockHackToArray($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->getPos());
 			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), (int)$block->getPos()->x, (int)$block->getPos()->y, (int)$block->getPos()->z));
 			#yield $block;//backup

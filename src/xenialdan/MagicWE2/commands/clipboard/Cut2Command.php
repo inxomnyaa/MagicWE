@@ -15,6 +15,7 @@ use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\task\action\CutAction;
@@ -30,6 +31,7 @@ class Cut2Command extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
+		//TODO //cut [filter] [set]
 		$this->registerArgument(0, new TextArgument("flags", true));
 		$this->setPermission("we.command.clipboard.cut");
 	}
@@ -74,12 +76,12 @@ class Cut2Command extends BaseCommand
 			$action->setClipboardVector($offset);
             Server::getInstance()->getAsyncPool()->submitTask(
                 new AsyncActionTask(
-                    $session->getUUID(),
-                    $selection,
-                    $action,
+					$session->getUUID(),
+					$selection,
+					$action,
 					$selection->getShape()->getTouchedChunks($selection->getWorld()),
-					"air",//TODO option
-					""
+					BlockPalette::fromString("air"),//TODO option
+					BlockPalette::CREATE()
 				)
 			);
 		} catch (Exception $error) {

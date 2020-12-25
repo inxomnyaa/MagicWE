@@ -13,6 +13,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 
 class Ellipsoid extends Shape
 {
@@ -38,25 +39,25 @@ class Ellipsoid extends Shape
         $this->depth = $depth;
     }
 
-    /**
+	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-    public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
-    {
-        $this->validateChunkManager($manager);
-        $centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
-        $this->pasteVector = $this->getPasteVector()->add(0, -0.5, 0);
+	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	{
+		$this->validateChunkManager($manager);
+		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+		$this->pasteVector = $this->getPasteVector()->add(0, -0.5, 0);
 
-        $xrad = $this->width / 2;
-        $yrad = $this->height / 2;
-        $zrad = $this->depth / 2;
-        $xradSquared = $xrad ** 2;
-        $yradSquared = $yrad ** 2;
+		$xrad = $this->width / 2;
+		$yrad = $this->height / 2;
+		$zrad = $this->depth / 2;
+		$xradSquared = $xrad ** 2;
+		$yradSquared = $yrad ** 2;
         $zradSquared = $zrad ** 2;
         $targetX = $this->pasteVector->getX();
         $targetY = $this->pasteVector->getY();
@@ -77,9 +78,9 @@ class Ellipsoid extends Shape
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
 					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fuufufufuuu
-					if (empty($filterblocks)) yield $block;
+					if ($filterblocks->empty()) yield $block;
 					else {
-						foreach ($filterblocks as $filterblock) {
+						foreach ($filterblocks->palette() as $filterblock) {
 							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
 								yield $block;
 						}

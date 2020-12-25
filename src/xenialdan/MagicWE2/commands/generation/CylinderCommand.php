@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands\generation;
 
 use CortexPE\Commando\args\IntegerArgument;
-use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
@@ -16,6 +15,7 @@ use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\commands\args\BlocksArgument;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -31,7 +31,7 @@ class CylinderCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->registerArgument(0, new RawStringArgument("blocks", false));
+		$this->registerArgument(0, new BlocksArgument("blocks", false));
 		$this->registerArgument(1, new IntegerArgument("diameter", false));
 		$this->registerArgument(2, new IntegerArgument("height", true));
 		$this->registerArgument(3, new TextArgument("flags", true));
@@ -61,10 +61,9 @@ class CylinderCommand extends BaseCommand
         try {
 			$messages = [];
 			$error = false;
-			$blocks = (string)$args["blocks"];//TODO change to Palette
+			$blocks = $args["blocks"];
 			$diameter = (int)$args["diameter"];
 			$height = (int)($args["height"] ?? 1);
-			$newblocks = API::blockParser($blocks, $messages, $error);
 			foreach ($messages as $message) {
 				$sender->sendMessage($message);
 			}
@@ -77,7 +76,7 @@ class CylinderCommand extends BaseCommand
 				$cylSelection = new Selection($session->getUUID(), $sender->getWorld());
 				$cylSelection->setShape($cyl);
 				$hasFlags = isset($args["flags"]);
-				API::fillAsync($cylSelection, $session, $newblocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
+				API::fillAsync($cylSelection, $session, $blocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 			} else {
 				throw new InvalidArgumentException("Could not fill with the selected blocks");
 			}

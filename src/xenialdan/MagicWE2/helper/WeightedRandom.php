@@ -160,4 +160,14 @@ class WeightedRandom
 			yield $this->indexes[$index];
 		}
 	}
+
+	/**
+	 * @return Generator<mixed>
+	 */
+	public function indexes(): Generator
+	{
+		foreach ($this->indexes as $index) {
+			yield $index;
+		}
+	}
 }

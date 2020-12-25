@@ -51,7 +51,7 @@ class MWEEditEvent extends MWEEvent implements Cancellable
     {
         if (($session = $this->getSession()) instanceof UserSession)
             /** @var UserSession $session */
-            $session->getPlayer();
+            return $session->getPlayer();
         return null;
     }
 

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\task\action;
 
 use Generator;
-use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
 
@@ -33,22 +33,22 @@ abstract class TaskAction
 	 * @param Selection $selection
 	 * @param AsyncChunkManager $manager
 	 * @param null|int $changed
-	 * @param Block[] $newBlocks
-	 * @param Block[] $blockFilter
+	 * @param BlockPalette $newBlocks
+	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-     * @return Generator|Progress[]
-     */
-	abstract public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;
+	 * @return Generator|Progress[]
+	 */
+	abstract public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;
 
 	abstract public static function getName(): string;
 
-    /**
-     * @param Vector3|null $clipboardVector
-     */
-    public function setClipboardVector(?Vector3 $clipboardVector): void
-    {
-        if ($clipboardVector instanceof Vector3) $clipboardVector = $clipboardVector->asVector3()->floor();
-        $this->clipboardVector = $clipboardVector;
+	/**
+	 * @param Vector3|null $clipboardVector
+	 */
+	public function setClipboardVector(?Vector3 $clipboardVector): void
+	{
+		if ($clipboardVector instanceof Vector3) $clipboardVector = $clipboardVector->asVector3()->floor();
+		$this->clipboardVector = $clipboardVector;
     }
 }

@@ -14,6 +14,7 @@ use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockEntry;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -94,7 +95,7 @@ class AsyncCopyTask extends MWEAsyncTask
 		$this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
 		$min = $selection->getShape()->getMinVec3();
 		/** @var Block $block */
-		foreach ($selection->getShape()->getBlocks($manager, [], $this->flags) as $block) {
+		foreach ($selection->getShape()->getBlocks($manager, BlockPalette::CREATE(), $this->flags) as $block) {
 			#var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
 			$newv3 = $block->getPos()->subtractVector($min)->floor();
 			$clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry($block->getFullId()));//TODO test tiles

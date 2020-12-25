@@ -22,6 +22,7 @@ use pocketmine\world\World;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\exception\CalculationException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
 use xenialdan\MagicWE2\helper\BlockPalette;
@@ -77,13 +78,13 @@ class API
 	/**
 	 * @param Selection $selection
 	 * @param Session $session
-	 * @param Block[] $newblocks
+	 * @param BlockPalette $newblocks
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function fillAsync(Selection $selection, Session $session, $newblocks = [], int $flags = self::FLAG_BASE): bool
+	public static function fillAsync(Selection $selection, Session $session, BlockPalette $newblocks, int $flags = self::FLAG_BASE): bool
 	{
-		if (empty($newblocks)) {
+		if ($newblocks->empty()) {
 			$session->sendMessage(TF::RED . "New blocks is empty!");
 			return false;
 		}
@@ -109,16 +110,16 @@ class API
 	/**
 	 * @param Selection $selection
 	 * @param Session $session
-	 * @param Block[] $oldBlocks
-	 * @param Block[] $newBlocks
+	 * @param BlockPalette $oldBlocks
+	 * @param BlockPalette $newBlocks
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function replaceAsync(Selection $selection, Session $session, $oldBlocks = [], $newBlocks = [], int $flags = self::FLAG_BASE): bool
+	public static function replaceAsync(Selection $selection, Session $session, BlockPalette $oldBlocks, BlockPalette $newBlocks, int $flags = self::FLAG_BASE): bool
 	{
-		if (empty($oldBlocks)) $session->sendMessage(TF::RED . "Old blocks is empty!");
-		if (empty($newBlocks)) $session->sendMessage(TF::RED . "New blocks is empty!");
-		if (empty($oldBlocks) || empty($newBlocks)) return false;
+		if ($oldBlocks->empty()) $session->sendMessage(TF::RED . "Old blocks is empty!");
+		if ($newBlocks->empty()) $session->sendMessage(TF::RED . "New blocks is empty!");
+		if ($oldBlocks->empty() || $newBlocks->empty()) return false;
 		try {
 			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
 			if ($limit !== -1 && $selection->getShape()->getTotalCount() > $limit) {
@@ -240,11 +241,11 @@ class API
 	/**
 	 * @param Selection $selection
 	 * @param Session $session
-	 * @param Block[] $filterBlocks
+	 * @param BlockPalette $filterBlocks
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function countAsync(Selection $selection, Session $session, array $filterBlocks, int $flags = self::FLAG_BASE): bool
+	public static function countAsync(Selection $selection, Session $session, BlockPalette $filterBlocks, int $flags = self::FLAG_BASE): bool
 	{
 		try {
 			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
@@ -278,7 +279,7 @@ class API
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getWorld())));
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getWorld()), BlockPalette::CREATE(), BlockPalette::CREATE()));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);
@@ -312,7 +313,7 @@ class API
 		/** @var TaskAction $action */
 		$action = new $actionClass(...array_values($brush->properties->actionProperties));
 		$action->prefix = "Brush";
-		Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getWorld()), $brush->properties->blocks, $brush->properties->filter));
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getWorld()), BlockPalette::fromString($brush->properties->blocks), BlockPalette::fromString($brush->properties->filter)));
 	}
 
 	/**
@@ -416,11 +417,13 @@ class API
 	 * @param array $messages
 	 * @param bool $error
 	 * @return BlockPalette
+	 * @throws InvalidArgumentException
+	 * @throws BlockQueryAlreadyParsedException
+	 * @deprecated Use BlockPalette::fromString()
 	 */
 	public static function blockParser(string $fullstring, array &$messages, bool &$error): BlockPalette
 	{
 		BlockFactory::getInstance();
-		//$blocks = BlockStatesParser::getInstance()::fromString($fullstring, true);
 		return BlockPalette::fromString($fullstring);
 	}
 

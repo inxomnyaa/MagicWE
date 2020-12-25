@@ -5,6 +5,7 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use MultipleIterator;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
@@ -16,6 +17,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -30,9 +32,9 @@ class AsyncReplaceTask extends MWEAsyncTask
 	private $selection;
 	/** @var int */
 	private $flags;
-	/** @var string */
+	/** @var BlockPalette */
 	private $replaceBlocks;
-	/** @var string */
+	/** @var BlockPalette */
 	private $newBlocks;
 
 	/**
@@ -40,21 +42,21 @@ class AsyncReplaceTask extends MWEAsyncTask
 	 * @param Selection $selection
 	 * @param UUID $sessionUUID
 	 * @param string[] $touchedChunks serialized chunks
-     * @param Block[] $replaceBlocks
-     * @param Block[] $newBlocks
-     * @param int $flags
-     * @throws Exception
-     */
-    public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $replaceBlocks, array $newBlocks, int $flags)
-    {
-        $this->start = microtime(true);
-        $this->sessionUUID = $sessionUUID->toString();
-        $this->selection = serialize($selection);
-        $this->touchedChunks = serialize($touchedChunks);
-        $this->replaceBlocks = serialize($replaceBlocks);
-        $this->newBlocks = serialize($newBlocks);
-        $this->flags = $flags;
-    }
+	 * @param BlockPalette $replaceBlocks
+	 * @param BlockPalette $newBlocks
+	 * @param int $flags
+	 * @throws Exception
+	 */
+	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $replaceBlocks, BlockPalette $newBlocks, int $flags)
+	{
+		$this->start = microtime(true);
+		$this->sessionUUID = $sessionUUID->toString();
+		$this->selection = serialize($selection);
+		$this->touchedChunks = serialize($touchedChunks);
+		$this->replaceBlocks = $replaceBlocks;
+		$this->newBlocks = $newBlocks;
+		$this->flags = $flags;
+	}
 
     /**
      * Actions to execute when run
@@ -76,12 +78,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
-		/** @var Block[] $replaceBlocks */
-		$replaceBlocks = unserialize($this->replaceBlocks/*, ['allowed_classes' => [Block::class]]*/);//TODO test pm4
-		/** @var Block[] $newBlocks */
-		$newBlocks = unserialize($this->newBlocks/*, ['allowed_classes' => [Block::class]]*/);//TODO test pm4
-
-		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $replaceBlocks, $newBlocks, $changed));
+		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $this->replaceBlocks, $this->newBlocks, $changed));
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
@@ -90,26 +87,32 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 	}
 
-    /**
+	/**
 	 * @param Selection $selection
 	 * @param AsyncChunkManager $manager
-	 * @param array $replaceBlocks
-	 * @param Block[] $newBlocks
+	 * @param BlockPalette $replaceBlocks
+	 * @param BlockPalette $newBlocks
 	 * @param null|int $changed
 	 * @return Generator|array[]
 	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 * @throws Exception
 	 */
-    private function execute(Selection $selection, AsyncChunkManager $manager, array $replaceBlocks, array $newBlocks, ?int &$changed): Generator
-    {
-        $blockCount = $selection->getShape()->getTotalCount();
-        $lastchunkx = $lastchunkz = null;
-        $lastprogress = 0;
-        $i = 0;
-        $changed = 0;
-        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
-        /** @var Block $block */
-        foreach ($selection->getShape()->getBlocks($manager, $replaceBlocks, $this->flags) as $block) {
+	private function execute(Selection $selection, AsyncChunkManager $manager, BlockPalette $replaceBlocks, BlockPalette $newBlocks, ?int &$changed): Generator
+	{
+		$blockCount = $selection->getShape()->getTotalCount();
+		$lastchunkx = $lastchunkz = null;
+		$lastprogress = 0;
+		$i = 0;
+		$changed = 0;
+		$this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
+		$iterators = new MultipleIterator();
+		$iterators->attachIterator($selection->getShape()->getBlocks($manager, $replaceBlocks, $this->flags));
+		$iterators->attachIterator($newBlocks->blocks($blockCount));
+		foreach ($iterators as [$block, $new]) {
+			/**
+			 * @var Block $block
+			 * @var Block $new
+			 */
 			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
 				$lastchunkx = $block->getPos()->x >> 4;
 				$lastchunkz = $block->getPos()->z >> 4;
@@ -118,7 +121,6 @@ class AsyncReplaceTask extends MWEAsyncTask
 					continue;
 				}
 			}
-			$new = clone $newBlocks[array_rand($newBlocks)];
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
 			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), (int)$block->getPos()->x, (int)$block->getPos()->y, (int)$block->getPos()->z));
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);

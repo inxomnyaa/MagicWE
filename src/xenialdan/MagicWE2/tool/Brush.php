@@ -30,6 +30,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
@@ -170,20 +171,14 @@ class Brush extends WETool
 				//error checks
 				$error = [];
 				try {
-					$m = [];
-					$e = false;
-					API::blockParser($blocks, $m, $e);
-					if ($e) throw new InvalidArgumentException(implode(TF::EOL, $m));
-					if (empty($blocks)) throw new AssumptionFailedError("Blocks cannot be empty!");
+					$p = BlockPalette::fromString($blocks);
+					if ($p->empty()) throw new AssumptionFailedError("Blocks cannot be empty!");
 				} catch (Exception $ex) {
                     $error['blocks'] = $ex->getMessage();
                 }
                 try {
-                    $m = [];
-                    $e = false;
-                    API::blockParser($filter, $m, $e);
-					if ($e) throw new InvalidArgumentException(implode(TF::EOL, $m));
-                } catch (Exception $ex) {
+					BlockPalette::fromString($filter);
+				} catch (Exception $ex) {
                     $error['filter'] = $ex->getMessage();
                 }
                 try {

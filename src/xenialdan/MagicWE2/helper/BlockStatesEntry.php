@@ -70,9 +70,8 @@ class BlockStatesEntry
 	{
 		if ($this->block instanceof Block) return $this->block;
 		BlockFactory::getInstance();
-		$blocks = BlockStatesParser::getInstance()::fromString($this->blockFull, false);
-		$block = reset($blocks);
-		if($block instanceof Block) $this->block = $block;
+		$block = BlockPalette::fromString($this->blockFull)->blocks()->current();
+		if ($block instanceof Block) $this->block = $block;
 		return $this->block;
 	}
 
@@ -91,10 +90,12 @@ class BlockStatesEntry
 		$block = $clone->toBlock();
 		$idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
 		$key = $idMapName . ":" . $block->getMeta();
+		/** @var BlockStatesParser $blockstateParser */
+		$blockstateParser = BlockStatesParser::getInstance();
 		if (strpos($idMapName, "_door") !== false) {
-			$fromMap = BlockStatesParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
+			$fromMap = $blockstateParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
 		} else {
-			$fromMap = BlockStatesParser::getRotationFlipMap()[$key] ?? null;
+			$fromMap = $blockstateParser::getRotationFlipMap()[$key] ?? null;
 		}
 		if ($fromMap === null) return $clone;
 		$rotatedStates = $fromMap[$amount] ?? null;
@@ -125,15 +126,15 @@ class BlockStatesEntry
 			}
 		}
 		$clone->blockStates = $bsCompound;
-		$clone->blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
+		$clone->blockFull = TextFormat::clean($blockstateParser::printStates($clone, false));
 		if (strpos($idMapName, "_door") !== false) {
-			$clone->block = BlockStatesParser::fromString($clone->blockFull, false)[0];
+			$clone->block = $clone->toBlock();//TODO check
 		} else
 			$clone->block = null;
 		return $clone;
 		//TODO reduce useless calls. BSP::fromStates?
-		#$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
-		#return BlockStatesParser::getStateByBlock(BlockStatesParser::fromString($blockFull)[0]);
+		#$blockFull = TextFormat::clean($blockstateParser::printStates($clone, false));
+		#return BlockStatesParser::getStateByBlock($blockstateParser::fromString($blockFull)[0]);
 	}
 
 	/**
@@ -248,8 +249,8 @@ class BlockStatesEntry
 		#var_dump($clone->blockFull);
 		return $clone;
 		//TODO reduce useless calls. BSP::fromStates?
-		#$blockFull = TextFormat::clean(BlockStatesParser::printStates($clone, false));
-		#return BlockStatesParser::getStateByBlock(BlockStatesParser::fromString($blockFull)[0]);
+		#$blockFull = TextFormat::clean($blockstateParser::printStates($clone, false));
+		#return BlockStatesParser::getStateByBlock($blockstateParser::fromString($blockFull)[0]);
 	}
 
 }

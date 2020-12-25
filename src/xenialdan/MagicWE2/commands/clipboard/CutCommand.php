@@ -9,14 +9,13 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
 use Exception;
 use InvalidArgumentException;
-use pocketmine\block\BlockFactory;
-use pocketmine\block\BlockLegacyIds;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
@@ -72,7 +71,7 @@ class CutCommand extends BaseCommand
 			//TODO Temp hack - add cutAsync - Update 9th Feb. 2020 LEAVE THAT ALONE! IT WORKS, DO NOT TOUCH IT!
 			$flags = $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE;
 			API::copyAsync($selection, $session, $flags);
-			API::fillAsync($selection, $session, [BlockFactory::getInstance()->get(BlockLegacyIds::AIR, 0)], $flags);
+			API::fillAsync($selection, $session, BlockPalette::fromString("air"), $flags);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

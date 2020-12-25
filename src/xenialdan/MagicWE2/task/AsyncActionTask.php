@@ -16,6 +16,7 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -38,9 +39,9 @@ class AsyncActionTask extends MWEAsyncTask
 	private $touchedChunks;
 	/** @var string */
 	private $selection;
-	/** @var string */
+	/** @var BlockPalette */
 	private $blockFilter;
-	/** @var string */
+	/** @var BlockPalette */
 	private $newBlocks;
 	/** @var TaskAction */
 	private $action;
@@ -51,20 +52,20 @@ class AsyncActionTask extends MWEAsyncTask
 	 * @param Selection $selection
 	 * @param TaskAction $action
 	 * @param string[] $touchedChunks serialized chunks
-	 * @param string $newBlocks
-	 * @param string $blockFilter
+	 * @param BlockPalette $newBlocks
+	 * @param BlockPalette $blockFilter
 	 */
-    public function __construct(UUID $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, string $newBlocks = "", string $blockFilter = "")
-    {
-        $this->start = microtime(true);
-        $this->sessionUUID = $sessionUUID->toString();
-        $this->selection = serialize($selection);
-        $this->action = $action;
-        $this->touchedChunks = serialize($touchedChunks);
-        $this->newBlocks = $newBlocks;
-        $this->blockFilter = $blockFilter;
+	public function __construct(UUID $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
+	{
+		$this->start = microtime(true);
+		$this->sessionUUID = $sessionUUID->toString();
+		$this->selection = serialize($selection);
+		$this->action = $action;
+		$this->touchedChunks = serialize($touchedChunks);
+		$this->newBlocks = $newBlocks;
+		$this->blockFilter = $blockFilter;
 
-        try {
+		try {
             $session = SessionHelper::getSessionByUUID($sessionUUID);
             if ($session instanceof UserSession) {
                 $player = $session->getPlayer();
@@ -103,10 +104,8 @@ class AsyncActionTask extends MWEAsyncTask
 		#$oldBlocks = [];
 		$messages = [];
 		$error = false;
-		$newBlocks = API::blockParser($this->newBlocks, $messages, $error);//TODO error handling
-		$blockFilter = API::blockParser($this->blockFilter, $messages, $error);//TODO error handling
 		/** @var Progress $progress */
-		foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $newBlocks, $blockFilter, $oldBlocks, $messages) as $progress) {
+		foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $this->newBlocks, $this->blockFilter, $oldBlocks, $messages) as $progress) {
 			$this->publishProgress($progress);
 		}
 

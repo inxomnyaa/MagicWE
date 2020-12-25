@@ -191,13 +191,14 @@ final class BlockStatesParser
 	 * Parses a BlockQuery (acquired using BlockPalette::fromString()) to a block and sets the BlockQuery's blockFullId
 	 * @param BlockQuery $query
 	 * @return Block
-	 * @throws InvalidArgumentException
+	 * @throws InvalidArgumentException|\pocketmine\block\utils\InvalidBlockStateException
+	 * @noinspection PhpInternalEntityUsedInspection
 	 */
 	public static function fromString(BlockQuery $query): Block
 	{
-		$selectedBlockName = strtolower(str_replace("minecraft:", "", $query->blockId));//TODO try to keep namespace "minecraft:" to support custom blocks
+		$namespacedSelectedBlockName = strpos($query->blockId, "minecraft:") === false ? "minecraft:" . $query->blockId : $query->blockId;
+		$selectedBlockName = strtolower(str_replace("minecraft:", "", $namespacedSelectedBlockName));//TODO try to keep namespace "minecraft:" to support custom blocks
 
-		$namespacedSelectedBlockName = strpos($query->blockId, "minecraft:") === false ? "minecraft:" . $selectedBlockName : $selectedBlockName;
 		/** @var LegacyStringToItemParser $legacyStringToItemParser */
 		$legacyStringToItemParser = LegacyStringToItemParser::getInstance();
 		$block = $legacyStringToItemParser->parse($selectedBlockName)->getBlock();
@@ -313,7 +314,7 @@ final class BlockStatesParser
 		}
 
 		if (strpos($namespacedSelectedBlockName, "_door") !== false) {
-			$door = self::buildDoor($namespacedSelectedBlockName, $states);
+			$door = self::buildDoor(BlockPalette::fromString($namespacedSelectedBlockName)->randomBlockQueries->generate(1)->current(), $states);
 			//return self::getStateByBlock($door);
 			return new BlockStatesEntry($namespacedSelectedBlockName, $states, $door);
 		}
@@ -437,7 +438,7 @@ final class BlockStatesParser
 		foreach ($tests as $test) {
 			try {
 				Loader::getInstance()->getLogger()->debug(TF::GOLD . "Search query: " . TF::LIGHT_PURPLE . $test);
-				foreach (self::fromString($test) as $block) {
+				foreach (BlockPalette::fromString($test)->palette() as $block) {
 					assert($block instanceof Block);
 					$blockStatesEntry = self::getStateByBlock($block);
 					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, true));
@@ -449,7 +450,7 @@ final class BlockStatesParser
 				continue;
 			}
 		}
-		return;//TODO
+		//return;//TODO
 		//test flip+rotation
 		/** @noinspection PhpUnreachableStatementInspection */
 		// $tests2 = [

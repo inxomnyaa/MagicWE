@@ -12,6 +12,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 
 class Custom extends Shape
 {
@@ -32,12 +33,12 @@ class Custom extends Shape
 	/**
 	 * Returns the blocks by their actual position
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param Block[] $filterblocks If not empty, applying a filter on the block list
+	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
 	 * @return Generator|Block[]
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, array $filterblocks = [], int $flags = API::FLAG_BASE): Generator
+	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		foreach ($this->positions as $position) {

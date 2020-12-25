@@ -18,7 +18,7 @@ class BlockPalette
 	 * @var WeightedRandom
 	 */
 	public WeightedRandom $randomBlockQueries;
-	public string $name;
+	public string $name = "";
 
 	/**
 	 * BlockPalette constructor.
@@ -38,7 +38,7 @@ class BlockPalette
 	 */
 	public static function fromString(string $blocksQuery): self
 	{
-		$palette = self::EMPTY();
+		$palette = self::CREATE();
 
 		$pregSplit = preg_split('/,(?![^\[]*])/', trim($blocksQuery), -1, PREG_SPLIT_NO_EMPTY);
 		if (!is_array($pregSplit)) throw new InvalidArgumentException("Regex matching failed");
@@ -64,31 +64,54 @@ class BlockPalette
 	//TODO addBlock
 
 	/**
-	 * @return Generator|Block
+	 * @param int $amount
+	 * @return Generator|Block[]
 	 * @throws InvalidArgumentException
 	 */
 	public function blocks(int $amount = 1): Generator
 	{
-		if ($amount < 1) throw new InvalidArgumentException('$amount must be positive');
-		$this->randomBlockQueries->setup();//TODO check if performance impact is too big (i.e when calling this method multiple times)
+		if ($amount < 1) throw new InvalidArgumentException('$amount must be greater than 0');
 		/** @var BlockFactory $blockFactory */
 		$blockFactory = BlockFactory::getInstance();
 		/** @var BlockQuery $blockQuery */
-		foreach ($this->randomBlockQueries->generate($amount) as $blockQuery) {
+		foreach ($this->randomBlockQueries->generate($amount) as $blockQuery) {//TODO yield from?
 			yield $blockFactory->fromFullBlock($blockQuery->blockFullId);//TODO yield blockFullId and do not yield Block?
 		}
 	}
 
 	/**
-	 * @param Block[] $blocks
+	 * @return Generator|Block[]
+	 */
+	public function palette(): Generator
+	{
+		/** @var BlockFactory $blockFactory */
+		$blockFactory = BlockFactory::getInstance();
+		/** @var BlockQuery $blockQuery */
+		foreach ($this->randomBlockQueries->indexes() as $blockQuery) {//TODO yield from?
+			yield $blockFactory->fromFullBlock($blockQuery->blockFullId);//TODO yield blockFullId and do not yield Block? prob nah
+		}
+	}
+
+	public function count(): int
+	{
+		return $this->randomBlockQueries->count();
+	}
+
+	public function empty(): bool
+	{
+		return $this->randomBlockQueries->count() === 0;
+	}
+
+	/**
 	 * @return string
 	 * @throws JsonException
 	 */
-	public static function encode(array $blocks): string
+	public function encode(): string
 	{
 		$e = [];
-		foreach ($blocks as $block)
-			/** @noinspection PhpInternalEntityUsedInspection */ $e[] = $block->getFullId();
+		/** @var BlockQuery $blockQuery */
+		foreach ($this->randomBlockQueries->generate($this->randomBlockQueries->count()) as $blockQuery)
+			$e[] = $blockQuery->blockFullId;
 		return json_encode($e, JSON_THROW_ON_ERROR);
 	}
 
@@ -107,7 +130,7 @@ class BlockPalette
 		return $e;
 	}
 
-	public static function EMPTY(): self
+	public static function CREATE(): self
 	{
 		return new self;
 	}

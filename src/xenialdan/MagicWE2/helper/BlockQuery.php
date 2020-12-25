@@ -39,9 +39,9 @@ final class BlockQuery
 	{
 		//calling methods should check with hasBlock() before parse()
 		if (!$update && $this->hasBlock()) throw new BlockQueryAlreadyParsedException("FullBlockID is already parsed");
-		/** @var BlockStatesParser $blockStatesParser */
-		$blockStatesParser = BlockStatesParser::getInstance();
-		$blockStatesParser::fromString($this);//this should already set the blockFullId because it is a reference
+		/** @var BlockStatesParser $blockstateParser */
+		$blockstateParser = BlockStatesParser::getInstance();
+		$blockstateParser::fromString($this);//this should already set the blockFullId because it is a reference
 		var_dump($this->hasBlock() ? "Has block, " . $this->blockFullId : "Does not have block");
 		//TODO throw BlockQueryParsingFailedException if blockFullId was not set? `if(!$this->hasBlock())`
 		return $this;

@@ -6,9 +6,9 @@ namespace xenialdan\MagicWE2\task\action;
 
 use Exception;
 use Generator;
-use pocketmine\block\Block;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
 
@@ -29,19 +29,19 @@ class SetBiomeAction extends TaskAction
 		return "Set biome";
 	}
 
-    /**
-     * @param string $sessionUUID
-     * @param Selection $selection
-     * @param AsyncChunkManager $manager
-     * @param null|int $changed
-     * @param Block[] $newBlocks
-     * @param Block[] $blockFilter
-     * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
-     * @param string[] $messages
-     * @return Generator|Progress[]
-     * @throws Exception
-     */
-    public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, array $newBlocks, array $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	/**
+	 * @param string $sessionUUID
+	 * @param Selection $selection
+	 * @param AsyncChunkManager $manager
+	 * @param null|int $changed
+	 * @param BlockPalette $newBlocks
+	 * @param BlockPalette $blockFilter
+	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
+	 * @param string[] $messages
+	 * @return Generator|Progress[]
+	 * @throws Exception
+	 */
+	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
 	{
 		$changed = 0;
 		#$oldBlocks = [];

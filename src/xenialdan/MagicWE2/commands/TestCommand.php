@@ -12,6 +12,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -55,8 +56,8 @@ class TestCommand extends BaseCommand
 					$selection,
 					new TestAction(),
 					$selection->getShape()->getTouchedChunks($selection->getWorld()),
-					"minecraft:snow_block",
-					"minecraft:tnt"
+					BlockPalette::fromString("minecraft:snow_block"),
+					BlockPalette::fromString("minecraft:tnt")
 				)
 			);
 			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 1, 1, 1);
@@ -66,8 +67,8 @@ class TestCommand extends BaseCommand
 					$selection,
 					new TestAction(),
 					$selection->getShape()->getTouchedChunks($selection->getWorld()),
-					"minecraft:snow_block",
-					"minecraft:tnt"
+					BlockPalette::fromString("minecraft:snow_block"),
+					BlockPalette::fromString("minecraft:tnt")
 				)
 			);
 			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 2, 2, 2);
@@ -77,8 +78,8 @@ class TestCommand extends BaseCommand
 					$selection,
 					new TestAction(),
 					$selection->getShape()->getTouchedChunks($selection->getWorld()),
-					"minecraft:snow_block",
-					"minecraft:tnt"
+					BlockPalette::fromString("minecraft:snow_block"),
+					BlockPalette::fromString("minecraft:tnt")
 				)
 			);
 			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 1, 2, 3);
@@ -88,8 +89,8 @@ class TestCommand extends BaseCommand
 					$selection,
 					new TestAction(),
 					$selection->getShape()->getTouchedChunks($selection->getWorld()),
-					"minecraft:snow_block",
-					"minecraft:tnt"
+					BlockPalette::fromString("minecraft:snow_block"),
+					BlockPalette::fromString("minecraft:tnt")
 				)
 			);
 		} catch (Exception $error) {

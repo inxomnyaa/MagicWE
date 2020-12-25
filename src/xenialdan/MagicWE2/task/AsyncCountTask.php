@@ -12,6 +12,7 @@ use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
@@ -26,27 +27,27 @@ class AsyncCountTask extends MWEAsyncTask
 	private $selection;
 	/** @var int */
 	private $flags;
-	/** @var string */
-	private $newBlocks;
+	/** @var BlockPalette */
+	private $filterblocks;
 
 	/**
 	 * AsyncCountTask constructor.
 	 * @param Selection $selection
 	 * @param UUID $sessionUUID
 	 * @param string[] $touchedChunks serialized chunks
-	 * @param Block[] $newBlocks
+	 * @param BlockPalette $filterblocks
 	 * @param int $flags
-     * @throws Exception
-     */
-    public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, array $newBlocks, int $flags)
-    {
-        $this->start = microtime(true);
-        $this->touchedChunks = serialize($touchedChunks);
-        $this->sessionUUID = $sessionUUID->toString();
-        $this->selection = serialize($selection);
-        $this->newBlocks = serialize($newBlocks);
-        $this->flags = $flags;
-    }
+	 * @throws Exception
+	 */
+	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $filterblocks, int $flags)
+	{
+		$this->start = microtime(true);
+		$this->touchedChunks = serialize($touchedChunks);
+		$this->sessionUUID = $sessionUUID->toString();
+		$this->selection = serialize($selection);
+		$this->filterblocks = $filterblocks;
+		$this->flags = $flags;
+	}
 
     /**
      * Actions to execute when run
@@ -65,30 +66,28 @@ class AsyncCountTask extends MWEAsyncTask
 		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$manager = Shape::getChunkManager($chunks);
 		unset($chunks);
-		/** @var Block[] $newBlocks */
-		$newBlocks = unserialize($this->newBlocks/*, ['allowed_classes' => [Block::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
-		$counts = $this->countBlocks($selection, $manager, $newBlocks);
+		$counts = $this->countBlocks($selection, $manager, $this->filterblocks);
 		$this->setResult(compact("counts", "totalCount"));
 	}
 
-    /**
-     * @param Selection $selection
-     * @param AsyncChunkManager $manager
-     * @param Block[] $newBlocks
-     * @return array
-     * @throws Exception
-     */
-    private function countBlocks(Selection $selection, AsyncChunkManager $manager, array $newBlocks): array
-    {
-        $blockCount = $selection->getShape()->getTotalCount();
-        $changed = 0;
-        $this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
-        $lastchunkx = $lastchunkz = null;
-        $lastprogress = 0;
-        $counts = [];
-        /** @var Block $block */
-        foreach ($selection->getShape()->getBlocks($manager, $newBlocks, $this->flags) as $block) {
+	/**
+	 * @param Selection $selection
+	 * @param AsyncChunkManager $manager
+	 * @param BlockPalette $filterblocks
+	 * @return array
+	 * @throws Exception
+	 */
+	private function countBlocks(Selection $selection, AsyncChunkManager $manager, BlockPalette $filterblocks): array
+	{
+		$blockCount = $selection->getShape()->getTotalCount();
+		$changed = 0;
+		$this->publishProgress([0, "Running, counting $changed blocks out of $blockCount"]);
+		$lastchunkx = $lastchunkz = null;
+		$lastprogress = 0;
+		$counts = [];
+		/** @var Block $block */
+		foreach ($selection->getShape()->getBlocks($manager, $filterblocks, $this->flags) as $block) {
 			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
 				$lastchunkx = $block->getPos()->x >> 4;
 				$lastchunkz = $block->getPos()->z >> 4;

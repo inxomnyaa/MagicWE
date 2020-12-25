@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\selection\info;
 
-use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
@@ -14,9 +13,10 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\commands\args\BlocksArgument;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\task\action\CountAction;
@@ -32,7 +32,7 @@ class CountCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->registerArgument(0, new RawStringArgument("blocks", true));
+		$this->registerArgument(0, new BlocksArgument("blocks", true));
 		$this->registerArgument(1, new TextArgument("flags", true));
 		$this->setPermission("we.command.selection.info.count");
 	}
@@ -57,24 +57,20 @@ class CountCommand extends BaseCommand
         }
         /** @var Player $sender */
         try {
-            $error = false;
-            if (!empty($args["blocks"])) {
-				$messages = [];
-				API::blockParser(($filterBlocks = (string)$args["blocks"]), $messages, $error);//TODO change to Palette
-				foreach ($messages as $message) {
-					$sender->sendMessage($message);
-				}
-			} else $filterBlocks = "";
-            if (!$error) {
-                $session = SessionHelper::getUserSession($sender);
-                if (is_null($session)) {
+			$error = false;
+			if (isset($args["blocks"])) {
+				$filterBlocks = $args["blocks"];
+			} else $filterBlocks = BlockPalette::CREATE();
+			if (!$error) {
+				$session = SessionHelper::getUserSession($sender);
+				if (is_null($session)) {
 					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-                }
-                $selection = $session->getLatestSelection();
-                if (is_null($selection)) {
+				}
+				$selection = $session->getLatestSelection();
+				if (is_null($selection)) {
 					throw new SelectionException($lang->translateString('error.noselection'));
-                }
-                if (!$selection->isValid()) {
+				}
+				if (!$selection->isValid()) {
 					throw new SelectionException($lang->translateString('error.selectioninvalid'));
                 }
                 if ($selection->getWorld() !== $sender->getWorld()) {
@@ -82,12 +78,12 @@ class CountCommand extends BaseCommand
                 }
                 Server::getInstance()->getAsyncPool()->submitTask(
                     new AsyncActionTask(
-                        $session->getUUID(),
-                        $selection,
-                        new CountAction(),
-                        $selection->getShape()->getTouchedChunks($selection->getWorld()),
-                        "",
-                        $filterBlocks
+						$session->getUUID(),
+						$selection,
+						new CountAction(),
+						$selection->getShape()->getTouchedChunks($selection->getWorld()),
+						BlockPalette::CREATE(),
+						$filterBlocks
 					)
 				);
 			} else {

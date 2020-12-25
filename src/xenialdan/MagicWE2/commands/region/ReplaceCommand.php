@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\commands\region;
 
-use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\args\TextArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\exception\ArgumentOrderException;
@@ -14,6 +13,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\commands\args\BlocksArgument;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -29,8 +29,8 @@ class ReplaceCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->registerArgument(0, new RawStringArgument("findblocks", false));
-		$this->registerArgument(1, new RawStringArgument("replaceblocks", false));
+		$this->registerArgument(0, new BlocksArgument("findblocks", false));
+		$this->registerArgument(1, new BlocksArgument("replaceblocks", false));
 		$this->registerArgument(2, new TextArgument("flags", true));
 		$this->setPermission("we.command.region.replace");
 	}
@@ -57,8 +57,8 @@ class ReplaceCommand extends BaseCommand
         try {
 			$messages = [];
 			$error = false;
-			$findBlocks = API::blockParser((string)$args["findblocks"], $messages, $error);//TODO change to Palette
-			$replaceBlocks = API::blockParser((string)$args["replaceblocks"], $messages, $error);//TODO change to Palette
+			$findBlocks = $args["findblocks"];
+			$replaceBlocks = $args["replaceblocks"];
 			foreach ($messages as $message) {
 				$sender->sendMessage($message);
 			}

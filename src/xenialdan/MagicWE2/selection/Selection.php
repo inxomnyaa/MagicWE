@@ -91,7 +91,7 @@ class Selection implements Serializable, JsonSerializable
 	{
 		$this->worldId = $world->getId();
 		try {
-			($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_WORLD))->call();
+			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_WORLD))->call();
 		} catch (RuntimeException $e) {
 		}
 	}
@@ -128,7 +128,7 @@ class Selection implements Serializable, JsonSerializable
 			if ($session instanceof Session) {
 				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos1.set', [$this->pos1->getX(), $this->pos1->getY(), $this->pos1->getZ()]));
 				try {
-					($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS1))->call();
+					(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS1))->call();
 				} catch (RuntimeException $e) {
 				}
 			}
@@ -169,7 +169,7 @@ class Selection implements Serializable, JsonSerializable
 			if ($session instanceof Session) {
 				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos2.set', [$this->pos2->getX(), $this->pos2->getY(), $this->pos2->getZ()]));
 				try {
-					($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS2))->call();
+					(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS2))->call();
 				} catch (RuntimeException $e) {
 				}
 			}
@@ -195,7 +195,7 @@ class Selection implements Serializable, JsonSerializable
 	{
 		$this->shape = $shape;
 		try {
-			($ev = new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();
+			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();
 		} catch (RuntimeException $e) {
 		}//might cause duplicated call
 	}

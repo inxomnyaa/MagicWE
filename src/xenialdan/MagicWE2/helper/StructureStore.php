@@ -25,6 +25,7 @@ final class StructureStore
 	 */
 	private $schematics;
 
+	/** @noinspection MkdirRaceConditionInspection */
 	public function __construct()
 	{
 		@mkdir(Loader::getInstance()->getDataFolder() . 'structures');
