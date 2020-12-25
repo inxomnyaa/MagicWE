@@ -8,7 +8,6 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\block\UnknownBlock;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -24,9 +23,8 @@ use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\CalculationException;
-use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
-use xenialdan\MagicWE2\helper\BlockStatesParser;
+use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
@@ -417,22 +415,13 @@ class API
 	 * @param string $fullstring
 	 * @param array $messages
 	 * @param bool $error
-	 * @return Block[]
-	 * @throws RuntimeException
-	 * @throws InvalidArgumentException
-	 * @throws InvalidBlockStateException
+	 * @return BlockPalette
 	 */
-	public static function blockParser(string $fullstring, array &$messages, bool &$error): array
+	public static function blockParser(string $fullstring, array &$messages, bool &$error): BlockPalette
 	{
 		BlockFactory::getInstance();
-		$blocks = BlockStatesParser::getInstance()::fromString($fullstring, true);
-		foreach ($blocks as $block) {
-			if ($block instanceof UnknownBlock) {
-				$messages[] = TF::GOLD . $block . " is an unknown block";
-			}
-		}
-
-		return $blocks;
+		//$blocks = BlockStatesParser::getInstance()::fromString($fullstring, true);
+		return BlockPalette::fromString($fullstring);
 	}
 
 	/**
