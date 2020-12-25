@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands\args;
 
 use CortexPE\Commando\args\RawStringArgument;
-use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\helper\BlockPalette;
 
 class BlocksArgument extends RawStringArgument
@@ -16,13 +14,10 @@ class BlocksArgument extends RawStringArgument
 	public function canParse(string $testString, CommandSender $sender): bool
 	{
 		//TODO optimize; TODO check if returning false here triggers argument being passed to another $arg
-		try {
-			//TODO if regex match '/,(?![^\[]*])/' return true
-			BlockPalette::fromString($testString);
-		} catch (BlockQueryAlreadyParsedException | InvalidArgumentException $e) {
-			return false;
-		}
-		return true;
+		//TODO if regex match '/,(?![^\[]*])/' return true
+		$pattern = '/[\w:]+(?:\[[\w=,]*])?%?\d*/';
+		$r = preg_match_all($pattern, $testString);
+		return $r !== false && $r >= 1;
 	}
 
 	/**
