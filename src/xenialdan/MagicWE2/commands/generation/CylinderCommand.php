@@ -54,32 +54,23 @@ class CylinderCommand extends BaseCommand
 			}
 		}
 		if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-			$messages = [];
-			$error = false;
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
 			$blocks = $args["blocks"];
 			$diameter = (int)$args["diameter"];
 			$height = (int)($args["height"] ?? 1);
-			foreach ($messages as $message) {
-				$sender->sendMessage($message);
+			$session = SessionHelper::getUserSession($sender);
+			if (is_null($session)) {
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			if (!$error) {
-				$session = SessionHelper::getUserSession($sender);
-				if (is_null($session)) {
-					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-				}
-				$cyl = new Cylinder($sender->getPosition()->asVector3()->floor(), $height, $diameter);
-				$cylSelection = new Selection($session->getUUID(), $sender->getWorld());
-				$cylSelection->setShape($cyl);
-				$hasFlags = isset($args["flags"]);
-				API::fillAsync($cylSelection, $session, $blocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
-			} else {
-				throw new InvalidArgumentException("Could not fill with the selected blocks");
-			}
+			$cyl = new Cylinder($sender->getPosition()->asVector3()->floor(), $height, $diameter);
+			$cylSelection = new Selection($session->getUUID(), $sender->getWorld());
+			$cylSelection->setShape($cyl);
+			$hasFlags = isset($args["flags"]);
+			API::fillAsync($cylSelection, $session, $blocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

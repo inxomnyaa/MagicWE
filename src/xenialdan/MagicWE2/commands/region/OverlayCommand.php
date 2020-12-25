@@ -36,47 +36,37 @@ class OverlayCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-			$messages = [];
-			$error = false;
-			$blocks = $args["blocks"];
-			foreach ($messages as $message) {
-				$sender->sendMessage($message);
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
 			}
-			$return = !$error;
-			if ($return) {
-				$session = SessionHelper::getUserSession($sender);
-				if (is_null($session)) {
-					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-				}
-				$selection = $session->getLatestSelection();
-                if (is_null($selection)) {
-					throw new SelectionException($lang->translateString('error.noselection'));
-                }
-                if (!$selection->isValid()) {
-					throw new SelectionException($lang->translateString('error.selectioninvalid'));
-                }
-                if ($selection->getWorld() !== $sender->getWorld()) {
-					$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
-				}
-				#API::overlayReplaceAsync($selection, $session, [], $blocks, API::flagParser(explode(" ", strval($args["flags"]))));
-			} else {
-				throw new InvalidArgumentException("Could not replace with the selected blocks");
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
+			//$blocks = $args["blocks"];//TODO reenable when used
+			$session = SessionHelper::getUserSession($sender);
+			if (is_null($session)) {
+				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
+			$selection = $session->getLatestSelection();
+			if (is_null($selection)) {
+				throw new SelectionException($lang->translateString('error.noselection'));
+			}
+			if (!$selection->isValid()) {
+				throw new SelectionException($lang->translateString('error.selectioninvalid'));
+			}
+			if ($selection->getWorld() !== $sender->getWorld()) {
+				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
+			}
+			#API::overlayReplaceAsync($selection, $session, [], $blocks, API::flagParser(explode(" ", strval($args["flags"]))));
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
