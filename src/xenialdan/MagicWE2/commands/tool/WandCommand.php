@@ -57,11 +57,11 @@ class WandCommand extends BaseCommand
 			$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_AXE);
 			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 			$item->setUnbreakable(true);
-			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.wand'));
+			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.wand'));
 			$item->setLore([
-				$lang->translateString('tool.wand.lore.1'),
-				$lang->translateString('tool.wand.lore.2'),
-				$lang->translateString('tool.wand.lore.3')
+				TF::RESET . $lang->translateString('tool.wand.lore.1'),
+				TF::RESET . $lang->translateString('tool.wand.lore.2'),
+				TF::RESET . $lang->translateString('tool.wand.lore.3')
 			]);
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);

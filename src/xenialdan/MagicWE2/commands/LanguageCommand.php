@@ -62,7 +62,7 @@ class LanguageCommand extends BaseCommand
 				return;
 			}
 			$languages = Loader::getInstance()->getLanguageList();
-			$form = new CustomForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.language.title'));
+			$form = new CustomForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.language.title'));
 			$form->addElement(new Label($lang->translateString('ui.language.label')));
 			$dropdown = new Dropdown($lang->translateString('ui.language.dropdown'), array_values($languages));
 			$dropdown->setOptionAsDefault($session->getLanguage()->getName());

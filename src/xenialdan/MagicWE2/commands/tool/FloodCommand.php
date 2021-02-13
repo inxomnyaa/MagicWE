@@ -35,14 +35,14 @@ class FloodCommand extends BaseCommand
 		$lang = Loader::getInstance()->getLanguage();
 		try {
 			if ($sender instanceof Player) {
-				$form = new CustomForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.flood.title'));
+				$form = new CustomForm(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('ui.flood.title'));
 				$form->addElement(new Slider($lang->translateString('ui.flood.options.limit'), 0, 5000, 500.0));
 				$form->addElement(new Input($lang->translateString('ui.flood.options.blocks'), $lang->translateString('ui.flood.options.blocks.placeholder')));
 				$form->addElement(new Label($lang->translateString('ui.flood.options.label.infoapply')));
 				$form->setCallable(function (Player $player, $data) use ($form) {
 					$item = ItemFactory::get(ItemIds::BUCKET, 1);
 					$item->addEnchantment(new EnchantmentInstance(Enchantment::getEnchantment(Loader::FAKE_ENCH_ID)));
-					$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . 'Flood');
+					$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . 'Flood');
 					$item->setLore(BrushCommand::generateLore($form->getContent(), $data));
 					$item->setNamedTagEntry(new CompoundTag(API::TAG_MAGIC_WE, [
 						new StringTag("blocks", $data[1]),

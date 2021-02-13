@@ -41,12 +41,12 @@ class DonateCommand extends BaseCommand
 			}
 		}
 		try {
-			$name = TF::DARK_PURPLE . "[" . TF::GOLD . "XenialDan" . TF::DARK_PURPLE . "] ";
+			$name = TF::LIGHT_PURPLE . "[" . TF::GOLD . "XenialDan" . TF::LIGHT_PURPLE . "] ";
 			$sender->sendMessage($name . "Greetings! Would you like to buy me an energy drink to stay awake during coding sessions?");
 			$sender->sendMessage($name . "Donations are welcomed! Consider donating on " . TF::DARK_AQUA . "Pay" . TF::AQUA . "Pal:");
 			$sender->sendMessage($name . TF::DARK_AQUA . "https://www.paypal.me/xenialdan");
-			$sender->sendMessage($name . "Thank you! With " . TF::BOLD . TF::RED . "<3" . TF::RESET . TF::DARK_PURPLE . " - MagicWE2 by https://github.com/thebigsmileXD");
-			$colorHeart = (random_int(0, 1) === 1 ? TF::DARK_RED : TF::DARK_PURPLE);
+			$sender->sendMessage($name . "Thank you! With " . TF::BOLD . TF::RED . "<3" . TF::RESET . TF::LIGHT_PURPLE . " - MagicWE2 by https://github.com/thebigsmileXD");
+			$colorHeart = (random_int(0, 1) === 1 ? TF::DARK_RED : TF::LIGHT_PURPLE);
 			$sender->sendMessage(
 				TF::BOLD . $colorHeart . "   ****     ****   " . TF::EOL .
 				TF::BOLD . $colorHeart . " **    ** **    ** " . TF::EOL .

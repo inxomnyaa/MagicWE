@@ -61,14 +61,14 @@ class HelpCommand extends BaseCommand
 				return;
 			}
 			foreach ($cmds as $command) {
-				$message = TF::LIGHT_PURPLE . "/" . $command->getName();
+				$message = TF::RESET . TF::BOLD . TF::GOLD . "/" . $command->getName();
 				if (!empty(($aliases = $command->getAliases()))) {
 					foreach ($aliases as $i => $alias) {
 						$aliases[$i] = "/" . $alias;
 					}
-					$message .= TF::DARK_PURPLE . " [" . implode(",", $aliases) . "]";
+					$message .= TF::RESET . TF::LIGHT_PURPLE . " [" . implode(",", $aliases) . "]";
 				}
-				$message .= TF::AQUA . " " . $command->getDescription() . TF::EOL . " - " . $command->getUsage();
+				$message .= TF::RESET . TF::WHITE . " " . $command->getDescription() . TF::EOL . " » " . $command->getUsage();
 				$sender->sendMessage($message);
 			}
 		} catch (Exception $error) {

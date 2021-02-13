@@ -354,7 +354,7 @@ final class BlockStatesParser
 			if ($statesTagEntry instanceof ByteTag) {
 				$s[] = TF::RED . $statesTagEntryName . "=" . ($statesTagEntry->getValue() ? TF::GREEN . "true" : TF::RED . "false") . TF::RESET;
 			} else if ($statesTagEntry instanceof IntTag) {
-				$s[] = TF::BLUE . $statesTagEntryName . "=" . TF::BLUE . $statesTagEntry->getValue() . TF::RESET;
+				$s[] = TF::AQUA . $statesTagEntryName . "=" . TF::AQUA . $statesTagEntry->getValue() . TF::RESET;
 			} else if ($statesTagEntry instanceof StringTag) {
 				$s[] = TF::LIGHT_PURPLE . $statesTagEntryName . "=" . TF::LIGHT_PURPLE . $statesTagEntry->getValue() . TF::RESET;
 			}

@@ -59,7 +59,7 @@ class BrushCommand extends BaseCommand
 			if (!$session instanceof UserSession) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$form = new SimpleForm(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.content'));
+			$form = new SimpleForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'), $lang->translateString('ui.brush.content'));
 			$form->addButton(new Button($lang->translateString('ui.brush.create')));
 			$form->addButton(new Button($lang->translateString('ui.brush.getsession')));
 			$form->addButton(new Button($lang->translateString('ui.brush.edithand')));
@@ -78,7 +78,6 @@ class BrushCommand extends BaseCommand
 						{
 							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
 							foreach ($session->getBrushes() as $brush) {
-								var_dump($brush);
 								$menu->getInventory()->addItem($brush->toItem());
 							}
 							$menu->send($player, "Session brushes");
@@ -112,7 +111,7 @@ class BrushCommand extends BaseCommand
 	 * @param array $data
 	 * @return array
 	 */
-	public static function generateLore(array $elements, array $data): array
+	public static function generateLore(array $elements, array $data): array//TODO remove?
 	{
 		$return = [];
 		foreach ($elements as $i => $element) {

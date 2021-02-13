@@ -54,11 +54,11 @@ class DebugCommand extends BaseCommand
 		try {
 			$item = ItemFactory::getInstance()->get(ItemIds::STICK);
 			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
-			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.debug'));
+			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug'));
 			$item->setLore([
-				$lang->translateString('tool.debug.lore.1'),
-				$lang->translateString('tool.debug.lore.2'),
-				$lang->translateString('tool.debug.lore.3')
+				TF::RESET . $lang->translateString('tool.debug.lore.1'),
+				TF::RESET . $lang->translateString('tool.debug.lore.2'),
+				TF::RESET . $lang->translateString('tool.debug.lore.3')
 			]);
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			$sender->getInventory()->addItem($item);

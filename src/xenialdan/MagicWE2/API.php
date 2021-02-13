@@ -533,7 +533,7 @@ class API
 
 	public static function vecToString(Vector3 $v): string
 	{
-		return TF::RESET . "[" . TF::RED . $v->getFloorX() . TF::RESET . ":" . TF::GREEN . $v->getFloorY() . TF::RESET . ":" . TF::BLUE . $v->getFloorZ() . TF::RESET . "]";
+		return TF::RESET . "[" . TF::RED . $v->getFloorX() . TF::RESET . ":" . TF::GREEN . $v->getFloorY() . TF::RESET . ":" . TF::AQUA . $v->getFloorZ() . TF::RESET . "]";
 	}
 
 	public static function boolToString(bool $b): string

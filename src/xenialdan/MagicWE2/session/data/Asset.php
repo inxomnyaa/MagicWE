@@ -24,15 +24,15 @@ use xenialdan\MagicWE2\Loader;
 class Asset implements JsonSerializable
 {
 	const TYPE_SCHEMATIC = 'schematic';
-	const TYPE_MCSTRUCTURE = 'mcstructure';
-	const TYPE_CLIPBOARD = 'clipboard';
+	const TYPE_MCSTRUCTURE = 'structure';
+	const TYPE_CLIPBOARD = 'clipboard';//TODO consider if this is even worth the efford, or instead just convert it to mcstructure before storing
 
 	public Schematic|SingleClipboard|MCStructure $structure;
 	public string $filename;//used as identifier
 	public string $displayname;
 	public bool $locked = false;
-	public ?string $ownerXuid;
-	private ?Item $item;
+	public ?string $ownerXuid = null;
+	private ?Item $item = null;
 
 	/**
 	 * Asset constructor.
@@ -84,18 +84,22 @@ class Asset implements JsonSerializable
 		if ($this->item !== null && !$renew) return $this->item;
 		$item = ItemFactory::getInstance()->get(ItemIds::SCAFFOLDING);
 		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
-		[$filename, $displayname, $type, $locked, $owner] = $this->jsonSerialize();
-		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_ASSET,
-			CompoundTag::create()
-				->setString("filename", $filename)
-				->setString("displayname", $displayname)
-				->setString("type", $type)
-				->setByte("locked", $locked ? 1 : 0)
-				->setString("owner", $owner)
-		);
-		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $displayname);
-		$item->setLore($this->generateLore());
-		$this->item = $item;
+		try {
+			['filename' => $filename, 'displayname' => $displayname, 'type' => $type, 'locked' => $locked, 'owner' => $owner] = $this->jsonSerialize();
+			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_ASSET,
+				CompoundTag::create()
+					->setString("filename", $filename)
+					->setString("displayname", $displayname)
+					->setString("type", $type)
+					->setByte("locked", $locked ? 1 : 0)
+					->setString("owner", $owner)
+			);
+			$item->setCustomName(Loader::PREFIX_ASSETS . TF::BOLD . TF::LIGHT_PURPLE . $displayname);
+			$item->setLore($this->generateLore());
+			$this->item = $item;
+		} catch (InvalidArgumentException|TypeError $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+		}
 		return $item;
 	}
 
@@ -105,14 +109,13 @@ class Asset implements JsonSerializable
 	private function generateLore(): array
 	{
 		$return = [];
-		foreach ($this->jsonSerialize() as $k => $v) {
-			if ($v === '' || $v === 'displayname') continue;
-			if (is_bool($v)) {
-				$return[] = (ucfirst($k) . ": " . ($v ? "Yes" : "No"));
-				continue;
-			}
-			$return[] = (ucfirst($k) . ": " . $v);
-		}
+		['filename' => $filename, 'displayname' => $displayname, 'type' => $type, 'locked' => $locked] = $this->jsonSerialize();
+		if (pathinfo($filename, PATHINFO_FILENAME) !== $displayname)
+			$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Filename: " . TF::RESET . $filename;
+		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Type: " . TF::RESET . ucfirst($type);
+		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Locked: " . TF::RESET . ($locked ? TF::GREEN . "Yes" : TF::RED . "No");
+		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Origin: " . TF::RESET . API::vecToString($this->getOrigin());
+		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Size: " . TF::RESET . API::vecToString($this->getSize()) . " ({$this->getTotalCount()})";
 		return $return;
 	}
 

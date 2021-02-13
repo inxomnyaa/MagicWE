@@ -124,25 +124,25 @@ class BrushProperties implements JsonSerializable
 	public function generateLore(): array
 	{
 		$shapeProperties = array_map(static function ($k, $v): string {
-			return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
+			return TF::RESET . TF::AQUA . "  " . ucfirst($k) . ": " . TF::RESET . (is_bool($v) ? ($v ? TF::GREEN . "Yes" : TF::RED . "No") : $v);
 		}, array_keys($this->shapeProperties), $this->shapeProperties);
 		$actionProperties = array_map(static function ($k, $v): string {
-			return TF::GOLD . "  " . ucfirst($k) . " = " . (is_bool($v) ? ($v ? "Yes" : "No") : $v);
+			return TF::RESET . TF::AQUA . "  " . ucfirst($k) . ": " . TF::RESET . (is_bool($v) ? ($v ? TF::GREEN . "Yes" : TF::RED . "No") : $v);
 		}, array_keys($this->actionProperties), $this->actionProperties);
 		return array_merge(
 			[
-				TF::GOLD . "Shape: {$this->getShapeName()}",
+				TF::RESET . TF::BOLD . TF::GOLD . "Shape: " . TF::RESET . $this->getShapeName(),
 			],
 			$shapeProperties,
 			[
-				TF::GOLD . "Action: {$this->getActionName()}",
+				TF::RESET . TF::BOLD . TF::GOLD . "Action: " . TF::RESET . $this->getActionName(),
 			],
 			$actionProperties,
 			[
-				TF::GOLD . "Blocks: {$this->blocks}",
-				TF::GOLD . "Filter: {$this->filter}",
-				TF::GOLD . "Biome: {$this->biomeId}",
-				TF::GOLD . "Hollow: " . ($this->hollow ? "Yes" : "No"),
+				TF::RESET . TF::BOLD . TF::GOLD . "Blocks: " . TF::RESET . $this->blocks,
+				TF::RESET . TF::BOLD . TF::GOLD . "Filter: " . TF::RESET . $this->filter,
+				TF::RESET . TF::BOLD . TF::GOLD . "Biome: " . TF::RESET . $this->biomeId,
+				TF::RESET . TF::BOLD . TF::GOLD . "Hollow: " . TF::RESET . ($this->hollow ? TF::GREEN . "Yes" : TF::RED . "No"),
 				//TF::GOLD . "UUID: {$this->uuid}",
 			]
 		);

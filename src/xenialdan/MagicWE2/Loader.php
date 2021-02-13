@@ -79,7 +79,9 @@ use xenialdan\MagicWE2\task\action\ActionRegistry;
 class Loader extends PluginBase
 {
 	public const FAKE_ENCH_ID = 201;
-	public const PREFIX = TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
+	public const PREFIX = TF::RESET . TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
+	public const PREFIX_ASSETS = TF::RESET . TF::BOLD . TF::GOLD . "[Asset]" . TF::RESET . " ";
+	public const PREFIX_FORM = TF::RESET . TF::BOLD . TF::DARK_PURPLE . "[MWE2]" . TF::RESET . " ";
 	/** @var Loader|null */
 	private static $instance;
 	/** @var null|ShapeRegistry */
@@ -257,7 +259,7 @@ class Loader extends PluginBase
 			//new PumpkinsCommand($this,"/pumpkins", "Generate pumpkin patches"),
 			/* -- clipboard -- */
 			new CopyCommand($this, "/copy", "Copy the selection to the clipboard"),
-			new PasteCommand($this, "/paste", "Paste the clipboard’s contents"),
+			new PasteCommand($this, "/paste", "Paste the clipboard's contents"),
 			new CutCommand($this, "/cut", "Cut the selection to the clipboard"),
 			new Cut2Command($this, "/cut2", "Cut the selection to the clipboard - the new way"),
 			new ClearClipboardCommand($this, "/clearclipboard", "Clear your clipboard"),

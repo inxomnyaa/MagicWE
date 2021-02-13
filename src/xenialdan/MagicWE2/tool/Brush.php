@@ -79,7 +79,7 @@ class Brush extends WETool
 				->setInt("version", $this->properties->version)
 				->setString("properties", $properties)
 		);
-		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $this->getName());
+		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $this->getName());
 		$item->setLore($this->properties->generateLore());
 		$item->setUnbreakable();
 		return $item;
