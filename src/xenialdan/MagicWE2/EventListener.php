@@ -67,8 +67,8 @@ class EventListener implements Listener
 		if (Loader::hasScoreboard()) {
 			try {
 				if (($session = $event->getSession()) instanceof UserSession && $session->isSidebarEnabled())
-				/** @var UserSession $session */
-				$session->sidebar->handleScoreboard($session);
+					/** @var UserSession $session */
+					$session->sidebar->handleScoreboard($session);
 			} catch (InvalidArgumentException $e) {
 				Loader::getInstance()->getLogger()->logException($e);
 			}
@@ -146,6 +146,24 @@ class EventListener implements Listener
 		}
 	}
 
+//	/**
+//	 * @param BlockPlaceEvent $event
+//	 * @throws AssumptionFailedError
+//	 * @throws Error
+//	 */
+//	public function onPlace(BlockPlaceEvent $event): void
+//	{
+//		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) {
+//			$event->cancel();
+//			try {
+//				$this->onBreakBlock($event);
+//			} catch (Exception $error) {
+//				$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . "Interaction failed!");
+//				$event->getPlayer()->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+//			}
+//		}
+//	}
+
 	/**
 	 * TODO use tool classes
 	 * @param BlockBreakEvent $event
@@ -195,7 +213,7 @@ class EventListener implements Listener
 	 */
 	private function onRightClickBlock(PlayerInteractEvent $event): void
 	{
-		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE))) {
+		if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)) || !is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_ASSET))) {
 			$event->cancel();
 			$session = SessionHelper::getUserSession($event->getPlayer());
 			if (!$session instanceof UserSession) return;
@@ -227,6 +245,12 @@ class EventListener implements Listener
 					#if (){// && has perms
 					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE), $session);
 					#}
+					break;
+				}
+				default:
+				{
+					var_dump($event->getItem());
+					$event->cancel();
 					break;
 				}
 			}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\session;
 
 use Ds\Deque;
+use Ds\Map;
 use Exception;
 use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
@@ -25,6 +26,8 @@ use xenialdan\MagicWE2\exception\BrushException;
 use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\helper\Scoreboard;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\session\data\Asset;
+use xenialdan\MagicWE2\session\data\BrushStore;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
@@ -44,8 +47,10 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private $wailaEnabled = true;
 	/** @var bool */
 	private $sidebarEnabled = true;//TODO settings/commands
-	/** @var Brush[] */
-	private $brushes = [];
+	/** @var Map<Brush> */
+	private Map $brushes;
+	/** @var Map<Asset> */
+	private Map $assets;
 	/** @var Language|null */
 	private $lang;
 
@@ -61,6 +66,8 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		}
 		$this->undoHistory = new Deque();
 		$this->redoHistory = new Deque();
+		$this->brushes = new Map();
+		$this->assets = new Map();
 		try {
 			if (is_null($this->lang))
 				$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
@@ -308,7 +315,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function getBrushes(): array
 	{
-		return $this->brushes;
+		return $this->brushes->values()->toArray();
 	}
 
 	public function cleanupInventory(): void

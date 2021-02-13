@@ -33,14 +33,14 @@ class Cuboid extends Shape
 	 */
 	public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth)
 	{
-        $this->pasteVector = $pasteVector;
-        $this->width = $width;
-        $this->height = $height;
-        $this->depth = $depth;
-    }
+		$this->pasteVector = $pasteVector;
+		$this->width = $width;
+		$this->height = $height;
+		$this->depth = $depth;
+	}
 
-    public static function constructFromPositions(Vector3 $pos1, Vector3 $pos2): self
-    {
+	public static function constructFromPositions(Vector3 $pos1, Vector3 $pos2): self
+	{
 		$width = (int)abs($pos1->getX() - $pos2->getX()) + 1;
 		$height = (int)abs($pos1->getY() - $pos2->getY()) + 1;
 		$depth = (int)abs($pos1->getZ() - $pos2->getZ()) + 1;
@@ -76,9 +76,9 @@ class Cuboid extends Shape
 						}
 					}
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -87,7 +87,7 @@ class Cuboid extends Shape
 	 * @return Generator|Vector2[]
 	 * @throws Exception
 	 */
-    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
@@ -97,13 +97,13 @@ class Cuboid extends Shape
 		}
 	}
 
-    /**
-     * @param World|AsyncChunkManager $manager
-     * @return string[] fastSerialized chunks
-     * @throws Exception
-     */
-    public function getTouchedChunks($manager): array
-    {
+	/**
+	 * @param World|AsyncChunkManager $manager
+	 * @return string[] fastSerialized chunks
+	 * @throws Exception
+	 */
+	public function getTouchedChunks($manager): array
+	{
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
 		$minX = $this->getMinVec3()->x >> 4;
@@ -119,31 +119,31 @@ class Cuboid extends Shape
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
 			}
 		}
-        return $touchedChunks;
-    }
+		return $touchedChunks;
+	}
 
-    public function getAABB(): AxisAlignedBB
-    {
-        return new AxisAlignedBB(
-            ceil($this->pasteVector->x - $this->width / 2),
-            $this->pasteVector->y,
-            ceil($this->pasteVector->z - $this->depth / 2),
-            -1 + ceil($this->pasteVector->x - $this->width / 2) + $this->width,
-            -1 + $this->pasteVector->y + $this->height,
-            -1 + ceil($this->pasteVector->z - $this->depth / 2) + $this->depth
-        );
-    }
+	public function getAABB(): AxisAlignedBB
+	{
+		return new AxisAlignedBB(
+			ceil($this->pasteVector->x - $this->width / 2),
+			$this->pasteVector->y,
+			ceil($this->pasteVector->z - $this->depth / 2),
+			-1 + ceil($this->pasteVector->x - $this->width / 2) + $this->width,
+			-1 + $this->pasteVector->y + $this->height,
+			-1 + ceil($this->pasteVector->z - $this->depth / 2) + $this->depth
+		);
+	}
 
-    /**
-     * @return int
-     */
-    public function getTotalCount(): int
-    {
-        return $this->width * $this->height * $this->depth;
-    }
+	/**
+	 * @return int
+	 */
+	public function getTotalCount(): int
+	{
+		return $this->width * $this->height * $this->depth;
+	}
 
-    public static function getName(): string
-    {
-        return "Cuboid";
-    }
+	public static function getName(): string
+	{
+		return "Cuboid";
+	}
 }

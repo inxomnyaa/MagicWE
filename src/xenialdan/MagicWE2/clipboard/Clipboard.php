@@ -46,11 +46,11 @@ abstract class Clipboard implements Serializable
 		return $manager;
 	}
 
-    /**
-     * @return World
-     * @throws Exception
-     */
-    public function getWorld(): World
+	/**
+	 * @return World
+	 * @throws Exception
+	 */
+	public function getWorld(): World
 	{
 		if (is_null($this->worldId)) {
 			throw new SelectionException("World is not set!");
@@ -70,27 +70,27 @@ abstract class Clipboard implements Serializable
 		$this->worldId = $world->getId();
 	}
 
-    /**
-     * @return int
-     */
-    public function getWorldId(): int
-    {
+	/**
+	 * @return int
+	 */
+	public function getWorldId(): int
+	{
 		return $this->worldId;
-    }
+	}
 
-    /**
-     * @return string
-     */
-    public function getCustomName(): string
-    {
-        return $this->customName;
-    }
+	/**
+	 * @return string
+	 */
+	public function getCustomName(): string
+	{
+		return $this->customName;
+	}
 
-    /**
-     * @param string $customName
-     */
-    public function setCustomName(string $customName): void
-    {
-        $this->customName = $customName;
-    }
+	/**
+	 * @param string $customName
+	 */
+	public function setCustomName(string $customName): void
+	{
+		$this->customName = $customName;
+	}
 }

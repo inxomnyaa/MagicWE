@@ -58,17 +58,17 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 				$session->getBossBar()->setTitle("Running {$action::getName()} clipboard action");//TODO better string
 			}
 		} catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-        }
-    }
+			Loader::getInstance()->getLogger()->logException($e);
+		}
+	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function onRun(): void
+	/**
+	 * Actions to execute when run
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function onRun(): void
 	{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 		BlockStatesParser::$doorRotPath = $this->doorRotPath;

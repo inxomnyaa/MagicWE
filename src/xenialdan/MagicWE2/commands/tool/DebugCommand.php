@@ -37,21 +37,21 @@ class DebugCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
 			$item = ItemFactory::getInstance()->get(ItemIds::STICK);
 			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('tool.debug'));
@@ -63,12 +63,12 @@ class DebugCommand extends BaseCommand
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			$sender->getInventory()->addItem($item);
 		} catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsage());
+		} catch (Error $error) {
+			Loader::getInstance()->getLogger()->logException($error);
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+		}
+	}
 }

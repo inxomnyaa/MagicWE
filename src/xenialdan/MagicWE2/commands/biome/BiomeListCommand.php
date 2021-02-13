@@ -34,19 +34,19 @@ class BiomeListCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-                /** @var Player $sender */
-                $session = SessionHelper::getUserSession($sender);
-                if (is_null($session)) {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+				/** @var Player $sender */
+				$session = SessionHelper::getUserSession($sender);
+				if (is_null($session)) {
 					throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-                }
-                $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomelist.title'));
-                foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
+				}
+				$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomelist.title'));
+				foreach ((new ReflectionClass(Biome::class))->getConstants() as $name => $value) {
 					if ($value === Biome::MAX_BIOMES) continue;
 					$name = BiomeRegistry::getInstance()->getBiome($value)->getName();
 					$session->sendMessage(TF::AQUA . $lang->translateString('command.biomelist.result.line', [$value, $name]));
@@ -58,5 +58,5 @@ class BiomeListCommand extends BaseCommand
 				$sender->sendMessage($this->getUsage());
 			}
 		}
-    }
+	}
 }

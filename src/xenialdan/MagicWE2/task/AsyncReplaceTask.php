@@ -58,13 +58,13 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$this->flags = $flags;
 	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function onRun(): void
+	/**
+	 * Actions to execute when run
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
 

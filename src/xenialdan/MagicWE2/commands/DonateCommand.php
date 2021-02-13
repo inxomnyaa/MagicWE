@@ -31,20 +31,20 @@ class DonateCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        try {
-            $name = TF::DARK_PURPLE . "[" . TF::GOLD . "XenialDan" . TF::DARK_PURPLE . "] ";
-            $sender->sendMessage($name . "Greetings! Would you like to buy me an energy drink to stay awake during coding sessions?");
-            $sender->sendMessage($name . "Donations are welcomed! Consider donating on " . TF::DARK_AQUA . "Pay" . TF::AQUA . "Pal:");
-            $sender->sendMessage($name . TF::DARK_AQUA . "https://www.paypal.me/xenialdan");
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		try {
+			$name = TF::DARK_PURPLE . "[" . TF::GOLD . "XenialDan" . TF::DARK_PURPLE . "] ";
+			$sender->sendMessage($name . "Greetings! Would you like to buy me an energy drink to stay awake during coding sessions?");
+			$sender->sendMessage($name . "Donations are welcomed! Consider donating on " . TF::DARK_AQUA . "Pay" . TF::AQUA . "Pal:");
+			$sender->sendMessage($name . TF::DARK_AQUA . "https://www.paypal.me/xenialdan");
 			$sender->sendMessage($name . "Thank you! With " . TF::BOLD . TF::RED . "<3" . TF::RESET . TF::DARK_PURPLE . " - MagicWE2 by https://github.com/thebigsmileXD");
 			$colorHeart = (random_int(0, 1) === 1 ? TF::DARK_RED : TF::DARK_PURPLE);
 			$sender->sendMessage(

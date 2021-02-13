@@ -27,13 +27,13 @@ use xenialdan\MagicWE2\task\action\TaskAction;
 
 class AsyncActionTask extends MWEAsyncTask
 {
-    /*
-     * Intention:
-     * Shape: get blocks from a shape. Shape can contain options
-     * Filterblocks: filter out blocks that are not needed
-     * Action: action to run on the remaining blocks, return previous blocks
-     * Strings: Begin, completion, bossbar, other stuff can be in the action
-    */
+	/*
+	 * Intention:
+	 * Shape: get blocks from a shape. Shape can contain options
+	 * Filterblocks: filter out blocks that are not needed
+	 * Action: action to run on the remaining blocks, return previous blocks
+	 * Strings: Begin, completion, bossbar, other stuff can be in the action
+	*/
 
 	/** @var string */
 	private $touchedChunks;
@@ -66,25 +66,25 @@ class AsyncActionTask extends MWEAsyncTask
 		$this->blockFilter = $blockFilter;
 
 		try {
-            $session = SessionHelper::getSessionByUUID($sessionUUID);
-            if ($session instanceof UserSession) {
-                $player = $session->getPlayer();
-                /** @var Player $player */
-                $session->getBossBar()->showTo([$player]);
-                $session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
-            }
-        } catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-        }
-    }
+			$session = SessionHelper::getSessionByUUID($sessionUUID);
+			if ($session instanceof UserSession) {
+				$player = $session->getPlayer();
+				/** @var Player $player */
+				$session->getBossBar()->showTo([$player]);
+				$session->getBossBar()->setTitle("Running {$action::getName()} action");//TODO better string
+			}
+		} catch (SessionException $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+		}
+	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function onRun(): void
+	/**
+	 * Actions to execute when run
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function onRun(): void
 	{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
@@ -162,6 +162,6 @@ class AsyncActionTask extends MWEAsyncTask
 				$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, self::multipleBlocksToData($oldBlocksBlocks)));
 			if ($this->action->addClipboard)
 				$session->addClipboard($oldBlocks);
-        }
-    }
+		}
+	}
 }

@@ -17,14 +17,14 @@ use xenialdan\MagicWE2\selection\Selection;
 class SetBlockAction extends TaskAction
 {
 
-    public function __construct()
-    {
-    }
+	public function __construct()
+	{
+	}
 
-    public static function getName(): string
-    {
-        return "Set block";
-    }
+	public static function getName(): string
+	{
+		return "Set block";
+	}
 
 	/**
 	 * @param string $sessionUUID
@@ -58,9 +58,9 @@ class SetBlockAction extends TaskAction
 			$i++;
 			$progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
 			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
-                yield $progress;
-                $lastProgress = $progress;
-            }
-        }
-    }
+				yield $progress;
+				$lastProgress = $progress;
+			}
+		}
+	}
 }

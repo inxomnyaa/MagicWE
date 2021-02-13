@@ -49,7 +49,7 @@ abstract class Session
 	}
 
 	/**
-     * @param UUID $uuid
+	 * @param UUID $uuid
 	 */
 	public function setUUID(UUID $uuid): void
 	{
@@ -103,203 +103,203 @@ abstract class Session
 	}
 
 	/**
-     * @return Selection[]
-     */
-    public function getSelections(): array
-    {
-        return $this->selections;
-    }
+	 * @return Selection[]
+	 */
+	public function getSelections(): array
+	{
+		return $this->selections;
+	}
 
-    /**
-     * @param mixed $selections
-     */
-    public function setSelections($selections): void
-    {
-        $this->selections = $selections;
-    }
+	/**
+	 * @param mixed $selections
+	 */
+	public function setSelections($selections): void
+	{
+		$this->selections = $selections;
+	}
 
-    /**
-     * @return UUID|null
-     */
-    public function getLatestSelectionUUID(): ?UUID
-    {
-        return $this->latestselection;
-    }
+	/**
+	 * @return UUID|null
+	 */
+	public function getLatestSelectionUUID(): ?UUID
+	{
+		return $this->latestselection;
+	}
 
-    /**
-     * @param UUID $latestselection
-     */
-    public function setLatestSelectionUUID(UUID $latestselection): void
-    {
-        $this->latestselection = $latestselection;
-    }
+	/**
+	 * @param UUID $latestselection
+	 */
+	public function setLatestSelectionUUID(UUID $latestselection): void
+	{
+		$this->latestselection = $latestselection;
+	}
 
-    /**
-     * @return int
-     */
-    public function getCurrentClipboardIndex(): int
-    {
-        return $this->currentClipboard;
-    }
+	/**
+	 * @return int
+	 */
+	public function getCurrentClipboardIndex(): int
+	{
+		return $this->currentClipboard;
+	}
 
-    /**
-     * @return null|Clipboard
-     */
-    public function getCurrentClipboard(): ?Clipboard
-    {
-        return $this->clipboards[$this->currentClipboard] ?? null;
-    }
+	/**
+	 * @return null|Clipboard
+	 */
+	public function getCurrentClipboard(): ?Clipboard
+	{
+		return $this->clipboards[$this->currentClipboard] ?? null;
+	}
 
-    /**
-     * @param string $name
-     * @return null|Clipboard
-     */
-    public function getClipboardByName(string $name): ?Clipboard
-    {
-        foreach ($this->clipboards as $clipboard) {
-            if ($clipboard->getCustomName() === $name) return $clipboard;
-        }
-        return null;
-    }
+	/**
+	 * @param string $name
+	 * @return null|Clipboard
+	 */
+	public function getClipboardByName(string $name): ?Clipboard
+	{
+		foreach ($this->clipboards as $clipboard) {
+			if ($clipboard->getCustomName() === $name) return $clipboard;
+		}
+		return null;
+	}
 
-    /**
-     * @param int $id
-     * @return null|Clipboard
-     */
-    public function getClipboardById(int $id): ?Clipboard
-    {
-        return $this->clipboards[$id] ?? null;
-    }
+	/**
+	 * @param int $id
+	 * @return null|Clipboard
+	 */
+	public function getClipboardById(int $id): ?Clipboard
+	{
+		return $this->clipboards[$id] ?? null;
+	}
 
-    /**
-     * TODO
-     * @return Clipboard[]
-     */
-    public function getClipboards(): array
-    {
-        return $this->clipboards;
-    }
+	/**
+	 * TODO
+	 * @return Clipboard[]
+	 */
+	public function getClipboards(): array
+	{
+		return $this->clipboards;
+	}
 
-    /**
-     * TODO
-     * @param Clipboard[] $clipboards
-     * @return bool
-     */
-    public function setClipboards(array $clipboards): bool
-    {
-        $this->clipboards = $clipboards;
-        return true;
-    }
+	/**
+	 * TODO
+	 * @param Clipboard[] $clipboards
+	 * @return bool
+	 */
+	public function setClipboards(array $clipboards): bool
+	{
+		$this->clipboards = $clipboards;
+		return true;
+	}
 
-    /**
-     * @param Clipboard $clipboard
-     * @param bool $setAsCurrent
-     * @return int The index of the clipboard
-     */
-    public function addClipboard(Clipboard $clipboard, bool $setAsCurrent = true): int
-    {
-        $amount = array_push($this->clipboards, $clipboard);
-        if ($amount > self::MAX_CLIPBOARDS) array_shift($this->clipboards);
-        $i = array_search($clipboard, $this->clipboards, true);
-        if ($i !== false) {
-            if ($setAsCurrent) $this->currentClipboard = (int)$i;
-            return (int)$i;
-        }
-        return -1;
-    }
+	/**
+	 * @param Clipboard $clipboard
+	 * @param bool $setAsCurrent
+	 * @return int The index of the clipboard
+	 */
+	public function addClipboard(Clipboard $clipboard, bool $setAsCurrent = true): int
+	{
+		$amount = array_push($this->clipboards, $clipboard);
+		if ($amount > self::MAX_CLIPBOARDS) array_shift($this->clipboards);
+		$i = array_search($clipboard, $this->clipboards, true);
+		if ($i !== false) {
+			if ($setAsCurrent) $this->currentClipboard = (int)$i;
+			return (int)$i;
+		}
+		return -1;
+	}
 
-    /**
-     * @param RevertClipboard $revertClipboard
-     */
-    public function addRevert(RevertClipboard $revertClipboard): void
-    {
-        $this->redoHistory->clear();
-        $this->undoHistory->push($revertClipboard);
-        while ($this->undoHistory->count() > self::MAX_HISTORY) {
-            $this->undoHistory->shift();
-        }
-    }
+	/**
+	 * @param RevertClipboard $revertClipboard
+	 */
+	public function addRevert(RevertClipboard $revertClipboard): void
+	{
+		$this->redoHistory->clear();
+		$this->undoHistory->push($revertClipboard);
+		while ($this->undoHistory->count() > self::MAX_HISTORY) {
+			$this->undoHistory->shift();
+		}
+	}
 
-    /**
-     * @throws Exception
-     */
-    public function undo(): void
-    {
-        if ($this->undoHistory->count() === 0) {
-            $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.undo.none'));
-            return;
-        }
-        /** @var RevertClipboard $revertClipboard */
-        $revertClipboard = $this->undoHistory->pop();
+	/**
+	 * @throws Exception
+	 */
+	public function undo(): void
+	{
+		if ($this->undoHistory->count() === 0) {
+			$this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.undo.none'));
+			return;
+		}
+		/** @var RevertClipboard $revertClipboard */
+		$revertClipboard = $this->undoHistory->pop();
 		$world = $revertClipboard->getWorld();
-        foreach ($revertClipboard->chunks as $hash => $chunk) {
+		foreach ($revertClipboard->chunks as $hash => $chunk) {
 			World::getXZ($hash, $x, $z);
 			$revertClipboard->chunks[$hash] = $world->getChunk($x, $z);
 		}
-        Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
-        $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
-    }
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
+		$this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
+	}
 
-    /**
-     * @throws InvalidArgumentException
-     * @throws RuntimeException
-     */
-    public function redo(): void
-    {
-        if ($this->redoHistory->count() === 0) {
-            $this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.redo.none'));
-            return;
-        }
-        /** @var RevertClipboard $revertClipboard */
-        $revertClipboard = $this->redoHistory->pop();
-        Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
-        $this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
-    }
+	/**
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 */
+	public function redo(): void
+	{
+		if ($this->redoHistory->count() === 0) {
+			$this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.redo.none'));
+			return;
+		}
+		/** @var RevertClipboard $revertClipboard */
+		$revertClipboard = $this->redoHistory->pop();
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_REDO));
+		$this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.redo.left', [count($this->redoHistory)]));
+	}
 
-    public function clearHistory(): void
-    {
-        $this->undoHistory->clear();
-        $this->redoHistory->clear();
-    }
+	public function clearHistory(): void
+	{
+		$this->undoHistory->clear();
+		$this->redoHistory->clear();
+	}
 
-    public function clearClipboard(): void
-    {
-        $this->setClipboards([]);
-        $this->currentClipboard = -1;
-    }
+	public function clearClipboard(): void
+	{
+		$this->setClipboards([]);
+		$this->currentClipboard = -1;
+	}
 
-    /**
-     * @return Language
-     */
-    public function getLanguage(): Language
-    {
-        return Loader::getInstance()->getLanguage();
-    }
+	/**
+	 * @return Language
+	 */
+	public function getLanguage(): Language
+	{
+		return Loader::getInstance()->getLanguage();
+	}
 
 	abstract public function sendMessage(string $message): void;
 
-    public function __toString()
-    {
-        return __CLASS__ .
-            " UUID: " . $this->getUUID()->__toString() .
-            " Selections: " . count($this->getSelections()) .
-            " Latest: " . $this->getLatestSelectionUUID() .
-            " Clipboards: " . count($this->getClipboards()) .
-            " Current: " . $this->getCurrentClipboardIndex() .
-            " Undos: " . count($this->undoHistory) .
-            " Redos: " . count($this->redoHistory);
-    }
+	public function __toString()
+	{
+		return __CLASS__ .
+			" UUID: " . $this->getUUID()->__toString() .
+			" Selections: " . count($this->getSelections()) .
+			" Latest: " . $this->getLatestSelectionUUID() .
+			" Clipboards: " . count($this->getClipboards()) .
+			" Current: " . $this->getCurrentClipboardIndex() .
+			" Undos: " . count($this->undoHistory) .
+			" Redos: " . count($this->redoHistory);
+	}
 
-    /*
-     * TODO list:
-     * session storing/recovering from file/cleanup if too old
-     * session items
-     * recover session items + commands to get back already created/configured items/tool/brushes
-     * proper multi-selection-usage
-     * setState/getState on big actions, status bar/boss bar/texts/titles/popups
-     * inspect other player's sessions
-     * destroy session if owning player lost permission/gets banned
-     * optimise destroySession/__destruct of sessions
-     * clipboard selection (renaming?)
-     */
+	/*
+	 * TODO list:
+	 * session storing/recovering from file/cleanup if too old
+	 * session items
+	 * recover session items + commands to get back already created/configured items/tool/brushes
+	 * proper multi-selection-usage
+	 * setState/getState on big actions, status bar/boss bar/texts/titles/popups
+	 * inspect other player's sessions
+	 * destroy session if owning player lost permission/gets banned
+	 * optimise destroySession/__destruct of sessions
+	 * clipboard selection (renaming?)
+	 */
 }

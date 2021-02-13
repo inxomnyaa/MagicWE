@@ -50,5 +50,5 @@ abstract class TaskAction
 	{
 		if ($clipboardVector instanceof Vector3) $clipboardVector = $clipboardVector->asVector3()->floor();
 		$this->clipboardVector = $clipboardVector;
-    }
+	}
 }

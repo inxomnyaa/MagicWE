@@ -42,7 +42,7 @@ final class BlockQuery
 		/** @var BlockStatesParser $blockstateParser */
 		$blockstateParser = BlockStatesParser::getInstance();
 		$blockstateParser::fromString($this);//this should already set the blockFullId because it is a reference
-		var_dump($this->hasBlock() ? "Has block, " . $this->blockFullId : "Does not have block");
+		//var_dump($this->hasBlock() ? "Has block, " . $this->blockFullId : "Does not have block");
 		//TODO throw BlockQueryParsingFailedException if blockFullId was not set? `if(!$this->hasBlock())`
 		return $this;
 	}

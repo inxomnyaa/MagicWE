@@ -52,10 +52,10 @@ class SetBiomeAction extends TaskAction
 			$manager->getChunk($vec2->x >> 4, $vec2->y >> 4)->setBiomeId($vec2->x % 16, $vec2->y % 16, $this->biomeId);
 			$changed++;
 			$progress = new Progress($changed / $count, "Changed Biome for $changed/$count blocks");
-            if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
-                yield $progress;
-                $lastProgress = $progress;
-            }
-        }
-    }
+			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
+				yield $progress;
+				$lastProgress = $progress;
+			}
+		}
+	}
 }

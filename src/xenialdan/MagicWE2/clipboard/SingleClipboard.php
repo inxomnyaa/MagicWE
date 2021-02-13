@@ -55,23 +55,23 @@ class SingleClipboard extends Clipboard
 	public function getTotalCount(): int
 	{
 		return count($this->entries);
-    }
+	}
 
-    /**
-     * String representation of object
-     * @link https://php.net/manual/en/serializable.serialize.php
-     * @return string the string representation of the object or null
-     * @since 5.1
-     */
-    public function serialize()
-    {
-        // TODO: Implement serialize() method.
-        return serialize([
-            $this->entries,
-            $this->selection,
-            $this->position
-        ]);
-    }
+	/**
+	 * String representation of object
+	 * @link https://php.net/manual/en/serializable.serialize.php
+	 * @return string the string representation of the object or null
+	 * @since 5.1
+	 */
+	public function serialize()
+	{
+		// TODO: Implement serialize() method.
+		return serialize([
+			$this->entries,
+			$this->selection,
+			$this->position
+		]);
+	}
 
 	/**
 	 * Constructs the object
@@ -83,13 +83,13 @@ class SingleClipboard extends Clipboard
 	 * @since 5.1
 	 * @noinspection PhpMissingParamTypeInspection
 	 */
-    public function unserialize($serialized)
-    {
-        // TODO: Implement unserialize() method.
-        [
+	public function unserialize($serialized)
+	{
+		// TODO: Implement unserialize() method.
+		[
 			$this->entries,
 			$this->selection,
 			$this->position
 		] = unserialize($serialized/*, ['allowed_classes' => [BlockEntry::class, Selection::class, Vector3::class]]*/);
-    }
+	}
 }

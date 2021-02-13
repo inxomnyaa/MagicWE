@@ -28,8 +28,7 @@ final class StructureStore
 	/** @noinspection MkdirRaceConditionInspection */
 	public function __construct()
 	{
-		@mkdir(Loader::getInstance()->getDataFolder() . 'structures');
-		@mkdir(Loader::getInstance()->getDataFolder() . 'schematics');
+		@mkdir(Loader::getInstance()->getDataFolder() . 'assets');
 	}
 
 	/**
@@ -44,9 +43,8 @@ final class StructureStore
 	{
 		$id = pathinfo($filename, PATHINFO_FILENAME);
 		if (!$override && array_key_exists($id, $this->structures)) throw new InvalidArgumentException("Can not override $id");
-		$path = Loader::getInstance()->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . $id . '.mcstructure';//TODO redundant?
+		$path = Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . $id . '.mcstructure';
 		$structure = new MCStructure();
-
 		$structure->parse($path);
 		$this->structures[$id] = $structure;
 		return $this->structures[$id];
@@ -76,7 +74,7 @@ final class StructureStore
 	{
 		$id = pathinfo($filename, PATHINFO_FILENAME);
 		if (!$override && array_key_exists($id, $this->schematics)) throw new InvalidArgumentException("Can not override $id");
-		$path = Loader::getInstance()->getDataFolder() . 'schematics' . DIRECTORY_SEPARATOR . $id . '.schematic';
+		$path = Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . $id . '.schematic';
 		$schematic = new Schematic();
 		$schematic->parse($path);
 		$this->schematics[$id] = $schematic;

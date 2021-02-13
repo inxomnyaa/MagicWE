@@ -60,15 +60,15 @@ class CountAction extends TaskAction
 			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
 				yield $progress;
 				$lastProgress = $progress;
-            }
-        }
-        $messages[] = TF::DARK_AQUA . count($counts) . " blocks found in a total of $count blocks";
-        uasort($counts, static function ($a, $b) {
+			}
+		}
+		$messages[] = TF::DARK_AQUA . count($counts) . " blocks found in a total of $count blocks";
+		uasort($counts, static function ($a, $b) {
 			if ($a === $b) return 0;
 			return ($a > $b) ? -1 : 1;
 		});
-        foreach ($counts as $block => $countb) {
-            $messages[] = TF::AQUA . $countb . "x | " . round($countb / $count * 100) . "% | " . $block;
-        }
-    }
+		foreach ($counts as $block => $countb) {
+			$messages[] = TF::AQUA . $countb . "x | " . round($countb / $count * 100) . "% | " . $block;
+		}
+	}
 }

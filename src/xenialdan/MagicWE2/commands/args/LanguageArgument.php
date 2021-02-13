@@ -32,8 +32,8 @@ class LanguageArgument extends StringEnumArgument
 		return array_values(Loader::getInstance()->getLanguageList());
 	}
 
-    public function getEnumName(): string
-    {
-        return "language";
-    }
+	public function getEnumName(): string
+	{
+		return "language";
+	}
 }

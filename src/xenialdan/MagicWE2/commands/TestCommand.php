@@ -46,8 +46,8 @@ class TestCommand extends BaseCommand
 			}
 		}
 		try {
-            //TODO REMOVE DEBUG
-            $pluginSession = SessionHelper::createPluginSession(Loader::getInstance());
+			//TODO REMOVE DEBUG
+			$pluginSession = SessionHelper::createPluginSession(Loader::getInstance());
 			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 0, 0, 0);
 			$pluginSession->addSelection($selection);
 			Server::getInstance()->getAsyncPool()->submitTask(

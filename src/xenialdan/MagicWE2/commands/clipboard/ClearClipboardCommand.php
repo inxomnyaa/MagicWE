@@ -32,22 +32,22 @@ class ClearClipboardCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-            $session = SessionHelper::getUserSession($sender);
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
+			$session = SessionHelper::getUserSession($sender);
 			if (!$session instanceof UserSession) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}

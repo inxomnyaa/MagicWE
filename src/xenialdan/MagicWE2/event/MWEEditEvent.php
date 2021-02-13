@@ -30,54 +30,54 @@ class MWEEditEvent extends MWEEvent implements Cancellable
 	 */
 	public function __construct(Plugin $plugin, array $oldBlocks, array $newBlocks, ?Session $session)
 	{
-        parent::__construct($plugin);
-        $this->oldBlocks = $oldBlocks;
-        $this->newBlocks = $newBlocks;
-        $this->session = $session;
-    }
+		parent::__construct($plugin);
+		$this->oldBlocks = $oldBlocks;
+		$this->newBlocks = $newBlocks;
+		$this->session = $session;
+	}
 
-    /**
-     * @return null|Session
-     */
-    public function getSession(): ?Session
-    {
-        return $this->session;
-    }
+	/**
+	 * @return null|Session
+	 */
+	public function getSession(): ?Session
+	{
+		return $this->session;
+	}
 
-    /**
-     * @return null|Player
-     */
-    public function getPlayer(): ?Player
-    {
-        if (($session = $this->getSession()) instanceof UserSession)
-            /** @var UserSession $session */
-            return $session->getPlayer();
-        return null;
-    }
+	/**
+	 * @return null|Player
+	 */
+	public function getPlayer(): ?Player
+	{
+		if (($session = $this->getSession()) instanceof UserSession)
+			/** @var UserSession $session */
+			return $session->getPlayer();
+		return null;
+	}
 
-    /**
-     * @param null|Player $player
-     */
-    public function setPlayer(?Player $player): void
-    {
-        if (($session = $this->getSession()) instanceof UserSession)
-            /** @var UserSession $session */
-            $session->setPlayer($player);
-    }
+	/**
+	 * @param null|Player $player
+	 */
+	public function setPlayer(?Player $player): void
+	{
+		if (($session = $this->getSession()) instanceof UserSession)
+			/** @var UserSession $session */
+			$session->setPlayer($player);
+	}
 
-    /**
-     * @return Block[]
-     */
-    public function getOldBlocks(): array
-    {
-        return $this->oldBlocks;
-    }
+	/**
+	 * @return Block[]
+	 */
+	public function getOldBlocks(): array
+	{
+		return $this->oldBlocks;
+	}
 
-    /**
-     * @return Block[]
-     */
-    public function getNewBlocks(): array
-    {
+	/**
+	 * @return Block[]
+	 */
+	public function getNewBlocks(): array
+	{
 		return $this->newBlocks;
 	}
 

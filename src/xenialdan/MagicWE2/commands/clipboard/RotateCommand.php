@@ -41,25 +41,25 @@ class RotateCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-            $angle = (int)$args["angle"];
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
+			$angle = (int)$args["angle"];
 			$aroundOrigin = $args["aroundOrigin"] ?? true;
-            $sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [$angle]));
-            $session = SessionHelper::getUserSession($sender);
+			$sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [$angle]));
+			$session = SessionHelper::getUserSession($sender);
 			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}

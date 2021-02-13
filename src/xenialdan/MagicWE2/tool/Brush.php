@@ -8,11 +8,9 @@ use Exception;
 use InvalidArgumentException;
 use JsonException;
 use pocketmine\data\bedrock\BiomeIds;
-use pocketmine\item\Durable;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
@@ -69,8 +67,7 @@ class Brush extends WETool
 	 */
 	public function toItem(): Item
 	{
-		/** @var Durable $item */
-		$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_SHOVEL);
+		$item = VanillaItems::WOODEN_SHOVEL();
 		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 		$uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
 		$this->properties->uuid = $uuid;
@@ -109,16 +106,16 @@ class Brush extends WETool
 				$dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
 				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
 					if ($name === ShapeRegistry::CUSTOM) continue;
-                    $dropdownShape->addOption($name, $class === $brushProperties->shape);
-                }
-                $form->addElement($dropdownShape);
-            } else {
-                $form->addElement(new Label($brushProperties->getShapeName()));
-            }
-            // Action
-            $dropdownAction = new Dropdown("Action");
-            foreach (ActionRegistry::getActions() as $name => $class) {
-                $dropdownAction->addOption($name, $class === $brushProperties->action);
+					$dropdownShape->addOption($name, $class === $brushProperties->shape);
+				}
+				$form->addElement($dropdownShape);
+			} else {
+				$form->addElement(new Label($brushProperties->getShapeName()));
+			}
+			// Action
+			$dropdownAction = new Dropdown("Action");
+			foreach (ActionRegistry::getActions() as $name => $class) {
+				$dropdownAction->addOption($name, $class === $brushProperties->action);
 			}
 			$form->addElement($dropdownAction);
 			// Name
@@ -142,14 +139,14 @@ class Brush extends WETool
 					$form->addElement($element);
 				}
 			}
-            // Function
-            $form->setCallable(function (Player $player, $data) use ($form, $new) {
-                #var_dump(__LINE__, $data);
-                #$data = array_slice($data, 0, 7);
-                [$shape, $action, $name, $blocks, $filter, $biome, $hollow] = $data;
-                $extraData = [];
-                #var_dump(__LINE__, array_slice($data, 7));
-                $base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
+			// Function
+			$form->setCallable(function (Player $player, $data) use ($form, $new) {
+				#var_dump(__LINE__, $data);
+				#$data = array_slice($data, 0, 7);
+				[$shape, $action, $name, $blocks, $filter, $biome, $hollow] = $data;
+				$extraData = [];
+				#var_dump(__LINE__, array_slice($data, 7));
+				$base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
 				foreach (array_slice($data, 7, null, true) as $i => $value) {
 					#var_dump($i, $value, gettype($value), gettype($base[lcfirst($form->getElement($i)->getText())]));
 					if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
@@ -174,104 +171,104 @@ class Brush extends WETool
 					$p = BlockPalette::fromString($blocks);
 					if ($p->empty()) throw new AssumptionFailedError("Blocks cannot be empty!");
 				} catch (Exception $ex) {
-                    $error['blocks'] = $ex->getMessage();
-                }
-                try {
+					$error['blocks'] = $ex->getMessage();
+				}
+				try {
 					BlockPalette::fromString($filter);
 				} catch (Exception $ex) {
-                    $error['filter'] = $ex->getMessage();
-                }
-                try {
-                    $shape = Loader::getShapeRegistry()::getShape($shape);
-                } catch (Exception $ex) {
-                    $error['shape'] = $ex->getMessage();
-                }
-                try {
-                    $action = Loader::getActionRegistry()::getAction($action);
-                } catch (Exception $ex) {
-                    $error['action'] = $ex->getMessage();
-                }
-                try {
+					$error['filter'] = $ex->getMessage();
+				}
+				try {
+					$shape = Loader::getShapeRegistry()::getShape($shape);
+				} catch (Exception $ex) {
+					$error['shape'] = $ex->getMessage();
+				}
+				try {
+					$action = Loader::getActionRegistry()::getAction($action);
+				} catch (Exception $ex) {
+					$error['action'] = $ex->getMessage();
+				}
+				try {
 					if (!is_int($biomeId)) throw new AssumptionFailedError("Biome not found");
-                } catch (Exception $ex) {
-                    $error['biome'] = $ex->getMessage();
-                }
+				} catch (Exception $ex) {
+					$error['biome'] = $ex->getMessage();
+				}
 
-                //Set properties (called before resending, so form contains errors)
-                if (!empty(trim(TF::clean($name)))) $this->properties->customName = $name;
-                if (!isset($error['shape'])) {
-                    $this->properties->shape = $shape;
-                    if (!$new && !empty($extraData))
-                        $this->properties->shapeProperties = $extraData;
-                }
-                if (!isset($error['action'])) $this->properties->action = $action;
-                /*if (!isset($error['blocks']))*/
-                $this->properties->blocks = $blocks;
-                /*if (!isset($error['filter']))*/
-                $this->properties->filter = $filter;
-                $this->properties->hollow = $hollow;
+				//Set properties (called before resending, so form contains errors)
+				if (!empty(trim(TF::clean($name)))) $this->properties->customName = $name;
+				if (!isset($error['shape'])) {
+					$this->properties->shape = $shape;
+					if (!$new && !empty($extraData))
+						$this->properties->shapeProperties = $extraData;
+				}
+				if (!isset($error['action'])) $this->properties->action = $action;
+				/*if (!isset($error['blocks']))*/
+				$this->properties->blocks = $blocks;
+				/*if (!isset($error['filter']))*/
+				$this->properties->filter = $filter;
+				$this->properties->hollow = $hollow;
 
-                //Resend form upon error
-                if (!empty($error)) {
-                    $player->sendForm($this->getForm($new, $error));
-                    return;
-                }
+				//Resend form upon error
+				if (!empty($error)) {
+					$player->sendForm($this->getForm($new, $error));
+					return;
+				}
 
-                //Debug
-                #print_r($extraData);
-                try {
-                    $brush = $this;
-                    $session = SessionHelper::getUserSession($player);
-                    if (!$session instanceof UserSession) {
+				//Debug
+				#print_r($extraData);
+				try {
+					$brush = $this;
+					$session = SessionHelper::getUserSession($player);
+					if (!$session instanceof UserSession) {
 						throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
-                    }
-                    if (!$new) {
-                        $session->replaceBrush($brush);
-                    } else {
-                        $player->sendForm($this->getExtradataForm($this->properties->shape));
-                    }
-                } catch (Exception $ex) {
-                    $player->sendMessage($ex->getMessage());
-                    Loader::getInstance()->getLogger()->logException($ex);
-                }
-            });
-            return $form;
-        } catch (Exception $e) {
+					}
+					if (!$new) {
+						$session->replaceBrush($brush);
+					} else {
+						$player->sendForm($this->getExtradataForm($this->properties->shape));
+					}
+				} catch (Exception $ex) {
+					$player->sendMessage($ex->getMessage());
+					Loader::getInstance()->getLogger()->logException($ex);
+				}
+			});
+			return $form;
+		} catch (Exception $e) {
 			throw new AssumptionFailedError("Could not create brush form");
-        }
-    }
+		}
+	}
 
-    private function getExtradataForm(string $shapeClass): CustomForm
-    {
-        $form = new CustomForm("Shape settings");
-        #foreach (($defaultReplaced = array_merge(ShapeRegistry::getDefaultShapeProperties($shapeClass), $this->properties->shapeProperties)) as $name => $value) {
-        $base = ShapeRegistry::getDefaultShapeProperties($shapeClass);
-        foreach (($defaultReplaced = array_replace($base, array_intersect_key($this->properties->shapeProperties, $base))) as $name => $value) {
+	private function getExtradataForm(string $shapeClass): CustomForm
+	{
+		$form = new CustomForm("Shape settings");
+		#foreach (($defaultReplaced = array_merge(ShapeRegistry::getDefaultShapeProperties($shapeClass), $this->properties->shapeProperties)) as $name => $value) {
+		$base = ShapeRegistry::getDefaultShapeProperties($shapeClass);
+		foreach (($defaultReplaced = array_replace($base, array_intersect_key($this->properties->shapeProperties, $base))) as $name => $value) {
 			if (is_bool($value)) $form->addElement(new Toggle(ucfirst($name), $value));
 			else $form->addElement(new Input(ucfirst($name), $name . " (" . gettype($value) . ")", (string)$value));
 		}
-        #var_dump($this->properties->shapeProperties);
-        #var_dump('Base', $base);
-        #var_dump('Default Replaced', $defaultReplaced);
-        $form->setCallable(function (Player $player, $data) use ($defaultReplaced, $base) {
-            //TODO validation, resending etc.
-            $extraData = [];
-            $names = array_keys($defaultReplaced);
-            foreach ($data as $index => $value) {
+		#var_dump($this->properties->shapeProperties);
+		#var_dump('Base', $base);
+		#var_dump('Default Replaced', $defaultReplaced);
+		$form->setCallable(function (Player $player, $data) use ($defaultReplaced, $base) {
+			//TODO validation, resending etc.
+			$extraData = [];
+			$names = array_keys($defaultReplaced);
+			foreach ($data as $index => $value) {
 				if (is_int($base[$names[$index]])) $value = (int)$value;
-                $extraData[$names[$index]] = $value;
-            }
-            $this->properties->shapeProperties = $extraData;
+				$extraData[$names[$index]] = $value;
+			}
+			$this->properties->shapeProperties = $extraData;
 
-            $brush = $this;
-            $session = SessionHelper::getUserSession($player);
-            if (!$session instanceof UserSession) {
+			$brush = $this;
+			$session = SessionHelper::getUserSession($player);
+			if (!$session instanceof UserSession) {
 				throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $this->properties->uuid = UUID::fromRandom()->toString();
-            $session->addBrush($brush);
-            $player->getInventory()->addItem($brush->toItem());
-        });
-        return $form;
-    }
+			}
+			$this->properties->uuid = UUID::fromRandom()->toString();
+			$session->addBrush($brush);
+			$player->getInventory()->addItem($brush->toItem());
+		});
+		return $form;
+	}
 }

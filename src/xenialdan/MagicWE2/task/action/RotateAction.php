@@ -39,8 +39,8 @@ class RotateAction extends ClipboardAction
 
 	public static function getName(): string
 	{
-        return "Rotate";
-    }
+		return "Rotate";
+	}
 
 	/**
 	 * @param string $sessionUUID

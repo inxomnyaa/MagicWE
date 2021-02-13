@@ -42,23 +42,23 @@ class AsyncCopyTask extends MWEAsyncTask
 	 * @param int $flags
 	 * @throws Exception
 	 */
-    public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
-    {
-        $this->start = microtime(true);
-        $this->chunks = serialize($chunks);
-        $this->sessionUUID = $sessionUUID->toString();
-        $this->selection = serialize($selection);
-        $this->offset = $offset->asVector3()->floor();
-        $this->flags = $flags;
-    }
+	public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
+	{
+		$this->start = microtime(true);
+		$this->chunks = serialize($chunks);
+		$this->sessionUUID = $sessionUUID->toString();
+		$this->selection = serialize($selection);
+		$this->offset = $offset->asVector3()->floor();
+		$this->flags = $flags;
+	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function onRun(): void
+	/**
+	 * Actions to execute when run
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
 		$chunks = array_map(static function ($chunk) {
@@ -76,17 +76,17 @@ class AsyncCopyTask extends MWEAsyncTask
 		$totalCount = $selection->getShape()->getTotalCount();
 		$copied = $this->copyBlocks($selection, $manager, $clipboard);
 		#$clipboard->setShape($selection->getShape());
-        #$clipboard->chunks = $manager->getChunks();
-        $this->setResult(compact("clipboard", "copied", "totalCount"));
-    }
+		#$clipboard->chunks = $manager->getChunks();
+		$this->setResult(compact("clipboard", "copied", "totalCount"));
+	}
 
-    /**
-     * @param Selection $selection
-     * @param AsyncChunkManager $manager
-     * @param SingleClipboard $clipboard
-     * @return int
-     * @throws Exception
-     */
+	/**
+	 * @param Selection $selection
+	 * @param AsyncChunkManager $manager
+	 * @param SingleClipboard $clipboard
+	 * @return int
+	 * @throws Exception
+	 */
 	private function copyBlocks(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard): int
 	{
 		$blockCount = $selection->getShape()->getTotalCount();
@@ -107,10 +107,10 @@ class AsyncCopyTask extends MWEAsyncTask
 				$lastprogress = $progress;
 			}
 		}
-        return $i;
-    }
+		return $i;
+	}
 
-    public function onCompletion(): void
+	public function onCompletion(): void
 	{
 		try {
 			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));

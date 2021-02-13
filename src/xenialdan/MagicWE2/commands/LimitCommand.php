@@ -36,18 +36,18 @@ class LimitCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        try {
-            if (empty($args["limit"])) {
-                $limit = Loader::getInstance()->getConfig()->get("limit", -1);
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		try {
+			if (empty($args["limit"])) {
+				$limit = Loader::getInstance()->getConfig()->get("limit", -1);
 				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.limit.current', [($limit < 0 ? ucfirst(Loader::getInstance()->getLanguage()->translateString('disabled')) : $limit)]));
 			} else {
 				Loader::getInstance()->getConfig()->set("limit", (int)$args["limit"]);

@@ -49,15 +49,15 @@ class MWESelectionChangeEvent extends MWEEvent
 		$this->selection = $selection;
 	}
 
-    /**
-     * @return null|Session
-     */
-    public function getSession(): ?Session
-    {
-        return $this->session;
-    }
+	/**
+	 * @return null|Session
+	 */
+	public function getSession(): ?Session
+	{
+		return $this->session;
+	}
 
-    /**
+	/**
 	 * @return null|Player
 	 */
 	public function getPlayer(): ?Player

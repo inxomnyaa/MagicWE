@@ -50,16 +50,16 @@ class PasteCommand extends BaseCommand
 			}
 		}
 		if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-            $session = SessionHelper::getUserSession($sender);
-            if (is_null($session)) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
+			$session = SessionHelper::getUserSession($sender);
+			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $clipboard = $session->getCurrentClipboard();
+			}
+			$clipboard = $session->getCurrentClipboard();
 			if (is_null($clipboard)) {
 				throw new SelectionException($lang->translateString('error.noclipboard'));
 			}

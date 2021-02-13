@@ -43,28 +43,28 @@ class BiomeInfoCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
-            $session = SessionHelper::getUserSession($sender);
-            if (is_null($session)) {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
+			$session = SessionHelper::getUserSession($sender);
+			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
-            }
-            $biomeNames = (new ReflectionClass(Biome::class))->getConstants();
-            $biomeNames = array_flip($biomeNames);
-            unset($biomeNames[Biome::MAX_BIOMES]);
+			}
+			$biomeNames = (new ReflectionClass(Biome::class))->getConstants();
+			$biomeNames = array_flip($biomeNames);
+			unset($biomeNames[Biome::MAX_BIOMES]);
 			array_walk($biomeNames, static function (&$value, $key) {
 				$value = BiomeRegistry::getInstance()->getBiome($key)->getName();
 			});
@@ -85,37 +85,37 @@ class BiomeInfoCommand extends BaseCommand
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}
-                return;
-            }
-            $selection = $session->getLatestSelection();
-            if (is_null($selection)) {
+				return;
+			}
+			$selection = $session->getLatestSelection();
+			if (is_null($selection)) {
 				throw new SelectionException($lang->translateString('error.noselection'));
-            }
-            if (!$selection->isValid()) {
+			}
+			if (!$selection->isValid()) {
 				throw new SelectionException($lang->translateString('error.selectioninvalid'));
-            }
-            if ($selection->getWorld() !== $sender->getWorld()) {
+			}
+			if ($selection->getWorld() !== $sender->getWorld()) {
 				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
-            }
-            $touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
-            $biomes = [];
-            foreach ($touchedChunks as $touchedChunk) {
-                for ($x = 0; $x < 16; $x++)
-                    for ($z = 0; $z < 16; $z++)
+			}
+			$touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
+			$biomes = [];
+			foreach ($touchedChunks as $touchedChunk) {
+				for ($x = 0; $x < 16; $x++)
+					for ($z = 0; $z < 16; $z++)
 						$biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
-            }
-            $biomes = array_unique($biomes);
-            $session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.result', [count($biomes)]));
-            foreach ($biomes as $biomeId) {
-                $session->sendMessage(TF::AQUA . $lang->translateString('command.biomeinfo.result.line', [$biomeId, $biomeNames[$biomeId]]));
-            }
-        } catch (Exception $error) {
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-            $sender->sendMessage($this->getUsage());
-        } catch (Error $error) {
-            Loader::getInstance()->getLogger()->logException($error);
-            $sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-        }
-    }
+			}
+			$biomes = array_unique($biomes);
+			$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.result', [count($biomes)]));
+			foreach ($biomes as $biomeId) {
+				$session->sendMessage(TF::AQUA . $lang->translateString('command.biomeinfo.result.line', [$biomeId, $biomeNames[$biomeId]]));
+			}
+		} catch (Exception $error) {
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+			$sender->sendMessage($this->getUsage());
+		} catch (Error $error) {
+			Loader::getInstance()->getLogger()->logException($error);
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+		}
+	}
 }

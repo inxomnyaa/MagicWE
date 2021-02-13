@@ -20,10 +20,10 @@ class Progress
 	{
 		$this->progress = $progress;
 		$this->string = $info;
-    }
+	}
 
-    public function __toString()
-    {
-        return "Progress: " . $this->progress . " String: " . $this->string;
-    }
+	public function __toString()
+	{
+		return "Progress: " . $this->progress . " String: " . $this->string;
+	}
 }

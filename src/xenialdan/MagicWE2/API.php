@@ -70,6 +70,7 @@ class API
 
 	public const TAG_MAGIC_WE = "MagicWE";
 	public const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
+	public const TAG_MAGIC_WE_ASSET = "MagicWEAsset";
 
 	//TODO Split into separate Class (SchematicStorage?)
 	/** @var Clipboard[] */
@@ -528,5 +529,15 @@ class API
 	{
 		[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z];
 		return $block;
+	}
+
+	public static function vecToString(Vector3 $v): string
+	{
+		return TF::RESET . "[" . TF::RED . $v->getFloorX() . TF::RESET . ":" . TF::GREEN . $v->getFloorY() . TF::RESET . ":" . TF::BLUE . $v->getFloorZ() . TF::RESET . "]";
+	}
+
+	public static function boolToString(bool $b): string
+	{
+		return $b ? TF::RESET . TF::GREEN . "On" . TF::RESET : TF::RESET . TF::RED . "Off" . TF::RESET;
 	}
 }

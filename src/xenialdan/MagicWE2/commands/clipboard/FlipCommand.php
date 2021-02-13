@@ -40,21 +40,21 @@ class FlipCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
-            return;
-        }
-        /** @var Player $sender */
-        try {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		if (!$sender instanceof Player) {
+			$sender->sendMessage(TF::RED . $lang->translateString('error.runingame'));
+			return;
+		}
+		/** @var Player $sender */
+		try {
 			$axis = (string)$args["axis"];//TODO change to Axis[]
 			$sender->sendMessage(Loader::PREFIX . $lang->translateString('command.flip.try', [$axis]));
 			$session = SessionHelper::getUserSession($sender);
@@ -66,11 +66,11 @@ class FlipCommand extends BaseCommand
 				throw new SessionException($lang->translateString('error.noclipboard'));
 			}
 			$action = new FlipAction($axis);
-            #$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
-            #$action->setClipboardVector($offset);
-            Server::getInstance()->getAsyncPool()->submitTask(
-                new AsyncClipboardActionTask(
-                    $session->getUUID(),
+			#$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
+			#$action->setClipboardVector($offset);
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncClipboardActionTask(
+					$session->getUUID(),
 					$clipboard->selection,
 					$action,
 					$clipboard

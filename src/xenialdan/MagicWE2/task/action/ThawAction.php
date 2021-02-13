@@ -17,14 +17,14 @@ use xenialdan\MagicWE2\selection\Selection;
 class ThawAction extends TaskAction
 {
 
-    public function __construct()
-    {
-    }
+	public function __construct()
+	{
+	}
 
-    public static function getName(): string
-    {
-        return "Thaw";
-    }
+	public static function getName(): string
+	{
+		return "Thaw";
+	}
 
 	/**
 	 * @param string $sessionUUID
@@ -64,6 +64,6 @@ class ThawAction extends TaskAction
 					$lastProgress = $progress;
 				}
 			}
-        }
-    }
+		}
+	}
 }

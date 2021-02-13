@@ -31,9 +31,9 @@ class Cylinder extends Shape
 	public function __construct(Vector3 $pasteVector, int $height, int $diameter)
 	{
 		$this->pasteVector = $pasteVector;
-        $this->height = $height;
-        $this->diameter = $diameter;
-    }
+		$this->height = $height;
+		$this->diameter = $diameter;
+	}
 
 	/**
 	 * Returns the blocks by their actual position
@@ -67,9 +67,9 @@ class Cylinder extends Shape
 						}
 					}
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -78,7 +78,7 @@ class Cylinder extends Shape
 	 * @return Generator|Vector2[]
 	 * @throws Exception
 	 */
-    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -92,13 +92,13 @@ class Cylinder extends Shape
 		}
 	}
 
-    /**
-     * @param World|AsyncChunkManager $manager
-     * @return string[] fastSerialized chunks
-     * @throws Exception
-     */
-    public function getTouchedChunks($manager): array
-    {//TODO optimize to remove "corner" chunks
+	/**
+	 * @param World|AsyncChunkManager $manager
+	 * @return string[] fastSerialized chunks
+	 * @throws Exception
+	 */
+	public function getTouchedChunks($manager): array
+	{//TODO optimize to remove "corner" chunks
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
 		$minX = $this->getMinVec3()->x >> 4;
@@ -114,30 +114,30 @@ class Cylinder extends Shape
 				print "Touched Chunk at: $x:$z" . PHP_EOL;
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
 			}
-        }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
-        return $touchedChunks;
-    }
+		}
+		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+		return $touchedChunks;
+	}
 
-    public function getAABB(): AxisAlignedBB
-    {
-        return new AxisAlignedBB(
-            floor($this->pasteVector->x - $this->diameter / 2),
-            $this->pasteVector->y,
-            floor($this->pasteVector->z - $this->diameter / 2),
-            -1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
-            -1 + $this->pasteVector->y + $this->height,
-            -1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
-        );
-    }
+	public function getAABB(): AxisAlignedBB
+	{
+		return new AxisAlignedBB(
+			floor($this->pasteVector->x - $this->diameter / 2),
+			$this->pasteVector->y,
+			floor($this->pasteVector->z - $this->diameter / 2),
+			-1 + floor($this->pasteVector->x - $this->diameter / 2) + $this->diameter,
+			-1 + $this->pasteVector->y + $this->height,
+			-1 + floor($this->pasteVector->z - $this->diameter / 2) + $this->diameter
+		);
+	}
 
-    public function getTotalCount(): int
-    {
+	public function getTotalCount(): int
+	{
 		return (int)ceil(M_PI * (($this->diameter / 2) ** 2) * $this->height);
-    }
+	}
 
-    public static function getName(): string
-    {
-        return "Cylinder";
-    }
+	public static function getName(): string
+	{
+		return "Cylinder";
+	}
 }

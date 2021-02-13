@@ -36,18 +36,18 @@ class AsyncRevertTask extends MWEAsyncTask
 	public function __construct(UUID $sessionUUID, RevertClipboard $clipboard, $type = self::TYPE_UNDO)
 	{
 		$this->sessionUUID = $sessionUUID->toString();
-        $this->start = microtime(true);
-        $this->clipboard = serialize($clipboard);
-        $this->type = $type;
-    }
+		$this->start = microtime(true);
+		$this->clipboard = serialize($clipboard);
+		$this->type = $type;
+	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function onRun(): void
+	/**
+	 * Actions to execute when run
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
 		/** @var RevertClipboard $clipboard */
@@ -142,12 +142,12 @@ class AsyncRevertTask extends MWEAsyncTask
 					break;
 				}
 				case self::TYPE_REDO:
-                {
-                    $session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
-                    $session->undoHistory->push($clipboard);
-                    break;
-                }
-            }
-        }
-    }
+				{
+					$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.revert.redo.success', [$this->generateTookString(), $changed, $totalCount]));
+					$session->undoHistory->push($clipboard);
+					break;
+				}
+			}
+		}
+	}
 }

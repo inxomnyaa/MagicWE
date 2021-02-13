@@ -7,6 +7,6 @@ namespace xenialdan\MagicWE2\tool;
 abstract class WETool
 {
 
-    abstract public function getName(): string;
+	abstract public function getName(): string;
 
 }

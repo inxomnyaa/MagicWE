@@ -23,25 +23,25 @@ class PluginSession extends Session
 	}
 
 	public function getPlugin(): Plugin
-    {
-        return $this->plugin;
-    }
+	{
+		return $this->plugin;
+	}
 
-    public function __toString()
-    {
-        return __CLASS__ .
-            " UUID: " . $this->getUUID()->__toString() .
-            " Plugin: " . $this->getPlugin()->getName() .
-            " Selections: " . count($this->getSelections()) .
-            " Latest: " . $this->getLatestSelectionUUID() .
-            " Clipboards: " . count($this->getClipboards()) .
-            " Current: " . $this->getCurrentClipboardIndex() .
-            " Undos: " . count($this->undoHistory) .
-            " Redos: " . count($this->redoHistory);
-    }
+	public function __toString()
+	{
+		return __CLASS__ .
+			" UUID: " . $this->getUUID()->__toString() .
+			" Plugin: " . $this->getPlugin()->getName() .
+			" Selections: " . count($this->getSelections()) .
+			" Latest: " . $this->getLatestSelectionUUID() .
+			" Clipboards: " . count($this->getClipboards()) .
+			" Current: " . $this->getCurrentClipboardIndex() .
+			" Undos: " . count($this->undoHistory) .
+			" Redos: " . count($this->redoHistory);
+	}
 
-    public function sendMessage(string $message): void
-    {
-        $this->plugin->getLogger()->info(Loader::PREFIX . $message);
-    }
+	public function sendMessage(string $message): void
+	{
+		$this->plugin->getLogger()->info(Loader::PREFIX . $message);
+	}
 }

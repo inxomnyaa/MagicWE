@@ -68,7 +68,7 @@ class CutAction extends TaskAction
 			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
 				yield $progress;
 				$lastProgress = $progress;
-            }
-        }
-    }
+			}
+		}
+	}
 }

@@ -36,18 +36,18 @@ class SetRangeCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        try {
-            if (empty($args["range"])) {
-                $range = Loader::getInstance()->getToolDistance();
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		try {
+			if (empty($args["range"])) {
+				$range = Loader::getInstance()->getToolDistance();
 				$sender->sendMessage(Loader::PREFIX . TF::GREEN . $lang->translateString('command.setrange.current', [$range]));
 			} else {
 				Loader::getInstance()->getConfig()->set("tool-range", (int)$args["range"]);

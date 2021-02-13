@@ -35,13 +35,13 @@ class Pyramid extends Shape
 	 * @param bool $flipped
 	 */
 	public function __construct(Vector3 $pasteVector, int $width, int $height, int $depth, bool $flipped = false)
-    {
-        $this->pasteVector = $pasteVector;
-        $this->width = $width;
-        $this->height = $height;
-        $this->depth = $depth;
-        $this->flipped = $flipped;
-    }
+	{
+		$this->pasteVector = $pasteVector;
+		$this->width = $width;
+		$this->height = $height;
+		$this->depth = $depth;
+		$this->flipped = $flipped;
+	}
 
 	/**
 	 * Returns the blocks by their actual position
@@ -85,9 +85,9 @@ class Pyramid extends Shape
 						}
 					}
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -96,7 +96,7 @@ class Pyramid extends Shape
 	 * @return Generator|Vector2[]
 	 * @throws Exception
 	 */
-    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -108,13 +108,13 @@ class Pyramid extends Shape
 		}
 	}
 
-    /**
-     * @param World|AsyncChunkManager $manager
-     * @return string[] fastSerialized chunks
-     * @throws Exception
-     */
-    public function getTouchedChunks($manager): array
-    {//TODO optimize to remove "corner" chunks
+	/**
+	 * @param World|AsyncChunkManager $manager
+	 * @return string[] fastSerialized chunks
+	 * @throws Exception
+	 */
+	public function getTouchedChunks($manager): array
+	{//TODO optimize to remove "corner" chunks
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
 		$minX = $this->getMinVec3()->x >> 4;
@@ -130,30 +130,30 @@ class Pyramid extends Shape
 				print "Touched Chunk at: $x:$z" . PHP_EOL;
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
 			}
-        }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
-        return $touchedChunks;
-    }
+		}
+		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+		return $touchedChunks;
+	}
 
-    public function getAABB(): AxisAlignedBB
-    {
-        return new AxisAlignedBB(
-            floor($this->pasteVector->x - $this->width / 2),
-            $this->pasteVector->y,
-            floor($this->pasteVector->z - $this->depth / 2),
-            -1 + floor($this->pasteVector->x - $this->width / 2) + $this->width,
-            -1 + $this->pasteVector->y + $this->height,
-            -1 + floor($this->pasteVector->z - $this->depth / 2) + $this->depth
-        );
-    }
+	public function getAABB(): AxisAlignedBB
+	{
+		return new AxisAlignedBB(
+			floor($this->pasteVector->x - $this->width / 2),
+			$this->pasteVector->y,
+			floor($this->pasteVector->z - $this->depth / 2),
+			-1 + floor($this->pasteVector->x - $this->width / 2) + $this->width,
+			-1 + $this->pasteVector->y + $this->height,
+			-1 + floor($this->pasteVector->z - $this->depth / 2) + $this->depth
+		);
+	}
 
-    public function getTotalCount(): int
-    {
-        return (int)ceil((1 / 3) * ($this->width * $this->depth) * $this->height);
-    }
+	public function getTotalCount(): int
+	{
+		return (int)ceil((1 / 3) * ($this->width * $this->depth) * $this->height);
+	}
 
-    public static function getName(): string
-    {
-        return "Pyramid";
-    }
+	public static function getName(): string
+	{
+		return "Pyramid";
+	}
 }

@@ -49,13 +49,13 @@ class AsyncCountTask extends MWEAsyncTask
 		$this->flags = $flags;
 	}
 
-    /**
-     * Actions to execute when run
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function onRun(): void
+	/**
+	 * Actions to execute when run
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
+	public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
 		$chunks = unserialize($this->touchedChunks/*, ['allowed_classes' => [false]]*/);//TODO test pm4
@@ -133,7 +133,7 @@ class AsyncCountTask extends MWEAsyncTask
 				$session->sendMessage(TF::AQUA . $count . "x | " . round($count / $totalCount * 100) . "% | " . $block);
 			}
 		} catch (SessionException $e) {
-            Loader::getInstance()->getLogger()->logException($e);
-        }
-    }
+			Loader::getInstance()->getLogger()->logException($e);
+		}
+	}
 }

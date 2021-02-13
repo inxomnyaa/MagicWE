@@ -38,10 +38,10 @@ class RevertClipboard extends Clipboard
 	 * String representation of object
 	 * @link http://php.net/manual/en/serializable.serialize.php
 	 * @return string the string representation of the object or null
-     * @since 5.1.0
-     */
-    public function serialize()
-    {
+	 * @since 5.1.0
+	 */
+	public function serialize()
+	{
 		$chunks = [];
 		foreach ($this->chunks as $hash => $chunk) {
 			$chunks[$hash] = FastChunkSerializer::serialize($chunk);
@@ -53,7 +53,7 @@ class RevertClipboard extends Clipboard
 		]);
 	}
 
-    /**
+	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
 	 * @param string $serialized <p>
@@ -63,8 +63,8 @@ class RevertClipboard extends Clipboard
 	 * @since 5.1.0
 	 * @noinspection PhpMissingParamTypeInspection
 	 */
-    public function unserialize($serialized)
-    {
+	public function unserialize($serialized)
+	{
 		[
 			$this->worldId,
 			$chunks,

@@ -54,9 +54,9 @@ class Cube extends Shape
 						}
 					}
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
@@ -65,7 +65,7 @@ class Cube extends Shape
 	 * @return Generator|Vector2[]
 	 * @throws Exception
 	 */
-    public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
@@ -75,13 +75,13 @@ class Cube extends Shape
 		}
 	}
 
-    /**
-     * @param World|AsyncChunkManager $manager
-     * @return string[] fastSerialized chunks
-     * @throws Exception
-     */
-    public function getTouchedChunks($manager): array
-    {
+	/**
+	 * @param World|AsyncChunkManager $manager
+	 * @return string[] fastSerialized chunks
+	 * @throws Exception
+	 */
+	public function getTouchedChunks($manager): array
+	{
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;
 		$minX = $this->getMinVec3()->x >> 4;
@@ -97,30 +97,30 @@ class Cube extends Shape
 				print "Touched Chunk at: $x:$z" . PHP_EOL;
 				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
 			}
-        }
-        print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
-        return $touchedChunks;
-    }
+		}
+		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
+		return $touchedChunks;
+	}
 
-    public function getAABB(): AxisAlignedBB
-    {
-        return new AxisAlignedBB(
-            ceil($this->pasteVector->x - $this->width / 2),
-            $this->pasteVector->y,
-            ceil($this->pasteVector->z - $this->width / 2),
-            -1 + ceil($this->pasteVector->x - $this->width / 2) + $this->width,
-            -1 + $this->pasteVector->y + $this->width,
-            -1 + ceil($this->pasteVector->z - $this->width / 2) + $this->width
-        );
-    }
+	public function getAABB(): AxisAlignedBB
+	{
+		return new AxisAlignedBB(
+			ceil($this->pasteVector->x - $this->width / 2),
+			$this->pasteVector->y,
+			ceil($this->pasteVector->z - $this->width / 2),
+			-1 + ceil($this->pasteVector->x - $this->width / 2) + $this->width,
+			-1 + $this->pasteVector->y + $this->width,
+			-1 + ceil($this->pasteVector->z - $this->width / 2) + $this->width
+		);
+	}
 
-    public function getTotalCount(): int
-    {
-        return $this->width ** 3;
-    }
+	public function getTotalCount(): int
+	{
+		return $this->width ** 3;
+	}
 
-    public static function getName(): string
-    {
-        return "Cube";
-    }
+	public static function getName(): string
+	{
+		return "Cube";
+	}
 }

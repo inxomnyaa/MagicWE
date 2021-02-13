@@ -23,6 +23,7 @@ use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\customui\API as CustomUIAPI;
+use xenialdan\MagicWE2\commands\asset\AssetCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -71,6 +72,7 @@ use xenialdan\MagicWE2\helper\BlockStatesEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
+use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
@@ -100,6 +102,8 @@ class Loader extends PluginBase
 	public $wailaBossBar;
 	/** @var null|string */
 	public static $scoreboardAPI;
+	/** @var AssetCollection */
+	public static AssetCollection $assetCollection;
 
 	/**
 	 * Returns an instance of the plugin
@@ -173,8 +177,9 @@ class Loader extends PluginBase
 		}
 
 		$blockstateparserInstance->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
-		#StructureStore::getInstance();
-		$blockstateparserInstance::runTests();//TODO REMOVE, DEBUG!!!!!!!
+		//$blockstateparserInstance::runTests();//TODO REMOVE, DEBUG!!!!!!!
+
+		self::$assetCollection = new AssetCollection();
 	}
 
 	/**
@@ -211,6 +216,8 @@ class Loader extends PluginBase
 			new HPos1Command($this, "/hpos1", "Set position 1 to targeted block", ["/h1"]),
 			new HPos2Command($this, "/hpos2", "Set position 2 to targeted block", ["/h2"]),
 			new ChunkCommand($this, "/chunk", "Set the selection to your current chunk"),
+			/* -- assets -- */
+			new AssetCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
 			/* -- tool -- */
 			new WandCommand($this, "/wand", "Gives you the selection wand"),
 			new TogglewandCommand($this, "/togglewand", "Toggle the wand tool on/off", ["/toggleeditwand"]),
@@ -315,33 +322,6 @@ class Loader extends PluginBase
 		} else {
 			$this->getLogger()->notice(TF::RED . "Scoreboard API NOT found, can NOT use scoreboards");
 		}
-//		.mcstructure loading tests
-//		$world = self::getInstance()->getServer()->getWorldManager()->getDefaultWorld();
-//		if ($world !== null) {
-//			$spawn = $world->getSafeSpawn()->asVector3();
-//			$structureFiles = glob($this->getDataFolder() . 'structures' . DIRECTORY_SEPARATOR . "*.mcstructure");
-//			if ($structureFiles !== false)
-//				foreach ($structureFiles as $file) {
-//					$this->getLogger()->debug(TF::GOLD . "Loading " . basename($file));
-//					try {
-//						/** @var StructureStore $instance */
-//						$instance = StructureStore::getInstance();
-//						$structure = $instance->loadStructure(basename($file));
-//						//this will dump wrong blocks for now
-//						foreach ($structure->blocks() as $block) {
-//							#$this->getLogger()->debug($block->getPos()->asVector3() . ' ' . BlockStatesParser::printStates(BlockStatesParser::getStateByBlock($block), false));
-//							$world->setBlock(($at = $spawn->addVector($block->getPos()->asVector3())), $block);
-//							if (($tile = $structure->translateBlockEntity(Position::fromObject($block->getPos()->asVector3(), $world), $at)) instanceof Tile) {
-//								$tileAt = $world->getTileAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-//								if ($tileAt !== null) $world->removeTile($tileAt);
-//								$world->addTile($tile);
-//							}
-//						}
-//					} catch (Exception $e) {
-//						$this->getLogger()->debug($e->getMessage());
-//					}
-//				}
-//		}
 
 		//register WAILA bar
 		$this->wailaBossBar = new DiverseBossBar();

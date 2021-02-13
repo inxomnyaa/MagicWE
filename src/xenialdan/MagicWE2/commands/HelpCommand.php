@@ -35,18 +35,18 @@ class HelpCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 */
-    public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
-    {
-        $lang = Loader::getInstance()->getLanguage();
-        if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
-            try {
-                $lang = SessionHelper::getUserSession($sender)->getLanguage();
-            } catch (SessionException $e) {
-            }
-        }
-        try {
-            $cmds = [];
-            if (empty($args["command"])) {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
+	{
+		$lang = Loader::getInstance()->getLanguage();
+		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
+			try {
+				$lang = SessionHelper::getUserSession($sender)->getLanguage();
+			} catch (SessionException $e) {
+			}
+		}
+		try {
+			$cmds = [];
+			if (empty($args["command"])) {
 				foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), static function (Command $command) use ($sender) {
 					return strpos($command->getName(), "/") !== false && $command->testPermissionSilent($sender);
 				}) as $cmd) {
@@ -60,12 +60,12 @@ class HelpCommand extends BaseCommand
 				$sender->sendMessage(TF::RED . str_replace("/", "//", $lang->translateString("%commands.generic.notFound")));
 				return;
 			}
-            foreach ($cmds as $command) {
-                $message = TF::LIGHT_PURPLE . "/" . $command->getName();
-                if (!empty(($aliases = $command->getAliases()))) {
-                    foreach ($aliases as $i => $alias) {
-                        $aliases[$i] = "/" . $alias;
-                    }
+			foreach ($cmds as $command) {
+				$message = TF::LIGHT_PURPLE . "/" . $command->getName();
+				if (!empty(($aliases = $command->getAliases()))) {
+					foreach ($aliases as $i => $alias) {
+						$aliases[$i] = "/" . $alias;
+					}
 					$message .= TF::DARK_PURPLE . " [" . implode(",", $aliases) . "]";
 				}
 				$message .= TF::AQUA . " " . $command->getDescription() . TF::EOL . " - " . $command->getUsage();
