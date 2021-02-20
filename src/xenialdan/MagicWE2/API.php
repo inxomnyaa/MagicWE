@@ -27,7 +27,9 @@ use xenialdan\MagicWE2\exception\CalculationException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\selection\shape\Shape;
+use xenialdan\MagicWE2\session\data\Asset;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\SetBiomeAction;
@@ -36,6 +38,7 @@ use xenialdan\MagicWE2\task\AsyncActionTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
 use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
+use xenialdan\MagicWE2\task\AsyncPasteAssetTask;
 use xenialdan\MagicWE2\task\AsyncPasteTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 use xenialdan\MagicWE2\tool\Brush;
@@ -334,6 +337,25 @@ class API
         $messages = [];
         $error = false;
         return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flags);*/
+	}
+
+	public static function placeAsset(Position $target, Asset $asset, CompoundTag $settings, UserSession $session): bool
+	{
+		if (!$settings instanceof CompoundTag) return false;
+
+		#$start = clone $target->asVector3()->floor()->addVector($asset->getOrigin())->floor();//start pos of paste//TODO if using rotate, this fails
+		#$end = $start->addVector($asset->getSize()->subtractVector($asset->getOrigin()));//add size
+		//[$target->x,$target->y,$target->z] = [($v=$target->asVector3())->getFloorX(),$v->getFloorY(),$v->getFloorZ()];
+		$start = clone $target->asVector3();//start pos of paste//TODO if using rotate, this fails
+		$end = $start->addVector($asset->getSize());//add size
+		$shape = Cuboid::constructFromPositions(Vector3::minComponents($start, $end), Vector3::maxComponents($start, $end));
+		$shape->setPasteVector($target->asVector3()->subtract(($asset->getSize()->getX() + 1) / 2, 0, ($asset->getSize()->getZ() + 1) / 2));//TODO this causes a size +0.5x +0.5z shift
+		$selection = new Selection($session->getUUID(), $target->getWorld());
+		$selection->setShape($shape);
+		$aabb = $shape->getAABB();
+		$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteAssetTask($session->getUUID(), $selection, $touchedChunks, $asset));
+		return true;
 	}
 
 	/// SCHEMATIC RELATED API PART

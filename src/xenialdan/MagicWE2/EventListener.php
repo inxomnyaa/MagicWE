@@ -29,6 +29,7 @@ use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
 
@@ -245,6 +246,21 @@ class EventListener implements Listener
 					#if (){// && has perms
 					API::floodArea($event->getBlock()->getSide($event->getFace()), $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE), $session);
 					#}
+					break;
+				}
+				case ItemIds::SCAFFOLDING:
+				{
+					$tag = $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_ASSET);
+					if ($tag !== null) {
+						$filename = $tag->getString('filename');
+						$asset = AssetCollection::getInstance()->assets->get($filename);
+						$target = $event->getBlock()->getSide($event->getFace())->getPos();
+						if (API::placeAsset($target, $asset, $tag, $session)) {
+							$event->getPlayer()->sendMessage("Asset placed!");
+						} else {
+							$event->getPlayer()->sendMessage("Asset not placed!");
+						}
+					}
 					break;
 				}
 				default:
