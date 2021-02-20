@@ -145,21 +145,21 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 			/** @var BlockEntry $entry */
 			foreach ($structure->iterateEntries($x, $y, $z) as $entry) {
 				$v = new Vector3($x, $y, $z);
-				var_dump($v);
-				$pos = $v->addVector($this->pasteVector);
-				[$x, $y, $z] = [$pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ()];
-				if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
-					$lastchunkx = $x >> 4;
-					$lastchunkz = $z >> 4;
-					if (is_null($manager->getChunk($x >> 4, $z >> 4))) {
-						print PHP_EOL . "Paste chunk not found in async paste manager: " . ($x >> 4) . ":" . ($z >> 4) . PHP_EOL;
+				$pos = $v->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+				[$v->x, $v->y, $v->z] = /*[$x, $y, $z] =*/
+					[$pos->getX(), $pos->getY(), $pos->getZ()];
+				if (($v->x >> 4 !== $lastchunkx && $v->z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
+					$lastchunkx = $v->x >> 4;
+					$lastchunkz = $v->z >> 4;
+					if (is_null($manager->getChunk($v->x >> 4, $v->z >> 4))) {
+						print PHP_EOL . "Paste chunk not found in async paste manager: " . ($v->x >> 4) . ":" . ($v->z >> 4) . PHP_EOL;
 						continue;
 					}
 				}
 				$new = $entry->toBlock();
-				yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z));
-				$manager->setBlockAt($x, $y, $z, $new);
-				if ($manager->getBlockArrayAt($x, $y, $z) !== [$manager->getBlockAt($x, $y, $z)->getId(), $manager->getBlockAt($x, $y, $z)->getMeta()]) {//TODO remove? Just useless waste imo
+				yield self::singleBlockToData(API::setComponents($manager->getBlockAt($v->x, $v->y, $v->z), (int)$v->x, (int)$v->y, (int)$v->z));
+				$manager->setBlockAt($v->x, $v->y, $v->z, $new);
+				if ($manager->getBlockArrayAt($v->x, $v->y, $v->z) !== [$manager->getBlockAt($v->x, $v->y, $v->z)->getId(), $manager->getBlockAt($v->x, $v->y, $v->z)->getMeta()]) {//TODO remove? Just useless waste imo
 					$changed++;
 				}
 				///
@@ -172,9 +172,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 			}
 		} else if ($structure instanceof Schematic) {
 			foreach ($structure->blocks() as $block) {
-				$pos = $block->getPos()->addVector($this->pasteVector);
-				var_dump($pos);
-				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ()];
+				$pos = $block->getPos()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
 				if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
 					$lastchunkx = $x >> 4;
 					$lastchunkz = $z >> 4;
