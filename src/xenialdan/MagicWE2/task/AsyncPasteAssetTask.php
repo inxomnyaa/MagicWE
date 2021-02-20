@@ -38,18 +38,23 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	private $asset;
 	/** @var Vector3 */
 	private $pasteVector;
+	/** @var Vector3 */
+	private $target;
 
 	/**
 	 * AsyncPasteTask constructor.
 	 * @param UUID $sessionUUID
+	 * @param Vector3 $target
 	 * @param Selection $selection
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param Asset $asset
+	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, Asset $asset)
+	public function __construct(UUID $sessionUUID, Vector3 $target, Selection $selection, array $touchedChunks, Asset $asset)
 	{
 		$this->start = microtime(true);
 		$this->pasteVector = $selection->getShape()->getPasteVector();#->addVector($asset->getOrigin())->floor();
+		$this->target = $target;
 		#var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->selection = $selection;
@@ -109,11 +114,11 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		$structure = $asset->structure;
 		if ($structure instanceof MCStructure) {
 			/** @var Block $block */
-			foreach ($structure->blocks() as $block) {
-				var_dump($block->getPos()->asVector3(), $this->pasteVector, $this->selection);
-				$pos = $block->getPos()->addVector($this->pasteVector);
-				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ()];
-				var_dump($block->getPos()->asVector3());
+			foreach ($structure->blocks() as $block) {// [0,0,0 -> sizex,sizey,sizez]
+				#var_dump($block->getPos()->asVector3(), $this->pasteVector, $this->selection);
+				$pos = $block->getPos()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
+				#var_dump($block->getPos()->asVector3());
 				if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
 					$lastchunkx = $x >> 4;
 					$lastchunkz = $z >> 4;

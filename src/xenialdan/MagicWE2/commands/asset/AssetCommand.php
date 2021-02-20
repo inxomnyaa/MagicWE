@@ -106,9 +106,11 @@ class AssetCommand extends BaseCommand
 								/** @var Asset $asset */
 								$asset = $store->assets->get($filename);
 								$player->sendMessage('Saving ' . (string)$asset);
-								//TODO async
+								//TODO async, convert
 								if ($asset->structure instanceof Schematic && $type === Asset::TYPE_SCHEMATIC) {
 									$file = pathinfo($asset->filename, PATHINFO_BASENAME) . '_' . time() . '.schematic';
+									$e = ($asset->shared ? '' : ($asset->ownerXuid === null ? '' : $asset->ownerXuid . DIRECTORY_SEPARATOR));
+									$file = Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . $e . $file;
 									$asset->structure->save($file);
 									$player->sendMessage("Saved as $file");
 								}

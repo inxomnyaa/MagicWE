@@ -349,12 +349,13 @@ class API
 		$start = clone $target->asVector3();//start pos of paste//TODO if using rotate, this fails
 		$end = $start->addVector($asset->getSize());//add size
 		$shape = Cuboid::constructFromPositions(Vector3::minComponents($start, $end), Vector3::maxComponents($start, $end));
-		$shape->setPasteVector($target->asVector3()->subtract(($asset->getSize()->getX() + 1) / 2, 0, ($asset->getSize()->getZ() + 1) / 2));//TODO this causes a size +0.5x +0.5z shift
+		$offset = new Vector3($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+		#$shape->setPasteVector($target->asVector3()->subtract(($asset->getSize()->getX()) / 2, 0, ($asset->getSize()->getZ()) / 2));//TODO this causes a size +0.5x +0.5z shift
 		$selection = new Selection($session->getUUID(), $target->getWorld());
 		$selection->setShape($shape);
 		$aabb = $shape->getAABB();
-		$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
-		Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteAssetTask($session->getUUID(), $selection, $touchedChunks, $asset));
+		$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb->offset(-$offset->getX(), -$offset->getY(), -$offset->getZ()));//TODO clean up or move somewhere else. Better not touch, it works.
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteAssetTask($session->getUUID(), $target->asVector3(), $selection, $touchedChunks, $asset));
 		return true;
 	}
 
