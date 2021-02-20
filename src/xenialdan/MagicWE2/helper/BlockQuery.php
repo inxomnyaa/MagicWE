@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
+use InvalidArgumentException;
+use pocketmine\block\utils\InvalidBlockStateException;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 
 final class BlockQuery
@@ -35,6 +37,13 @@ final class BlockQuery
 		$this->weight = (float)($weight ?? "100") / 100;
 	}
 
+	/**
+	 * @param bool $update
+	 * @return $this
+	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 */
 	public function parse(bool $update = true): self
 	{
 		//calling methods should check with hasBlock() before parse()

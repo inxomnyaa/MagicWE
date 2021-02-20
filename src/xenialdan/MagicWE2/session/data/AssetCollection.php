@@ -31,21 +31,30 @@ final class AssetCollection
 	}
 
 	/** @return Asset[] */
-	public function getAssetsGlobal(): array
+	public function getUnlockedAssets(): array
 	{
 		return $this->assets->filter(function (string $key, Asset $value) {
-			return $value->ownerXuid !== '';
+			return !$value->locked;
+		})->values()->toArray();
+	}
+
+	/** @return Asset[] */
+	public function getSharedAssets(): array
+	{
+		return $this->assets->filter(function (string $key, Asset $value) {
+			return $value->shared;
 		})->values()->toArray();
 	}
 
 	/**
-	 * @param string|null $xuid
+	 * @param string|null $xuid If null, returns all player assets, if string, returns a player's assets
 	 * @return Asset[]
 	 */
 	public function getPlayerAssets(?string $xuid = null): array
 	{
 		return $this->assets->filter(function (string $key, Asset $value) use ($xuid) {
-			return $value->ownerXuid === $xuid;
+			if ($xuid === null) return $value->ownerXuid !== null;
+			else return $value->ownerXuid === $xuid;
 		})->values()->toArray();
 	}
 
@@ -60,9 +69,9 @@ final class AssetCollection
 				Loader::getInstance()->getLogger()->debug(TF::GOLD . "Loading " . $basename);
 				try {
 					if ($extension === 'mcstructure') {
-						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadStructure($basename), true));
+						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadStructure($basename), true, null, true));
 					} else if ($extension === 'schematic') {
-						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadSchematic($basename), true));
+						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadSchematic($basename), true, null, true));
 					}
 				} catch (StructureFileException $e) {
 					Loader::getInstance()->getLogger()->debug($e->getMessage());

@@ -5,8 +5,15 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\commands\args;
 
 use CortexPE\Commando\args\RawStringArgument;
+use InvalidArgumentException as InvalidArgumentExceptionAlias;
+use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\command\CommandSender;
+use pocketmine\player\Player;
+use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\helper\BlockPalette;
+use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\Loader;
 
 class BlocksArgument extends RawStringArgument
 {
@@ -28,6 +35,13 @@ class BlocksArgument extends RawStringArgument
 	 */
 	public function parse(string $argument, CommandSender $sender)
 	{
-		return BlockPalette::fromString($argument);
+		try {
+			return BlockPalette::fromString($argument);
+		} catch (BlockQueryAlreadyParsedException|InvalidArgumentExceptionAlias|InvalidBlockStateException $error) {
+			if ($sender instanceof Player)
+				SessionHelper::getUserSession($sender)->sendMessage('error.command-error');
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
+		}
+		return BlockPalette::CREATE();
 	}
 }

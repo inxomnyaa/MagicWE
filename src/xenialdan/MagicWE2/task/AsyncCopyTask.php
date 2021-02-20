@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpInternalEntityUsedInspection */
+<?php
 
 namespace xenialdan\MagicWE2\task;
 

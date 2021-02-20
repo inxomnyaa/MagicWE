@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\block\utils\InvalidBlockStateException;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 
 class BlockPalette
@@ -33,8 +34,7 @@ class BlockPalette
 	/**
 	 * @param string $blocksQuery
 	 * @return BlockPalette
-	 * @throws InvalidArgumentException
-	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException|BlockQueryAlreadyParsedException|InvalidBlockStateException
 	 */
 	public static function fromString(string $blocksQuery): BlockPalette
 	{

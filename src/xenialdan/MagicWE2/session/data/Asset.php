@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\session\data;
 
 use BlockHorizons\libschematic\Schematic;
+use Exception;
 use InvalidArgumentException;
 use JsonSerializable;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -13,13 +14,19 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\player\Player;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use TypeError;
 use UnexpectedValueException;
+use xenialdan\customui\windows\CustomForm;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\session\UserSession;
 
 class Asset implements JsonSerializable
 {
@@ -33,6 +40,7 @@ class Asset implements JsonSerializable
 	public bool $locked = false;
 	public ?string $ownerXuid = null;
 	private ?Item $item = null;
+	public bool $shared = false;
 
 	/**
 	 * Asset constructor.
@@ -40,14 +48,16 @@ class Asset implements JsonSerializable
 	 * @param Schematic|MCStructure|SingleClipboard $value
 	 * @param bool $locked
 	 * @param string|null $ownerXuid
+	 * @param bool $shared
 	 */
-	public function __construct(string $filename, Schematic|SingleClipboard|MCStructure $value, bool $locked = false, ?string $ownerXuid = null)
+	public function __construct(string $filename, Schematic|SingleClipboard|MCStructure $value, bool $locked = false, ?string $ownerXuid = null, bool $shared = false)
 	{
 		$this->filename = $filename;
 		$this->displayname = pathinfo($filename, PATHINFO_FILENAME);
 		$this->structure = $value;
 		$this->locked = $locked;
 		$this->ownerXuid = $ownerXuid;
+		$this->shared = $shared;
 	}
 
 	public function getSize(): Vector3
@@ -77,7 +87,6 @@ class Asset implements JsonSerializable
 	 * @param bool $renew
 	 * @return Item
 	 * @throws InvalidArgumentException
-	 * @throws TypeError
 	 */
 	public function toItem(bool $renew = false): Item
 	{
@@ -85,7 +94,7 @@ class Asset implements JsonSerializable
 		$item = ItemFactory::getInstance()->get(ItemIds::SCAFFOLDING);
 		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 		try {
-			['filename' => $filename, 'displayname' => $displayname, 'type' => $type, 'locked' => $locked, 'owner' => $owner] = $this->jsonSerialize();
+			['filename' => $filename, 'displayname' => $displayname, 'type' => $type, 'locked' => $locked, 'owner' => $owner, 'shared' => $shared] = $this->jsonSerialize();
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_ASSET,
 				CompoundTag::create()
 					->setString("filename", $filename)
@@ -93,11 +102,12 @@ class Asset implements JsonSerializable
 					->setString("type", $type)
 					->setByte("locked", $locked ? 1 : 0)
 					->setString("owner", $owner)
+					->setByte("shared", $shared ? 1 : 0)
 			);
 			$item->setCustomName(Loader::PREFIX_ASSETS . TF::BOLD . TF::LIGHT_PURPLE . $displayname);
 			$item->setLore($this->generateLore());
 			$this->item = $item;
-		} catch (InvalidArgumentException|TypeError $e) {
+		} catch (TypeError $e) {
 			Loader::getInstance()->getLogger()->logException($e);
 		}
 		return $item;
@@ -109,14 +119,92 @@ class Asset implements JsonSerializable
 	private function generateLore(): array
 	{
 		$return = [];
-		['filename' => $filename, 'displayname' => $displayname, 'type' => $type, 'locked' => $locked] = $this->jsonSerialize();
+		['filename' => $filename, 'displayname' => $displayname, 'type' => $type, 'locked' => $locked, 'owner' => $ownerXuid, 'shared' => $shared] = $this->jsonSerialize();
 		if (pathinfo($filename, PATHINFO_FILENAME) !== $displayname)
 			$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Filename: " . TF::RESET . $filename;
 		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Type: " . TF::RESET . ucfirst($type);
 		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Locked: " . TF::RESET . ($locked ? TF::GREEN . "Yes" : TF::RED . "No");
 		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Origin: " . TF::RESET . API::vecToString($this->getOrigin());
 		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Size: " . TF::RESET . API::vecToString($this->getSize()) . " ({$this->getTotalCount()})";
+		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Owner: " . TF::RESET . $ownerXuid ?? 'none';
+		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Shared: " . TF::RESET . ($shared ? TF::GREEN . "Yes" : TF::RED . "No");
 		return $return;
+	}
+
+	public function __toString(): string
+	{
+		return 'Asset ' . implode(' ', $this->generateLore());
+	}
+
+	/**
+	 * @param bool $new true if creating new brush
+	 * @param array $errors
+	 * @return CustomForm
+	 * @throws Exception
+	 * @throws AssumptionFailedError
+	 */
+	public function getSettingForm(bool $new = true, array $errors = []): CustomForm
+	{
+		//export clipboard
+		//input Name
+		//toggle lock
+		//toggle shared asset
+		//type dropdown?
+		try {
+			// Form
+			//TODO display errors
+			$form = new CustomForm("Asset settings");
+			$form->addInput("Filename", "Filename", $this->filename);
+			$form->addToggle("Lock asset", $this->locked);
+			$form->addToggle("Shared asset", $this->shared);
+			foreach ($this->generateLore() as $value) {
+				$form->addLabel($value);
+			}
+			// Function
+			$form->setCallable(function (Player $player, $data) use ($form, $new) {
+				var_dump(__LINE__, $data);
+				[$filename, $this->locked, $shared] = $data;
+				var_dump($filename, $this->locked ? "true" : "false", $shared ? "true" : "false");
+
+				try {
+					$session = SessionHelper::getUserSession($player);
+					if (!$session instanceof UserSession) {
+						throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+					}
+					if ($this->locked) {
+						$session->sendMessage('error.asset.locked');
+						return;
+					}
+
+					/*//Resend form upon error
+					if (!empty($error)) {
+						$player->sendForm($this->getForm($new, $error));
+						return;
+					}*/
+					$this->filename = $filename;
+					$this->displayname = pathinfo($filename, PATHINFO_FILENAME);
+					$this->shared = $shared;
+					var_dump($this->filename, $this->displayname);
+					#var_dump(__LINE__, $this);
+					#print_r(AssetCollection::getInstance()->assets);
+					#print_r(AssetCollection::getInstance()->assets->toArray());
+					#print_r(AssetCollection::getInstance()->assets->values()->toArray());
+					#print_r(AssetCollection::getInstance()->assets->keys()->toArray());
+					#print_r(AssetCollection::getInstance()->getAssets());
+					AssetCollection::getInstance()->assets->put($this->filename, $this);//overwrites
+					$player->sendMessage("Asset stored in " . ($shared ? 'global' : 'private') . ' collection');
+					$player->sendMessage((string)$this);
+					#$player->sendMessage((string)$this->toItem(true));
+				} catch (Exception $ex) {
+					$player->sendMessage($ex->getMessage());
+					Loader::getInstance()->getLogger()->logException($ex);
+				}
+			});
+			return $form;
+		} catch (Exception $e) {
+			Loader::getInstance()->getLogger()->logException($e);
+			throw new AssumptionFailedError("Could not create asset setting form: " . $e->getMessage());
+		}
 	}
 
 	public function jsonSerialize()
@@ -126,7 +214,8 @@ class Asset implements JsonSerializable
 			'displayname' => $this->displayname,
 			'type' => $this->structure instanceof Schematic ? self::TYPE_SCHEMATIC : ($this->structure instanceof MCStructure ? self::TYPE_MCSTRUCTURE : ($this->structure instanceof SingleClipboard ? self::TYPE_CLIPBOARD : '')),
 			'locked' => $this->locked,
-			'owner' => $this->ownerXuid ?? '',
+			'owner' => $this->ownerXuid ?? 'none',
+			'shared' => $this->shared,
 		];
 	}
 }
