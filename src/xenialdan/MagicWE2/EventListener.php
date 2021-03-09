@@ -417,7 +417,7 @@ class EventListener implements Listener
 				$target->addVector($backwards);//this selects the block before raytrace
 				$target->subtract(0, 1, 0);//one block down
 				$target = Position::fromObject($target, $player->getWorld());
-				if ($session->displayOutline && self::sendOutline($player, $target, $asset, $session)) {
+				if (/*$session->displayOutline && */ self::sendOutline($player, $target, $asset, $session)) {
 					$player->sendMessage("Added asset outline for {$asset->filename}!");
 				} else {
 					$player->sendMessage("Did not add asset outline!");

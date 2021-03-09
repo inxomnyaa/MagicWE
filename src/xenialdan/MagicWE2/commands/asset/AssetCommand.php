@@ -101,7 +101,7 @@ class AssetCommand extends BaseCommand
 							}
 							$form->addDropdown("Asset", array_values($options));
 							$form->addDropdown("File type", [Asset::TYPE_SCHEMATIC, Asset::TYPE_MCSTRUCTURE]);
-							$form->setCallable(function (Player $player, $data) use ($lang, $session, $store) {
+							$form->setCallable(function (Player $player, $data) use (/*$lang, $session,*/ $store) {
 								[$filename, $type] = $data;
 								/** @var Asset $asset */
 								$asset = $store->assets->get($filename);
@@ -145,7 +145,7 @@ class AssetCommand extends BaseCommand
 								$options[$asset->filename] = $asset->filename;
 							}
 							$form->addDropdown("Asset", array_values($options));
-							$form->setCallable(function (Player $player, $data) use ($lang, $session, $store) {
+							$form->setCallable(function (Player $player, $data) use (/*$lang, $session,*/ $store) {
 								[$filename] = $data;
 								/** @var Asset $asset */
 								$asset = $store->assets->get($filename);

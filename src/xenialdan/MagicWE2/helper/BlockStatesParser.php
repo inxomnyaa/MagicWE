@@ -67,7 +67,6 @@ final class BlockStatesParser
 
 	private function loadLegacyMappings(): void
 	{
-		/** @var R12ToCurrentBlockMapEntry[][] $legacyStateMap */
 		self::$legacyStateMap = [];
 		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
 		if ($contents === false) throw new PluginException("Can not get contents of r12_to_current_block_map");

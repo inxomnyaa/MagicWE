@@ -36,9 +36,6 @@ class BlockEntry
 		if ($id === BlockLegacyIds::INFO_UPDATE) {
 			return false;
 		}
-		if ($this->nbt instanceof CompoundTag && !$this->nbt->valid()) {
-			return false;
-		}
 		return true;
 	}
 

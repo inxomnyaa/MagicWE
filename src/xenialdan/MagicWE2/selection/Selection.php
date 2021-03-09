@@ -292,7 +292,6 @@ class Selection implements Serializable, JsonSerializable
 	public function unserialize($serialized)
 	{
 		var_dump($serialized);
-		/** @var Vector3 $pos1 , $pos2 */
 		[
 			$this->worldId,
 			$this->pos1,
