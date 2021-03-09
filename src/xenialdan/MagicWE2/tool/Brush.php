@@ -106,7 +106,7 @@ class Brush extends WETool
 				$dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
 				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
 					if ($name === ShapeRegistry::CUSTOM) continue;
-					$dropdownShape->addOption($name, $class === $brushProperties->shape);
+					$dropdownShape->addOption((string)$name, $class === $brushProperties->shape);
 				}
 				$form->addElement($dropdownShape);
 			} else {

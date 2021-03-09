@@ -58,7 +58,7 @@ final class AssetCollection
 		})->values()->toArray();
 	}
 
-	private function initFolders()
+	private function initFolders(): void
 	{
 		//Load mcstructure and schematic files and lock them to prevent editing
 		$store = $this;
