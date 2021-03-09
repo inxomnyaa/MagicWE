@@ -15,6 +15,7 @@ use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
+use pocketmine\plugin\PluginException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use TypeError;
@@ -129,6 +130,70 @@ class Asset implements JsonSerializable
 		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Owner: " . TF::RESET . $ownerXuid ?? 'none';
 		$return[] = TF::RESET . TF::BOLD . TF::GOLD . "Shared: " . TF::RESET . ($shared ? TF::GREEN . "Yes" : TF::RED . "No");
 		return $return;
+	}
+
+	public function toSchematic(): Schematic
+	{
+		$structure = $this->structure;
+		if ($structure instanceof Schematic) return $structure;
+		if ($structure instanceof MCStructure) {
+			$schematic = new Schematic();
+			$blocks = [];
+			foreach ($structure->iterateEntries($x, $y, $z) as $blockEntry) {
+				$blocks[] = API::setComponents($blockEntry->toBlock(), (int)$x, (int)$y, (int)$z);//turn BlockEntry to blocks
+			}
+			$schematic->setWidth($this->getSize()->getX());
+			$schematic->setHeight($this->getSize()->getY());
+			$schematic->setLength($this->getSize()->getZ());
+			$schematic->setBlockArray($blocks);
+			return $schematic;
+		}
+		if ($structure instanceof SingleClipboard) {
+			$schematic = new Schematic();
+			$blocks = [];
+			foreach ($structure->iterateEntries($x, $y, $z) as $blockEntry) {
+				$blocks[] = API::setComponents($blockEntry->toBlock(), (int)$x, (int)$y, (int)$z);//turn BlockEntry to blocks
+			}
+			$schematic->setBlockArray($blocks);
+			return $schematic;
+		}
+		throw new PluginException("Wrong type");
+	}
+
+	public function toMCStructure(): MCStructure
+	{
+		$structure = $this->structure;
+		if ($structure instanceof MCStructure) return $structure;
+		throw new PluginException("Can't do this yet");
+//		if($structure instanceof Schematic) {
+//			/*$schematic = new ();
+//			$blocks=[];
+//			foreach ($structure->iterateEntries($x, $y, $z) as $blockEntry) {
+//				$blocks[] = API::setComponents($blockEntry->toBlock(), (int)$x, (int)$y, (int)$z);//turn BlockEntry to blocks
+//			}
+//			$size = $structure->getSize();
+//			#$aabb = new AxisAlignedBB(0,0,0,$size->getX(),$size->getY(),$size->getZ());
+//			$schematic->setBlockArray(new $blocks);
+//			$schematic->setWidth($size->getX());
+//			$schematic->setHeight($size->getY());
+//			$schematic->setLength($size->getZ());
+//			return $schematic;*/
+//		}
+//		if($structure instanceof SingleClipboard) {
+//			$schematic = new Schematic();
+//			$blocks=[];
+//			foreach ($structure->iterateEntries($x, $y, $z) as $blockEntry) {
+//				$blocks[] = API::setComponents($blockEntry->toBlock(), (int)$x, (int)$y, (int)$z);//turn BlockEntry to blocks
+//			}
+//			$size = $structure->getSize();
+//			#$aabb = new AxisAlignedBB(0,0,0,$size->getX(),$size->getY(),$size->getZ());
+//			$schematic->setBlockArray(new $blocks);
+//			$schematic->setWidth($size->getX());
+//			$schematic->setHeight($size->getY());
+//			$schematic->setLength($size->getZ());
+//			return $schematic;
+//		}
+//		throw new PluginException("Wrong type");
 	}
 
 	public function __toString(): string

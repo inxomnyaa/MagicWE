@@ -7,15 +7,19 @@ use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
+use pocketmine\block\BlockFactory;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\entity\InvalidSkinException;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
@@ -24,11 +28,14 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\customui\windows\ModalForm;
+use xenialdan\libstructure\StructureUI;
+use xenialdan\libstructure\tile\StructureBlockTile;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
+use xenialdan\MagicWE2\session\data\Asset;
 use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
@@ -381,5 +388,123 @@ class EventListener implements Listener
 			/** @var UserSession $session */
 			$session->sidebar->handleScoreboard($session);
 		}
+	}
+
+	/**
+	 * TODO use tool classes
+	 * @param PlayerItemHeldEvent $event
+	 * @throws SessionException
+	 * @throws \OutOfBoundsException
+	 */
+	public function onChangeSlot(PlayerItemHeldEvent $event): void
+	{
+		var_dump($event->getSlot());
+		$player = $event->getPlayer();
+		#$item = $player->getInventory()->getItemInHand();
+		$item = $player->getInventory()->getItem($event->getSlot());
+		$session = SessionHelper::getUserSession($player);
+		if (!is_null(($tag = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_ASSET)))) {
+			if (!$session instanceof UserSession) return;
+			if ($item->getId() === ItemIds::SCAFFOLDING) {
+				$filename = $tag->getString('filename');
+				$asset = AssetCollection::getInstance()->assets->get($filename);
+				var_dump($filename, $asset);
+				#$assets = AssetCollection::getInstance()->getPlayerAssets($player->getXuid());
+				$session->displayOutline = true;
+				#foreach ($assets as $asset) {
+				$backwards = $player->getDirectionVector()->normalize()->multiply(-1);
+				$target = $player->getTargetBlock(10)->getPos();
+				$target->addVector($backwards);//this selects the block before raytrace
+				$target->subtract(0, 1, 0);//one block down
+				$target = Position::fromObject($target, $player->getWorld());
+				if ($session->displayOutline && self::sendOutline($player, $target, $asset, $session)) {
+					$player->sendMessage("Added asset outline for {$asset->filename}!");
+				} else {
+					$player->sendMessage("Did not add asset outline!");
+				}
+				#}
+			} else {
+				$session->displayOutline = false;
+			}
+		} else {
+			$session->displayOutline = false;
+		}
+	}
+
+	public static function sendOutline(Player $player, Position $target, Asset $asset, UserSession $session): bool
+	{
+		var_dump(__METHOD__);
+		#$start = clone $target->asVector3()->floor()->addVector($asset->getOrigin())->floor();//start pos of paste//TODO if using rotate, this fails
+		#$end = $start->addVector($asset->getSize()->subtractVector($asset->getOrigin()));//add size
+		//[$target->x,$target->y,$target->z] = [($v=$target->asVector3())->getFloorX(),$v->getFloorY(),$v->getFloorZ()];
+		$start = clone $target->asVector3();//start pos of paste//TODO if using rotate, this fails
+		$end = $start->addVector($asset->getSize()->subtract(1, 1, 1));//add size, remove 1 because structure block outline always covers 1 block
+		$offset = new Vector3($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+		$start = $start->subtractVector($offset);
+		$end = $end->subtractVector($offset);
+		[$ix, $iy, $iz, $ax, $ay, $az] = [Vector3::minComponents($start, $end)->getFloorX(), Vector3::minComponents($start, $end)->getFloorY(), Vector3::minComponents($start, $end)->getFloorZ(), Vector3::maxComponents($start, $end)->getFloorX(), Vector3::maxComponents($start, $end)->getFloorY(), Vector3::maxComponents($start, $end)->getFloorZ()];
+
+		$minComponents = new Vector3($ix, $iy, $iz);
+		$maxComponents = new Vector3($ax, $ay, $az);
+		$block = BlockFactory::getInstance()->get(BlockLegacyIds::STRUCTURE_BLOCK, 0/*StructureEditorData::TYPE_SAVE*/);
+		var_dump((string)$block);
+		$target->world->setBlock($target->asVector3(), $block);
+		var_dump("placing block", __METHOD__, (string)$target->world->getBlock($target->asVector3()));
+		/** @var null|StructureBlockTile $tile */
+		$tile = $target->world->getTile($target->asVector3());
+		if ($tile instanceof StructureBlockTile) {
+			var_dump($tile->getSpawnCompound()->toString());
+			$tile
+				->setFromV3($minComponents)
+				->setToV3($maxComponents)
+				//TODO add setOffsetV3
+				->setTitle($asset->displayname)
+				->setShowBlocks(true)
+				->setShowBoundingBox(true)
+				->setShowEntities(false)
+				->setShowPlayers(false)
+				->setHideStructureBlock(false);
+			$tile->saveNBT();
+			#$target->getWorld()->scheduleDelayedBlockUpdate($target, 1);
+			var_dump($tile->getSpawnCompound()->toString());
+		} else {
+			var_dump("no tile");
+			return false;
+		}
+
+		return true;
+	}
+
+	public function onStructureBlockClick(PlayerInteractEvent $event): void
+	{
+		$player = $event->getPlayer();
+		$blockTouched = $event->getBlock();
+		if ($blockTouched->getId() === BlockLegacyIds::STRUCTURE_BLOCK) {
+			var_dump("Clicked Structure Block", (string)$blockTouched);
+			$tile = $blockTouched->getPos()->getWorld()->getTile($blockTouched->getPos()->asVector3());
+			if ($tile instanceof StructureBlockTile) {
+				var_dump("Is Structure Block Tile", $tile->getSpawnCompound()->toString());
+//				$item = $player->getInventory()->getItemInHand();
+//				if (!is_null(($tag = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_ASSET)))) {
+//					$session = SessionHelper::getUserSession($player);
+//					if (!$session instanceof UserSession) return;
+//					if ($item->getId() === ItemIds::SCAFFOLDING) {
+//						$filename = $tag->getString('filename');
+//						$asset = AssetCollection::getInstance()->assets->get($filename);
+//						/** @var StructureBlockInventory $inventory */
+//						$inventory = $tile->getInventory();
+//						$pk = new StructureBlockUpdatePacket();
+//						$pk->structureEditorData = $tile->getStructureEditorData($asset);
+//						[$pk->x, $pk->y, $pk->z] = [$blockTouched->getPos()->getFloorX(), $blockTouched->getPos()->getFloorY(), $blockTouched->getPos()->getFloorZ()];
+//						$pk->isPowered = false;
+//						$player->getNetworkSession()->sendDataPacket($pk);
+//						$tile->sendInventory($player);
+//						var_dump($tile->getSpawnCompound()->toString(), $inventory);
+//					}
+//				}
+				var_dump($blockTouched);
+			}
+		}
+
 	}
 }

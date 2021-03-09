@@ -53,6 +53,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private Map $assets;
 	/** @var Language|null */
 	private $lang;
+	public bool $displayOutline = false;
 
 	public function __construct(Player $player)
 	{

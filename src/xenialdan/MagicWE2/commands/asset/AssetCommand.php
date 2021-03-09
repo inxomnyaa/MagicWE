@@ -107,12 +107,23 @@ class AssetCommand extends BaseCommand
 								$asset = $store->assets->get($filename);
 								$player->sendMessage('Saving ' . (string)$asset);
 								//TODO async, convert
-								if ($asset->structure instanceof Schematic && $type === Asset::TYPE_SCHEMATIC) {
-									$file = pathinfo($asset->filename, PATHINFO_BASENAME) . '_' . time() . '.schematic';
-									$e = ($asset->shared ? '' : ($asset->ownerXuid === null ? '' : $asset->ownerXuid . DIRECTORY_SEPARATOR));
-									$file = Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . $e . $file;
-									$asset->structure->save($file);
-									$player->sendMessage("Saved as $file");
+								if ($type === Asset::TYPE_SCHEMATIC) {
+									if ($asset->structure instanceof Schematic) {
+										$file = pathinfo($asset->filename, PATHINFO_BASENAME) . '_' . time() . '.schematic';
+										$e = ($asset->shared ? '' : ($asset->ownerXuid === null ? '' : $asset->ownerXuid . DIRECTORY_SEPARATOR));
+										$file = Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . $e . $file;
+										mkdir(pathinfo($file, PATHINFO_DIRNAME), 7777, true);
+										$asset->structure->save($file);
+										$player->sendMessage("Saved as $file");
+									}
+									if ($asset->structure instanceof MCStructure || $asset->structure instanceof SingleClipboard) {
+										$file = pathinfo($asset->filename, PATHINFO_BASENAME) . '_' . time() . '.schematic';
+										$e = ($asset->shared ? '' : ($asset->ownerXuid === null ? '' : $asset->ownerXuid . DIRECTORY_SEPARATOR));
+										$file = Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . $e . $file;
+										@mkdir(pathinfo($file, PATHINFO_DIRNAME), 7777, true);
+										$asset->toSchematic()->save($file);
+										$player->sendMessage("Saved as $file");
+									}
 								}
 								if ($asset->structure instanceof MCStructure && $type === Asset::TYPE_MCSTRUCTURE) {
 									#$asset->structure->save($asset->filename.'.mcstructure');

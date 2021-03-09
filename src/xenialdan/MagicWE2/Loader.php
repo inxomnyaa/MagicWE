@@ -23,6 +23,7 @@ use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\customui\API as CustomUIAPI;
+use xenialdan\libstructure\PacketListener;
 use xenialdan\MagicWE2\commands\asset\AssetCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
@@ -209,6 +210,7 @@ class Loader extends PluginBase
 		//$this->loadDonator();
 		$this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
 		if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
+		if (!PacketListener::isRegistered()) PacketListener::register($this);
 		//PacketListener::register($this);//TODO currently this just doubles the debug spam
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 		$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
