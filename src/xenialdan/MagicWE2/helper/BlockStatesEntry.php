@@ -169,15 +169,15 @@ class BlockStatesEntry
 		$bsCompound = clone $clone->blockStates;//TODO check if clone is necessary
 		#$bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
 		if ($axis === FlipAction::AXIS_Y && !(//TODO maybe add vine + mushroom block directions
-				$bsCompound->hasTag("attachment") ||
-				$bsCompound->hasTag("facing_direction") ||
-				$bsCompound->hasTag("hanging") ||
-				$bsCompound->hasTag("lever_direction") ||
-				$bsCompound->hasTag("rail_direction") ||
-				$bsCompound->hasTag("top_slot_bit") ||
-				$bsCompound->hasTag("torch_facing_direction") ||
-				$bsCompound->hasTag("upper_block_bit") ||
-				$bsCompound->hasTag("upside_down_bit")
+				$bsCompound->getTag("attachment") !== null ||
+				$bsCompound->getTag("facing_direction") !== null ||
+				$bsCompound->getTag("hanging") !== null ||
+				$bsCompound->getTag("lever_direction") !== null ||
+				$bsCompound->getTag("rail_direction") !== null ||
+				$bsCompound->getTag("top_slot_bit") !== null ||
+				$bsCompound->getTag("torch_facing_direction") !== null ||
+				$bsCompound->getTag("upper_block_bit") !== null ||
+				$bsCompound->getTag("upside_down_bit") !== null
 			)) {//ugly hack for y flip
 			#var_dump("nothing can be flipped around y axis");
 			return $clone;
