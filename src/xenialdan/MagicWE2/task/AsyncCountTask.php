@@ -8,8 +8,9 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
@@ -33,13 +34,13 @@ class AsyncCountTask extends MWEAsyncTask
 	/**
 	 * AsyncCountTask constructor.
 	 * @param Selection $selection
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $filterblocks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $filterblocks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $filterblocks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->touchedChunks = serialize($touchedChunks);
@@ -118,7 +119,7 @@ class AsyncCountTask extends MWEAsyncTask
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 			$result = $this->getResult();
 			$counts = $result["counts"];

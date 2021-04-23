@@ -8,10 +8,11 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -48,14 +49,14 @@ class AsyncActionTask extends MWEAsyncTask
 
 	/**
 	 * AsyncActionTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param Selection $selection
 	 * @param TaskAction $action
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
@@ -125,7 +126,7 @@ class AsyncActionTask extends MWEAsyncTask
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

@@ -9,10 +9,11 @@ use MultipleIterator;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -40,14 +41,14 @@ class AsyncReplaceTask extends MWEAsyncTask
 	/**
 	 * AsyncReplaceTask constructor.
 	 * @param Selection $selection
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $replaceBlocks
 	 * @param BlockPalette $newBlocks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $replaceBlocks, BlockPalette $newBlocks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $replaceBlocks, BlockPalette $newBlocks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
@@ -146,7 +147,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

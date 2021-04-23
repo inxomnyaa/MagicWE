@@ -143,7 +143,7 @@ class BrushProperties implements JsonSerializable
 				TF::RESET . TF::BOLD . TF::GOLD . "Filter: " . TF::RESET . $this->filter,
 				TF::RESET . TF::BOLD . TF::GOLD . "Biome: " . TF::RESET . $this->biomeId,
 				TF::RESET . TF::BOLD . TF::GOLD . "Hollow: " . TF::RESET . ($this->hollow ? TF::GREEN . "Yes" : TF::RED . "No"),
-				//TF::GOLD . "UUID: {$this->uuid}",
+				//TF::GOLD . "UuidInterface: {$this->uuid}",
 			]
 		);
 	}

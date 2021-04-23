@@ -8,8 +8,9 @@ use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -37,12 +38,12 @@ class AsyncCopyTask extends MWEAsyncTask
 	 * AsyncCopyTask constructor.
 	 * @param Selection $selection
 	 * @param Vector3 $offset
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param string[] $chunks serialized chunks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->chunks = serialize($chunks);
@@ -113,7 +114,7 @@ class AsyncCopyTask extends MWEAsyncTask
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 			$result = $this->getResult();
 			$copied = $result["copied"];

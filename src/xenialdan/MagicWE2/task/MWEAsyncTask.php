@@ -5,8 +5,8 @@ namespace xenialdan\MagicWE2\task;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\scheduler\AsyncTask;
-use pocketmine\uuid\UUID;
 use pocketmine\world\Position;
+use Ramsey\Uuid\Uuid;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -25,7 +25,7 @@ abstract class MWEAsyncTask extends AsyncTask
 			$progress = new Progress($progress[0] / 100, $progress[1]);
 		}
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			/** @var Progress $progress */
 			if ($session instanceof UserSession) $session->getBossBar()->setPercentage($progress->progress)->setSubTitle(str_replace("%", "%%%%", $progress->string . " | " . floor($progress->progress * 100) . "%"));
 			else $session->sendMessage($progress->string . " | " . floor($progress->progress * 100) . "%");//TODO remove, debug

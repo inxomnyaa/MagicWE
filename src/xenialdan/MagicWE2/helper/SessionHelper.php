@@ -16,7 +16,8 @@ use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
+use Ramsey\Uuid\Rfc4122\UuidV4;
+use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -31,9 +32,9 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 
 class SessionHelper
 {
-	/** @var Map<UUID,UserSession> */
+	/** @var Map<UuidInterface,UserSession> */
 	private static $userSessions;
-	/** @var Map<UUID,PluginSession> */
+	/** @var Map<UuidInterface,PluginSession> */
 	private static $pluginSessions;
 
 	public static function init(): void
@@ -134,7 +135,7 @@ class SessionHelper
 	public static function getUserSession(Player $player): ?UserSession
 	{
 		if (self::$userSessions->isEmpty()) return null;
-		$filtered = self::$userSessions->filter(function (UUID $uuid, Session $session) use ($player) {
+		$filtered = self::$userSessions->filter(function (UuidInterface $uuid, Session $session) use ($player) {
 			return $session instanceof UserSession && $session->getPlayer() === $player;
 		});
 		if ($filtered->isEmpty()) return null;
@@ -144,11 +145,11 @@ class SessionHelper
 
 	/**
 	 * TODO cleanup or optimize
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 * @return null|Session
 	 * @throws SessionException
 	 */
-	public static function getSessionByUUID(UUID $uuid): ?Session
+	public static function getSessionByUUID(UuidInterface $uuid): ?Session
 	{
 		$v = null;
 		if (self::$userSessions->hasKey($uuid)) {
@@ -157,14 +158,14 @@ class SessionHelper
 			$v = self::$pluginSessions->get($uuid, null);
 		} else {
 			/*
-			 * Sadly, this part is necessary. If you use UUID::fromString, the object "id" in the map does not match anymore
+			 * Sadly, this part is necessary. If you use UuidInterface::fromString, the object "id" in the map does not match anymore
 			 */
-			$userFiltered = self::$userSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
+			$userFiltered = self::$userSessions->filter(function (UuidInterface $uuid2, Session $session) use ($uuid) {
 				return $uuid2->equals($uuid);
 			});
 			if (!$userFiltered->isEmpty()) $v = $userFiltered->values()->first();
 			else {
-				$pluginFiltered = self::$pluginSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
+				$pluginFiltered = self::$pluginSessions->filter(function (UuidInterface $uuid2, Session $session) use ($uuid) {
 					return $uuid2->equals($uuid);
 				});
 				if (!$pluginFiltered->isEmpty()) $v = $pluginFiltered->values()->first();
@@ -213,7 +214,7 @@ class SessionHelper
 		}
 		$session = new UserSession($player);
 		try {
-			$session->setUUID(UUID::fromString($data["uuid"]));
+			$session->setUUID(UuidV4::fromString($data["uuid"]));
 			$session->setWandEnabled($data["wandEnabled"]);
 			$session->setDebugToolEnabled($data["debugToolEnabled"]);
 			$session->setWailaEnabled($data["wailaEnabled"]);

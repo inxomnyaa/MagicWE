@@ -10,10 +10,11 @@ use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -43,14 +44,14 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 
 	/**
 	 * AsyncPasteTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param Vector3 $target
 	 * @param Selection $selection
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param Asset $asset
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Vector3 $target, Selection $selection, array $touchedChunks, Asset $asset)
+	public function __construct(UuidInterface $sessionUUID, Vector3 $target, Selection $selection, array $touchedChunks, Asset $asset)
 	{
 		$this->start = microtime(true);
 		$this->pasteVector = $selection->getShape()->getPasteVector();#->addVector($asset->getOrigin())->floor();
@@ -208,7 +209,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

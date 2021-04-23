@@ -7,8 +7,9 @@ use Generator;
 use InvalidArgumentException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -29,11 +30,11 @@ class AsyncRevertTask extends MWEAsyncTask
 
 	/**
 	 * AsyncRevertTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param RevertClipboard $clipboard
 	 * @param int $type The type of clipboard pasting.
 	 */
-	public function __construct(UUID $sessionUUID, RevertClipboard $clipboard, $type = self::TYPE_UNDO)
+	public function __construct(UuidInterface $sessionUUID, RevertClipboard $clipboard, $type = self::TYPE_UNDO)
 	{
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->start = microtime(true);
@@ -115,7 +116,7 @@ class AsyncRevertTask extends MWEAsyncTask
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

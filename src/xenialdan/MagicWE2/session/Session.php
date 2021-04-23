@@ -10,8 +10,8 @@ use InvalidArgumentException;
 use pocketmine\lang\Language;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\World;
+use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -23,12 +23,12 @@ abstract class Session
 {
 	public const MAX_CLIPBOARDS = 5;
 	public const MAX_HISTORY = 32;
-	/** @var UUID */
+	/** @var UuidInterface */
 	private $uuid;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Selection[] */
 	private $selections = [];
-	/** @var UUID|null */
+	/** @var UuidInterface|null */
 	private $latestselection;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Clipboard[] */
@@ -41,17 +41,17 @@ abstract class Session
 	public $redoHistory;
 
 	/**
-	 * @return UUID
+	 * @return UuidInterface
 	 */
-	public function getUUID(): UUID
+	public function getUUID(): UuidInterface
 	{
 		return $this->uuid;
 	}
 
 	/**
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 */
-	public function setUUID(UUID $uuid): void
+	public function setUUID(UuidInterface $uuid): void
 	{
 		$this->uuid = $uuid;
 	}
@@ -69,10 +69,10 @@ abstract class Session
 	}
 
 	/**
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 * @return null|Selection
 	 */
-	public function &getSelectionByUUID(UUID $uuid): ?Selection
+	public function &getSelectionByUUID(UuidInterface $uuid): ?Selection
 	{
 		$selection = $this->selections[$uuid->toString()] ?? null;
 		return $selection;
@@ -119,17 +119,17 @@ abstract class Session
 	}
 
 	/**
-	 * @return UUID|null
+	 * @return UuidInterface|null
 	 */
-	public function getLatestSelectionUUID(): ?UUID
+	public function getLatestSelectionUUID(): ?UuidInterface
 	{
 		return $this->latestselection;
 	}
 
 	/**
-	 * @param UUID $latestselection
+	 * @param UuidInterface $latestselection
 	 */
-	public function setLatestSelectionUUID(UUID $latestselection): void
+	public function setLatestSelectionUUID(UuidInterface $latestselection): void
 	{
 		$this->latestselection = $latestselection;
 	}

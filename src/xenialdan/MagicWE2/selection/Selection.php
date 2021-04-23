@@ -10,9 +10,10 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\Position;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use Serializable;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
@@ -35,16 +36,16 @@ class Selection implements Serializable, JsonSerializable
 	public $pos1;
 	/** @var Vector3|null */
 	public $pos2;
-	/** @var UUID */
+	/** @var UuidInterface */
 	public $uuid;
-	/** @var UUID */
+	/** @var UuidInterface */
 	public $sessionUUID;
 	/** @var Shape|null */
 	public $shape;
 
 	/**
 	 * Selection constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param World $world
 	 * @param ?int $minX
 	 * @param ?int $minY
@@ -54,7 +55,7 @@ class Selection implements Serializable, JsonSerializable
 	 * @param ?int $maxZ
 	 * @param ?Shape $shape
 	 */
-	public function __construct(UUID $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null, ?Shape $shape = null)
+	public function __construct(UuidInterface $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null, ?Shape $shape = null)
 	{
 		$this->sessionUUID = $sessionUUID;
 		$this->worldId = $world->getId();
@@ -65,7 +66,7 @@ class Selection implements Serializable, JsonSerializable
 			$this->pos2 = (new Vector3($maxX, $maxY, $maxZ))->floor();
 		}
 		if ($shape !== null) $this->shape = $shape;
-		$this->setUUID(UUID::fromRandom());
+		$this->setUUID(Uuid::uuid4());
 	}
 
 	/**
@@ -246,17 +247,17 @@ class Selection implements Serializable, JsonSerializable
 	}
 
 	/**
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 */
-	public function setUUID(UUID $uuid): void
+	public function setUUID(UuidInterface $uuid): void
 	{
 		$this->uuid = $uuid;
 	}
 
 	/**
-	 * @return UUID
+	 * @return UuidInterface
 	 */
-	public function getUUID(): UUID
+	public function getUUID(): UuidInterface
 	{
 		return $this->uuid;
 	}
@@ -299,7 +300,7 @@ class Selection implements Serializable, JsonSerializable
 			$this->uuid,
 			$this->sessionUUID,
 			$this->shape
-		] = unserialize($serialized/*, ['allowed_classes' => [__CLASS__, Vector3::class,UUID::class,Shape::class]]*/);//TODO test pm4
+		] = unserialize($serialized/*, ['allowed_classes' => [__CLASS__, Vector3::class,UuidInterface::class,Shape::class]]*/);//TODO test pm4
 	}
 
 	/**

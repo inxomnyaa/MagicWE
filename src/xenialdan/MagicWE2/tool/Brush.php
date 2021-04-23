@@ -15,8 +15,8 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\biome\BiomeRegistry;
+use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use TypeError;
 use xenialdan\customui\elements\Dropdown;
@@ -69,7 +69,7 @@ class Brush extends WETool
 	{
 		$item = VanillaItems::WOODEN_SHOVEL();
 		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
-		$uuid = $this->properties->uuid ?? UUID::fromRandom()->toString();
+		$uuid = $this->properties->uuid ?? Uuid::uuid4()->toString();
 		$this->properties->uuid = $uuid;
 		$properties = json_encode($this->properties, JSON_THROW_ON_ERROR);
 		if (!is_string($properties)) throw new InvalidArgumentException("Brush properties could not be decoded");
@@ -265,7 +265,7 @@ class Brush extends WETool
 			if (!$session instanceof UserSession) {
 				throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$this->properties->uuid = UUID::fromRandom()->toString();
+			$this->properties->uuid = Uuid::uuid4()->toString();
 			$session->addBrush($brush);
 			$player->getInventory()->addItem($brush->toItem());
 		});

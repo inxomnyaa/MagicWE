@@ -17,7 +17,8 @@ use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use TypeError;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
@@ -236,7 +237,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			}
 			/** @var BrushProperties $properties */
 			$properties = json_decode($entry->getString("properties"), false, 512, JSON_THROW_ON_ERROR);
-			$uuid = UUID::fromString($properties->uuid);
+			$uuid = Uuid::fromString($properties->uuid);
 			$brush = $this->getBrush($uuid);
 			if ($brush instanceof Brush) {
 				return $brush;
@@ -250,17 +251,17 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 
 	/**
 	 * TODO exception for not a brush
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 * @return null|Brush
 	 */
-	public function getBrush(UUID $uuid): ?Brush
+	public function getBrush(UuidInterface $uuid): ?Brush
 	{
 		return $this->brushes[$uuid->toString()] ?? null;
 	}
 
 	/**
 	 * TODO exception for not a brush
-	 * @param Brush $brush UUID will be set automatically
+	 * @param Brush $brush UuidInterface will be set automatically
 	 * @return void
 	 */
 	public function addBrush(Brush $brush): void
@@ -270,7 +271,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	}
 
 	/**
-	 * @param Brush $brush UUID will be set automatically
+	 * @param Brush $brush UuidInterface will be set automatically
 	 * @param bool $delete If true, it will be removed from the session brushes
 	 * @return void
 	 */
@@ -290,7 +291,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 
 	/**
 	 * TODO exception for not a brush
-	 * @param Brush $brush UUID will be set automatically
+	 * @param Brush $brush UuidInterface will be set automatically
 	 * @return void
 	 * @throws ActionNotFoundException
 	 * @throws InvalidArgumentException
