@@ -18,5 +18,6 @@ parameters:
         - phar:///source/vendor/InvMenu.phar/src
         - phar:///source/vendor/libstructure.phar/src
         - phar:///source/vendor/ScoreFactory.phar/src
+        - /source/vendor
     excludes_analyse:
         - source/vendor
