@@ -13,6 +13,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
+use UnderflowException;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\commands\args\RotateAngleArgument;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -40,6 +41,7 @@ class RotateCommand extends BaseCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
+	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
@@ -57,7 +59,7 @@ class RotateCommand extends BaseCommand
 		/** @var Player $sender */
 		try {
 			$angle = (int)$args["angle"];
-			$aroundOrigin = $args["aroundOrigin"] ?? true;
+			//$aroundOrigin = $args["aroundOrigin"] ?? true;
 			$sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [$angle]));
 			$session = SessionHelper::getUserSession($sender);
 			if (is_null($session)) {

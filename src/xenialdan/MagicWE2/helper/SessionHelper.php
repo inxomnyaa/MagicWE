@@ -8,17 +8,18 @@ use Ds\Map;
 use Exception;
 use InvalidArgumentException;
 use JsonException;
+use OutOfBoundsException;
 use pocketmine\entity\InvalidSkinException;
 use pocketmine\entity\Skin;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use Ramsey\Uuid\Rfc4122\UuidV4;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
+use UnderflowException;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\Loader;
@@ -33,9 +34,9 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 class SessionHelper
 {
 	/** @var Map<UuidInterface,UserSession> */
-	private static $userSessions;
+	private static Map $userSessions;
 	/** @var Map<UuidInterface,PluginSession> */
-	private static $pluginSessions;
+	private static Map $pluginSessions;
 
 	public static function init(): void
 	{
@@ -68,6 +69,7 @@ class SessionHelper
 	 * @param Session $session
 	 * @param bool $save
 	 * @throws JsonException
+	 * @throws OutOfBoundsException
 	 */
 	public static function destroySession(Session $session, bool $save = true): void
 	{
@@ -117,6 +119,7 @@ class SessionHelper
 	/**
 	 * @param Player $player
 	 * @return bool
+	 * @throws UnderflowException
 	 */
 	public static function hasSession(Player $player): bool
 	{
@@ -131,6 +134,7 @@ class SessionHelper
 	 * @param Player $player
 	 * @return null|UserSession
 	 * @throws SessionException
+	 * @throws UnderflowException
 	 */
 	public static function getUserSession(Player $player): ?UserSession
 	{
@@ -148,6 +152,8 @@ class SessionHelper
 	 * @param UuidInterface $uuid
 	 * @return null|Session
 	 * @throws SessionException
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public static function getSessionByUUID(UuidInterface $uuid): ?Session
 	{
@@ -176,7 +182,7 @@ class SessionHelper
 	}
 
 	/**
-	 * @return array|UserSession[]
+	 * @return array
 	 */
 	public static function getUserSessions(): array
 	{
@@ -184,7 +190,7 @@ class SessionHelper
 	}
 
 	/**
-	 * @return array|PluginSession[]
+	 * @return array
 	 */
 	public static function getPluginSessions(): array
 	{
@@ -194,7 +200,6 @@ class SessionHelper
 	/**
 	 * @param Player $player
 	 * @return UserSession|null
-	 * @throws AssumptionFailedError
 	 * @throws InvalidSkinException
 	 * @throws JsonException
 	 * @throws RuntimeException

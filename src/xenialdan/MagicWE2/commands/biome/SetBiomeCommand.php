@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -38,6 +39,7 @@ class SetBiomeCommand extends BaseCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
+	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{

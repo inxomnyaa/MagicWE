@@ -3,7 +3,6 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
@@ -26,13 +25,13 @@ class AsyncCopyTask extends MWEAsyncTask
 {
 
 	/** @var string */
-	private $chunks;
+	private string $chunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var Vector3 */
-	private $offset;
+	private Vector3 $offset;
 	/** @var int */
-	private $flags;
+	private int $flags;
 
 	/**
 	 * AsyncCopyTask constructor.
@@ -124,8 +123,6 @@ class AsyncCopyTask extends MWEAsyncTask
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
 			$session->addClipboard($clipboard);
 		} catch (SessionException $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-		} catch (InvalidArgumentException $e) {
 			Loader::getInstance()->getLogger()->logException($e);
 		} catch (AssumptionFailedError $e) {
 			Loader::getInstance()->getLogger()->logException($e);

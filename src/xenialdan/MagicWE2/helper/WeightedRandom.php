@@ -14,16 +14,16 @@ class WeightedRandom
 {
 
 	/** @var float[] */
-	private $probabilities = [];
+	private array $probabilities = [];
 
 	/** @var int[] */
-	private $aliases;
+	private array $aliases;
 
 	/** @var Random */
-	private $random;
+	private Random $random;
 
 	/** @var mixed[] */
-	protected $indexes = [];
+	protected array $indexes = [];
 
 	/**
 	 * @param mixed $value

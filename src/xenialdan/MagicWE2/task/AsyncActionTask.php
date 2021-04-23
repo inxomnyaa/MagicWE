@@ -3,7 +3,7 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use InvalidArgumentException;
+use OutOfBoundsException;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
@@ -13,6 +13,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -37,15 +38,15 @@ class AsyncActionTask extends MWEAsyncTask
 	*/
 
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var BlockPalette */
-	private $blockFilter;
+	private BlockPalette $blockFilter;
 	/** @var BlockPalette */
-	private $newBlocks;
+	private BlockPalette $newBlocks;
 	/** @var TaskAction */
-	private $action;
+	private TaskAction $action;
 
 	/**
 	 * AsyncActionTask constructor.
@@ -55,6 +56,8 @@ class AsyncActionTask extends MWEAsyncTask
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function __construct(UuidInterface $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
 	{
@@ -104,7 +107,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
 		#$oldBlocks = [];
 		$messages = [];
-		$error = false;
+		//$error = false;
 		/** @var Progress $progress */
 		foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $this->newBlocks, $this->blockFilter, $oldBlocks, $messages) as $progress) {
 			$this->publishProgress($progress);
@@ -118,10 +121,9 @@ class AsyncActionTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
-	 * @throws Exception
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

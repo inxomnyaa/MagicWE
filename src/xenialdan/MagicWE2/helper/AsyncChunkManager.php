@@ -4,6 +4,7 @@ namespace xenialdan\MagicWE2\helper;
 
 use pocketmine\world\format\Chunk;
 use pocketmine\world\SimpleChunkManager;
+use pocketmine\world\World;
 
 class AsyncChunkManager extends SimpleChunkManager
 {
@@ -19,5 +20,10 @@ class AsyncChunkManager extends SimpleChunkManager
 	public function getChunks(): array
 	{
 		return $this->chunks;
+	}
+
+	public function getWorldHeight(): int
+	{
+		return World::Y_MAX;
 	}
 }

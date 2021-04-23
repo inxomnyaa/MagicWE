@@ -19,7 +19,7 @@ class MWESelectionChangeEvent extends MWEEvent
 	public const TYPE_SHAPE = 4;
 
 	private Selection $selection;
-	private ?Session $session;
+	private ?Session $session = null;
 	private int $type;
 
 	public function __construct(Selection $selection, int $type)

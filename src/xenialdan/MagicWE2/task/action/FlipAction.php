@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\task\action;
 
-use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
+use RuntimeException;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
+use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\helper\BlockEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\Progress;
@@ -25,7 +27,7 @@ class FlipAction extends ClipboardAction
 	/** @var string */
 	public string $completionString = '{%name} succeed, took {%took}, flipped {%changed} blocks out of {%total}';
 	/** @var string */
-	private $axis;
+	private string $axis;
 
 	public function __construct(string $axis)//TODO use pm Axis
 	{
@@ -44,8 +46,12 @@ class FlipAction extends ClipboardAction
 	 * @param null|int $changed
 	 * @param SingleClipboard $clipboard
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
-	 * @throws Exception
+	 * @return Generator
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidBlockStateException
 	 */
 	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator
 	{
@@ -86,6 +92,6 @@ class FlipAction extends ClipboardAction
 				$lastProgress = $progress;
 			}
 		}
-		$clipboard = $clonedClipboard;
+		//$clipboard = $clonedClipboard;
 	}
 }

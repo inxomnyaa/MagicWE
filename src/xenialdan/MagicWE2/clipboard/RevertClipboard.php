@@ -13,12 +13,12 @@ class RevertClipboard extends Clipboard
 	 * @var Chunk[]
 	 * @phpstan-var array<int, Chunk>
 	 */
-	public $chunks = [];
+	public array $chunks = [];
 	/**
 	 * @var array[]
 	 * @phpstan-var array<array{int, \pocketmine\world\Position|null}>
 	 */
-	public $blocksAfter;
+	public array $blocksAfter;
 
 	/**
 	 * RevertClipboard constructor.

@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use UnderflowException;
 use xenialdan\customui\elements\Dropdown;
 use xenialdan\customui\elements\Label;
 use xenialdan\customui\windows\CustomForm;
@@ -37,6 +38,7 @@ class LanguageCommand extends BaseCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
+	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{

@@ -4,7 +4,6 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use Exception;
 use Generator;
-use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -18,11 +17,11 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 class Cone extends Shape
 {
 	/** @var int */
-	public $height = 5;
+	public int $height = 5;
 	/** @var int */
-	public $diameter = 5;
+	public int $diameter = 5;
 	/** @var bool */
-	public $flipped = false;
+	public bool $flipped = false;
 
 	/**
 	 * Cone constructor.
@@ -44,10 +43,10 @@ class Cone extends Shape
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$reducePerLayer = ($this->diameter / $this->height);
@@ -84,10 +83,10 @@ class Cone extends Shape
 	 * Returns a flat layer of all included x z positions in selection
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param int $flags
-	 * @return Generator|Vector2[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -106,7 +105,7 @@ class Cone extends Shape
 	 * @return string[] fastSerialized chunks
 	 * @throws Exception
 	 */
-	public function getTouchedChunks($manager): array
+	public function getTouchedChunks(AsyncChunkManager|World $manager): array
 	{//TODO optimize to remove "corner" chunks
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;

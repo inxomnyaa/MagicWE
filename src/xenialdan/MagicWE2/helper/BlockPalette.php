@@ -7,7 +7,6 @@ namespace xenialdan\MagicWE2\helper;
 use Generator;
 use InvalidArgumentException;
 use JsonException;
-use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\InvalidBlockStateException;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
@@ -65,13 +64,12 @@ class BlockPalette
 
 	/**
 	 * @param int $amount
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
 	public function blocks(int $amount = 1): Generator
 	{
 		if ($amount < 1) throw new InvalidArgumentException('$amount must be greater than 0');
-		/** @var BlockFactory $blockFactory */
 		$blockFactory = BlockFactory::getInstance();
 		/** @var BlockQuery $blockQuery */
 		foreach ($this->randomBlockQueries->generate($amount) as $blockQuery) {//TODO yield from?
@@ -80,11 +78,10 @@ class BlockPalette
 	}
 
 	/**
-	 * @return Generator|Block[]
+	 * @return Generator
 	 */
 	public function palette(): Generator
 	{
-		/** @var BlockFactory $blockFactory */
 		$blockFactory = BlockFactory::getInstance();
 		/** @var BlockQuery $blockQuery */
 		foreach ($this->randomBlockQueries->indexes() as $blockQuery) {//TODO yield from?
@@ -123,7 +120,6 @@ class BlockPalette
 	public static function decode(string $blocks): array
 	{
 		$e = [];
-		/** @var BlockFactory $blockFactory */
 		$blockFactory = BlockFactory::getInstance();
 		foreach (json_decode($blocks, true, 512, JSON_THROW_ON_ERROR) as $block)
 			$e[] = $blockFactory->fromFullBlock($block);

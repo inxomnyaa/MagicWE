@@ -12,9 +12,9 @@ use pocketmine\nbt\tag\CompoundTag;
 class BlockEntry
 {
 	/** @var int BlockFullId */
-	public $fullId;
+	public int $fullId;
 	/** @var CompoundTag|null */
-	public $nbt;
+	public ?CompoundTag $nbt = null;
 
 	/**
 	 * BlockEntry constructor.
@@ -29,10 +29,10 @@ class BlockEntry
 
 	public function validate(): bool
 	{
-		/** @var BlockFactory $instance */
 		$instance = BlockFactory::getInstance();
 		$block = $instance->fromFullBlock($this->fullId);
-		[$id, $meta] = [$block->getId(), $block->getMeta()];
+		//[$id, $meta] = [$block->getId(), $block->getMeta()];
+		$id = $block->getId();
 		if ($id === BlockLegacyIds::INFO_UPDATE) {
 			return false;
 		}
@@ -41,7 +41,6 @@ class BlockEntry
 
 	public function __toString()
 	{
-		/** @var BlockFactory $instance */
 		$instance = BlockFactory::getInstance();
 		$block = $instance->fromFullBlock($this->fullId);
 		$str = __CLASS__ . " " . $this->fullId . " [{$block->getId()}:{$block->getMeta()}]";
@@ -53,7 +52,6 @@ class BlockEntry
 
 	public function toBlock(): Block
 	{
-		/** @var BlockFactory $instance */
 		$instance = BlockFactory::getInstance();
 		return $instance->fromFullBlock($this->fullId);
 	}

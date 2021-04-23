@@ -13,6 +13,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\World;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
+use UnderflowException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\Loader;
@@ -24,21 +25,21 @@ abstract class Session
 	public const MAX_CLIPBOARDS = 5;
 	public const MAX_HISTORY = 32;
 	/** @var UuidInterface */
-	private $uuid;
+	private UuidInterface $uuid;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Selection[] */
-	private $selections = [];
+	private array $selections = [];
 	/** @var UuidInterface|null */
-	private $latestselection;
+	private ?UuidInterface $latestselection = null;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Clipboard[] */
-	private $clipboards = [];
+	private array $clipboards = [];
 	/** @var int */
-	private $currentClipboard = -1;
+	private int $currentClipboard = -1;
 	/** @var Deque<RevertClipboard> */
-	public $undoHistory;
+	public Deque $undoHistory;
 	/** @var Deque<RevertClipboard> */
-	public $redoHistory;
+	public Deque $redoHistory;
 
 	/**
 	 * @return UuidInterface
@@ -210,6 +211,7 @@ abstract class Session
 
 	/**
 	 * @param RevertClipboard $revertClipboard
+	 * @throws UnderflowException
 	 */
 	public function addRevert(RevertClipboard $revertClipboard): void
 	{

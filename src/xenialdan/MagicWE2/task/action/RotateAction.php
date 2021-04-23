@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\task\action;
 
-use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
 use pocketmine\math\Vector3;
+use RuntimeException;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
+use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\helper\BlockEntry;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\Progress;
@@ -48,8 +50,12 @@ class RotateAction extends ClipboardAction
 	 * @param null|int $changed
 	 * @param SingleClipboard $clipboard
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
-	 * @throws Exception
+	 * @return Generator
+	 * @throws InvalidArgumentException
+	 * @throws RuntimeException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidBlockStateException
 	 */
 	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator
 	{
@@ -93,7 +99,6 @@ class RotateAction extends ClipboardAction
 			}
 			#var_dump("$newX $y $newZ");
 			$block1 = $blockEntry->toBlock();
-			/** @var BlockStatesParser $instance */
 			$instance = BlockStatesParser::getInstance();
 			$blockStatesEntry = $instance::getStateByBlock($block1);
 			$rotated = $blockStatesEntry->rotate($this->rotation);
@@ -139,6 +144,6 @@ class RotateAction extends ClipboardAction
 		}
 		$clonedSelection->shape = (Cuboid::constructFromPositions($pos1, $pos2));//TODO figure out how to keep the shape (not always Cuboid)
 		$clonedClipboard->selection = $clonedSelection;
-		$clipboard = $clonedClipboard;
+		//$clipboard = $clonedClipboard;
 	}
 }

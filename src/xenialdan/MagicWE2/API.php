@@ -8,6 +8,7 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -77,7 +78,7 @@ class API
 
 	//TODO Split into separate Class (SchematicStorage?)
 	/** @var Clipboard[] */
-	private static $schematics = [];//TODO
+	private static array $schematics = [];//TODO
 
 	/**
 	 * @param Selection $selection
@@ -441,8 +442,9 @@ class API
 	 * @param array $messages
 	 * @param bool $error
 	 * @return BlockPalette
-	 * @throws InvalidArgumentException
 	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
 	 * @deprecated Use BlockPalette::fromString()
 	 */
 	public static function blockParser(string $fullstring, array &$messages, bool &$error): BlockPalette

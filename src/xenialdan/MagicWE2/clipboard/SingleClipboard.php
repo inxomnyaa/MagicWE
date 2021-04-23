@@ -13,11 +13,11 @@ use xenialdan\MagicWE2\selection\Selection;
 class SingleClipboard extends Clipboard
 {
 	/** @var BlockEntry[] */
-	private $entries = [];
+	private array $entries = [];
 	/** @var Selection */
-	public $selection;
+	public Selection $selection;
 	/** @var Vector3 */
-	public $position;
+	public Vector3 $position;
 
 	/**
 	 * SingleClipboard constructor.
@@ -42,7 +42,7 @@ class SingleClipboard extends Clipboard
 	 * @param int|null $x
 	 * @param int|null $y
 	 * @param int|null $z
-	 * @return Generator|BlockEntry[]
+	 * @return Generator
 	 */
 	public function iterateEntries(?int &$x, ?int &$y, ?int &$z): Generator
 	{

@@ -16,6 +16,7 @@ use pocketmine\item\ItemIds;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -37,6 +38,7 @@ class WandCommand extends BaseCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
+	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{

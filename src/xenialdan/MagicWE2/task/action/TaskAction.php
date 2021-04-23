@@ -9,21 +9,20 @@ use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
-use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
 
 abstract class TaskAction
 {
 	/** @var string */
-	public $prefix = "";
+	public string $prefix = "";
 	/** @var bool */
-	public $addRevert = true;
+	public bool $addRevert = true;
 	/** @var string */
-	public $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} changed.';
+	public string $completionString = '{%name} succeed, took {%took}, {%changed} blocks out of {%total} changed.';
 	/** @var bool */
-	public $addClipboard = false;
+	public bool $addClipboard = false;
 	/** @var null|Vector3 */
-	public $clipboardVector;
+	public ?Vector3 $clipboardVector = null;
 	//TODO add $flags and define available flags in child classes
 	//public $flags
 	//protected const AVAILABLE_FLAGS = [];(can be overwritten), access with static::AVAILABLE_FLAGS
@@ -37,7 +36,7 @@ abstract class TaskAction
 	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
+	 * @return Generator
 	 */
 	abstract public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;
 

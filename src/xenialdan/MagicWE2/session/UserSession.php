@@ -28,32 +28,31 @@ use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\helper\Scoreboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\data\Asset;
-use xenialdan\MagicWE2\session\data\BrushStore;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
 class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
 {
 	/** @var Player|null */
-	private $player;
+	private ?Player $player = null;
 	/** @var BossBar */
-	private $bossBar;
+	private BossBar $bossBar;
 	/** @var Scoreboard|null */
-	public $sidebar;
+	public ?Scoreboard $sidebar = null;
 	/** @var bool */
-	private $wandEnabled = true;
+	private bool $wandEnabled = true;
 	/** @var bool */
-	private $debugToolEnabled = true;
+	private bool $debugToolEnabled = true;
 	/** @var bool */
-	private $wailaEnabled = true;
+	private bool $wailaEnabled = true;
 	/** @var bool */
-	private $sidebarEnabled = true;//TODO settings/commands
+	private bool $sidebarEnabled = true;//TODO settings/commands
 	/** @var Map<string,Brush> */
 	private Map $brushes;
 	/** @var Map<string,Asset> */
 	private Map $assets;
 	/** @var Language|null */
-	private $lang;
+	private ?Language $lang = null;
 	public bool $displayOutline = false;
 
 	public function __construct(Player $player)

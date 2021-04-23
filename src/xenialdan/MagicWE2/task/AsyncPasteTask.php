@@ -5,6 +5,7 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use OutOfBoundsException;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
@@ -13,6 +14,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -28,13 +30,13 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncPasteTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var string */
-	private $clipboard;
+	private string $clipboard;
 	/** @var Vector3 */
-	private $offset;
+	private Vector3 $offset;
 
 	/**
 	 * AsyncPasteTask constructor.
@@ -91,9 +93,9 @@ class AsyncPasteTask extends MWEAsyncTask
 	 * @param AsyncChunkManager $manager
 	 * @param SingleClipboard $clipboard
 	 * @param null|int $changed
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @return Generator
 	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard, ?int &$changed): Generator
 	{
@@ -143,9 +145,8 @@ class AsyncPasteTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws InvalidArgumentException
-	 * @throws Exception
-	 * @throws Exception
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

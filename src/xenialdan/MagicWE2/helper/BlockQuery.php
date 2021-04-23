@@ -11,12 +11,12 @@ use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 final class BlockQuery
 {
 	public string $query;
-	public ?string $fullBlockQuery;
-	public ?string $blockId;
-	public ?string $blockStatesQuery;
-	public ?string $fullExtraQuery;
+	public ?string $fullBlockQuery = null;
+	public ?string $blockId = null;
+	public ?string $blockStatesQuery = null;
+	public ?string $fullExtraQuery = null;
 	public float $weight;//TODO check which are optional
-	public ?int $blockFullId;
+	public ?int $blockFullId = null;
 
 	/**
 	 * BlockQuery constructor.
@@ -48,7 +48,6 @@ final class BlockQuery
 	{
 		//calling methods should check with hasBlock() before parse()
 		if (!$update && $this->hasBlock()) throw new BlockQueryAlreadyParsedException("FullBlockID is already parsed");
-		/** @var BlockStatesParser $blockstateParser */
 		$blockstateParser = BlockStatesParser::getInstance();
 		$blockstateParser::fromString($this);//this should already set the blockFullId because it is a reference
 		//var_dump($this->hasBlock() ? "Has block, " . $this->blockFullId : "Does not have block");

@@ -12,7 +12,7 @@ use xenialdan\MagicWE2\Loader;
 class PluginSession extends Session
 {
 	/** @var Plugin */
-	private $plugin;
+	private Plugin $plugin;
 
 	public function __construct(Plugin $plugin)
 	{

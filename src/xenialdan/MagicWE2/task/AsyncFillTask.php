@@ -6,6 +6,7 @@ use Exception;
 use Generator;
 use InvalidArgumentException;
 use MultipleIterator;
+use OutOfBoundsException;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
@@ -14,6 +15,7 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -28,15 +30,15 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncFillTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var int */
-	private $flags;
+	private int $flags;
 	///** @var string */
 	//private $newBlocks;
 	/** @var BlockPalette */
-	private $newBlocks;
+	private BlockPalette $newBlocks;
 
 	/**
 	 * AsyncFillTask constructor.
@@ -101,9 +103,9 @@ class AsyncFillTask extends MWEAsyncTask
 	 * @param AsyncChunkManager $manager
 	 * @param BlockPalette $newBlocks
 	 * @param null|int $changed
-	 * @return Generator|array[]
+	 * @return Generator
+	 * @throws InvalidArgumentException
 	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
-	 * @throws Exception
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, BlockPalette $newBlocks, ?int &$changed): Generator
 	{
@@ -152,10 +154,9 @@ class AsyncFillTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
-	 * @throws Exception
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

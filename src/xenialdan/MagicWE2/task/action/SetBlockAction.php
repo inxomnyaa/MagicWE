@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\task\action;
 
-use Exception;
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -35,8 +35,8 @@ class SetBlockAction extends TaskAction
 	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
-	 * @throws Exception
+	 * @return Generator
+	 * @throws InvalidArgumentException
 	 */
 	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
 	{

@@ -7,19 +7,18 @@ namespace xenialdan\MagicWE2\task\action;
 use Generator;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
-use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
 
 abstract class ClipboardAction
 {
 	/** @var string */
-	public $prefix = "";
+	public string $prefix = "";
 	/** @var string */
 	public string $completionString = '{%name} succeed, took {%took}, {%changed} entries out of {%total} changed.';
 	/** @var bool */
 	public bool $addClipboard = false;
 	/** @var null|Vector3 */
-	public $clipboardVector;
+	public ?Vector3 $clipboardVector = null;
 
 	/**
 	 * @param string $sessionUUID
@@ -27,7 +26,7 @@ abstract class ClipboardAction
 	 * @param null|int $changed
 	 * @param SingleClipboard $clipboard
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
+	 * @return Generator
 	 */
 	abstract public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator;
 

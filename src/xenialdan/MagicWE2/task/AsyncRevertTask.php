@@ -5,11 +5,13 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use OutOfBoundsException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use UnderflowException;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -24,9 +26,9 @@ class AsyncRevertTask extends MWEAsyncTask
 	public const TYPE_REDO = 1;
 
 	/** @var string */
-	private $clipboard;
+	private string $clipboard;
 	/** @var int */
-	private $type;
+	private int $type;
 
 	/**
 	 * AsyncRevertTask constructor.
@@ -67,9 +69,9 @@ class AsyncRevertTask extends MWEAsyncTask
 	/**
 	 * @param AsyncChunkManager $manager
 	 * @param RevertClipboard $clipboard
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @return Generator
 	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 */
 	private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
@@ -89,9 +91,9 @@ class AsyncRevertTask extends MWEAsyncTask
 	/**
 	 * @param AsyncChunkManager $manager
 	 * @param RevertClipboard $clipboard
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @return Generator
 	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 */
 	private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
@@ -109,9 +111,9 @@ class AsyncRevertTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

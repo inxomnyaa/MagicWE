@@ -10,7 +10,9 @@ use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use UnderflowException;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
+use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -32,6 +34,8 @@ class BlocksArgument extends RawStringArgument
 	 * @param CommandSender $sender
 	 *
 	 * @return BlockPalette
+	 * @throws UnderflowException
+	 * @throws SessionException
 	 */
 	public function parse(string $argument, CommandSender $sender)
 	{

@@ -13,6 +13,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
+use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SelectionException;
@@ -39,6 +40,7 @@ class PasteCommand extends BaseCommand
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
 	 * @throws AssumptionFailedError
+	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{

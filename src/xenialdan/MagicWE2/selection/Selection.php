@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\selection;
 
 use Exception;
 use JsonSerializable;
+use OutOfBoundsException;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -16,6 +17,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use Serializable;
+use UnderflowException;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -31,28 +33,28 @@ use xenialdan\MagicWE2\session\Session;
 class Selection implements Serializable, JsonSerializable
 {
 	/** @var int|null */
-	public $worldId;
+	public ?int $worldId = null;
 	/** @var Vector3|null */
-	public $pos1;
+	public ?Vector3 $pos1 = null;
 	/** @var Vector3|null */
-	public $pos2;
+	public ?Vector3 $pos2 = null;
 	/** @var UuidInterface */
-	public $uuid;
+	public UuidInterface $uuid;
 	/** @var UuidInterface */
-	public $sessionUUID;
+	public UuidInterface $sessionUUID;
 	/** @var Shape|null */
-	public $shape;
+	public ?Shape $shape = null;
 
 	/**
 	 * Selection constructor.
 	 * @param UuidInterface $sessionUUID
 	 * @param World $world
-	 * @param ?int $minX
-	 * @param ?int $minY
-	 * @param ?int $minZ
-	 * @param ?int $maxX
-	 * @param ?int $maxY
-	 * @param ?int $maxZ
+	 * @param null $minX
+	 * @param null $minY
+	 * @param null $minZ
+	 * @param null $maxX
+	 * @param null $maxY
+	 * @param null $maxZ
 	 * @param ?Shape $shape
 	 */
 	public function __construct(UuidInterface $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null, ?Shape $shape = null)
@@ -112,6 +114,8 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * @param Position $position
 	 * @throws AssumptionFailedError
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function setPos1(Position $position): void
 	{
@@ -153,6 +157,8 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * @param Position $position
 	 * @throws AssumptionFailedError
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function setPos2(Position $position): void
 	{

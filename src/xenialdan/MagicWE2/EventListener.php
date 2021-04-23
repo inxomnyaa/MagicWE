@@ -7,6 +7,7 @@ use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
+use OutOfBoundsException;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\entity\InvalidSkinException;
@@ -27,8 +28,8 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
+use UnderflowException;
 use xenialdan\customui\windows\ModalForm;
-use xenialdan\libstructure\StructureUI;
 use xenialdan\libstructure\tile\StructureBlockTile;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
@@ -43,7 +44,7 @@ use xenialdan\MagicWE2\tool\Brush;
 class EventListener implements Listener
 {
 	/** @var Plugin */
-	public $owner;
+	public Plugin $owner;
 
 	public function __construct(Plugin $plugin)
 	{
@@ -52,7 +53,6 @@ class EventListener implements Listener
 
 	/**
 	 * @param PlayerJoinEvent $event
-	 * @throws AssumptionFailedError
 	 * @throws InvalidSkinException
 	 * @throws JsonException
 	 * @throws RuntimeException
@@ -73,20 +73,19 @@ class EventListener implements Listener
 	{
 		Loader::getInstance()->wailaBossBar->addPlayer($event->getPlayer());
 		if (Loader::hasScoreboard()) {
-			try {
-				if (($session = $event->getSession()) instanceof UserSession && $session->isSidebarEnabled())
-					/** @var UserSession $session */
-					$session->sidebar->handleScoreboard($session);
-			} catch (InvalidArgumentException $e) {
-				Loader::getInstance()->getLogger()->logException($e);
-			}
+			$session = $event->getSession();
+			if ($session instanceof UserSession && $session->isSidebarEnabled())
+				/** @var UserSession $session */
+				$session->sidebar->handleScoreboard($session);
 		}
 	}
 
 	/**
 	 * @param PlayerQuitEvent $event
-	 * @throws SessionException
 	 * @throws JsonException
+	 * @throws OutOfBoundsException
+	 * @throws SessionException
+	 * @throws UnderflowException
 	 */
 	public function onLogout(PlayerQuitEvent $event): void
 	{
@@ -175,10 +174,12 @@ class EventListener implements Listener
 	/**
 	 * TODO use tool classes
 	 * @param BlockBreakEvent $event
-	 * @throws Error
-	 * @throws SessionException
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
+	 * @throws Error
+	 * @throws InvalidArgumentException
+	 * @throws OutOfBoundsException
+	 * @throws SessionException
+	 * @throws UnderflowException
 	 */
 	private function onBreakBlock(BlockBreakEvent $event): void
 	{
@@ -213,11 +214,13 @@ class EventListener implements Listener
 	/**
 	 * TODO use tool classes
 	 * @param PlayerInteractEvent $event
-	 * @throws Error
-	 * @throws InvalidStateException
-	 * @throws SessionException
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
+	 * @throws Error
+	 * @throws InvalidArgumentException
+	 * @throws InvalidStateException
+	 * @throws OutOfBoundsException
+	 * @throws SessionException
+	 * @throws UnderflowException
 	 */
 	private function onRightClickBlock(PlayerInteractEvent $event): void
 	{
@@ -282,12 +285,14 @@ class EventListener implements Listener
 
 	/**
 	 * @param PlayerInteractEvent $event
-	 * @throws Error
-	 * @throws InvalidStateException
-	 * @throws SessionException
-	 * @throws InvalidArgumentException
-	 * @throws UnexpectedTagTypeException
 	 * @throws AssumptionFailedError
+	 * @throws Error
+	 * @throws InvalidArgumentException
+	 * @throws InvalidStateException
+	 * @throws OutOfBoundsException
+	 * @throws SessionException
+	 * @throws UnexpectedTagTypeException
+	 * @throws UnderflowException
 	 */
 	private function onLeftClickBlock(PlayerInteractEvent $event): void
 	{
@@ -393,8 +398,9 @@ class EventListener implements Listener
 	/**
 	 * TODO use tool classes
 	 * @param PlayerItemHeldEvent $event
+	 * @throws OutOfBoundsException
 	 * @throws SessionException
-	 * @throws \OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function onChangeSlot(PlayerItemHeldEvent $event): void
 	{
@@ -477,7 +483,7 @@ class EventListener implements Listener
 
 	public function onStructureBlockClick(PlayerInteractEvent $event): void
 	{
-		$player = $event->getPlayer();
+		//$player = $event->getPlayer();
 		$blockTouched = $event->getBlock();
 		if ($blockTouched->getId() === BlockLegacyIds::STRUCTURE_BLOCK) {
 			var_dump("Clicked Structure Block", (string)$blockTouched);

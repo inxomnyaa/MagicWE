@@ -4,7 +4,6 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use Exception;
 use Generator;
-use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -18,11 +17,11 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 class Cuboid extends Shape
 {
 	/** @var int */
-	public $width = 5;
+	public int $width = 5;
 	/** @var int */
-	public $height = 5;
+	public int $height = 5;
 	/** @var int */
-	public $depth = 5;
+	public int $depth = 5;
 
 	/**
 	 * Cuboid constructor.
@@ -52,10 +51,10 @@ class Cuboid extends Shape
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
@@ -84,10 +83,10 @@ class Cuboid extends Shape
 	 * Returns a flat layer of all included x z positions in selection
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param int $flags
-	 * @return Generator|Vector2[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
@@ -102,7 +101,7 @@ class Cuboid extends Shape
 	 * @return string[] fastSerialized chunks
 	 * @throws Exception
 	 */
-	public function getTouchedChunks($manager): array
+	public function getTouchedChunks(AsyncChunkManager|World $manager): array
 	{
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;

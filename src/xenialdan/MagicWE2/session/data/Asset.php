@@ -88,6 +88,7 @@ class Asset implements JsonSerializable
 	 * @param bool $renew
 	 * @return Item
 	 * @throws InvalidArgumentException
+	 * @throws UnexpectedValueException
 	 */
 	public function toItem(bool $renew = false): Item
 	{
@@ -116,6 +117,7 @@ class Asset implements JsonSerializable
 
 	/**
 	 * @return array
+	 * @throws UnexpectedValueException
 	 */
 	private function generateLore(): array
 	{

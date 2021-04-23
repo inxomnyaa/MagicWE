@@ -6,6 +6,7 @@ use BlockHorizons\libschematic\Schematic;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use OutOfBoundsException;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
@@ -15,6 +16,8 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use UnderflowException;
+use UnexpectedValueException;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -32,15 +35,15 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncPasteAssetTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var Selection */
-	private $selection;
+	private Selection $selection;
 	/** @var string */
-	private $asset;
+	private string $asset;
+	/** @var null|Vector3 */
+	private ?Vector3 $pasteVector;
 	/** @var Vector3 */
-	private $pasteVector;
-	/** @var Vector3 */
-	private $target;
+	private Vector3 $target;
 
 	/**
 	 * AsyncPasteTask constructor.
@@ -68,6 +71,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	 *
 	 * @return void
 	 * @throws InvalidArgumentException
+	 * @throws UnexpectedValueException
+	 * @throws OutOfBoundsException
 	 */
 	public function onRun(): void
 	{
@@ -80,9 +85,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		$manager = Shape::getChunkManager($touchedChunks);
 		unset($touchedChunks);
 
-		/** @var Selection $selection */
 		//$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
-		$selection = $this->selection;
+		//$selection = $this->selection;
 
 		/** @var Asset $asset */
 		$asset = unserialize($this->asset/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
@@ -101,7 +105,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	 * @param null|int $changed
 	 * @return Generator
 	 * @throws InvalidArgumentException
-	 * @throws \UnexpectedValueException
+	 * @throws UnexpectedValueException
+	 * @throws OutOfBoundsException
 	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 */
 	private function execute(AsyncChunkManager $manager, Asset $asset, ?int &$changed): Generator
@@ -202,9 +207,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws InvalidArgumentException
-	 * @throws Exception
-	 * @throws Exception
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{
@@ -223,7 +227,6 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];//already data array
 		$changed = $result["changed"];
-		/** @var Selection $selection */
 		//$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$selection = $this->selection;
 		$totalCount = $selection->getShape()->getTotalCount();

@@ -42,26 +42,26 @@ final class BlockStatesParser
 	use SingletonTrait;
 
 	/** @var string */
-	public static $rotPath;
+	public static string $rotPath = "";
 	/** @var string */
-	public static $doorRotPath;
+	public static string $doorRotPath = "";
 
 	/** @var R12ToCurrentBlockMapEntry[][] *///TODO check type correct? phpstan!
-	private static $legacyStateMap;
+	private static array $legacyStateMap;
 
 	/** @var array */
-	private static $aliasMap = [];
+	private static array $aliasMap = [];
 	/** @var array */
-	private static $rotationFlipMap = [];
+	private static array $rotationFlipMap = [];
 	/** @var array */
-	private static $doorRotationFlipMap = [];
+	private static array $doorRotationFlipMap = [];
 
 	private function __construct()
 	{
-//		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
-//		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
-		$this->loadRotationAndFlipData(self::$rotPath);
-		$this->loadDoorRotationAndFlipData(self::$doorRotPath);
+		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
+		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
+		//$this->loadRotationAndFlipData(self::$rotPath);
+		//$this->loadDoorRotationAndFlipData(self::$doorRotPath);
 		$this->loadLegacyMappings();
 	}
 
@@ -198,7 +198,6 @@ final class BlockStatesParser
 		$namespacedSelectedBlockName = strpos($query->blockId, "minecraft:") === false ? "minecraft:" . $query->blockId : $query->blockId;
 		$selectedBlockName = strtolower(str_replace("minecraft:", "", $namespacedSelectedBlockName));//TODO try to keep namespace "minecraft:" to support custom blocks
 
-		/** @var LegacyStringToItemParser $legacyStringToItemParser */
 		$legacyStringToItemParser = LegacyStringToItemParser::getInstance();
 		$block = $legacyStringToItemParser->parse($selectedBlockName)->getBlock();
 		//no states, just block
@@ -269,7 +268,6 @@ final class BlockStatesParser
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
 			if ($clonedPrintedCompound->equals($finalStatesList)) {
-				/** @var BlockFactory $blockFactory */
 				$blockFactory = BlockFactory::getInstance();
 				$block = $blockFactory->get($block->getId(), $meta & 0xf);
 				$blocks[] = $block;
@@ -340,7 +338,6 @@ final class BlockStatesParser
 		$blockIdentifier = $entry->blockIdentifier;
 		$s = [];
 		foreach ($printedCompound as $statesTagEntryName => $statesTagEntry) {
-			/** @var CompoundTag $defaultStatesNamedTag */
 			$defaultStatesNamedTag = self::getDefaultStates($blockIdentifier);
 			$namedTag = $defaultStatesNamedTag->getTag($statesTagEntryName);
 			if (!$namedTag instanceof ByteTag && !$namedTag instanceof StringTag && !$namedTag instanceof IntTag) {
@@ -451,7 +448,6 @@ final class BlockStatesParser
 		}
 		//return;//TODO
 		//test flip+rotation
-		/** @noinspection PhpUnreachableStatementInspection */
 		// $tests2 = [
 		// 	#"minecraft:wooden_slab[wood_type=oak]",
 		// 	#"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",

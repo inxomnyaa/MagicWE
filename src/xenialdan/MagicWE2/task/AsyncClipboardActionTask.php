@@ -3,12 +3,13 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use InvalidArgumentException;
+use OutOfBoundsException;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use UnderflowException;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
@@ -23,11 +24,11 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 {
 
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var ClipboardAction */
-	private $action;
+	private ClipboardAction $action;
 	/** @var string */
-	private $clipboard;
+	private string $clipboard;
 
 	private string $rotPath;
 	private string $doorRotPath;
@@ -38,6 +39,8 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	 * @param Selection $selection
 	 * @param ClipboardAction $action
 	 * @param SingleClipboard $clipboard
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function __construct(UuidInterface $sessionUUID, Selection $selection, ClipboardAction $action, SingleClipboard $clipboard)
 	{
@@ -91,9 +94,9 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
+	 * @throws OutOfBoundsException
+	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

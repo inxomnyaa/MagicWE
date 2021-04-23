@@ -13,6 +13,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\biome\Biome;
 use pocketmine\world\biome\BiomeRegistry;
 use ReflectionClass;
+use UnderflowException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -33,6 +34,8 @@ class BiomeListCommand extends BaseCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
+	 * @throws UnderflowException
+	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{

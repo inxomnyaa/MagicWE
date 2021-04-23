@@ -84,27 +84,27 @@ class Loader extends PluginBase
 	public const PREFIX_ASSETS = TF::RESET . TF::BOLD . TF::GOLD . "[Asset]" . TF::RESET . " ";
 	public const PREFIX_FORM = TF::RESET . TF::BOLD . TF::DARK_PURPLE . "[MWE2]" . TF::RESET . " ";
 	/** @var Loader|null */
-	private static $instance;
+	private static ?Loader $instance;
 	/** @var null|ShapeRegistry */
-	public static $shapeRegistry;
+	public static ?ShapeRegistry $shapeRegistry;
 	/** @var null|ActionRegistry */
-	public static $actionRegistry;
+	public static ?ActionRegistry $actionRegistry;
 	/** @var Enchantment */
-	public static $ench;
+	public static Enchantment $ench;
 	/** @var Language */
-	private $baseLang;
+	private Language $baseLang;
 	/** @var string[] Donator names */
-	public $donators = [];
+	public array $donators = [];
 	/** @var string */
-	public $donatorData = "";
+	public string $donatorData = "";
 	/** @var string */
-	private static $rotPath;
+	private static string $rotPath;
 	/** @var string */
-	private static $doorRotPath;
+	private static string $doorRotPath;
 	/** @var DiverseBossBar */#BossBar
-	public $wailaBossBar;
+	public DiverseBossBar $wailaBossBar;
 	/** @var null|string */
-	public static $scoreboardAPI;
+	public static ?string $scoreboardAPI;
 	/** @var AssetCollection */
 	public static AssetCollection $assetCollection;
 
@@ -158,7 +158,6 @@ class Loader extends PluginBase
 	{
 		self::$instance = $this;
 		self::$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
-		/** @var EnchantmentIdMap $enchantmapinstance */
 		$enchantmapinstance = EnchantmentIdMap::getInstance();
 		$enchantmapinstance->register(self::FAKE_ENCH_ID, self::$ench);
 		self::$shapeRegistry = new ShapeRegistry();
@@ -169,7 +168,6 @@ class Loader extends PluginBase
 
 		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
-		/** @var BlockStatesParser $blockstateparserInstance */
 		$blockstateparserInstance = BlockStatesParser::getInstance();
 		$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";

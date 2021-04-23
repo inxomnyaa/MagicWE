@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\task\action;
 
-use Exception;
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -17,9 +17,9 @@ use xenialdan\MagicWE2\selection\Selection;
 class CountAction extends TaskAction
 {
 	/** @var bool */
-	public $addRevert = false;
+	public bool $addRevert = false;
 	/** @var string */
-	public $completionString = '{%name} succeed, took {%took}, analyzed {%changed} blocks';
+	public string $completionString = '{%name} succeed, took {%took}, analyzed {%changed} blocks';
 
 	public function __construct()
 	{
@@ -39,8 +39,8 @@ class CountAction extends TaskAction
 	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
-	 * @throws Exception
+	 * @return Generator
+	 * @throws InvalidArgumentException
 	 */
 	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
 	{

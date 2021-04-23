@@ -15,19 +15,20 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\TextFormat;
 use RuntimeException;
 use Throwable;
+use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\task\action\FlipAction;
 
 class BlockStatesEntry
 {
 	/** @var string */
-	public $blockIdentifier;
+	public string $blockIdentifier;
 	/** @var CompoundTag */
-	public $blockStates;
+	public CompoundTag $blockStates;
 	/** @var string */
-	public $blockFull;
+	public string $blockFull;
 	/** @var Block|null */
-	public $block;
+	public ?Block $block = null;
 
 	/**
 	 * BlockStatesEntry constructor.
@@ -63,8 +64,8 @@ class BlockStatesEntry
 	 * TODO hacky AF. clean up
 	 * @return Block
 	 * @throws InvalidArgumentException
-	 * @throws RuntimeException
-	 * @throws InvalidBlockStateException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws BlockQueryAlreadyParsedException
 	 */
 	public function toBlock(): Block
 	{
@@ -90,7 +91,6 @@ class BlockStatesEntry
 		$block = $clone->toBlock();
 		$idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
 		$key = $idMapName . ":" . $block->getMeta();
-		/** @var BlockStatesParser $blockstateParser */
 		$blockstateParser = BlockStatesParser::getInstance();
 		if (strpos($idMapName, "_door") !== false) {
 			$fromMap = $blockstateParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;

@@ -41,7 +41,7 @@ class Brush extends WETool
 	public const TAG_BRUSH_PROPERTIES = "properties";
 
 	/** @var BrushProperties */
-	public $properties;
+	public BrushProperties $properties;
 
 	/**
 	 * Brush constructor.

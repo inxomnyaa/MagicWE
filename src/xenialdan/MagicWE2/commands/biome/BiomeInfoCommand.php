@@ -17,6 +17,7 @@ use pocketmine\world\biome\Biome;
 use pocketmine\world\biome\BiomeRegistry;
 use pocketmine\world\format\io\FastChunkSerializer;
 use ReflectionClass;
+use UnderflowException;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -42,6 +43,7 @@ class BiomeInfoCommand extends BaseCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
+	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
