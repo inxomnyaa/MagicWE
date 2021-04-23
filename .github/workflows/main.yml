@@ -6,21 +6,21 @@ jobs:
   phpstan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.ref }}
-    - name: Create Vendor Directory
-      run: |
-        echo Making directory...
-        mkdir vendor
-        echo Directory made.
-    - name: Download virions to vendor
-      run: |
-        php -f resources/parsepoggit.php > virion_urls.txt
-        cat virion_urls.txt
-        wget -P vendor --content-disposition -i virion_urls.txt
-        rm virion_urls.txt
-    - name: Run PHPStan
-      uses: larryTheCoder/pmmp-phpstan-action@master
-      with:
-        phpstan-config: phpstan.neon.dist
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Create Vendor Directory
+        run: |
+          echo Making directory...
+          mkdir vendor
+          echo Directory made.
+      - name: Download DEVirion to vendor
+        run: |
+          wget -O vendor/DEVirion.phar --content-disposition https://poggit.pmmp.io/r/106837/DEVirion-Dev-34.phar
+      - name: Download virions to vendor via DEVirion CLI
+        run: |
+          php vendor/DEVirion.phar install .poggit.yml MagicWE2 vendor
+      - name: Run PHPStan
+        uses: larryTheCoder/pmmp-phpstan-action@master
+        with:
+          phpstan-config: phpstan.neon.dist
