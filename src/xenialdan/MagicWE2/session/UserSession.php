@@ -255,7 +255,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function getBrush(UuidInterface $uuid): ?Brush
 	{
-		return $this->brushes[$uuid->toString()] ?? null;
+		return $this->brushes->get($uuid->toString());
 	}
 
 	/**
@@ -265,7 +265,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function addBrush(Brush $brush): void
 	{
-		$this->brushes[$brush->properties->uuid] = $brush;
+		$this->brushes->put($brush->properties->uuid, $brush);
 		$this->sendMessage($this->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
 	}
 
@@ -276,7 +276,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function removeBrush(Brush $brush, bool $delete = false): void
 	{
-		if ($delete) unset($this->brushes[$brush->properties->uuid]);
+		if ($delete) $this->brushes->remove($brush->properties->uuid);
 		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
 			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
 				if ($entry->getString("id") === $brush->properties->uuid) {
@@ -300,7 +300,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function replaceBrush(Brush $brush): void
 	{
-		$this->brushes[$brush->properties->uuid] = $brush;
+		$this->brushes->put($brush->properties->uuid, $brush);
 		$new = $brush->toItem();
 		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
 			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
