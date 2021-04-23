@@ -15,7 +15,7 @@ final class AssetCollection
 {
 	use SingletonTrait;
 
-	/** @var Map<Asset> */
+	/** @var Map<string, Asset> */
 	public Map $assets;
 
 	public function __construct()
@@ -62,20 +62,24 @@ final class AssetCollection
 	{
 		//Load mcstructure and schematic files and lock them to prevent editing
 		$store = $this;
-		$schematicFiles = array_merge(glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.mcstructure"), glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.schematic"));//glob might return false
-		if ($schematicFiles !== false)
-			foreach ($schematicFiles as $file) {
-				['basename' => $basename, 'extension' => $extension] = pathinfo($file);
-				Loader::getInstance()->getLogger()->debug(TF::GOLD . "Loading " . $basename);
-				try {
-					if ($extension === 'mcstructure') {
-						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadStructure($basename), true, null, true));
-					} else if ($extension === 'schematic') {
-						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadSchematic($basename), true, null, true));
+		$globStructure = glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.mcstructure");
+		$globSchematic =  glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.schematic");
+		if($globStructure && $globSchematic) {
+			$schematicFiles = array_merge($globStructure, $globSchematic);
+			if ($schematicFiles !== false)
+				foreach ($schematicFiles as $file) {
+					['basename' => $basename, 'extension' => $extension] = pathinfo($file);
+					Loader::getInstance()->getLogger()->debug(TF::GOLD . "Loading " . $basename);
+					try {
+						if ($extension === 'mcstructure') {
+							$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadStructure($basename), true, null, true));
+						} else if ($extension === 'schematic') {
+							$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadSchematic($basename), true, null, true));
+						}
+					} catch (StructureFileException $e) {
+						Loader::getInstance()->getLogger()->debug($e->getMessage());
 					}
-				} catch (StructureFileException $e) {
-					Loader::getInstance()->getLogger()->debug($e->getMessage());
 				}
-			}
+		}
 	}
 }

@@ -47,9 +47,9 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private bool $wailaEnabled = true;
 	/** @var bool */
 	private bool $sidebarEnabled = true;//TODO settings/commands
-	/** @var Map<string,Brush> */
+	/** @var Map<string, Brush> */
 	private Map $brushes;
-	/** @var Map<string,Asset> */
+	/** @var Map<string, Asset> */
 	private Map $assets;
 	/** @var Language|null */
 	private ?Language $lang = null;

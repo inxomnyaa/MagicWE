@@ -42,10 +42,7 @@ class BlockStatesEntry
 		$this->blockStates = $blockStates;
 		$this->block = $block;
 		try {
-			if ($this->blockStates !== null)
-				$this->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
-			else
-				$this->blockFull = $this->blockIdentifier;
+			$this->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
 		} catch (Throwable $e) {
 			GlobalLogger::get()->logException($e);
 			$this->blockFull = $this->blockIdentifier;

@@ -49,15 +49,15 @@ class Selection implements Serializable, JsonSerializable
 	 * Selection constructor.
 	 * @param UuidInterface $sessionUUID
 	 * @param World $world
-	 * @param null $minX
-	 * @param null $minY
-	 * @param null $minZ
-	 * @param null $maxX
-	 * @param null $maxY
-	 * @param null $maxZ
+	 * @param ?int $minX
+	 * @param ?int $minY
+	 * @param ?int $minZ
+	 * @param ?int $maxX
+	 * @param ?int $maxY
+	 * @param ?int $maxZ
 	 * @param ?Shape $shape
 	 */
-	public function __construct(UuidInterface $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null, ?Shape $shape = null)
+	public function __construct(UuidInterface $sessionUUID, World $world, ?int $minX = null, ?int $minY = null, ?int $minZ = null, ?int $maxX = null, ?int $maxY = null, ?int $maxZ = null, ?Shape $shape = null)
 	{
 		$this->sessionUUID = $sessionUUID;
 		$this->worldId = $world->getId();

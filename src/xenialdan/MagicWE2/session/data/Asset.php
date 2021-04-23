@@ -66,14 +66,12 @@ class Asset implements JsonSerializable
 		if ($this->structure instanceof Schematic) return new Vector3($this->structure->getWidth(), $this->structure->getHeight(), $this->structure->getLength());
 		if ($this->structure instanceof MCStructure) return $this->structure->getSize();
 		if ($this->structure instanceof SingleClipboard) return new Vector3($this->structure->selection->getSizeX(), $this->structure->selection->getSizeY(), $this->structure->selection->getSizeZ());
-		throw new UnexpectedValueException('Invalid class as Asset');
 	}
 
 	public function getTotalCount(): int
 	{
 		if ($this->structure instanceof Schematic || $this->structure instanceof MCStructure) return $this->getSize()->getFloorX() * $this->getSize()->getFloorY() * $this->getSize()->getFloorZ();
 		if ($this->structure instanceof SingleClipboard) return $this->structure->getTotalCount();
-		throw new UnexpectedValueException('Invalid class as Asset');
 	}
 
 	public function getOrigin(): Vector3
@@ -81,7 +79,6 @@ class Asset implements JsonSerializable
 		if ($this->structure instanceof Schematic) return new Vector3(0, 0, 0);
 		if ($this->structure instanceof MCStructure) return $this->structure->getStructureWorldOrigin();
 		if ($this->structure instanceof SingleClipboard) return $this->structure->position;
-		throw new UnexpectedValueException('Invalid class as Asset');
 	}
 
 	/**
@@ -156,7 +153,6 @@ class Asset implements JsonSerializable
 			$schematic->setBlockArray($blocks);
 			return $schematic;
 		}
-		throw new PluginException("Wrong type");
 	}
 
 	public function toMCStructure(): MCStructure
@@ -225,7 +221,7 @@ class Asset implements JsonSerializable
 				$form->addLabel($value);
 			}
 			// Function
-			$form->setCallable(function (Player $player, $data) use ($form, $new) {
+			$form->setCallable(function (Player $player, $data) /*use ($form, $new)*/ {
 				var_dump(__LINE__, $data);
 				[$filename, $this->locked, $shared] = $data;
 				var_dump($filename, $this->locked ? "true" : "false", $shared ? "true" : "false");
@@ -276,7 +272,8 @@ class Asset implements JsonSerializable
 		return [
 			'filename' => $this->filename,
 			'displayname' => $this->displayname,
-			'type' => $this->structure instanceof Schematic ? self::TYPE_SCHEMATIC : ($this->structure instanceof MCStructure ? self::TYPE_MCSTRUCTURE : ($this->structure instanceof SingleClipboard ? self::TYPE_CLIPBOARD : '')),
+			//'type' => $this->structure instanceof Schematic ? self::TYPE_SCHEMATIC : ($this->structure instanceof MCStructure ? self::TYPE_MCSTRUCTURE : ($this->structure instanceof SingleClipboard ? self::TYPE_CLIPBOARD : '')),
+			'type' => $this->structure instanceof Schematic ? self::TYPE_SCHEMATIC : ($this->structure instanceof MCStructure ? self::TYPE_MCSTRUCTURE : self::TYPE_CLIPBOARD),
 			'locked' => $this->locked,
 			'owner' => $this->ownerXuid ?? 'none',
 			'shared' => $this->shared,
