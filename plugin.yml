@@ -19,6 +19,10 @@ permissions:
     default: op
   we.command.donate:
     default: true
+  we.command.asset:
+    default: op
+  we.command.palette:
+    default: op
   we.command.language:
     default: op
   we.command.help:

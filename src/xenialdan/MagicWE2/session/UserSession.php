@@ -28,6 +28,7 @@ use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\helper\Scoreboard;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\data\Asset;
+use xenialdan\MagicWE2\session\data\PaletteCollection;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
 
@@ -51,6 +52,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private Map $brushes;
 	/** @var Map<string, Asset> */
 	private Map $assets;
+	public PaletteCollection $palettes;
 	/** @var Language|null */
 	private ?Language $lang = null;
 	public bool $displayOutline = false;
@@ -69,6 +71,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		$this->redoHistory = new Deque();
 		$this->brushes = new Map();
 		$this->assets = new Map();
+		$this->palettes = new PaletteCollection();
 		try {
 			if (is_null($this->lang))
 				$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());

@@ -37,7 +37,7 @@ class AssetCommand extends BaseCommand
 	protected function prepare(): void
 	{
 		#$this->registerSubCommand(new BrushNameCommand("name", "Get name or rename a brush"));
-		$this->setPermission("we.command.brush");//TODO perm
+		$this->setPermission("we.command.asset");//TODO perm
 	}
 
 	/**
