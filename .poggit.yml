@@ -13,7 +13,7 @@ projects:
       - src: BlockHorizons/libschematic/libschematic
         version: ^2.0.1
       - src: thebigsmilexd/customui/customui
-        version: ^4.0.0
+        version: ^4.0.0-alpha2
         branch: PM4
       - src: thebigsmilexd/apibossbar/apibossbar
         version: ^0.1.4
@@ -22,12 +22,12 @@ projects:
         version: ^3.0.0
         branch: PM4
       - src: muqsit/invmenu/InvMenu
-        version: ^4.1.0
+        version: ^4.3.2
         branch: "4.0"
       - src: thebigsmilexd/libstructure/libstructure
         version: ^0.1.4
         branch: mcstructure
       - src: buchwasa/ScoreFactory/ScoreFactory
-        version: ^3.0.1
+        version: ^4.0.0
         branch: pm4
 ...
