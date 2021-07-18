@@ -64,6 +64,7 @@ use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\tool\TogglewandCommand;
 use xenialdan\MagicWE2\commands\tool\WandCommand;
 use xenialdan\MagicWE2\commands\utility\CalculateCommand;
+use xenialdan\MagicWE2\commands\utility\ToggleSidebarCommand;
 use xenialdan\MagicWE2\commands\utility\ToggleWailaCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
@@ -303,6 +304,7 @@ class Loader extends PluginBase
 			//new ThawCommand($this,"/thaw", "Thaws blocks in the selection"),
 			new CalculateCommand($this, "/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
 			new ToggleWailaCommand($this, "/togglewaila", "Toggle the What Am I Looking At utility", ["/waila", "/wyla"]),
+			new ToggleSidebarCommand($this, "/togglesidebar", "Toggle the sidebar", ["/sidebar"]),
 			/* -- debugging -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 		]);
