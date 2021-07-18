@@ -16,15 +16,18 @@ use pocketmine\block\Door;
 use pocketmine\block\utils\BlockDataSerializer;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\item\LegacyStringToItemParser;
+use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\math\Facing;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
 use pocketmine\network\mcpe\convert\R12ToCurrentBlockMapEntry;
 use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -33,8 +36,10 @@ use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
+use Webmozart\PathUtil\Path;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\Loader;
+use function file_get_contents;
 use const pocketmine\RESOURCE_PATH;
 
 final class BlockStatesParser
@@ -70,7 +75,7 @@ final class BlockStatesParser
 		self::$legacyStateMap = [];
 		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
 		if ($contents === false) throw new PluginException("Can not get contents of r12_to_current_block_map");
-		$legacyStateMapReader = new PacketSerializer($contents);
+		$legacyStateMapReader = PacketSerializer::decoder(file_get_contents(Path::join(RESOURCE_PATH, "vanilla", "r12_to_current_block_map.bin")), 0, new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()));
 		$nbtReader = new NetworkNbtSerializer();
 		while (!$legacyStateMapReader->feof()) {
 			$id = $legacyStateMapReader->getString();
@@ -142,7 +147,10 @@ final class BlockStatesParser
 	 * @param CompoundTag $states
 	 * @return Door
 	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws UnexpectedTagTypeException
 	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
 	 */
 	private static function buildDoor(BlockQuery $query, CompoundTag $states): Door
 	{
@@ -180,6 +188,7 @@ final class BlockStatesParser
 	/**
 	 * @param string $blockIdentifier
 	 * @return CompoundTag
+	 * @throws UnexpectedTagTypeException
 	 */
 	protected static function getDefaultStates(string $blockIdentifier): CompoundTag
 	{
@@ -190,7 +199,11 @@ final class BlockStatesParser
 	 * Parses a BlockQuery (acquired using BlockPalette::fromString()) to a block and sets the BlockQuery's blockFullId
 	 * @param BlockQuery $query
 	 * @return Block
-	 * @throws InvalidArgumentException|\pocketmine\block\utils\InvalidBlockStateException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws UnexpectedTagTypeException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
 	 * @noinspection PhpInternalEntityUsedInspection
 	 */
 	public static function fromString(BlockQuery $query): Block
@@ -233,13 +246,9 @@ final class BlockStatesParser
 			//change blockstate alias to blockstate name
 			$stateName = $availableAliases[$stateName] ?? $stateName;
 			//TODO maybe validate wrong states here? i.e. stone[type=wrongtype] => Exception, "wrongtype" is invalid value
-			try {
-				$tag = $finalStatesList->getTag($stateName);
-			} catch (UnexpectedTagTypeException $e) {
-				throw new InvalidBlockStateException("Default states for block '$query->blockId' do not contain Tag with name '$stateName'");
-			}
+			$tag = $finalStatesList->getTag($stateName);
 			if ($tag === null) {
-				throw new InvalidBlockStateException("Invalid state $stateName");
+				throw new InvalidBlockStateException("Default states for block '$query->blockId' do not contain Tag with name '$stateName'");
 			}
 			if ($tag instanceof StringTag) {
 				$finalStatesList->setString($stateName, $value);
@@ -330,7 +339,7 @@ final class BlockStatesParser
 	 * @param BlockStatesEntry $entry
 	 * @param bool $skipDefaults
 	 * @return string
-	 * @throws RuntimeException
+	 * @throws UnexpectedTagTypeException
 	 */
 	public static function printStates(BlockStatesEntry $entry, bool $skipDefaults): string
 	{
@@ -566,8 +575,9 @@ final class BlockStatesParser
 	/**
 	 * Generates an alias map for blockstates
 	 * Only call from main thread!
-	 * @throws InvalidStateException
 	 * @throws AssumptionFailedError
+	 * @throws InvalidStateException
+	 * @throws UnexpectedTagTypeException
 	 * @internal
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
@@ -655,6 +665,7 @@ final class BlockStatesParser
 	 * Generates an alias map for blockstates
 	 * Only call from main thread!
 	 * @throws InvalidStateException
+	 * @throws UnexpectedTagTypeException
 	 * @internal
 	 */
 	public static function generatePossibleStatesJson(): void

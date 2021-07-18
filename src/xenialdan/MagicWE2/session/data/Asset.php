@@ -19,7 +19,6 @@ use pocketmine\plugin\PluginException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use TypeError;
-use UnexpectedValueException;
 use xenialdan\customui\windows\CustomForm;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
@@ -33,7 +32,7 @@ class Asset implements JsonSerializable
 {
 	const TYPE_SCHEMATIC = 'schematic';
 	const TYPE_MCSTRUCTURE = 'structure';
-	const TYPE_CLIPBOARD = 'clipboard';//TODO consider if this is even worth the efford, or instead just convert it to mcstructure before storing
+	const TYPE_CLIPBOARD = 'clipboard';//TODO consider if this is even worth the effort, or instead just convert it to mcstructure before storing
 
 	public Schematic|SingleClipboard|MCStructure $structure;
 	public string $filename;//used as identifier
@@ -66,12 +65,14 @@ class Asset implements JsonSerializable
 		if ($this->structure instanceof Schematic) return new Vector3($this->structure->getWidth(), $this->structure->getHeight(), $this->structure->getLength());
 		if ($this->structure instanceof MCStructure) return $this->structure->getSize();
 		if ($this->structure instanceof SingleClipboard) return new Vector3($this->structure->selection->getSizeX(), $this->structure->selection->getSizeY(), $this->structure->selection->getSizeZ());
+		throw new Exception("Unknown structure type");
 	}
 
 	public function getTotalCount(): int
 	{
 		if ($this->structure instanceof Schematic || $this->structure instanceof MCStructure) return $this->getSize()->getFloorX() * $this->getSize()->getFloorY() * $this->getSize()->getFloorZ();
 		if ($this->structure instanceof SingleClipboard) return $this->structure->getTotalCount();
+		throw new Exception("Unknown structure type");
 	}
 
 	public function getOrigin(): Vector3
@@ -79,13 +80,13 @@ class Asset implements JsonSerializable
 		if ($this->structure instanceof Schematic) return new Vector3(0, 0, 0);
 		if ($this->structure instanceof MCStructure) return $this->structure->getStructureWorldOrigin();
 		if ($this->structure instanceof SingleClipboard) return $this->structure->position;
+		throw new Exception("Unknown structure type");
 	}
 
 	/**
 	 * @param bool $renew
 	 * @return Item
 	 * @throws InvalidArgumentException
-	 * @throws UnexpectedValueException
 	 */
 	public function toItem(bool $renew = false): Item
 	{
@@ -114,7 +115,7 @@ class Asset implements JsonSerializable
 
 	/**
 	 * @return array
-	 * @throws UnexpectedValueException
+	 * @throws Exception
 	 */
 	private function generateLore(): array
 	{
@@ -153,6 +154,7 @@ class Asset implements JsonSerializable
 			$schematic->setBlockArray($blocks);
 			return $schematic;
 		}
+		throw new Exception("Unknown structure type");
 	}
 
 	public function toMCStructure(): MCStructure
@@ -251,7 +253,7 @@ class Asset implements JsonSerializable
 					#print_r(AssetCollection::getInstance()->assets->values()->toArray());
 					#print_r(AssetCollection::getInstance()->assets->keys()->toArray());
 					#print_r(AssetCollection::getInstance()->getAssets());
-					AssetCollection::getInstance()->assets->put($this->filename, $this);//overwrites
+					AssetCollection::getInstance()->assets[$this->filename] = $this;//overwrites
 					$player->sendMessage("Asset stored in " . ($shared ? 'global' : 'private') . ' collection');
 					$player->sendMessage((string)$this);
 					#$player->sendMessage((string)$this->toItem(true));

@@ -7,7 +7,6 @@ use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
 use JsonException;
-use OutOfBoundsException;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\entity\InvalidSkinException;
@@ -28,7 +27,6 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
-use UnderflowException;
 use xenialdan\customui\windows\ModalForm;
 use xenialdan\libstructure\tile\StructureBlockTile;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
@@ -83,9 +81,7 @@ class EventListener implements Listener
 	/**
 	 * @param PlayerQuitEvent $event
 	 * @throws JsonException
-	 * @throws OutOfBoundsException
 	 * @throws SessionException
-	 * @throws UnderflowException
 	 */
 	public function onLogout(PlayerQuitEvent $event): void
 	{
@@ -139,6 +135,7 @@ class EventListener implements Listener
 	 * @param BlockBreakEvent $event
 	 * @throws AssumptionFailedError
 	 * @throws Error
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function onBreak(BlockBreakEvent $event): void
 	{
@@ -177,9 +174,7 @@ class EventListener implements Listener
 	 * @throws AssumptionFailedError
 	 * @throws Error
 	 * @throws InvalidArgumentException
-	 * @throws OutOfBoundsException
 	 * @throws SessionException
-	 * @throws UnderflowException
 	 */
 	private function onBreakBlock(BlockBreakEvent $event): void
 	{
@@ -218,9 +213,8 @@ class EventListener implements Listener
 	 * @throws Error
 	 * @throws InvalidArgumentException
 	 * @throws InvalidStateException
-	 * @throws OutOfBoundsException
 	 * @throws SessionException
-	 * @throws UnderflowException
+	 * @throws UnexpectedTagTypeException
 	 */
 	private function onRightClickBlock(PlayerInteractEvent $event): void
 	{
@@ -263,7 +257,7 @@ class EventListener implements Listener
 					$tag = $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_ASSET);
 					if ($tag !== null) {
 						$filename = $tag->getString('filename');
-						$asset = AssetCollection::getInstance()->assets->get($filename);
+						$asset = AssetCollection::getInstance()->assets[$filename];
 						$target = $event->getBlock()->getSide($event->getFace())->getPos();
 						if (API::placeAsset($target, $asset, $tag, $session)) {
 							$event->getPlayer()->sendMessage("Asset placed!");
@@ -289,10 +283,8 @@ class EventListener implements Listener
 	 * @throws Error
 	 * @throws InvalidArgumentException
 	 * @throws InvalidStateException
-	 * @throws OutOfBoundsException
 	 * @throws SessionException
 	 * @throws UnexpectedTagTypeException
-	 * @throws UnderflowException
 	 */
 	private function onLeftClickBlock(PlayerInteractEvent $event): void
 	{
@@ -398,9 +390,8 @@ class EventListener implements Listener
 	/**
 	 * TODO use tool classes
 	 * @param PlayerItemHeldEvent $event
-	 * @throws OutOfBoundsException
 	 * @throws SessionException
-	 * @throws UnderflowException
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function onChangeSlot(PlayerItemHeldEvent $event): void
 	{
@@ -413,7 +404,7 @@ class EventListener implements Listener
 			if (!$session instanceof UserSession) return;
 			if ($item->getId() === ItemIds::SCAFFOLDING) {
 				$filename = $tag->getString('filename');
-				$asset = AssetCollection::getInstance()->assets->get($filename);
+				$asset = AssetCollection::getInstance()->assets[$filename];
 				var_dump($filename, $asset);
 				#$assets = AssetCollection::getInstance()->getPlayerAssets($player->getXuid());
 				$session->displayOutline = true;

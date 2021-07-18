@@ -6,7 +6,6 @@ use Exception;
 use Generator;
 use InvalidArgumentException;
 use MultipleIterator;
-use OutOfBoundsException;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
@@ -15,7 +14,6 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -53,8 +51,12 @@ class AsyncFillTask extends MWEAsyncTask
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
-		$this->selection = igbinary_serialize($selection);
-		$this->touchedChunks = igbinary_serialize($touchedChunks);
+		$s1 = igbinary_serialize($selection);
+		if ($s1 === null) throw new Exception("Couldn't serialize selection");
+		$s2 = igbinary_serialize($touchedChunks);
+		if ($s2 === null) throw new Exception("Couldn't serialize touched chunks");
+		$this->selection = $s1;
+		$this->touchedChunks = $s2;
 		//$this->newBlocks = BlockPalette::encode($newBlocks);
 		$this->newBlocks = $newBlocks;//TODO check if serializes
 		var_dump($this->newBlocks);
@@ -155,8 +157,6 @@ class AsyncFillTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

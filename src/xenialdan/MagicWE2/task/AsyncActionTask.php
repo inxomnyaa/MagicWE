@@ -3,7 +3,6 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use OutOfBoundsException;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
@@ -13,7 +12,6 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -56,8 +54,6 @@ class AsyncActionTask extends MWEAsyncTask
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function __construct(UuidInterface $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
 	{
@@ -122,8 +118,6 @@ class AsyncActionTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

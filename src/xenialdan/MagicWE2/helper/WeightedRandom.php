@@ -5,10 +5,10 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
-use Ds\Deque;
 use Generator;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Random;
+use SplDoublyLinkedList;
 
 class WeightedRandom
 {
@@ -67,10 +67,8 @@ class WeightedRandom
 		$probabilities = $this->probabilities;
 
 		// Create two stacks to act as worklists as we populate the tables.
-		$small = new Deque();
-		$small->allocate($probabilities_c);
-		$large = new Deque();
-		$large->allocate($probabilities_c);
+		$small = new SplDoublyLinkedList();
+		$large = new SplDoublyLinkedList();
 
 		// Populate the stacks with the input probabilities.
 		for ($i = 0; $i < $probabilities_c; ++$i) {

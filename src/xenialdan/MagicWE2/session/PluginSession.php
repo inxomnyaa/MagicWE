@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
-use Ds\Deque;
 use pocketmine\plugin\Plugin;
 use Ramsey\Uuid\Uuid;
+use SplDoublyLinkedList;
 use xenialdan\MagicWE2\Loader;
 
 class PluginSession extends Session
@@ -18,8 +18,8 @@ class PluginSession extends Session
 	{
 		$this->plugin = $plugin;
 		$this->setUUID(Uuid::uuid4());
-		$this->undoHistory = new Deque();
-		$this->redoHistory = new Deque();
+		$this->undoHistory = new SplDoublyLinkedList();
+		$this->redoHistory = new SplDoublyLinkedList();
 	}
 
 	public function getPlugin(): Plugin

@@ -9,9 +9,11 @@ use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\InvalidBlockStateException;
+use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -445,6 +447,8 @@ class API
 	 * @throws BlockQueryAlreadyParsedException
 	 * @throws InvalidArgumentException
 	 * @throws InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
 	 * @deprecated Use BlockPalette::fromString()
 	 */
 	public static function blockParser(string $fullstring, array &$messages, bool &$error): BlockPalette

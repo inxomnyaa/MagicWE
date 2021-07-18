@@ -3,7 +3,6 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use OutOfBoundsException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\AssumptionFailedError;
@@ -11,7 +10,6 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\format\io\FastChunkSerializer;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use UnderflowException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
@@ -115,8 +113,6 @@ class AsyncCountTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

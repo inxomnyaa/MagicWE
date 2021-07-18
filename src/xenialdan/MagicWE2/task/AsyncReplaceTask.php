@@ -6,7 +6,6 @@ use Exception;
 use Generator;
 use InvalidArgumentException;
 use MultipleIterator;
-use OutOfBoundsException;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
@@ -15,7 +14,6 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -142,8 +140,6 @@ class AsyncReplaceTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

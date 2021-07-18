@@ -8,9 +8,10 @@ use CortexPE\Commando\args\RawStringArgument;
 use InvalidArgumentException as InvalidArgumentExceptionAlias;
 use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\command\CommandSender;
+use pocketmine\item\LegacyStringToItemParserException;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use UnderflowException;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockPalette;
@@ -34,8 +35,9 @@ class BlocksArgument extends RawStringArgument
 	 * @param CommandSender $sender
 	 *
 	 * @return BlockPalette
-	 * @throws UnderflowException
 	 * @throws SessionException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function parse(string $argument, CommandSender $sender)
 	{

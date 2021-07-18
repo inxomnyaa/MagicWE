@@ -24,7 +24,6 @@ use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\customui\API as CustomUIAPI;
 use xenialdan\libstructure\PacketListener;
-use xenialdan\MagicWE2\commands\asset\PaletteCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -219,7 +218,7 @@ class Loader extends PluginBase
 			new HPos2Command($this, "/hpos2", "Set position 2 to targeted block", ["/h2"]),
 			new ChunkCommand($this, "/chunk", "Set the selection to your current chunk"),
 			/* -- assets -- */
-			new PaletteCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
+			#new PaletteCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
 			/* -- tool -- */
 			new WandCommand($this, "/wand", "Gives you the selection wand"),
 			new TogglewandCommand($this, "/togglewand", "Toggle the wand tool on/off", ["/toggleeditwand"]),

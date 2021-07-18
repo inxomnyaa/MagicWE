@@ -8,10 +8,12 @@ use GlobalLogger;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\TextFormat;
 use RuntimeException;
 use Throwable;
@@ -60,9 +62,12 @@ class BlockStatesEntry
 	/**
 	 * TODO hacky AF. clean up
 	 * @return Block
-	 * @throws InvalidArgumentException
-	 * @throws \pocketmine\block\utils\InvalidBlockStateException
 	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function toBlock(): Block
 	{

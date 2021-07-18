@@ -6,7 +6,6 @@ namespace xenialdan\MagicWE2\selection;
 
 use Exception;
 use JsonSerializable;
-use OutOfBoundsException;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -17,7 +16,6 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use Serializable;
-use UnderflowException;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -114,8 +112,6 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * @param Position $position
 	 * @throws AssumptionFailedError
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function setPos1(Position $position): void
 	{
@@ -157,8 +153,6 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * @param Position $position
 	 * @throws AssumptionFailedError
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function setPos2(Position $position): void
 	{

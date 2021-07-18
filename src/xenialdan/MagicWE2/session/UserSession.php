@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
-use Ds\Deque;
-use Ds\Map;
 use Exception;
 use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
@@ -15,10 +13,12 @@ use pocketmine\item\Item;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use SplDoublyLinkedList;
 use TypeError;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
@@ -48,10 +48,10 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private bool $wailaEnabled = true;
 	/** @var bool */
 	private bool $sidebarEnabled = true;//TODO settings/commands
-	/** @var Map<string, Brush> */
-	private Map $brushes;
-	/** @var Map<string, Asset> */
-	private Map $assets;
+	/** @var array<string, Brush> */
+	private array $brushes = [];
+	/** @var array<string, Asset> */
+	private array $assets = [];
 	public PaletteCollection $palettes;
 	/** @var Language|null */
 	private ?Language $lang = null;
@@ -67,10 +67,8 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		if (Loader::hasScoreboard()) {
 			$this->sidebar = new Scoreboard();
 		}
-		$this->undoHistory = new Deque();
-		$this->redoHistory = new Deque();
-		$this->brushes = new Map();
-		$this->assets = new Map();
+		$this->undoHistory = new SplDoublyLinkedList();
+		$this->redoHistory = new SplDoublyLinkedList();
 		$this->palettes = new PaletteCollection();
 		try {
 			if (is_null($this->lang))
@@ -258,7 +256,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function getBrush(UuidInterface $uuid): ?Brush
 	{
-		return $this->brushes->get($uuid->toString());
+		return $this->brushes[$uuid->toString()];
 	}
 
 	/**
@@ -268,7 +266,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function addBrush(Brush $brush): void
 	{
-		$this->brushes->put($brush->properties->uuid, $brush);
+		$this->brushes[$brush->properties->uuid] = $brush;
 		$this->sendMessage($this->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
 	}
 
@@ -276,10 +274,11 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 * @param Brush $brush UuidInterface will be set automatically
 	 * @param bool $delete If true, it will be removed from the session brushes
 	 * @return void
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function removeBrush(Brush $brush, bool $delete = false): void
 	{
-		if ($delete) $this->brushes->remove($brush->properties->uuid);
+		if ($delete) unset($this->brushes[$brush->properties->uuid]);
 		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
 			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
 				if ($entry->getString("id") === $brush->properties->uuid) {
@@ -297,13 +296,14 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 * @return void
 	 * @throws ActionNotFoundException
 	 * @throws InvalidArgumentException
-	 * @throws ShapeNotFoundException
 	 * @throws JsonException
+	 * @throws ShapeNotFoundException
 	 * @throws TypeError
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function replaceBrush(Brush $brush): void
 	{
-		$this->brushes->put($brush->properties->uuid, $brush);
+		$this->brushes[$brush->properties->uuid] = $brush;
 		$new = $brush->toItem();
 		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
 			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
@@ -319,7 +319,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	 */
 	public function getBrushes(): array
 	{
-		return $this->brushes->values()->toArray();
+		return $this->brushes;
 	}
 
 	public function cleanupInventory(): void

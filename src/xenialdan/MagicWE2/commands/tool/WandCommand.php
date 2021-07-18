@@ -11,12 +11,10 @@ use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\item\Durable;
 use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use UnderflowException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -38,7 +36,6 @@ class WandCommand extends BaseCommand
 	 * @param CommandSender $sender
 	 * @param string $aliasUsed
 	 * @param mixed[] $args
-	 * @throws UnderflowException
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
@@ -56,15 +53,15 @@ class WandCommand extends BaseCommand
 		/** @var Player $sender */
 		try {
 			/** @var Durable $item */
-			$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_AXE);
-			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
-			$item->setUnbreakable(true);
-			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.wand'));
-			$item->setLore([
-				TF::RESET . $lang->translateString('tool.wand.lore.1'),
-				TF::RESET . $lang->translateString('tool.wand.lore.2'),
-				TF::RESET . $lang->translateString('tool.wand.lore.3')
-			]);
+			$item = VanillaItems::WOODEN_AXE()
+				->addEnchantment(new EnchantmentInstance(Loader::$ench))
+				->setUnbreakable(true)
+				->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.wand'))
+				->setLore([
+					TF::RESET . $lang->translateString('tool.wand.lore.1'),
+					TF::RESET . $lang->translateString('tool.wand.lore.2'),
+					TF::RESET . $lang->translateString('tool.wand.lore.3')
+				]);
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
 		} catch (Exception $error) {

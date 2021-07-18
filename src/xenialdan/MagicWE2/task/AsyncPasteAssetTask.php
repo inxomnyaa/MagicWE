@@ -16,8 +16,6 @@ use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use UnderflowException;
-use UnexpectedValueException;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -71,7 +69,6 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	 *
 	 * @return void
 	 * @throws InvalidArgumentException
-	 * @throws UnexpectedValueException
 	 * @throws OutOfBoundsException
 	 */
 	public function onRun(): void
@@ -105,7 +102,6 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	 * @param null|int $changed
 	 * @return Generator
 	 * @throws InvalidArgumentException
-	 * @throws UnexpectedValueException
 	 * @throws OutOfBoundsException
 	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
 	 */
@@ -207,8 +203,6 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws OutOfBoundsException
-	 * @throws UnderflowException
 	 */
 	public function onCompletion(): void
 	{

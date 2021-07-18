@@ -9,6 +9,10 @@ use InvalidArgumentException;
 use JsonException;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\InvalidBlockStateException;
+use pocketmine\item\Item;
+use pocketmine\item\LegacyStringToItemParserException;
+use pocketmine\item\VanillaItems;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 
 class BlockPalette
@@ -33,7 +37,12 @@ class BlockPalette
 	/**
 	 * @param string $blocksQuery
 	 * @return BlockPalette
-	 * @throws InvalidArgumentException|BlockQueryAlreadyParsedException|InvalidBlockStateException
+	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
+	 * @throws \xenialdan\MagicWE2\exception\InvalidBlockStateException
 	 */
 	public static function fromString(string $blocksQuery): BlockPalette
 	{
@@ -129,6 +138,11 @@ class BlockPalette
 	public static function CREATE(): self
 	{
 		return new self;
+	}
+
+	public function toItem(): Item
+	{
+		return VanillaItems::EMERALD();//TODO placeholder
 	}
 
 }

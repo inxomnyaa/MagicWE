@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
-use Ds\Deque;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\lang\Language;
@@ -13,7 +12,7 @@ use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\World;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
-use UnderflowException;
+use SplDoublyLinkedList;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\Loader;
@@ -36,10 +35,10 @@ abstract class Session
 	private array $clipboards = [];
 	/** @var int */
 	private int $currentClipboard = -1;
-	/** @var Deque<RevertClipboard> */
-	public Deque $undoHistory;
-	/** @var Deque<RevertClipboard> */
-	public Deque $redoHistory;
+	/** @var SplDoublyLinkedList<RevertClipboard> */
+	public SplDoublyLinkedList $undoHistory;
+	/** @var SplDoublyLinkedList<RevertClipboard> */
+	public SplDoublyLinkedList $redoHistory;
 
 	/**
 	 * @return UuidInterface
@@ -211,11 +210,10 @@ abstract class Session
 
 	/**
 	 * @param RevertClipboard $revertClipboard
-	 * @throws UnderflowException
 	 */
 	public function addRevert(RevertClipboard $revertClipboard): void
 	{
-		$this->redoHistory->clear();
+		$this->redoHistory = new SplDoublyLinkedList();
 		$this->undoHistory->push($revertClipboard);
 		while ($this->undoHistory->count() > self::MAX_HISTORY) {
 			$this->undoHistory->shift();
@@ -260,8 +258,8 @@ abstract class Session
 
 	public function clearHistory(): void
 	{
-		$this->undoHistory->clear();
-		$this->redoHistory->clear();
+		$this->undoHistory = new SplDoublyLinkedList();
+		$this->redoHistory = new SplDoublyLinkedList();
 	}
 
 	public function clearClipboard(): void
