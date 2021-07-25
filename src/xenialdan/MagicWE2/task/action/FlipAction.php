@@ -77,8 +77,12 @@ class FlipAction extends ClipboardAction
 			#var_dump("$x $y $z");
 			$block1 = $blockEntry->toBlock();
 			$blockStatesEntry = BlockStatesParser::getInstance()::getStateByBlock($block1);
-			$mirrored = $blockStatesEntry->mirror($this->axis);
-			$block = $mirrored->toBlock();
+			if($blockStatesEntry === null){
+				$block = $block1;
+			}else{
+				$mirrored = $blockStatesEntry->mirror($this->axis);
+				$block = $mirrored->toBlock();
+			}
 			$entry = BlockEntry::fromBlock($block);
 			//var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $block);
 			/** @var int $x */

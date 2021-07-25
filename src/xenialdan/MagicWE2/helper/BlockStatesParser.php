@@ -450,9 +450,13 @@ final class BlockStatesParser
 				foreach (BlockPalette::fromString($test)->palette() as $block) {
 					assert($block instanceof Block);
 					$blockStatesEntry = self::getStateByBlock($block);
-					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, true));
-					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, false));
-					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
+					if($blockStatesEntry !== null) {
+						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, true));
+						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, false));
+						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
+					}else{
+						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
+					}
 				}
 			} catch (Exception $e) {
 				Server::getInstance()->getLogger()->debug($e->getMessage());
