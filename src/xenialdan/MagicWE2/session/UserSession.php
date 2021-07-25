@@ -19,6 +19,7 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\data\BrushCollection;
 use xenialdan\MagicWE2\session\data\PaletteCollection;
+use function mkdir;
 
 class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
 {
@@ -289,6 +290,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 
 	public function save(): void
 	{
+		@mkdir(Loader::getInstance()->getDataFolder() . "sessions",0777,true);
 		file_put_contents(Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
 			$this->getPlayer()->getName() . ".json",
 			json_encode($this, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)
