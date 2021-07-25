@@ -60,7 +60,8 @@ class CutAction extends TaskAction
 			$newv3 = $block->getPos()->subtractVector($min)->floor();//TODO check if only used for clipboard
 			$oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
+			/** @noinspection PhpInternalEntityUsedInspection */
+			if ($manager->getBlockFullIdAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== $block->getFullId()) {
 				$changed++;
 			}
 			$i++;

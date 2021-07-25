@@ -132,9 +132,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 				$new = $block;
 				yield self::singleBlockToData(API::setComponents($manager->getBlockAt((int)$x, (int)$y, (int)$z), (int)$x, (int)$y, (int)$z));
 				$manager->setBlockAt((int)$x, (int)$y, (int)$z, $new);
-				if ($manager->getBlockArrayAt((int)$x, (int)$y, (int)$z) !== [$manager->getBlockAt((int)$x, (int)$y, (int)$z)->getId(), $manager->getBlockAt((int)$x, (int)$y, (int)$z)->getMeta()]) {//TODO remove? Just useless waste imo
-					$changed++;
-				}
+				$changed++;
 				///
 				$i++;
 				$progress = floor($i / $blockCount * 100);
@@ -161,9 +159,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 				$new = $entry->toBlock();
 				yield self::singleBlockToData(API::setComponents($manager->getBlockAt((int)$v->x, (int)$v->y, (int)$v->z), (int)$v->x, (int)$v->y, (int)$v->z));
 				$manager->setBlockAt((int)$v->x, (int)$v->y, (int)$v->z, $new);
-				if ($manager->getBlockArrayAt((int)$v->x, (int)$v->y, (int)$v->z) !== [$manager->getBlockAt((int)$v->x, (int)$v->y, (int)$v->z)->getId(), $manager->getBlockAt((int)$v->x, (int)$v->y, (int)$v->z)->getMeta()]) {//TODO remove? Just useless waste imo
-					$changed++;
-				}
+				$changed++;
 				///
 				$i++;
 				$progress = floor($i / $blockCount * 100);
@@ -187,9 +183,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 				$new = $block;
 				yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z));
 				$manager->setBlockAt($x, $y, $z, $new);
-				if ($manager->getBlockArrayAt($x, $y, $z) !== [$manager->getBlockAt($x, $y, $z)->getId(), $manager->getBlockAt($x, $y, $z)->getMeta()]) {//TODO remove? Just useless waste imo
-					$changed++;
-				}
+				$changed++;
 				///
 				$i++;
 				$progress = floor($i / $blockCount * 100);

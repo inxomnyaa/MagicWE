@@ -97,8 +97,8 @@ class AsyncCountTask extends MWEAsyncTask
 				}
 			}
 			BlockFactory::getInstance();
-			$block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-			$tostring = (BlockFactory::getInstance()->get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
+			$block1 = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+			$tostring = $block1->getName() . " " . $block1->getId(). ":" . $block1->getMeta();
 			if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
 			$counts[$tostring]++;
 			$changed++;

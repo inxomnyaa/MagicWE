@@ -5,6 +5,7 @@ namespace xenialdan\MagicWE2\selection\shape;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\world\format\Chunk;
@@ -60,8 +61,9 @@ abstract class Shape implements Serializable
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @return Generator
+	 * @return Generator|Block[]
 	 * @throws Exception
+	 * @noinspection PhpDocSignatureInspection
 	 */
 	abstract public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator;
 

@@ -128,9 +128,7 @@ class AsyncPasteTask extends MWEAsyncTask
 			#var_dump("old", $old, "new", $new);
 			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z));
 			$manager->setBlockAt($x, $y, $z, $new);
-			if ($manager->getBlockArrayAt($x, $y, $z) !== [$manager->getBlockAt($x, $y, $z)->getId(), $manager->getBlockAt($x, $y, $z)->getMeta()]) {//TODO remove? Just useless waste imo
-				$changed++;
-			}
+			$changed++;
 			///
 			$i++;
 			$progress = floor($i / $blockCount * 100);

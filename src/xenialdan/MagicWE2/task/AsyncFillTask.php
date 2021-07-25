@@ -142,7 +142,8 @@ class AsyncFillTask extends MWEAsyncTask
 			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), (int)$block->getPos()->x, (int)$block->getPos()->y, (int)$block->getPos()->z));
 			#yield $block;//backup
 			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
+			/** @noinspection PhpInternalEntityUsedInspection */
+			if ($manager->getBlockFullIdAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== $block->getFullId()) {
 				$changed++;
 			}
 			///

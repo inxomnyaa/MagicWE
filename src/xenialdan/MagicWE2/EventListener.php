@@ -442,6 +442,7 @@ class EventListener implements Listener
 
 		$minComponents = new Vector3($ix, $iy, $iz);
 		$maxComponents = new Vector3($ax, $ay, $az);
+		/** @noinspection PhpDeprecationInspection */
 		$block = BlockFactory::getInstance()->get(BlockLegacyIds::STRUCTURE_BLOCK, 0/*StructureEditorData::TYPE_SAVE*/);
 		var_dump((string)$block);
 		$target->world->setBlock($target->asVector3(), $block);

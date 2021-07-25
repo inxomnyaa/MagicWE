@@ -91,6 +91,7 @@ class Asset implements JsonSerializable
 	public function toItem(bool $renew = false): Item
 	{
 		if ($this->item !== null && !$renew) return $this->item;
+		/** @noinspection PhpDeprecationInspection */
 		$item = ItemFactory::getInstance()->get(ItemIds::SCAFFOLDING);
 		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 		try {

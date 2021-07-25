@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\task\action;
 
+use Exception;
 use Generator;
-use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -40,7 +40,7 @@ class CountAction extends TaskAction
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
 	 * @return Generator
-	 * @throws InvalidArgumentException
+	 * @throws Exception
 	 */
 	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
 	{
@@ -51,8 +51,8 @@ class CountAction extends TaskAction
 		$counts = [];
 		BlockFactory::getInstance();
 		foreach ($selection->getShape()->getBlocks($manager, $newBlocks) as $block) {
-			$block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-			$tostring = (BlockFactory::getInstance()->get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
+			$block1 = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
+			$tostring = $block1->getName() . " " . $block1->getId() . ":" . $block1->getMeta();
 			if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
 			$counts[$tostring]++;
 			$changed++;

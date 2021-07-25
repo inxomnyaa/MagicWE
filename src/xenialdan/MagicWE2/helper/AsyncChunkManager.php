@@ -9,9 +9,10 @@ use pocketmine\world\World;
 class AsyncChunkManager extends SimpleChunkManager
 {
 
-	public function getBlockArrayAt(int $x, int $y, int $z): array//TODO replace with getFullBlock
+	public function getBlockFullIdAt(int $x, int $y, int $z): int
 	{
-		return [$this->getBlockAt($x, $y, $z)->getId(), $this->getBlockAt($x, $y, $z)->getMeta()];
+		/** @noinspection PhpInternalEntityUsedInspection */
+		return $this->getBlockAt($x, $y, $z)->getFullId();
 	}
 
 	/**

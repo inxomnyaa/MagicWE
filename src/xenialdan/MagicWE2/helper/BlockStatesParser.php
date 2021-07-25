@@ -279,6 +279,7 @@ final class BlockStatesParser
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
 			if ($clonedPrintedCompound->equals($finalStatesList)) {
 				$blockFactory = BlockFactory::getInstance();
+				/** @noinspection PhpDeprecationInspection */
 				$block = $blockFactory->get($block->getId(), $meta & 0xf);
 				$blocks[] = $block;
 			}
