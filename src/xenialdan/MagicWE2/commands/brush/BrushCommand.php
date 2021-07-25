@@ -77,7 +77,7 @@ class BrushCommand extends BaseCommand
 						case $lang->translateString('ui.brush.getsession'):
 						{
 							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
-							foreach ($session->getBrushes() as $brush) {
+							foreach ($session->getBrushes()->getAll() as $brush) {
 								$menu->getInventory()->addItem($brush->toItem());
 							}
 							$menu->send($player, "Session brushes");
@@ -85,7 +85,7 @@ class BrushCommand extends BaseCommand
 						}
 						case $lang->translateString('ui.brush.edithand'):
 						{
-							$brush = $session->getBrushFromItem($player->getInventory()->getItemInHand());
+							$brush = $session->getBrushes()->getBrushFromItem($player->getInventory()->getItemInHand());
 							if ($brush instanceof Brush) {
 								$player->sendForm($brush->getForm(false));
 							}

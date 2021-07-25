@@ -203,7 +203,7 @@ class SessionHelper
 				try {
 					$properties = BrushProperties::fromJson($brushJson["properties"]);
 					$brush = new Brush($properties);
-					$session->addBrush($brush);
+					$session->getBrushes()->addBrush($brush);
 				} catch (InvalidArgumentException $e) {
 					continue;
 				}

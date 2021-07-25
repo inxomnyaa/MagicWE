@@ -4,28 +4,32 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session\data;
 
-use pocketmine\utils\SingletonTrait;
 use xenialdan\MagicWE2\helper\BlockPalette;
+use xenialdan\MagicWE2\session\UserSession;
 
 final class PaletteCollection
 {
-	use SingletonTrait;
 
 	/** @var array<string, BlockPalette> */
 	public array $palettes;
+	private UserSession $session;
 
-	public function __construct()
+	public function __construct(UserSession $session)
 	{
-		//$this->initFolders();
+		$this->session = $session;
+	}
+
+	/**
+	 * @return UserSession
+	 */
+	public function getSession(): UserSession
+	{
+		return $this->session;
 	}
 
 	/** @return BlockPalette[] */
-	public function getPalettes(): array
+	public function getAll(): array
 	{
 		return $this->palettes;
-	}
-
-	private function initFolders(): void
-	{
 	}
 }

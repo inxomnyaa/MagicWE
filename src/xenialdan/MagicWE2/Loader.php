@@ -74,6 +74,7 @@ use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\data\AssetCollection;
+use xenialdan\MagicWE2\session\PluginSession;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
@@ -180,7 +181,7 @@ class Loader extends PluginBase
 		$blockstateparserInstance->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
 		//$blockstateparserInstance::runTests();//TODO REMOVE, DEBUG!!!!!!!
 
-		self::$assetCollection = new AssetCollection();
+		self::$assetCollection = new AssetCollection(new PluginSession($this));
 	}
 
 	/**

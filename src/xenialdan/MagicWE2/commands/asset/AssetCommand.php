@@ -24,7 +24,6 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\data\Asset;
-use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\UserSession;
 
 class AssetCommand extends BaseCommand
@@ -71,7 +70,7 @@ class AssetCommand extends BaseCommand
 			$form->addButton(new Button($lang->translateString('ui.asset.save')));
 			$form->setCallable(function (Player $player, $data) use ($lang, $session) {
 				try {
-					$store = AssetCollection::getInstance();
+					$store = Loader::$assetCollection;//TODO allow private assets again
 					switch ($data) {
 						case $lang->translateString('ui.asset.create.fromclipboard'):
 						{
@@ -141,7 +140,7 @@ class AssetCommand extends BaseCommand
 							//dropdown type
 							$form = new CustomForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.select'));
 							$options = [];
-							foreach (AssetCollection::getInstance()->getAssets() as $asset) {
+							foreach (Loader::$assetCollection->getAll() as $asset) {//TODO allow private assets again
 								$options[$asset->filename] = $asset->filename;
 							}
 							$form->addDropdown("Asset", array_values($options));
@@ -157,7 +156,7 @@ class AssetCommand extends BaseCommand
 						case $lang->translateString('ui.asset.global'):
 						{
 							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
-							#$store = Loader::$assetCollection;
+							$store = Loader::$assetCollection;
 							foreach ($store->getSharedAssets() as $asset) {
 								$menu->getInventory()->addItem($asset->toItem());
 							}
@@ -167,8 +166,7 @@ class AssetCommand extends BaseCommand
 						case $lang->translateString('ui.asset.private'):
 						{
 							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
-							#$store = Loader::$assetCollection;
-							$store = AssetCollection::getInstance();
+							$store = $session->getAssets();
 							$playerAssets = $store->getPlayerAssets($player->getXuid());
 							var_dump(array_keys($playerAssets), array_keys($store->getPlayerAssets()));
 							foreach ($playerAssets as $key => $asset) {

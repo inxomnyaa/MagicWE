@@ -4,27 +4,35 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session\data;
 
-use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\libstructure\exception\StructureFileException;
 use xenialdan\MagicWE2\helper\StructureStore;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\session\Session;
 use function array_filter;
 
 final class AssetCollection
 {
-	use SingletonTrait;
-
 	/** @var array<string, Asset> */
 	public array $assets = [];
+	private Session $session;
 
-	public function __construct()
+	public function __construct(Session $session)
 	{
+		$this->session = $session;
 		$this->initFolders();
 	}
 
+	/**
+	 * @return Session
+	 */
+	public function getSession(): Session
+	{
+		return $this->session;
+	}
+
 	/** @return Asset[] */
-	public function getAssets(): array
+	public function getAll(): array
 	{
 		return $this->assets;
 	}
@@ -40,6 +48,7 @@ final class AssetCollection
 	/** @return Asset[] */
 	public function getSharedAssets(): array
 	{
+		//TODO remove
 		return array_filter($this->assets, function (Asset $value) {
 			return $value->shared;
 		});
@@ -51,6 +60,7 @@ final class AssetCollection
 	 */
 	public function getPlayerAssets(?string $xuid = null): array
 	{
+		//TODO remove
 		return array_filter($this->assets, function (string $key, Asset $value) use ($xuid) {
 			if ($xuid === null) return $value->ownerXuid !== null;
 			else return $value->ownerXuid === $xuid;

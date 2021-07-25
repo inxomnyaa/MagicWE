@@ -91,12 +91,12 @@ class PaletteCommand extends BaseCommand
 						}
 						case $lang->translateString('ui.palette.viewhand'):
 						{
-							$palettes = $session->palettes;
+							$palettes = $session->getPalettes();
 							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
-							foreach ($palettes->getPalettes() as $palette) {
+							foreach ($palettes->getAll() as $palette) {
 								$menu->getInventory()->addItem($palette->toItem());
 							}
-							$menu->send($player, "Palettes (" . count($palettes->getPalettes()) . ")");
+							$menu->send($player, "Palettes (" . count($palettes->getAll()) . ")");
 							break;
 						}
 					}

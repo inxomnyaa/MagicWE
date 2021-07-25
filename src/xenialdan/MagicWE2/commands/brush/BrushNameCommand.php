@@ -54,7 +54,7 @@ class BrushNameCommand extends BaseSubCommand
 			if (!$session instanceof UserSession) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$brush = $session->getBrushFromItem($sender->getInventory()->getItemInHand());
+			$brush = $session->getBrushes()->getBrushFromItem($sender->getInventory()->getItemInHand());
 			if ($brush instanceof Brush) {
 				if (empty($args["name"])) {
 					$sender->sendMessage($brush->getName());
@@ -62,7 +62,7 @@ class BrushNameCommand extends BaseSubCommand
 				}
 				$brush->properties->setCustomName((string)$args["name"]);
 				$session->sendMessage(TF::GREEN . $lang->translateString('command.brushname.set', [$brush->getName()]));
-				$session->replaceBrush($brush);
+				$session->getBrushes()->replaceBrush($brush);
 			}
 		} catch (Exception | TypeError $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

@@ -223,7 +223,7 @@ class Brush extends WETool
 						throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
 					}
 					if (!$new) {
-						$session->replaceBrush($brush);
+						$session->getBrushes()->replaceBrush($brush);
 					} else {
 						$player->sendForm($this->getExtradataForm($this->properties->shape));
 					}
@@ -266,7 +266,7 @@ class Brush extends WETool
 				throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
 			$this->properties->uuid = Uuid::uuid4()->toString();
-			$session->addBrush($brush);
+			$session->getBrushes()->addBrush($brush);
 			$player->getInventory()->addItem($brush->toItem());
 		});
 		return $form;

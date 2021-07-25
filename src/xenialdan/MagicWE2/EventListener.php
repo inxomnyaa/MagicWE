@@ -35,7 +35,6 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\data\Asset;
-use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
 
@@ -257,7 +256,7 @@ class EventListener implements Listener
 					$tag = $event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_ASSET);
 					if ($tag !== null) {
 						$filename = $tag->getString('filename');
-						$asset = AssetCollection::getInstance()->assets[$filename];
+						$asset = Loader::$assetCollection->assets[$filename];//TODO allow private assets again
 						$target = $event->getBlock()->getSide($event->getFace())->getPos();
 						if (API::placeAsset($target, $asset, $tag, $session)) {
 							$event->getPlayer()->sendMessage("Asset placed!");
@@ -342,7 +341,7 @@ class EventListener implements Listener
 			$session = SessionHelper::getUserSession($event->getPlayer());
 			if (!$session instanceof UserSession) return;
 			$target = $event->getPlayer()->getTargetBlock(Loader::getInstance()->getToolDistance());
-			$brush = $session->getBrushFromItem($event->getItem());
+			$brush = $session->getBrushes()->getBrushFromItem($event->getItem());
 			var_dump(json_encode($brush, JSON_THROW_ON_ERROR));
 			if ($brush instanceof Brush && !is_null($target)) {// && has perms
 				API::createBrush($target, $brush, $session);
@@ -360,13 +359,13 @@ class EventListener implements Listener
 				$event->cancel();
 				$session = SessionHelper::getUserSession($event->getPlayer());
 				if (!$session instanceof UserSession) return;
-				$brush = $session->getBrushFromItem($event->getItem());
+				$brush = $session->getBrushes()->getBrushFromItem($event->getItem());
 				if ($brush instanceof Brush) {
 					$form = new ModalForm(TF::BOLD . $brush->getName(), TF::RED .
 						"Delete" . TF::WHITE . " brush from session or " . TF::GREEN . "remove" . TF::WHITE . " from Inventory?" . TF::EOL .
 						implode(TF::EOL, $event->getItem()->getLore()), TF::BOLD . TF::DARK_RED . "Delete", TF::BOLD . TF::DARK_GREEN . "Remove");
 					$form->setCallable(function (Player $player, $data) use ($session, $brush) {
-						$session->removeBrush($brush, $data);
+						$session->getBrushes()->removeBrush($brush, $data);
 					});
 					$event->getPlayer()->sendForm($form);
 				}
@@ -404,7 +403,7 @@ class EventListener implements Listener
 			if (!$session instanceof UserSession) return;
 			if ($item->getId() === ItemIds::SCAFFOLDING) {
 				$filename = $tag->getString('filename');
-				$asset = AssetCollection::getInstance()->assets[$filename];
+				$asset = Loader::$assetCollection->assets[$filename];//TODO allow private assets again
 				var_dump($filename, $asset);
 				#$assets = AssetCollection::getInstance()->getPlayerAssets($player->getXuid());
 				$session->displayOutline = true;

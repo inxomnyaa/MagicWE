@@ -253,7 +253,11 @@ class Asset implements JsonSerializable
 					#print_r(AssetCollection::getInstance()->assets->values()->toArray());
 					#print_r(AssetCollection::getInstance()->assets->keys()->toArray());
 					#print_r(AssetCollection::getInstance()->getAssets());
-					AssetCollection::getInstance()->assets[$this->filename] = $this;//overwrites
+					if($shared){
+						Loader::$assetCollection->assets[$this->filename] = $this;//overwrites
+					}else{
+						$session->getAssets()->assets[$this->filename] = $this;//overwrites
+					}
 					$player->sendMessage("Asset stored in " . ($shared ? 'global' : 'private') . ' collection');
 					$player->sendMessage((string)$this);
 					#$player->sendMessage((string)$this->toItem(true));

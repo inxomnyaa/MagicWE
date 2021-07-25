@@ -4,33 +4,21 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
-use Exception;
-use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
-use JsonException;
 use JsonSerializable;
-use pocketmine\item\Item;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use SplDoublyLinkedList;
-use TypeError;
 use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\exception\ActionNotFoundException;
-use xenialdan\MagicWE2\exception\BrushException;
-use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 use xenialdan\MagicWE2\helper\Scoreboard;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\session\data\Asset;
+use xenialdan\MagicWE2\session\data\AssetCollection;
+use xenialdan\MagicWE2\session\data\BrushCollection;
 use xenialdan\MagicWE2\session\data\PaletteCollection;
-use xenialdan\MagicWE2\tool\Brush;
-use xenialdan\MagicWE2\tool\BrushProperties;
 
 class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
 {
@@ -48,11 +36,9 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private bool $wailaEnabled = true;
 	/** @var bool */
 	private bool $sidebarEnabled = true;//TODO settings/commands
-	/** @var array<string, Brush> */
-	private array $brushes = [];
-	/** @var array<string, Asset> */
-	private array $assets = [];
-	public PaletteCollection $palettes;
+	private BrushCollection $brushes;
+	private AssetCollection $assets;
+	private PaletteCollection $palettes;
 	/** @var Language|null */
 	private ?Language $lang = null;
 	public bool $displayOutline = false;
@@ -69,7 +55,9 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		}
 		$this->undoHistory = new SplDoublyLinkedList();
 		$this->redoHistory = new SplDoublyLinkedList();
-		$this->palettes = new PaletteCollection();
+		$this->brushes = new BrushCollection($this);
+		$this->assets = new AssetCollection($this);
+		$this->palettes = new PaletteCollection($this);
 		try {
 			if (is_null($this->lang))
 				$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
@@ -222,104 +210,19 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		return $this->bossBar;
 	}
 
-	/**
-	 * TODO exception for not a brush
-	 * @param Item $item
-	 * @return Brush
-	 * @throws Exception
-	 */
-	public function getBrushFromItem(Item $item): Brush
-	{
-		if ((($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH))) instanceof CompoundTag) {
-			$version = $entry->getInt("version", 0);
-			if ($version !== BrushProperties::VERSION) {
-				throw new BrushException("Brush can not be restored - version mismatch");
-			}
-			/** @var BrushProperties $properties */
-			$properties = json_decode($entry->getString("properties"), false, 512, JSON_THROW_ON_ERROR);
-			$uuid = Uuid::fromString($properties->uuid);
-			$brush = $this->getBrush($uuid);
-			if ($brush instanceof Brush) {
-				return $brush;
-			}
-			$brush = new Brush($properties);
-			$this->addBrush($brush);
-			return $brush;
-		}
-		throw new BrushException("The item is not a valid brush!");
-	}
-
-	/**
-	 * TODO exception for not a brush
-	 * @param UuidInterface $uuid
-	 * @return null|Brush
-	 */
-	public function getBrush(UuidInterface $uuid): ?Brush
-	{
-		return $this->brushes[$uuid->toString()];
-	}
-
-	/**
-	 * TODO exception for not a brush
-	 * @param Brush $brush UuidInterface will be set automatically
-	 * @return void
-	 */
-	public function addBrush(Brush $brush): void
-	{
-		$this->brushes[$brush->properties->uuid] = $brush;
-		$this->sendMessage($this->getLanguage()->translateString('session.brush.added', [$brush->getName()]));
-	}
-
-	/**
-	 * @param Brush $brush UuidInterface will be set automatically
-	 * @param bool $delete If true, it will be removed from the session brushes
-	 * @return void
-	 * @throws UnexpectedTagTypeException
-	 */
-	public function removeBrush(Brush $brush, bool $delete = false): void
-	{
-		if ($delete) unset($this->brushes[$brush->properties->uuid]);
-		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
-				if ($entry->getString("id") === $brush->properties->uuid) {
-					$this->getPlayer()->getInventory()->clear($slot);
-				}
-			}
-		}
-		if ($delete) $this->sendMessage($this->getLanguage()->translateString('session.brush.deleted', [$brush->getName(), $brush->properties->uuid]));
-		else $this->sendMessage($this->getLanguage()->translateString('session.brush.removed', [$brush->getName(), $brush->properties->uuid]));
-	}
-
-	/**
-	 * TODO exception for not a brush
-	 * @param Brush $brush UuidInterface will be set automatically
-	 * @return void
-	 * @throws ActionNotFoundException
-	 * @throws InvalidArgumentException
-	 * @throws JsonException
-	 * @throws ShapeNotFoundException
-	 * @throws TypeError
-	 * @throws UnexpectedTagTypeException
-	 */
-	public function replaceBrush(Brush $brush): void
-	{
-		$this->brushes[$brush->properties->uuid] = $brush;
-		$new = $brush->toItem();
-		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-			if (($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)) instanceof CompoundTag) {
-				if ($entry->getString("id") === $brush->properties->uuid) {
-					$this->getPlayer()->getInventory()->setItem($slot, $new);
-				}
-			}
-		}
-	}
-
-	/**
-	 * @return Brush[]
-	 */
-	public function getBrushes(): array
+	public function getBrushes(): BrushCollection
 	{
 		return $this->brushes;
+	}
+
+	public function getAssets(): AssetCollection
+	{
+		return $this->assets;
+	}
+
+	public function getPalettes(): PaletteCollection
+	{
+		return $this->palettes;
 	}
 
 	public function cleanupInventory(): void
@@ -351,7 +254,9 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			" Current: " . $this->getCurrentClipboardIndex() .
 			" Undos: " . count($this->undoHistory) .
 			" Redos: " . count($this->redoHistory) .
-			" Brushes: " . count($this->brushes);
+			" Brushes: " . count($this->brushes->brushes) .
+			" Assets: " . count($this->assets->assets) .
+			" Palettes: " . count($this->palettes->palettes);
 	}
 
 	public function sendMessage(string $message): void
@@ -374,7 +279,8 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			"debugToolEnabled" => $this->debugToolEnabled,
 			"wailaEnabled" => $this->wailaEnabled,
 			"sidebarEnabled" => $this->sidebarEnabled,
-			"brushes" => $this->brushes,
+			"brushes" => $this->brushes->brushes,
+			//todo assets, palettes
 			"latestSelection" => $this->getLatestSelection(),
 			"currentClipboard" => $this->getCurrentClipboard(),
 			"language" => $this->getLanguage()->getLang()
