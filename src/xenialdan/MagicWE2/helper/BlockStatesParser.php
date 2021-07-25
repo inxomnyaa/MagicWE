@@ -39,6 +39,7 @@ use RuntimeException;
 use Webmozart\PathUtil\Path;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\Loader;
+use function array_key_exists;
 use function file_get_contents;
 use const pocketmine\RESOURCE_PATH;
 
@@ -305,6 +306,9 @@ final class BlockStatesParser
 		$name = self::getBlockIdMapName($block);
 		if ($name === null) return null;
 		$damage = $block->getMeta();
+		if(!array_key_exists($name,self::$legacyStateMap)){
+			return null;
+		}
 		$blockStates = clone self::$legacyStateMap[$name][$damage]->getBlockState()->getCompoundTag('states');
 		if ($blockStates === null) return null;
 		return new BlockStatesEntry($name, $blockStates, $block);
