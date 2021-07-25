@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\helper;
 use Generator;
 use InvalidArgumentException;
 use JsonException;
+use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\item\Item;
@@ -57,7 +58,26 @@ class BlockPalette
 			$blockMatch += [null, null, null];
 			$extraMatch += [null, null];
 			[[$fullBlockQuery, $blockId, $blockStatesQuery], [$fullExtraQuery, $weight]] = [$blockMatch, $extraMatch];
-			$palette->addBlockQuery((new BlockQuery($query, $fullBlockQuery, $blockId, $blockStatesQuery, $fullExtraQuery, $weight))->parse());
+			$palette->addBlockQuery((new BlockQuery($query, $fullBlockQuery, $blockId, $blockStatesQuery, $fullExtraQuery, (float)$weight))->parse());
+		}
+		$palette->randomBlockQueries->setup();
+
+		return $palette;
+	}
+
+	/**
+	 * @param Block[] $blocks
+	 * @return BlockPalette
+	 */
+	public static function fromBlocks(array $blocks): BlockPalette
+	{
+		$palette = self::CREATE();
+		foreach ($blocks as $block) {
+			//TODO this really isn't optimal..
+			$state = BlockStatesParser::getStateByBlock($block);
+			if ($state !== null) {
+				$palette->addBlockQuery(new BlockQuery($state->blockFull, null, null, null, null, 100));
+			}//TODO exceptions
 		}
 		$palette->randomBlockQueries->setup();
 

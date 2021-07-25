@@ -27,16 +27,16 @@ final class BlockQuery
 	 * @param string|null $blockId
 	 * @param string|null $blockStatesQuery
 	 * @param string|null $fullExtraQuery
-	 * @param string|null $weight
+	 * @param float|null $weight
 	 */
-	public function __construct(string $query, ?string $fullBlockQuery, ?string $blockId, ?string $blockStatesQuery, ?string $fullExtraQuery, ?string $weight)
+	public function __construct(string $query, ?string $fullBlockQuery, ?string $blockId, ?string $blockStatesQuery, ?string $fullExtraQuery, ?float $weight = 100)
 	{
 		$this->query = $query;
 		$this->fullBlockQuery = $fullBlockQuery;
 		$this->blockId = $blockId;
 		$this->blockStatesQuery = $blockStatesQuery;
 		$this->fullExtraQuery = $fullExtraQuery;
-		$this->weight = (float)($weight ?? "100") / 100;
+		$this->weight = (float)$weight / 100;
 	}
 
 	/**
