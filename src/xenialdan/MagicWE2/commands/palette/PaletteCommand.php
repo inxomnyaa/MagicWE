@@ -20,7 +20,6 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
-use function array_filter;
 
 class PaletteCommand extends BaseCommand
 {
@@ -79,7 +78,7 @@ class PaletteCommand extends BaseCommand
 							/** @var Block[] $blocks */
 							$blocks = [];
 							for ($i = 0; $i <= $player->getInventory()->getHotbarSize(); $i++) {
-								if (($item = $player->getInventory()->getHotbarSlotItem($i)) instanceof Block) $blocks[] = $item;
+								if (($block = $player->getInventory()->getHotbarSlotItem($i)->getBlock()) instanceof Block) $blocks[] = $block;
 							}
 							$palette = BlockPalette::fromBlocks($blocks);
 							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
@@ -89,9 +88,10 @@ class PaletteCommand extends BaseCommand
 						case $lang->translateString('ui.palette.frominventory'):
 						{
 							/** @var Block[] $blocks */
-							$blocks = array_filter($player->getInventory()->getContents(), function ($item): bool {
-								return $item instanceof Block;
-							});//TODO check if this works, what about items that are blocks
+							$blocks = [];
+							foreach ($player->getInventory()->getContents() as $block) {
+								if (($block = $block->getBlock()) instanceof Block) $blocks[] = $block;
+							}
 							$palette = BlockPalette::fromBlocks($blocks);
 							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
 							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from inventory'));
