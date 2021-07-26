@@ -77,6 +77,7 @@ class API
 	public const TAG_MAGIC_WE = "MagicWE";
 	public const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
 	public const TAG_MAGIC_WE_ASSET = "MagicWEAsset";
+	public const TAG_MAGIC_WE_PALETTE = "MagicWEPalette";
 
 	//TODO Split into separate Class (SchematicStorage?)
 	/** @var Clipboard[] */

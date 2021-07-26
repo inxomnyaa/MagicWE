@@ -10,11 +10,17 @@ use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\InvalidBlockStateException;
+use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\item\VanillaItems;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
+use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
+use xenialdan\MagicWE2\Loader;
+use const JSON_THROW_ON_ERROR;
 
 class BlockPalette
 {
@@ -129,29 +135,37 @@ class BlockPalette
 	}
 
 	/**
-	 * @return string
-	 * @throws JsonException
+	 * @return array
 	 */
-	public function encode(): string
+	public function toStringArray(): array
 	{
 		$e = [];
 		/** @var BlockQuery $blockQuery */
-		foreach ($this->randomBlockQueries->generate($this->randomBlockQueries->count()) as $blockQuery)
-			$e[] = $blockQuery->blockFullId;
-		return json_encode($e, JSON_THROW_ON_ERROR);
+		foreach ($this->randomBlockQueries->indexes() as $blockQuery)//TODO check if this isn't random
+		{
+			$e[] = $blockQuery->query . '%' . $blockQuery->weight;
+		}
+		return $e;
 	}
 
 	/**
 	 * @param string $blocks
 	 * @return array
+	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
 	 * @throws JsonException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
 	 */
-	public static function decode(string $blocks): array
+	public static function fromStringArray(string $blocks): array
 	{
 		$e = [];
-		$blockFactory = BlockFactory::getInstance();
-		foreach (json_decode($blocks, true, 512, JSON_THROW_ON_ERROR) as $block)
-			$e[] = $blockFactory->fromFullBlock($block);
+		foreach (json_decode($blocks, true, 512, JSON_THROW_ON_ERROR) as $query) {
+			$q = new BlockQuery($query, null, null, null, null);
+			$q->parse(true);//TODO the weight might not be parsed
+			$e[] = $q;
+		}
 		return $e;
 	}
 
@@ -160,9 +174,22 @@ class BlockPalette
 		return new self;
 	}
 
-	public function toItem(): Item
+	public function toItem(string $id): Item
 	{
-		return VanillaItems::EMERALD();//TODO placeholder
+		$item = VanillaItems::BLUE_DYE();//placeholder. Maybe make it the most used item or replace with bundles
+		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
+		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_PALETTE,
+			CompoundTag::create()
+				->setString("id", $id)
+		);
+		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . "Palette $id");
+		$lines = [];
+		$blocks = $this->toStringArray();
+		$lines[] = TF::RESET . TF::BOLD . TF::GOLD . "Blocks: ";
+		foreach ($blocks as $block)
+			$lines[] = TF::RESET . $block;
+		$item->setLore($lines);
+		return $item;
 	}
 
 }

@@ -45,6 +45,7 @@ use xenialdan\MagicWE2\commands\history\UndoCommand;
 use xenialdan\MagicWE2\commands\InfoCommand;
 use xenialdan\MagicWE2\commands\LanguageCommand;
 use xenialdan\MagicWE2\commands\LimitCommand;
+use xenialdan\MagicWE2\commands\palette\PaletteCommand;
 use xenialdan\MagicWE2\commands\region\ReplaceCommand;
 use xenialdan\MagicWE2\commands\region\SetCommand;
 use xenialdan\MagicWE2\commands\ReportCommand;
@@ -83,6 +84,8 @@ class Loader extends PluginBase
 	public const FAKE_ENCH_ID = 201;
 	public const PREFIX = TF::RESET . TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
 	public const PREFIX_ASSETS = TF::RESET . TF::BOLD . TF::GOLD . "[Asset]" . TF::RESET . " ";
+	public const PREFIX_BRUSH = TF::RESET . TF::BOLD . TF::GOLD . "[Brush]" . TF::RESET . " ";
+	public const PREFIX_PALETTE = TF::RESET . TF::BOLD . TF::GOLD . "[Palette]" . TF::RESET . " ";
 	public const PREFIX_FORM = TF::RESET . TF::BOLD . TF::DARK_PURPLE . "[MWE2]" . TF::RESET . " ";
 	/** @var Loader|null */
 	private static ?Loader $instance;
@@ -220,7 +223,9 @@ class Loader extends PluginBase
 			new HPos2Command($this, "/hpos2", "Set position 2 to targeted block", ["/h2"]),
 			new ChunkCommand($this, "/chunk", "Set the selection to your current chunk"),
 			/* -- assets -- */
-			#new PaletteCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
+			#new AssetCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
+			/* -- palette -- */
+			new PaletteCommand($this, "/palette", "Manage block palettes"),
 			/* -- tool -- */
 			new WandCommand($this, "/wand", "Gives you the selection wand"),
 			new TogglewandCommand($this, "/togglewand", "Toggle the wand tool on/off", ["/toggleeditwand"]),

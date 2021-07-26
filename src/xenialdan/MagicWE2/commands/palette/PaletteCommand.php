@@ -2,24 +2,29 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands\brush;
+namespace xenialdan\MagicWE2\commands\palette;
 
 use CortexPE\Commando\BaseCommand;
 use Exception;
 use InvalidArgumentException;
 use muqsit\invmenu\InvMenu;
+use muqsit\invmenu\transaction\InvMenuTransaction;
+use muqsit\invmenu\transaction\InvMenuTransactionResult;
 use pocketmine\block\Block;
+use pocketmine\block\BlockLegacyIds;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use Ramsey\Uuid\Uuid;
 use xenialdan\customui\elements\Button;
 use xenialdan\customui\windows\SimpleForm;
+use xenialdan\MagicWE2\exception\PaletteException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
+use function var_dump;
 
 class PaletteCommand extends BaseCommand
 {
@@ -61,14 +66,15 @@ class PaletteCommand extends BaseCommand
 			$form->addButton(new Button($lang->translateString('ui.palette.fromhotbar')));
 			$form->addButton(new Button($lang->translateString('ui.palette.frominventory')));
 			$form->addButton(new Button($lang->translateString('ui.palette.get')));
+			$form->addButton(new Button($lang->translateString('ui.palette.modify')));
 			$form->setCallable(function (Player $player, $data) use ($lang, $session) {
 				try {
 					switch ($data) {
 						case $lang->translateString('ui.palette.get'):
 						{
 							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
-							foreach ($session->getPalettes()->getAll() as $palette) {
-								$menu->getInventory()->addItem($palette->toItem());
+							foreach ($session->getPalettes()->getAll() as $id => $palette) {
+								$menu->getInventory()->addItem($palette->toItem($id));
 							}
 							$menu->send($player, "Session palettes");
 							break;
@@ -78,7 +84,7 @@ class PaletteCommand extends BaseCommand
 							/** @var Block[] $blocks */
 							$blocks = [];
 							for ($i = 0; $i <= $player->getInventory()->getHotbarSize(); $i++) {
-								if (($block = $player->getInventory()->getHotbarSlotItem($i)->getBlock()) instanceof Block) $blocks[] = $block;
+								if (($block = $player->getInventory()->getHotbarSlotItem($i)->getBlock()) instanceof Block && $block->getId() !== BlockLegacyIds::AIR) $blocks[] = $block;
 							}
 							$palette = BlockPalette::fromBlocks($blocks);
 							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
@@ -95,6 +101,31 @@ class PaletteCommand extends BaseCommand
 							$palette = BlockPalette::fromBlocks($blocks);
 							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
 							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from inventory'));
+							break;
+						}
+						case $lang->translateString('ui.palette.modify'):
+						{
+							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
+							foreach ($session->getPalettes()->getAll() as $id => $palette) {
+								$menu->getInventory()->addItem($palette->toItem($id));
+							}
+							$menu->setListener(function (InvMenuTransaction $transaction) use ($session): InvMenuTransactionResult {
+								//todo functionality
+								$player = $transaction->getPlayer();
+								$itemClicked = $transaction->getItemClicked();
+								$itemClickedWith = $transaction->getItemClickedWith();
+								$action = $transaction->getAction();
+								$inv_transaction = $transaction->getTransaction();
+								try {
+									$palette = $session->getPalettes()->getPaletteFromItem($itemClicked);
+								} catch (PaletteException $e) {
+									$session->sendMessage($e->getMessage());
+									Loader::getInstance()->getLogger()->logException($e);
+								}
+								var_dump($player, $itemClicked, $itemClickedWith, $action, $inv_transaction, $itemClicked->getLore(), $palette);
+								return $transaction->continue();
+							});
+							$menu->send($player, "Select a palette to modify");
 							break;
 						}
 					}

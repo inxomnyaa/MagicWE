@@ -25,7 +25,7 @@ final class BrushCollection
 {
 
 	/** @var array<string, Brush> */
-	public array $brushes;
+	public array $brushes = [];
 	private UserSession $session;
 
 	public function __construct(UserSession $session)
