@@ -119,6 +119,6 @@ permissions:
     default: op
   we.command.utility.togglesidebar:
     default: op
-  we.command.test:
+  we.command.debug:
     default: op
 ...

@@ -35,7 +35,9 @@ use xenialdan\MagicWE2\commands\clipboard\CutCommand;
 use xenialdan\MagicWE2\commands\clipboard\FlipCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
 use xenialdan\MagicWE2\commands\clipboard\RotateCommand;
+use xenialdan\MagicWE2\commands\debug\GenerateCommandsMDCommand;
 use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
+use xenialdan\MagicWE2\commands\debug\TestAPICommand;
 use xenialdan\MagicWE2\commands\DonateCommand;
 use xenialdan\MagicWE2\commands\generation\CylinderCommand;
 use xenialdan\MagicWE2\commands\HelpCommand;
@@ -58,7 +60,6 @@ use xenialdan\MagicWE2\commands\selection\info\SizeCommand;
 use xenialdan\MagicWE2\commands\selection\Pos1Command;
 use xenialdan\MagicWE2\commands\selection\Pos2Command;
 use xenialdan\MagicWE2\commands\SetRangeCommand;
-use xenialdan\MagicWE2\commands\TestCommand;
 use xenialdan\MagicWE2\commands\tool\DebugCommand;
 use xenialdan\MagicWE2\commands\tool\FloodCommand;
 use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
@@ -208,8 +209,7 @@ class Loader extends PluginBase
 	{
 		$lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
 		$this->baseLang = new Language((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
-		if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
-		//$this->loadDonator();
+		$registerDeveloperCommands = $this->getConfig()->get("developer-commands", false);
 		$this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
 		if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
 		if (!PacketListener::isRegistered()) PacketListener::register($this);
@@ -288,7 +288,6 @@ class Loader extends PluginBase
 			//new TogglePlaceCommand($this,"/toggleplace", "Switch between your position and pos1 for placement"),
 			//new SearchItemCommand($this,"/searchitem", "Search for an item"),
 			//new RangeCommand($this,"/range", "Set the brush range"),
-			new TestCommand($this, "/test", "test action"),//TODO REMOVE
 			new SetRangeCommand($this, "/setrange", "Set tool range", ["/toolrange"]),
 			new LimitCommand($this, "/limit", "Set the block change limit. Use -1 to disable"),
 			new HelpCommand($this, "/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"]),//Blame MCPE for client side /help shit! only the aliases work
@@ -311,8 +310,12 @@ class Loader extends PluginBase
 			new CalculateCommand($this, "/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
 			new ToggleWailaCommand($this, "/togglewaila", "Toggle the What Am I Looking At utility", ["/waila", "/wyla"]),
 			new ToggleSidebarCommand($this, "/togglesidebar", "Toggle the sidebar", ["/sidebar"]),
-			/* -- debugging -- */
+		]);
+		if ($registerDeveloperCommands) $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
+			/* -- developer commands -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
+			new TestAPICommand($this, "/testapi", "Internal command for testing API methods"),
+			new GenerateCommandsMDCommand($this, "/generatecommandsmd", "Generates the commands.md file"),
 		]);
 		if (class_exists(CustomUIAPI::class)) {
 			$this->getLogger()->notice("CustomUI found, can use ui-based commands");

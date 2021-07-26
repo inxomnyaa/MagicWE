@@ -33,29 +33,8 @@ Jokes aside, here is a list of pros:
 -->
 
 ## Commands
-| Command | Alias | Description | Usage |
-| --- | --- | --- | --- |
-| `//pos1` | `//1` | `Select first position` | `//pos1` |
-| `//pos2` | `//2` | `Select second position` | `//pos2` |
-| `//set` | `//fill` | `Fill an area with the specified blocks` | `//set <blocks:string> [flags:text]` |
-| `//replace` | | `Replace blocks in an area with other blocks` | `//replace <findblocks:string> <replaceblocks:string> [flags:text]` |
-| `//copy` | | `Copy an area into a clipboard` | `//copy [flags:text]` |
-| `//paste` |  | `Paste your clipboard` | `//paste [flags:text]` |
-| `//wand` |  | `Gives you the selection wand` | `//wand` |
-| `//togglewand` |  | `Toggle the wand tool on/off` | `//togglewand` |
-| `//undo` |  | `Rolls back the last action` | `//undo` |
-| `//redo` |  | `Applies the last undo action again` | `//redo` |
-| `//debug` |  | `Gives you the debug stick, which gives information about the clicked block` | `//debug` |
-| `//toggledebug` |  | `Toggle the debug stick on/off` | `//toggledebug` |
-| `//cylinder` | `//cyl` | `Create a cylinder` | `//cylinder <blocks:string> <diameter:int> [height:int] [flags:text]` |
-| `//count` | `//analyze` | `Count blocks in selection` | `//count [blocks:string] [flags:text]` |
-| `//help` | `//?,//mwe,//wehelp` | `MagicWE help command` | `//help [command:string]` |
-| `//version` | `//ver` | `MagicWE version` | `//version` |
-| `//info` |  | `Information about MagicWE` | `//info` |
-| `//report` | `//bug,//github` | `Report a bug to GitHub` | `//report [title:text]` |
-| `//donate` | `//support,//paypal` | `Donate to support development of MagicWE!` | `//donate` |
-| `//brush` |  | `Opens the brush tool menu` | `//brush` |
-| `//flood` |  | `Opens the flood tool menu` | `//flood` |
+<!-- TODO change to master branch -->
+You can find a list of commands here: [COMMANDS.MD](https://github.com/thebigsmileXD/MagicWE2/blob/palette-preview/COMMANDS.MD)
 
 ## Planned features
 - Saved sessions (saved brushes and clipboards)

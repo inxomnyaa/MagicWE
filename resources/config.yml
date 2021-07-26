@@ -4,6 +4,9 @@
 # Available languages (ISO639-2):
 # eng, ara, cat, ces, chi, dan, deu, ell, epo, esp, est, fre, geo, hin, ind, ita, jpn, kor, lit, mar, mas, nld, nor, pol, por, rom, rus, slo, swa, swe, tgl, tha, zho
 language: eng
-show-startup-icon: false
+# Enables special commands for testing API features
+developer-commands: false
+# Maximum amount of blocks that can be edited at once. Set to -1 to disable
 limit: -1
+# Maximum raytraced distance for ranged tools. Default 100
 tool-range: 100
