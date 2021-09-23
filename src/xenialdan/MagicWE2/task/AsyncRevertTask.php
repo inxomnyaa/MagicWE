@@ -80,7 +80,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		foreach ($clipboard->blocksAfter as $block) {
 			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
 		}
@@ -102,7 +102,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		foreach ($clipboard->blocksAfter as $block) {
 			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
 		}

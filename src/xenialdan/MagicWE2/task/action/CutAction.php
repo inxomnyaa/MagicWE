@@ -56,12 +56,12 @@ class CutAction extends TaskAction
 			/** @var Block $new */
 			$new = $newBlocks->blocks(1)->current();//TODO Merged iterator
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->x, $block->y, $block->z);
-			$newv3 = $block->getPos()->subtractVector($min)->floor();//TODO check if only used for clipboard
+			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->x, $block->y, $block->z);
+			$newv3 = $block->getPosition()->subtractVector($min)->floor();//TODO check if only used for clipboard
 			$oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $new);
 			/** @noinspection PhpInternalEntityUsedInspection */
-			if ($manager->getBlockFullIdAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== $block->getFullId()) {
+			if ($manager->getBlockFullIdAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()) !== $block->getFullId()) {
 				$changed++;
 			}
 			$i++;

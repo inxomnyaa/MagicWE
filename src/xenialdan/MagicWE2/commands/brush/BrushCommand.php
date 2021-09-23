@@ -69,9 +69,7 @@ class BrushCommand extends BaseCommand
 						case $lang->translateString('ui.brush.create'):
 						{
 							$brush = new Brush(new BrushProperties());
-							if ($brush instanceof Brush) {
-								$player->sendForm($brush->getForm());
-							}
+							$player->sendForm($brush->getForm());
 							break;
 						}
 						case $lang->translateString('ui.brush.getsession'):

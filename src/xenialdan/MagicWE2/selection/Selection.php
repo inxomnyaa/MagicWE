@@ -283,16 +283,15 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
-	 * @param string $serialized <p>
+	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
 	 * @return void
 	 * @since 5.1.0
-	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	public function unserialize($serialized)
+	public function unserialize($data)
 	{
-		var_dump($serialized);
+		var_dump($data);
 		[
 			$this->worldId,
 			$this->pos1,
@@ -300,7 +299,7 @@ class Selection implements Serializable, JsonSerializable
 			$this->uuid,
 			$this->sessionUUID,
 			$this->shape
-		] = unserialize($serialized/*, ['allowed_classes' => [__CLASS__, Vector3::class,UuidInterface::class,Shape::class]]*/);//TODO test pm4
+		] = unserialize($data/*, ['allowed_classes' => [__CLASS__, Vector3::class,UuidInterface::class,Shape::class]]*/);//TODO test pm4
 	}
 
 	/**

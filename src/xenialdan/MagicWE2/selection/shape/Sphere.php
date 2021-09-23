@@ -51,7 +51,7 @@ class Sphere extends Shape
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fufufufuuu
+					if ($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < 0) continue;//TODO fufufufuuu
 					if ($filterblocks->empty()) yield $block;
 					else {
 						foreach ($filterblocks->palette() as $filterblock) {

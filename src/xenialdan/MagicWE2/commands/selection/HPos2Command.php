@@ -62,7 +62,7 @@ class HPos2Command extends BaseCommand
 				$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
 				return;
 			}
-			$selection->setPos2($target->getPos());
+			$selection->setPos2($target->getPosition());
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

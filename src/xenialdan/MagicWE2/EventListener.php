@@ -186,11 +186,11 @@ class EventListener implements Listener
 					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 					break;
 				}
-				$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPos()->getWorld())); // TODO check if the selection inside of the session updates
+				$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld())); // TODO check if the selection inside of the session updates
 				if (is_null($selection)) {
 					throw new Error("No selection created - Check the console for errors");
 				}
-				$selection->setPos1(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
+				$selection->setPos1(new Position($event->getBlock()->getPosition()->x, $event->getBlock()->getPosition()->y, $event->getBlock()->getPosition()->z, $event->getBlock()->getPosition()->getWorld()));
 				break;
 			}
 			case ItemIds::STICK:
@@ -228,11 +228,11 @@ class EventListener implements Listener
 						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 						break;
 					}
-					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPos()->getWorld())); // TODO check if the selection inside of the session updates
+					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld())); // TODO check if the selection inside of the session updates
 					if (is_null($selection)) {
 						throw new Error("No selection created - Check the console for errors");
 					}
-					$selection->setPos2(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
+					$selection->setPos2(new Position($event->getBlock()->getPosition()->x, $event->getBlock()->getPosition()->y, $event->getBlock()->getPosition()->z, $event->getBlock()->getPosition()->getWorld()));
 					break;
 				}
 				case ItemIds::STICK:
@@ -257,7 +257,7 @@ class EventListener implements Listener
 					if ($tag !== null) {
 						$filename = $tag->getString('filename');
 						$asset = Loader::$assetCollection->assets[$filename];//TODO allow private assets again
-						$target = $event->getBlock()->getSide($event->getFace())->getPos();
+						$target = $event->getBlock()->getSide($event->getFace())->getPosition();
 						if (API::placeAsset($target, $asset, $tag, $session)) {
 							$event->getPlayer()->sendMessage("Asset placed!");
 						} else {
@@ -298,11 +298,11 @@ class EventListener implements Listener
 						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 						break;
 					}
-					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPos()->getWorld())); // TODO check if the selection inside of the session updates
+					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld())); // TODO check if the selection inside of the session updates
 					if (is_null($selection)) {
 						throw new Error("No selection created - Check the console for errors");
 					}
-					$selection->setPos1(new Position($event->getBlock()->getPos()->x, $event->getBlock()->getPos()->y, $event->getBlock()->getPos()->z, $event->getBlock()->getPos()->getWorld()));
+					$selection->setPos1(new Position($event->getBlock()->getPosition()->x, $event->getBlock()->getPosition()->y, $event->getBlock()->getPosition()->z, $event->getBlock()->getPosition()->getWorld()));
 					break;
 				}
 				case ItemIds::STICK:
@@ -409,7 +409,7 @@ class EventListener implements Listener
 				$session->displayOutline = true;
 				#foreach ($assets as $asset) {
 				$backwards = $player->getDirectionVector()->normalize()->multiply(-1);
-				$target = $player->getTargetBlock(10)->getPos();
+				$target = $player->getTargetBlock(10)->getPosition();
 				$target->addVector($backwards);//this selects the block before raytrace
 				$target->subtract(0, 1, 0);//one block down
 				$target = Position::fromObject($target, $player->getWorld());
@@ -478,7 +478,7 @@ class EventListener implements Listener
 		$blockTouched = $event->getBlock();
 		if ($blockTouched->getId() === BlockLegacyIds::STRUCTURE_BLOCK) {
 			var_dump("Clicked Structure Block", (string)$blockTouched);
-			$tile = $blockTouched->getPos()->getWorld()->getTile($blockTouched->getPos()->asVector3());
+			$tile = $blockTouched->getPosition()->getWorld()->getTile($blockTouched->getPosition()->asVector3());
 			if ($tile instanceof StructureBlockTile) {
 				var_dump("Is Structure Block Tile", $tile->getSpawnCompound()->toString());
 //				$item = $player->getInventory()->getItemInHand();
@@ -492,7 +492,7 @@ class EventListener implements Listener
 //						$inventory = $tile->getInventory();
 //						$pk = new StructureBlockUpdatePacket();
 //						$pk->structureEditorData = $tile->getStructureEditorData($asset);
-//						[$pk->x, $pk->y, $pk->z] = [$blockTouched->getPos()->getFloorX(), $blockTouched->getPos()->getFloorY(), $blockTouched->getPos()->getFloorZ()];
+//						[$pk->x, $pk->y, $pk->z] = [$blockTouched->getPosition()->getFloorX(), $blockTouched->getPosition()->getFloorY(), $blockTouched->getPosition()->getFloorZ()];
 //						$pk->isPowered = false;
 //						$player->getNetworkSession()->sendDataPacket($pk);
 //						$tile->sendInventory($player);

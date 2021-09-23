@@ -68,7 +68,7 @@ class Flood extends WETool
 	{
 		$this->validateChunkManager($manager);
 		foreach ($this->getBlocks($manager, BlockPalette::CREATE()) as $block) {
-			yield new Vector2($block->getPos()->x, $block->getPos()->z);
+			yield new Vector2($block->getPosition()->x, $block->getPosition()->z);
 		}
 	}
 
@@ -84,9 +84,9 @@ class Flood extends WETool
 		/** @var Block[] $walkTo */
 		$walkTo = [];
 		foreach ($this->nextToCheck as $next) {
-			$sides = iterator_to_array($this->getHorizontalSides($manager, $next->getPos()));
+			$sides = iterator_to_array($this->getHorizontalSides($manager, $next->getPosition()));
 			$walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
-				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->getPos()->distanceSquared($this->getCenter()) <= ($this->limit / M_PI);
+				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->getPosition()->distanceSquared($this->getCenter()) <= ($this->limit / M_PI);
 			}));
 		}
 		$this->walked = array_merge($this->walked, $walkTo);

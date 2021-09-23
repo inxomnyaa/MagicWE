@@ -122,16 +122,15 @@ abstract class Shape implements Serializable
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
-	 * @param string $serialized <p>
+	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
 	 * @return void
 	 * @since 5.1.0
-	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	public function unserialize($serialized)
+	public function unserialize($data)
 	{
-		$unserialize = unserialize($serialized/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
+		$unserialize = unserialize($data/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
 		array_walk($unserialize, function ($value, $key) {
 			$this->$key = $value;
 		});

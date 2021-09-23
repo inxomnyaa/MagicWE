@@ -232,7 +232,7 @@ class SessionHelper
 							$latestSelection["pos2"]["z"],
 							$shape ?? null
 						);
-						if ($selection instanceof Selection && $selection->isValid()) {
+						if ($selection->isValid()) {
 							$session->addSelection($selection);
 						}
 					}

@@ -117,10 +117,10 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		if ($structure instanceof MCStructure) {
 			/** @var Block $block */
 			foreach ($structure->blocks() as $block) {// [0,0,0 -> sizex,sizey,sizez]
-				#var_dump($block->getPos()->asVector3(), $this->pasteVector, $this->selection);
-				$pos = $block->getPos()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
-				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
-				#var_dump($block->getPos()->asVector3());
+				#var_dump($block->getPosition()->asVector3(), $this->pasteVector, $this->selection);
+				$pos = $block->getPosition()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+				[$block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
+				#var_dump($block->getPosition()->asVector3());
 				if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
 					$lastchunkx = $x >> 4;
 					$lastchunkz = $z >> 4;
@@ -170,8 +170,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 			}
 		} else if ($structure instanceof Schematic) {
 			foreach ($structure->blocks() as $block) {
-				$pos = $block->getPos()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
-				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
+				$pos = $block->getPosition()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+				[$block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
 				if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
 					$lastchunkx = $x >> 4;
 					$lastchunkz = $z >> 4;

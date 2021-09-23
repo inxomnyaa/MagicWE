@@ -88,17 +88,17 @@ class AsyncCountTask extends MWEAsyncTask
 		$counts = [];
 		/** @var Block $block */
 		foreach ($selection->getShape()->getBlocks($manager, $filterblocks, $this->flags) as $block) {
-			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
-				$lastchunkx = $block->getPos()->x >> 4;
-				$lastchunkz = $block->getPos()->z >> 4;
-				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
+			if (is_null($lastchunkx) || ($block->getPosition()->x >> 4 !== $lastchunkx && $block->getPosition()->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->getPosition()->x >> 4;
+				$lastchunkz = $block->getPosition()->z >> 4;
+				if (is_null($manager->getChunk($block->getPosition()->x >> 4, $block->getPosition()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
 			}
 			BlockFactory::getInstance();
-			$block1 = $manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-			$tostring = $block1->getName() . " " . $block1->getId(). ":" . $block1->getMeta();
+			$block1 = $manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ());
+			$tostring = $block1->getName() . " " . $block1->getId() . ":" . $block1->getMeta();
 			if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
 			$counts[$tostring]++;
 			$changed++;

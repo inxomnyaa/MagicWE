@@ -162,7 +162,7 @@ class Loader extends PluginBase
 	public function onLoad(): void
 	{
 		self::$instance = $this;
-		self::$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
+		self::$ench = new Enchantment("", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
 		$enchantmapinstance = EnchantmentIdMap::getInstance();
 		$enchantmapinstance->register(self::FAKE_ENCH_ID, self::$ench);
 		self::$shapeRegistry = new ShapeRegistry();
@@ -354,7 +354,7 @@ class Loader extends PluginBase
 					if ($stateEntry instanceof BlockStatesEntry) {
 						$sub = implode("," . TF::EOL, explode(",", BlockStatesParser::printStates($stateEntry, false)));
 					}
-					$distancePercentage = round(floor($block->getPos()->distance($player->getEyePos())) / 10, 1);
+					$distancePercentage = round(floor($block->getPosition()->distance($player->getEyePos())) / 10, 1);
 					Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
 				} else
 					Loader::getInstance()->wailaBossBar->hideFrom([$player]);
@@ -416,40 +416,6 @@ class Loader extends PluginBase
 			"| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
 			"| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
 		];
-	}
-
-	private function showStartupIcon(): void
-	{
-		$colorAxe = TF::BOLD . TF::DARK_PURPLE;
-		$colorAxeStem = TF::LIGHT_PURPLE;
-		$colorAxeSky = TF::LIGHT_PURPLE;
-		$colorAxeFill = TF::GOLD;
-		$axe = [
-			"              {$colorAxe}####{$colorAxeSky}      ",
-			"            {$colorAxe}##{$colorAxeFill}####{$colorAxe}##{$colorAxeSky}    ",
-			"          {$colorAxe}##{$colorAxeFill}######{$colorAxe}##{$colorAxeSky}    ",
-			"        {$colorAxe}##{$colorAxeFill}########{$colorAxe}####{$colorAxeSky}  ",
-			"        {$colorAxe}##{$colorAxeFill}######{$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}  ",
-			"          {$colorAxe}######{$colorAxeStem}##{$colorAxe}##{$colorAxeFill}##{$colorAxe}##",
-			"            {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeFill}####{$colorAxe}##",
-			"          {$colorAxe}##{$colorAxeStem}##{$colorAxe}##  {$colorAxe}####{$colorAxeSky}  ",
-			"        {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}          ",
-			"      {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}            ",
-			"    {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}              ",
-			"  {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}                ",
-			"{$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}       MagicWE v.2",
-			"{$colorAxe}####{$colorAxeSky}        by XenialDan"];
-		foreach (array_map(static function ($line) {
-			return preg_replace_callback(
-				'/ +(?<![#§l5d6]] )(?= [#§l5d6]+)|(?<=[#§l5d6] ) +(?=\s)/u',
-				#'/ +(?<!# )(?= #+)|(?<=# ) +(?=\s)/',
-				static function ($v) {
-					return substr(str_shuffle(str_pad('+*~', strlen($v[0]))), 0, strlen($v[0]));
-				},
-				TF::LIGHT_PURPLE . $line
-			);
-		}, $axe) as $axeMsg)
-			$this->getLogger()->info($axeMsg);
 	}
 
 	/**
