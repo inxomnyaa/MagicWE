@@ -23,6 +23,7 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 use function var_dump;
 
@@ -65,6 +66,7 @@ class PaletteCommand extends BaseCommand
 			$form = new SimpleForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.palette.title'), $lang->translateString('ui.palette.content'));
 			$form->addButton(new Button($lang->translateString('ui.palette.fromhotbar')));
 			$form->addButton(new Button($lang->translateString('ui.palette.frominventory')));
+			$form->addButton(new Button($lang->translateString('ui.palette.fromselection')));
 			$form->addButton(new Button($lang->translateString('ui.palette.get')));
 			$form->addButton(new Button($lang->translateString('ui.palette.modify')));
 			$form->setCallable(function (Player $player, $data) use ($lang, $session) {
@@ -96,6 +98,22 @@ class PaletteCommand extends BaseCommand
 							/** @var Block[] $blocks */
 							$blocks = [];
 							foreach ($player->getInventory()->getContents() as $block) {
+								if (($block = $block->getBlock()) instanceof Block) $blocks[] = $block;
+							}
+							$palette = BlockPalette::fromBlocks($blocks);
+							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
+							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from inventory'));
+							break;
+						}
+						case $lang->translateString('ui.palette.fromselection'):
+						{
+							/** @var Block[] $blocks */
+							$blocks = [];
+							$selection = $session->getLatestSelection();
+							if (!$selection instanceof Selection) {
+								$session->sendMessage(TF::RED . $lang->translateString('No selection'));//todo string
+							}
+							foreach ($selection as $block) {
 								if (($block = $block->getBlock()) instanceof Block) $blocks[] = $block;
 							}
 							$palette = BlockPalette::fromBlocks($blocks);
