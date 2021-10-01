@@ -109,10 +109,33 @@ class Brush extends WETool
 				return TF::EOL . TF::RED . $value;
 			}, $errors);
 			$brushProperties = $this->properties ?? new BrushProperties();
-			$form = (new CustomForm(function (Player $player, $data) use ($new) {
+
+
+			$dropdownShapeOptions = [];
+			if ($new) {
+				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
+					if ($name === ShapeRegistry::CUSTOM) continue;
+					$dropdownShapeOptions[(string)$name] = $class === $brushProperties->shape;
+				}
+			}
+			$dropdownActionOptions = [];
+			foreach (ActionRegistry::getActions() as $name => $class) {
+				$dropdownActionOptions[$name] = $class === $brushProperties->action;
+			}
+			$dropdownBiomeOptions = [];
+			foreach ((new ReflectionClass(BiomeIds::class))->getConstants() as $name => $value) {
+				if ($value === BiomeIds::HELL) continue;
+				$dropdownBiomeOptions[BiomeRegistry::getInstance()->getBiome($value)->getName()] = $value === $brushProperties->biomeId;
+			}
+
+			$form = (new CustomForm(function (Player $player, $data) use ($new,$dropdownShapeOptions,$dropdownActionOptions,$dropdownBiomeOptions) {
 				#var_dump(__LINE__, $data);
 				#$data = array_slice($data, 0, 7);
 				[$shape, $action, $name, $blocks, $filter, $biome, $hollow] = $data;
+				$shape = array_keys($dropdownShapeOptions)[$shape];
+				$action = array_keys($dropdownActionOptions)[$action];
+				$biome = array_keys($dropdownBiomeOptions)[$biome];//TODO throw exception if not valid
+
 				$extraData = [];
 				#var_dump(__LINE__, array_slice($data, 7));
 				$base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
@@ -208,21 +231,12 @@ class Brush extends WETool
 			// Shape
 			#$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
 			if ($new) {
-				$dropdownShapeOptions = [];
-				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
-					if ($name === ShapeRegistry::CUSTOM) continue;
-					$dropdownShapeOptions[(string)$name]= $class === $brushProperties->shape;
-				}
-				$form->addDropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""),$dropdownShapeOptions);
+				$form->addDropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""), array_keys($dropdownShapeOptions));
 			} else {
 				$form->addLabel($brushProperties->getShapeName());
 			}
 			// Action
-			$dropdownActionOptions = [];
-			foreach (ActionRegistry::getActions() as $name => $class) {
-				$dropdownActionOptions[$name]= $class === $brushProperties->action;
-			}
-			$form->addDropdown("Action",$dropdownActionOptions);
+			$form->addDropdown("Action", array_keys($dropdownActionOptions));
 			// Name
 			$form->addInput("Name", "Name", $new ? "" : $this->getName());
 			// Blocks
@@ -230,12 +244,7 @@ class Brush extends WETool
 			// Filter
 			$form->addInput((isset($errors['filter']) ? TF::RED : "") . "Filter" . ($errors['filter'] ?? ""), "air", $brushProperties->filter);
 			// Biome
-			$dropdownBiomeOptions = [];
-			foreach ((new ReflectionClass(BiomeIds::class))->getConstants() as $name => $value) {
-				if ($value === BiomeIds::HELL) continue;
-				$dropdownBiomeOptions[BiomeRegistry::getInstance()->getBiome($value)->getName()]= $value === $brushProperties->biomeId;
-			}
-			$form->addDropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""),$dropdownBiomeOptions);
+			$form->addDropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""), array_keys($dropdownBiomeOptions));
 			// Hollow
 			$form->addToggle("Hollow", $brushProperties->hollow);
 			// Extra properties
@@ -249,30 +258,30 @@ class Brush extends WETool
 		}
 	}
 
-	private function getExtradataForm(string $shapeClass,?CustomForm $form = null): CustomForm
+	private function getExtradataForm(string $shapeClass, ?CustomForm $form = null): CustomForm
 	{
 		#foreach (($defaultReplaced = array_merge(ShapeRegistry::getDefaultShapeProperties($shapeClass), $this->properties->shapeProperties)) as $name => $value) {
 		$base = ShapeRegistry::getDefaultShapeProperties($shapeClass);
 		$defaultReplaced = array_replace($base, array_intersect_key($this->properties->shapeProperties, $base));
-		$form = ($form??new CustomForm(function (Player $player, $data) use ($defaultReplaced, $base) {
-			//TODO validation, resending etc.
-			$extraData = [];
-			$names = array_keys($defaultReplaced);
-			foreach ($data as $index => $value) {
-				if (is_int($base[$names[$index]])) $value = (int)$value;
-				$extraData[$names[$index]] = $value;
-			}
-			$this->properties->shapeProperties = $extraData;
+		$form = ($form ?? new CustomForm(function (Player $player, $data) use ($defaultReplaced, $base) {
+				//TODO validation, resending etc.
+				$extraData = [];
+				$names = array_keys($defaultReplaced);
+				foreach ($data as $index => $value) {
+					if (is_int($base[$names[$index]])) $value = (int)$value;
+					$extraData[$names[$index]] = $value;
+				}
+				$this->properties->shapeProperties = $extraData;
 
-			$brush = $this;
-			$session = SessionHelper::getUserSession($player);
-			if (!$session instanceof UserSession) {
-				throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
-			}
-			$this->properties->uuid = Uuid::uuid4()->toString();
-			$session->getBrushes()->addBrush($brush);
-			$player->getInventory()->addItem($brush->toItem());
-		}))
+				$brush = $this;
+				$session = SessionHelper::getUserSession($player);
+				if (!$session instanceof UserSession) {
+					throw new SessionException(Loader::getInstance()->getLanguage()->translateString('error.nosession', [Loader::getInstance()->getName()]));
+				}
+				$this->properties->uuid = Uuid::uuid4()->toString();
+				$session->getBrushes()->addBrush($brush);
+				$player->getInventory()->addItem($brush->toItem());
+			}))
 			->setTitle("Shape settings");
 		foreach ($defaultReplaced as $name => $value) {
 			if (is_bool($value)) $form->addToggle(ucfirst($name), $value);

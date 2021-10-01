@@ -1,7 +1,7 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 10.1.7
+version: 10.1.8
 api: ["4.0.0"]
 php: [ "8.0" ]
 softdepend: [ "DEVirion" ]

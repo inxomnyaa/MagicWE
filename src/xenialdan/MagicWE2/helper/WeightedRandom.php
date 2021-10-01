@@ -43,6 +43,7 @@ class WeightedRandom
 	private function normalize(): void
 	{
 		$sum = array_sum($this->probabilities);
+		if($sum < 1) return;
 		foreach ($this->probabilities as &$weight) {
 			$weight /= $sum;
 		}
