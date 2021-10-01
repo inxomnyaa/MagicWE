@@ -13,7 +13,7 @@ use muqsit\invmenu\transaction\InvMenuTransaction;
 use muqsit\invmenu\transaction\InvMenuTransactionResult;
 use muqsit\invmenu\type\InvMenuTypeIds;
 use pocketmine\block\Block;
-use pocketmine\block\BlockLegacyIds;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -23,7 +23,6 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 use function var_dump;
 
@@ -75,42 +74,57 @@ class PaletteCommand extends BaseCommand
 							/** @var Block[] $blocks */
 							$blocks = [];
 							for ($i = 0; $i <= $player->getInventory()->getHotbarSize(); $i++) {
-								if (($block = $player->getInventory()->getHotbarSlotItem($i)->getBlock()) instanceof Block && $block->getId() !== BlockLegacyIds::AIR) $blocks[] = $block;
+								$item = $player->getInventory()->getHotbarSlotItem($i);
+								if (!$item->isNull() && ($block = $item->getBlock()) instanceof Block) $blocks[] = $block;
 							}
 							$palette = BlockPalette::fromBlocks($blocks);
-							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
+							$id = Uuid::uuid4()->toString();
+							$session->getPalettes()->palettes[$id] = $palette;
 							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from hotbar'));
+							$player->getInventory()->addItem($palette->toItem($id));
 							break;
 						}
 						case 'ui.palette.frominventory':
 						{
 							/** @var Block[] $blocks */
 							$blocks = [];
-							foreach ($player->getInventory()->getContents() as $block) {
-								if (($block = $block->getBlock()) instanceof Block) $blocks[] = $block;
+							foreach ($player->getInventory()->getContents() as $item) {
+								$block = $item->getBlock();
+								if ($block !== VanillaBlocks::AIR()) $blocks[] = $block;
 							}
 							$palette = BlockPalette::fromBlocks($blocks);
-							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
+							$id = Uuid::uuid4()->toString();
+							$session->getPalettes()->palettes[$id] = $palette;
 							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from inventory'));
+							$player->getInventory()->addItem($palette->toItem($id));
 							break;
 						}
-						case 'ui.palette.fromselection':
+						case 'ui.palette.modifyblocks':
 						{
-							/** @var Block[] $blocks */
-							$blocks = [];
-							$selection = $session->getLatestSelection();
-							if (!$selection instanceof Selection) {
-								$session->sendMessage(TF::RED . $lang->translateString('No selection'));//todo string
+							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
+							foreach ($session->getPalettes()->getAll() as $id => $palette) {
+								$menu->getInventory()->addItem($palette->toItem($id));
 							}
-							foreach ($selection as $block) {
-								if (($block = $block->getBlock()) instanceof Block) $blocks[] = $block;
-							}
-							$palette = BlockPalette::fromBlocks($blocks);
-							$session->getPalettes()->palettes[Uuid::uuid4()->toString()] = $palette;
-							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from inventory'));
+							$menu->setListener(function (InvMenuTransaction $transaction) use ($session): InvMenuTransactionResult {
+								//todo functionality
+								$player = $transaction->getPlayer();
+								$itemClicked = $transaction->getItemClicked();
+								$itemClickedWith = $transaction->getItemClickedWith();
+								$action = $transaction->getAction();
+								$inv_transaction = $transaction->getTransaction();
+								try {
+									$palette = $session->getPalettes()->getPaletteFromItem($itemClicked);
+									var_dump($player, $itemClicked, $itemClickedWith, $action, $inv_transaction, $itemClicked->getLore(), $palette);
+								} catch (PaletteException $e) {
+									$session->sendMessage($e->getMessage());
+									Loader::getInstance()->getLogger()->logException($e);
+								}
+								return $transaction->continue();
+							});
+							$menu->send($player, "Select a palette to modify");
 							break;
 						}
-						case 'ui.palette.modify':
+						case 'ui.palette.modifyweights':
 						{
 							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							foreach ($session->getPalettes()->getAll() as $id => $palette) {
@@ -146,9 +160,10 @@ class PaletteCommand extends BaseCommand
 				->setContent($lang->translateString('ui.palette.content'))
 				->addButton($lang->translateString('ui.palette.fromhotbar'), -1, "", 'ui.palette.fromhotbar')
 				->addButton($lang->translateString('ui.palette.frominventory'), -1, "", 'ui.palette.frominventory')
-				->addButton($lang->translateString('ui.palette.fromselection'), -1, "", 'ui.palette.fromselection')
+				#->addButton($lang->translateString('ui.palette.fromselection'), -1, "", 'ui.palette.fromselection')
 				->addButton($lang->translateString('ui.palette.get'), -1, "", 'ui.palette.get')
-				->addButton($lang->translateString('ui.palette.modify'), -1, "", 'ui.palette.modify');
+				->addButton($lang->translateString('ui.palette.modifyblocks'), -1, "", 'ui.palette.modifyblocks')
+				->addButton($lang->translateString('ui.palette.modifyweights'), -1, "", 'ui.palette.modifyweights');
 			$sender->sendForm($form);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
