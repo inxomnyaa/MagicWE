@@ -68,7 +68,7 @@ class AssetCommand extends BaseCommand
 				try {
 					$store = Loader::$assetCollection;//TODO allow private assets again
 					switch ($data) {
-						case $lang->translateString('ui.asset.create.fromclipboard'):
+						case 'ui.asset.create.fromclipboard':
 						{
 							//create clipboard asset
 							//input Name
@@ -84,7 +84,7 @@ class AssetCommand extends BaseCommand
 							$player->sendForm($asset->getSettingForm());
 							break;
 						}
-						case $lang->translateString('ui.asset.save'):
+						case 'ui.asset.save':
 						{
 							//save asset
 							//dropdown asset
@@ -129,7 +129,7 @@ class AssetCommand extends BaseCommand
 							$player->sendForm($form);
 							break;
 						}
-						case $lang->translateString('ui.asset.settings'):
+						case 'ui.asset.settings':
 						{
 							//save asset
 							//dropdown asset
@@ -140,7 +140,7 @@ class AssetCommand extends BaseCommand
 								$asset = $store->assets[$filename];
 								$player->sendForm($asset->getSettingForm());
 							}))
-							->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.select'));
+								->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.select'));
 							$options = [];
 							foreach (Loader::$assetCollection->getAll() as $asset) {//TODO allow private assets again
 								$options[$asset->filename] = $asset->filename;
@@ -149,7 +149,7 @@ class AssetCommand extends BaseCommand
 							$player->sendForm($form);
 							break;
 						}
-						case $lang->translateString('ui.asset.global'):
+						case 'ui.asset.global':
 						{
 							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							$store = Loader::$assetCollection;
@@ -159,7 +159,7 @@ class AssetCommand extends BaseCommand
 							$menu->send($player, "Shared assets (" . count($store->getSharedAssets()) . ")");
 							break;
 						}
-						case $lang->translateString('ui.asset.private'):
+						case 'ui.asset.private':
 						{
 							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							$store = $session->getAssets();
@@ -182,11 +182,11 @@ class AssetCommand extends BaseCommand
 			}))
 				->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.title'))
 				->setContent($lang->translateString('ui.asset.content'))//TODO
-				->addButton($lang->translateString('ui.asset.private'))
-				->addButton($lang->translateString('ui.asset.global'))
-				->addButton($lang->translateString('ui.asset.create.fromclipboard'))
-				->addButton($lang->translateString('ui.asset.settings'))
-				->addButton($lang->translateString('ui.asset.save'));
+				->addButton($lang->translateString('ui.asset.private'), -1, "", 'ui.asset.private')
+				->addButton($lang->translateString('ui.asset.global'), -1, "", 'ui.asset.global')
+				->addButton($lang->translateString('ui.asset.create.fromclipboard'), -1, "", 'ui.asset.create.fromclipboard')
+				->addButton($lang->translateString('ui.asset.settings'), -1, "", 'ui.asset.settings')
+				->addButton($lang->translateString('ui.asset.save'), -1, "", 'ui.asset.save');
 			$sender->sendForm($form);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

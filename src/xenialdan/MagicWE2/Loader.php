@@ -223,10 +223,6 @@ class Loader extends PluginBase
 			new HPos1Command($this, "/hpos1", "Set position 1 to targeted block", ["/h1"]),
 			new HPos2Command($this, "/hpos2", "Set position 2 to targeted block", ["/h2"]),
 			new ChunkCommand($this, "/chunk", "Set the selection to your current chunk"),
-			/* -- assets -- */
-			#new AssetCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
-			/* -- palette -- */
-			new PaletteCommand($this, "/palette", "Manage block palettes"),
 			/* -- tool -- */
 			new WandCommand($this, "/wand", "Gives you the selection wand"),
 			new TogglewandCommand($this, "/togglewand", "Toggle the wand tool on/off", ["/toggleeditwand"]),
@@ -321,8 +317,12 @@ class Loader extends PluginBase
 		if (class_exists(FormAPI::class)) {
 			$this->getLogger()->notice("FormAPI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
+				/* -- assets -- */
+				#new AssetCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
 				/* -- brush -- */
 				new BrushCommand($this, "/brush", "Opens the brush tool menu"),
+				/* -- palette -- */
+				new PaletteCommand($this, "/palette", "Manage block palettes"),
 				/* -- tool -- */
 				new FloodCommand($this, "/flood", "Opens the flood fill tool menu", ["/floodfill"]),
 			]);

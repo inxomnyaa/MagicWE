@@ -54,13 +54,13 @@ class BrushCommand extends BaseCommand
 			$form = (new SimpleForm(function (Player $player, $data) use ($lang, $session) {
 				try {
 					switch ($data) {
-						case $lang->translateString('ui.brush.create'):
+						case 'ui.brush.create':
 						{
 							$brush = new Brush(new BrushProperties());
 							$player->sendForm($brush->getForm());
 							break;
 						}
-						case $lang->translateString('ui.brush.getsession'):
+						case 'ui.brush.getsession':
 						{
 							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							foreach ($session->getBrushes()->getAll() as $brush) {
@@ -69,7 +69,7 @@ class BrushCommand extends BaseCommand
 							$menu->send($player, "Session brushes");
 							break;
 						}
-						case $lang->translateString('ui.brush.edithand'):
+						case 'ui.brush.edithand':
 						{
 							$brush = $session->getBrushes()->getBrushFromItem($player->getInventory()->getItemInHand());
 							if ($brush instanceof Brush) {
@@ -84,11 +84,11 @@ class BrushCommand extends BaseCommand
 					$session->sendMessage(TF::RED . $error->getMessage());
 				}
 			}))
-			->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'))
-			->setContent($lang->translateString('ui.brush.content'))
-			->addButton($lang->translateString('ui.brush.create'))
-			->addButton($lang->translateString('ui.brush.getsession'))
-			->addButton($lang->translateString('ui.brush.edithand'));
+				->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.brush.title'))
+				->setContent($lang->translateString('ui.brush.content'))
+				->addButton($lang->translateString('ui.brush.create'), -1, "", 'ui.brush.create')
+				->addButton($lang->translateString('ui.brush.getsession'), -1, "", 'ui.brush.getsession')
+				->addButton($lang->translateString('ui.brush.edithand'), -1, "", 'ui.brush.edithand');
 			$sender->sendForm($form);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

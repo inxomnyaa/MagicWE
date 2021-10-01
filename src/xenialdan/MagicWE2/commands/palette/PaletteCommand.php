@@ -61,7 +61,7 @@ class PaletteCommand extends BaseCommand
 			$form = (new SimpleForm(function (Player $player, $data) use ($lang, $session) {
 				try {
 					switch ($data) {
-						case $lang->translateString('ui.palette.get'):
+						case 'ui.palette.get':
 						{
 							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							foreach ($session->getPalettes()->getAll() as $id => $palette) {
@@ -70,7 +70,7 @@ class PaletteCommand extends BaseCommand
 							$menu->send($player, "Session palettes");
 							break;
 						}
-						case $lang->translateString('ui.palette.fromhotbar'):
+						case 'ui.palette.fromhotbar':
 						{
 							/** @var Block[] $blocks */
 							$blocks = [];
@@ -82,7 +82,7 @@ class PaletteCommand extends BaseCommand
 							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from hotbar'));
 							break;
 						}
-						case $lang->translateString('ui.palette.frominventory'):
+						case 'ui.palette.frominventory':
 						{
 							/** @var Block[] $blocks */
 							$blocks = [];
@@ -94,7 +94,7 @@ class PaletteCommand extends BaseCommand
 							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from inventory'));
 							break;
 						}
-						case $lang->translateString('ui.palette.fromselection'):
+						case 'ui.palette.fromselection':
 						{
 							/** @var Block[] $blocks */
 							$blocks = [];
@@ -110,7 +110,7 @@ class PaletteCommand extends BaseCommand
 							$session->sendMessage(TF::GREEN . $lang->translateString('Created palette from inventory'));
 							break;
 						}
-						case $lang->translateString('ui.palette.modify'):
+						case 'ui.palette.modify':
 						{
 							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							foreach ($session->getPalettes()->getAll() as $id => $palette) {
@@ -142,13 +142,13 @@ class PaletteCommand extends BaseCommand
 					$session->sendMessage(TF::RED . $error->getMessage());
 				}
 			}))
-			->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.palette.title'))
-			->setContent($lang->translateString('ui.palette.content'))
-			->addButton($lang->translateString('ui.palette.fromhotbar'))
-			->addButton($lang->translateString('ui.palette.frominventory'))
-			->addButton($lang->translateString('ui.palette.fromselection'))
-			->addButton($lang->translateString('ui.palette.get'))
-			->addButton($lang->translateString('ui.palette.modify'));
+				->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.palette.title'))
+				->setContent($lang->translateString('ui.palette.content'))
+				->addButton($lang->translateString('ui.palette.fromhotbar'), -1, "", 'ui.palette.fromhotbar')
+				->addButton($lang->translateString('ui.palette.frominventory'), -1, "", 'ui.palette.frominventory')
+				->addButton($lang->translateString('ui.palette.fromselection'), -1, "", 'ui.palette.fromselection')
+				->addButton($lang->translateString('ui.palette.get'), -1, "", 'ui.palette.get')
+				->addButton($lang->translateString('ui.palette.modify'), -1, "", 'ui.palette.modify');
 			$sender->sendForm($form);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
