@@ -268,7 +268,7 @@ class Selection implements Serializable, JsonSerializable
 	 * @return string the string representation of the object or null
 	 * @since 5.1.0
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		return serialize([
 			$this->worldId,
@@ -305,11 +305,11 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * Specify data which should be serialized to JSON
 	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * @return array data which can be serialized by <b>json_encode</b>,
 	 * which is a value of any type other than a resource.
 	 * @since 5.4.0
 	 */
-	public function jsonSerialize()
+	public function jsonSerialize(): array
 	{
 		$arr = (array)$this;
 		if ($this->shape !== null)

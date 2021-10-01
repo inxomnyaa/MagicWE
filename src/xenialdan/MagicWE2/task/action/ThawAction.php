@@ -58,7 +58,7 @@ class ThawAction extends TaskAction
 					$changed++;
 				}
 				$i++;
-				$progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
+				$progress = new Progress($i / $count, "Changed $changed blocks out of $count");
 				if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
 					yield $progress;
 					$lastProgress = $progress;

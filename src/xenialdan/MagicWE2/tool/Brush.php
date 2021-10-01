@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\tool;
 
 use Exception;
 use InvalidArgumentException;
+use jojoe77777\FormAPI\CustomForm;
 use JsonException;
 use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -19,11 +20,6 @@ use pocketmine\world\biome\BiomeRegistry;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use TypeError;
-use xenialdan\customui\elements\Dropdown;
-use xenialdan\customui\elements\Input;
-use xenialdan\customui\elements\Label;
-use xenialdan\customui\elements\Toggle;
-use xenialdan\customui\windows\CustomForm;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\ActionNotFoundException;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -34,6 +30,20 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
+use function array_flip;
+use function array_intersect_key;
+use function array_keys;
+use function array_replace;
+use function array_search;
+use function array_slice;
+use function array_walk;
+use function gettype;
+use function is_bool;
+use function is_int;
+use function lcfirst;
+use function trim;
+use function ucfirst;
+use function var_dump;
 
 class Brush extends WETool
 {
@@ -99,58 +109,20 @@ class Brush extends WETool
 				return TF::EOL . TF::RED . $value;
 			}, $errors);
 			$brushProperties = $this->properties ?? new BrushProperties();
-			$form = new CustomForm("Brush settings");
-			// Shape
-			#$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
-			if ($new) {
-				$dropdownShape = new Dropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""));
-				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
-					if ($name === ShapeRegistry::CUSTOM) continue;
-					$dropdownShape->addOption((string)$name, $class === $brushProperties->shape);
-				}
-				$form->addElement($dropdownShape);
-			} else {
-				$form->addElement(new Label($brushProperties->getShapeName()));
-			}
-			// Action
-			$dropdownAction = new Dropdown("Action");
-			foreach (ActionRegistry::getActions() as $name => $class) {
-				$dropdownAction->addOption($name, $class === $brushProperties->action);
-			}
-			$form->addElement($dropdownAction);
-			// Name
-			$form->addElement(new Input("Name", "Name", $new ? "" : $this->getName()));
-			// Blocks
-			$form->addElement(new Input((isset($errors['blocks']) ? TF::RED : "") . "Blocks" . ($errors['blocks'] ?? ""), "grass,stone:1", $brushProperties->blocks));
-			// Filter
-			$form->addElement(new Input((isset($errors['filter']) ? TF::RED : "") . "Filter" . ($errors['filter'] ?? ""), "air", $brushProperties->filter));
-			// Biome
-			$dropdownBiome = new Dropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""));
-			foreach ((new ReflectionClass(BiomeIds::class))->getConstants() as $name => $value) {
-				if ($value === BiomeIds::HELL) continue;
-				$dropdownBiome->addOption(BiomeRegistry::getInstance()->getBiome($value)->getName(), $value === $brushProperties->biomeId);
-			}
-			$form->addElement($dropdownBiome);
-			// Hollow
-			$form->addElement(new Toggle("Hollow", $brushProperties->hollow));
-			// Extra properties
-			if (!$new) {
-				foreach ($this->getExtradataForm($brushProperties->shape)->getContent() as $element) {
-					$form->addElement($element);
-				}
-			}
-			// Function
-			$form->setCallable(function (Player $player, $data) use ($form, $new) {
+			$form = (new CustomForm(function (Player $player, $data) use ($new) {
 				#var_dump(__LINE__, $data);
 				#$data = array_slice($data, 0, 7);
 				[$shape, $action, $name, $blocks, $filter, $biome, $hollow] = $data;
 				$extraData = [];
 				#var_dump(__LINE__, array_slice($data, 7));
 				$base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
+				var_dump($base);
 				foreach (array_slice($data, 7, null, true) as $i => $value) {
-					#var_dump($i, $value, gettype($value), gettype($base[lcfirst($form->getElement($i)->getText())]));
-					if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
-					$extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
+					var_dump($i, $value, gettype($value), gettype($base[lcfirst($value)]));//TODO IMPLEMENT
+					//if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
+					//TODO IMPLEMENT
+					#if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
+					#$extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
 				}
 				#var_dump(__LINE__, $extraData);
 				//prepare data
@@ -231,26 +203,58 @@ class Brush extends WETool
 					$player->sendMessage($ex->getMessage());
 					Loader::getInstance()->getLogger()->logException($ex);
 				}
-			});
+			}))
+				->setTitle("Brush settings");
+			// Shape
+			#$form->addElement(new Label((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? "")));
+			if ($new) {
+				$dropdownShapeOptions = [];
+				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
+					if ($name === ShapeRegistry::CUSTOM) continue;
+					$dropdownShapeOptions[(string)$name]= $class === $brushProperties->shape;
+				}
+				$form->addDropdown((isset($errors['shape']) ? TF::RED : "") . "Shape" . ($errors['shape'] ?? ""),$dropdownShapeOptions);
+			} else {
+				$form->addLabel($brushProperties->getShapeName());
+			}
+			// Action
+			$dropdownActionOptions = [];
+			foreach (ActionRegistry::getActions() as $name => $class) {
+				$dropdownActionOptions[$name]= $class === $brushProperties->action;
+			}
+			$form->addDropdown("Action",$dropdownActionOptions);
+			// Name
+			$form->addInput("Name", "Name", $new ? "" : $this->getName());
+			// Blocks
+			$form->addInput((isset($errors['blocks']) ? TF::RED : "") . "Blocks" . ($errors['blocks'] ?? ""), "grass,stone:1", $brushProperties->blocks);
+			// Filter
+			$form->addInput((isset($errors['filter']) ? TF::RED : "") . "Filter" . ($errors['filter'] ?? ""), "air", $brushProperties->filter);
+			// Biome
+			$dropdownBiomeOptions = [];
+			foreach ((new ReflectionClass(BiomeIds::class))->getConstants() as $name => $value) {
+				if ($value === BiomeIds::HELL) continue;
+				$dropdownBiomeOptions[BiomeRegistry::getInstance()->getBiome($value)->getName()]= $value === $brushProperties->biomeId;
+			}
+			$form->addDropdown((isset($errors['biome']) ? TF::RED : "") . "Biome" . ($errors['biome'] ?? ""),$dropdownBiomeOptions);
+			// Hollow
+			$form->addToggle("Hollow", $brushProperties->hollow);
+			// Extra properties
+			if (!$new) {
+				$form = $this->getExtradataForm($brushProperties->shape, $form);//TODO check if elements are added
+			}
+			// Function
 			return $form;
 		} catch (Exception $e) {
 			throw new AssumptionFailedError("Could not create brush form");
 		}
 	}
 
-	private function getExtradataForm(string $shapeClass): CustomForm
+	private function getExtradataForm(string $shapeClass,?CustomForm $form = null): CustomForm
 	{
-		$form = new CustomForm("Shape settings");
 		#foreach (($defaultReplaced = array_merge(ShapeRegistry::getDefaultShapeProperties($shapeClass), $this->properties->shapeProperties)) as $name => $value) {
 		$base = ShapeRegistry::getDefaultShapeProperties($shapeClass);
-		foreach (($defaultReplaced = array_replace($base, array_intersect_key($this->properties->shapeProperties, $base))) as $name => $value) {
-			if (is_bool($value)) $form->addElement(new Toggle(ucfirst($name), $value));
-			else $form->addElement(new Input(ucfirst($name), $name . " (" . gettype($value) . ")", (string)$value));
-		}
-		#var_dump($this->properties->shapeProperties);
-		#var_dump('Base', $base);
-		#var_dump('Default Replaced', $defaultReplaced);
-		$form->setCallable(function (Player $player, $data) use ($defaultReplaced, $base) {
+		$defaultReplaced = array_replace($base, array_intersect_key($this->properties->shapeProperties, $base));
+		$form = ($form??new CustomForm(function (Player $player, $data) use ($defaultReplaced, $base) {
 			//TODO validation, resending etc.
 			$extraData = [];
 			$names = array_keys($defaultReplaced);
@@ -268,7 +272,15 @@ class Brush extends WETool
 			$this->properties->uuid = Uuid::uuid4()->toString();
 			$session->getBrushes()->addBrush($brush);
 			$player->getInventory()->addItem($brush->toItem());
-		});
+		}))
+			->setTitle("Shape settings");
+		foreach ($defaultReplaced as $name => $value) {
+			if (is_bool($value)) $form->addToggle(ucfirst($name), $value);
+			else $form->addInput(ucfirst($name), $name . " (" . gettype($value) . ")", (string)$value);
+		}
+		#var_dump($this->properties->shapeProperties);
+		#var_dump('Base', $base);
+		#var_dump('Default Replaced', $defaultReplaced);
 		return $form;
 	}
 }

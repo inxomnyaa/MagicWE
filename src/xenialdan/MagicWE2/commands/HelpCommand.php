@@ -30,11 +30,6 @@ class HelpCommand extends BaseCommand
 		$this->setPermission("we.command.help");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -48,7 +43,7 @@ class HelpCommand extends BaseCommand
 			$cmds = [];
 			if (empty($args["command"])) {
 				foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), static function (Command $command) use ($sender) {
-					return strpos($command->getName(), "/") !== false && $command->testPermissionSilent($sender);
+					return str_contains($command->getName(), "/") && $command->testPermissionSilent($sender);
 				}) as $cmd) {
 					/** @var Command $cmd */
 					$cmds[$cmd->getName()] = $cmd;

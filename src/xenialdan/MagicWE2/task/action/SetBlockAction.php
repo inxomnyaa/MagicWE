@@ -47,7 +47,7 @@ class SetBlockAction extends TaskAction
 		$lastProgress = new Progress(0, "");
 		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {//TODO merge iterator
 			/** @var Block $new */
-			$new = $newBlocks->blocks(1)->current();//TODO merge iterator
+			$new = $newBlocks->blocks()->current();//TODO merge iterator
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
 			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->x, $block->y, $block->z);
 			$oldBlocksSingleClipboard->addEntry($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), BlockEntry::fromBlock($block));
@@ -57,7 +57,7 @@ class SetBlockAction extends TaskAction
 				$changed++;
 			}
 			$i++;
-			$progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
+			$progress = new Progress($i / $count, "Changed $changed blocks out of $count");
 			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
 				yield $progress;
 				$lastProgress = $progress;

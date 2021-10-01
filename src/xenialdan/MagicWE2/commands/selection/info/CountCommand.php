@@ -37,11 +37,6 @@ class CountCommand extends BaseCommand
 		$this->setPermission("we.command.selection.info.count");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -57,9 +52,7 @@ class CountCommand extends BaseCommand
 		}
 		/** @var Player $sender */
 		try {
-			if (isset($args["blocks"])) {
-				$filterBlocks = $args["blocks"];
-			} else $filterBlocks = BlockPalette::CREATE();
+			$filterBlocks = $args["blocks"] ?? BlockPalette::CREATE();
 			$session = SessionHelper::getUserSession($sender);
 			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));

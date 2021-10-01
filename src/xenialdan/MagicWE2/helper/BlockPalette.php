@@ -163,7 +163,7 @@ class BlockPalette
 		$e = [];
 		foreach (json_decode($blocks, true, 512, JSON_THROW_ON_ERROR) as $query) {
 			$q = new BlockQuery($query, null, null, null, null);
-			$q->parse(true);//TODO the weight might not be parsed
+			$q->parse();//TODO the weight might not be parsed
 			$e[] = $q;
 		}
 		return $e;

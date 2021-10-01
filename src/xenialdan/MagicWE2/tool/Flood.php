@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpPrivateFieldCanBeLocalVariableInspection */
+<?php
 
 namespace xenialdan\MagicWE2\tool;
 
@@ -159,7 +159,7 @@ class Flood extends WETool
 	 * @param mixed $manager
 	 * @throws InvalidArgumentException
 	 */
-	public function validateChunkManager($manager): void
+	public function validateChunkManager(mixed $manager): void
 	{
 		if (!$manager instanceof World && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncChunkManager");
 	}

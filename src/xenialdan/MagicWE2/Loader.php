@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2;
 
 use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
+use jojoe77777\FormAPI\FormAPI;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
@@ -22,7 +23,6 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
-use xenialdan\customui\API as CustomUIAPI;
 use xenialdan\libstructure\PacketListener;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
@@ -158,6 +158,7 @@ class Loader extends PluginBase
 	 * @throws RuntimeException
 	 * @throws JsonException
 	 * @throws AssumptionFailedError
+	 * @throws InvalidArgumentException
 	 */
 	public function onLoad(): void
 	{
@@ -317,8 +318,8 @@ class Loader extends PluginBase
 			new TestAPICommand($this, "/testapi", "Internal command for testing API methods"),
 			new GenerateCommandsMDCommand($this, "/generatecommandsmd", "Generates the commands.md file"),
 		]);
-		if (class_exists(CustomUIAPI::class)) {
-			$this->getLogger()->notice("CustomUI found, can use ui-based commands");
+		if (class_exists(FormAPI::class)) {
+			$this->getLogger()->notice("FormAPI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 				/* -- brush -- */
 				new BrushCommand($this, "/brush", "Opens the brush tool menu"),
@@ -326,7 +327,7 @@ class Loader extends PluginBase
 				new FloodCommand($this, "/flood", "Opens the flood fill tool menu", ["/floodfill"]),
 			]);
 		} else {
-			$this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
+			$this->getLogger()->notice(TF::RED . "FormAPI NOT found, can NOT use ui-based commands");
 		}
 		if (class_exists(ScoreFactory::class)) {
 			$this->getLogger()->notice("Scoreboard API found, can use scoreboards");
@@ -409,9 +410,9 @@ class Loader extends PluginBase
 			"| Plugin API Version | " . implode(", ", self::getInstance()->getDescription()->getCompatibleApis()) . " |",
 			"| Authors | " . implode(", ", self::getInstance()->getDescription()->getAuthors()) . " |",
 			"| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(self::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Uses UI | " . (class_exists(CustomUIAPI::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Uses UI | " . (class_exists(FormAPI::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
 			"| Uses ScoreFactory | " . (class_exists(ScoreFactory::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Phar | " . (strpos(self::getInstance()->getFile(), 'phar:') !== false ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Phar | " . (str_contains(self::getInstance()->getFile(), 'phar:') ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
 			"| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
 			"| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
 			"| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",

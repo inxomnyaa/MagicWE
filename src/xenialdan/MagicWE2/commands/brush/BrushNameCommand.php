@@ -30,11 +30,6 @@ class BrushNameCommand extends BaseSubCommand
 		$this->setPermission("we.command.brush.name");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

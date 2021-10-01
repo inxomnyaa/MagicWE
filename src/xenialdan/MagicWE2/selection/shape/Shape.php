@@ -49,7 +49,7 @@ abstract class Shape implements Serializable
 	 * @param mixed $manager
 	 * @throws InvalidArgumentException
 	 */
-	public function validateChunkManager($manager): void
+	public function validateChunkManager(mixed $manager): void
 	{
 		if (!$manager instanceof World && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncChunkManager");
 	}
@@ -114,7 +114,7 @@ abstract class Shape implements Serializable
 	 * @return string the string representation of the object or null
 	 * @since 5.1.0
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		return serialize((array)$this);
 	}

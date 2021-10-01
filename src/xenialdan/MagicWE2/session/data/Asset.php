@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\session\data;
 use BlockHorizons\libschematic\Schematic;
 use Exception;
 use InvalidArgumentException;
+use jojoe77777\FormAPI\CustomForm;
 use JsonSerializable;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
@@ -19,7 +20,6 @@ use pocketmine\plugin\PluginException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use TypeError;
-use xenialdan\customui\windows\CustomForm;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -27,6 +27,9 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
+use function pathinfo;
+use function var_dump;
+use const PATHINFO_FILENAME;
 
 class Asset implements JsonSerializable
 {
@@ -91,7 +94,6 @@ class Asset implements JsonSerializable
 	public function toItem(bool $renew = false): Item
 	{
 		if ($this->item !== null && !$renew) return $this->item;
-		/** @noinspection PhpDeprecationInspection */
 		$item = ItemFactory::getInstance()->get(ItemIds::SCAFFOLDING);
 		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
 		try {
@@ -216,15 +218,7 @@ class Asset implements JsonSerializable
 		try {
 			// Form
 			//TODO display errors
-			$form = new CustomForm("Asset settings");
-			$form->addInput("Filename", "Filename", $this->filename);
-			$form->addToggle("Lock asset", $this->locked);
-			$form->addToggle("Shared asset", $this->shared);
-			foreach ($this->generateLore() as $value) {
-				$form->addLabel($value);
-			}
-			// Function
-			$form->setCallable(function (Player $player, $data) /*use ($form, $new)*/ {
+			$form = (new CustomForm(function (Player $player, $data) /*use ($form, $new)*/ {
 				var_dump(__LINE__, $data);
 				[$filename, $this->locked, $shared] = $data;
 				var_dump($filename, $this->locked ? "true" : "false", $shared ? "true" : "false");
@@ -266,7 +260,14 @@ class Asset implements JsonSerializable
 					$player->sendMessage($ex->getMessage());
 					Loader::getInstance()->getLogger()->logException($ex);
 				}
-			});
+			}))
+			->setTitle("Asset settings")
+			->addInput("Filename", "Filename", $this->filename)
+			->addToggle("Lock asset", $this->locked)
+			->addToggle("Shared asset", $this->shared);
+			foreach ($this->generateLore() as $value) {
+				$form->addLabel($value);
+			}
 			return $form;
 		} catch (Exception $e) {
 			Loader::getInstance()->getLogger()->logException($e);
@@ -274,7 +275,7 @@ class Asset implements JsonSerializable
 		}
 	}
 
-	public function jsonSerialize()
+	public function jsonSerialize(): array
 	{
 		return [
 			'filename' => $this->filename,

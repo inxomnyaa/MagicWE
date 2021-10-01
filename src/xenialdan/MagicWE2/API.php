@@ -463,7 +463,7 @@ class API
 	 * @return float|int
 	 * @throws CalculationException
 	 */
-	public static function evalAsMath(string $str)
+	public static function evalAsMath(string $str): float|int
 	{
 		$error = false;
 		$div_mul = false;
@@ -473,12 +473,12 @@ class API
 		$str = preg_replace('/[^\d.+\-*\/]/', '', $str);
 		$str = rtrim(trim($str, '/*+'), '-');
 
-		if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
+		if ((str_contains($str, '/') || str_contains($str, '*'))) {
 			$div_mul = true;
 			$operators = ['*', '/'];
 			while (!$error && !empty($operators)) {
 				$operator = array_pop($operators);
-				while ($operator !== null && strpos($str, $operator) !== false) {
+				while ($operator !== null && str_contains($str, $operator)) {
 					$regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
 					preg_match($regex, $str, $matches);
 					if (isset($matches[1], $matches[2])) {
@@ -501,7 +501,7 @@ class API
 			}
 		}
 
-		if (!$error && (strpos($str, '+') !== false || strpos($str, '-') !== false)) {
+		if (!$error && (str_contains($str, '+') || str_contains($str, '-'))) {
 			$add_sub = true;
 			preg_match_all('/([\d.]+|[+\-])/', $str, $matches);
 			if (isset($matches[0])) {

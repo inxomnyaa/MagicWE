@@ -7,17 +7,17 @@ namespace xenialdan\MagicWE2\commands\palette;
 use CortexPE\Commando\BaseCommand;
 use Exception;
 use InvalidArgumentException;
+use jojoe77777\FormAPI\SimpleForm;
 use muqsit\invmenu\InvMenu;
 use muqsit\invmenu\transaction\InvMenuTransaction;
 use muqsit\invmenu\transaction\InvMenuTransactionResult;
+use muqsit\invmenu\type\InvMenuTypeIds;
 use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use Ramsey\Uuid\Uuid;
-use xenialdan\customui\elements\Button;
-use xenialdan\customui\windows\SimpleForm;
 use xenialdan\MagicWE2\exception\PaletteException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockPalette;
@@ -39,11 +39,6 @@ class PaletteCommand extends BaseCommand
 		$this->setPermission("we.command.palette");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -63,18 +58,12 @@ class PaletteCommand extends BaseCommand
 			if (!$session instanceof UserSession) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$form = new SimpleForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.palette.title'), $lang->translateString('ui.palette.content'));
-			$form->addButton(new Button($lang->translateString('ui.palette.fromhotbar')));
-			$form->addButton(new Button($lang->translateString('ui.palette.frominventory')));
-			$form->addButton(new Button($lang->translateString('ui.palette.fromselection')));
-			$form->addButton(new Button($lang->translateString('ui.palette.get')));
-			$form->addButton(new Button($lang->translateString('ui.palette.modify')));
-			$form->setCallable(function (Player $player, $data) use ($lang, $session) {
+			$form = (new SimpleForm(function (Player $player, $data) use ($lang, $session) {
 				try {
 					switch ($data) {
 						case $lang->translateString('ui.palette.get'):
 						{
-							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
+							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							foreach ($session->getPalettes()->getAll() as $id => $palette) {
 								$menu->getInventory()->addItem($palette->toItem($id));
 							}
@@ -123,7 +112,7 @@ class PaletteCommand extends BaseCommand
 						}
 						case $lang->translateString('ui.palette.modify'):
 						{
-							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
+							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							foreach ($session->getPalettes()->getAll() as $id => $palette) {
 								$menu->getInventory()->addItem($palette->toItem($id));
 							}
@@ -136,11 +125,11 @@ class PaletteCommand extends BaseCommand
 								$inv_transaction = $transaction->getTransaction();
 								try {
 									$palette = $session->getPalettes()->getPaletteFromItem($itemClicked);
+									var_dump($player, $itemClicked, $itemClickedWith, $action, $inv_transaction, $itemClicked->getLore(), $palette);
 								} catch (PaletteException $e) {
 									$session->sendMessage($e->getMessage());
 									Loader::getInstance()->getLogger()->logException($e);
 								}
-								var_dump($player, $itemClicked, $itemClickedWith, $action, $inv_transaction, $itemClicked->getLore(), $palette);
 								return $transaction->continue();
 							});
 							$menu->send($player, "Select a palette to modify");
@@ -152,7 +141,14 @@ class PaletteCommand extends BaseCommand
 					$session->sendMessage(TF::RED . $lang->translateString('error'));
 					$session->sendMessage(TF::RED . $error->getMessage());
 				}
-			});
+			}))
+			->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.palette.title'))
+			->setContent($lang->translateString('ui.palette.content'))
+			->addButton($lang->translateString('ui.palette.fromhotbar'))
+			->addButton($lang->translateString('ui.palette.frominventory'))
+			->addButton($lang->translateString('ui.palette.fromselection'))
+			->addButton($lang->translateString('ui.palette.get'))
+			->addButton($lang->translateString('ui.palette.modify'));
 			$sender->sendForm($form);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

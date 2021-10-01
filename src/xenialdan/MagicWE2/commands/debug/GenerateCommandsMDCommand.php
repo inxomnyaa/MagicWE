@@ -15,7 +15,6 @@ use function array_filter;
 use function count;
 use function file_put_contents;
 use function implode;
-use function strpos;
 use function substr;
 use const LOCK_EX;
 
@@ -31,18 +30,13 @@ class GenerateCommandsMDCommand extends BaseCommand
 		$this->setPermission("we.command.debug");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
 		try {
 			$cmds = [];
 			foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), static function (Command $command) use ($sender) {
-				return strpos($command->getName(), "/") !== false;
+				return str_contains($command->getName(), "/");
 			}) as $cmd) {
 				/** @var Command $cmd */
 				$cmds[$cmd->getName()] = $cmd;

@@ -39,7 +39,7 @@ class BlocksArgument extends RawStringArgument
 	 * @throws LegacyStringToItemParserException
 	 * @throws UnexpectedTagTypeException
 	 */
-	public function parse(string $argument, CommandSender $sender)
+	public function parse(string $argument, CommandSender $sender): BlockPalette
 	{
 		try {
 			return BlockPalette::fromString($argument);

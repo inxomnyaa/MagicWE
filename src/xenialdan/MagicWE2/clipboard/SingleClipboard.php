@@ -63,7 +63,7 @@ class SingleClipboard extends Clipboard
 	 * @return string the string representation of the object or null
 	 * @since 5.1
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		// TODO: Implement serialize() method.
 		return serialize([

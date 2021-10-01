@@ -94,7 +94,7 @@ class BlockStatesEntry
 		$idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
 		$key = $idMapName . ":" . $block->getMeta();
 		$blockstateParser = BlockStatesParser::getInstance();
-		if (strpos($idMapName, "_door") !== false) {
+		if (str_contains($idMapName, "_door")) {
 			$fromMap = $blockstateParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
 		} else {
 			$fromMap = $blockstateParser::getRotationFlipMap()[$key] ?? null;
@@ -129,7 +129,7 @@ class BlockStatesEntry
 		}
 		$clone->blockStates = $bsCompound;
 		$clone->blockFull = TextFormat::clean($blockstateParser::printStates($clone, false));
-		if (strpos($idMapName, "_door") !== false) {
+		if (str_contains($idMapName, "_door")) {
 			$clone->block = $clone->toBlock();//TODO check
 		} else
 			$clone->block = null;

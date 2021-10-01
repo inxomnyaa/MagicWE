@@ -6,6 +6,7 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use InvalidStateException;
+use jojoe77777\FormAPI\ModalForm;
 use JsonException;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockLegacyIds;
@@ -27,7 +28,6 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
-use xenialdan\customui\windows\ModalForm;
 use xenialdan\libstructure\tile\StructureBlockTile;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
@@ -361,12 +361,15 @@ class EventListener implements Listener
 				if (!$session instanceof UserSession) return;
 				$brush = $session->getBrushes()->getBrushFromItem($event->getItem());
 				if ($brush instanceof Brush) {
-					$form = new ModalForm(TF::BOLD . $brush->getName(), TF::RED .
-						"Delete" . TF::WHITE . " brush from session or " . TF::GREEN . "remove" . TF::WHITE . " from Inventory?" . TF::EOL .
-						implode(TF::EOL, $event->getItem()->getLore()), TF::BOLD . TF::DARK_RED . "Delete", TF::BOLD . TF::DARK_GREEN . "Remove");
-					$form->setCallable(function (Player $player, $data) use ($session, $brush) {
+					$form = (new ModalForm(function (Player $player, $data) use ($session, $brush) {
 						$session->getBrushes()->removeBrush($brush, $data);
-					});
+					}))
+						->setTitle(TF::BOLD . $brush->getName())
+						->setContent(TF::RED .
+							"Delete" . TF::WHITE . " brush from session or " . TF::GREEN . "remove" . TF::WHITE . " from Inventory?" . TF::EOL .
+							implode(TF::EOL, $event->getItem()->getLore()))
+						->setButton1(TF::BOLD . TF::DARK_RED . "Delete")
+						->setButton2(TF::BOLD . TF::DARK_GREEN . "Remove");
 					$event->getPlayer()->sendForm($form);
 				}
 			} else if (!is_null($event->getItem()->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE))) {
@@ -414,7 +417,7 @@ class EventListener implements Listener
 				$target->subtract(0, 1, 0);//one block down
 				$target = Position::fromObject($target, $player->getWorld());
 				if (/*$session->displayOutline && */ self::sendOutline($player, $target, $asset, $session)) {
-					$player->sendMessage("Added asset outline for {$asset->filename}!");
+					$player->sendMessage("Added asset outline for $asset->filename!");
 				} else {
 					$player->sendMessage("Did not add asset outline!");
 				}
@@ -442,7 +445,6 @@ class EventListener implements Listener
 
 		$minComponents = new Vector3($ix, $iy, $iz);
 		$maxComponents = new Vector3($ax, $ay, $az);
-		/** @noinspection PhpDeprecationInspection */
 		$block = BlockFactory::getInstance()->get(BlockLegacyIds::STRUCTURE_BLOCK, 0/*StructureEditorData::TYPE_SAVE*/);
 		var_dump((string)$block);
 		$target->world->setBlock($target->asVector3(), $block);

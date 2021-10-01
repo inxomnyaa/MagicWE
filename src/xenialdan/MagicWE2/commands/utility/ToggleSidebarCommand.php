@@ -25,11 +25,6 @@ class ToggleSidebarCommand extends BaseCommand
 		$this->setPermission("we.command.utility.togglesidebar");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
