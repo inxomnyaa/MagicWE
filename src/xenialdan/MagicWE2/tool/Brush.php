@@ -36,14 +36,13 @@ use function array_keys;
 use function array_replace;
 use function array_search;
 use function array_slice;
+use function array_values;
 use function array_walk;
 use function gettype;
 use function is_bool;
 use function is_int;
-use function lcfirst;
 use function trim;
 use function ucfirst;
-use function var_dump;
 
 class Brush extends WETool
 {
@@ -110,7 +109,6 @@ class Brush extends WETool
 			}, $errors);
 			$brushProperties = $this->properties ?? new BrushProperties();
 
-
 			$dropdownShapeOptions = [];
 			if ($new) {
 				foreach (Loader::getShapeRegistry()::getShapes() as $name => $class) {
@@ -128,24 +126,24 @@ class Brush extends WETool
 				$dropdownBiomeOptions[BiomeRegistry::getInstance()->getBiome($value)->getName()] = $value === $brushProperties->biomeId;
 			}
 
-			$form = (new CustomForm(function (Player $player, $data) use ($new,$dropdownShapeOptions,$dropdownActionOptions,$dropdownBiomeOptions) {
+			$form = (new CustomForm(function (Player $player, $data) use ($new, $dropdownShapeOptions, $dropdownActionOptions, $dropdownBiomeOptions) {
+				if ($data === null) return;
 				#var_dump(__LINE__, $data);
 				#$data = array_slice($data, 0, 7);
 				[$shape, $action, $name, $blocks, $filter, $biome, $hollow] = $data;
-				$shape = array_keys($dropdownShapeOptions)[$shape];
+				if ($new) $shape = array_keys($dropdownShapeOptions)[$shape];
+				//else $shape = array_keys($data)[0]??get_class($this->properties->shape);
 				$action = array_keys($dropdownActionOptions)[$action];
 				$biome = array_keys($dropdownBiomeOptions)[$biome];//TODO throw exception if not valid
 
 				$extraData = [];
 				#var_dump(__LINE__, array_slice($data, 7));
-				$base = ShapeRegistry::getDefaultShapeProperties(ShapeRegistry::getShape($shape));
-				var_dump($base);
-				foreach (array_slice($data, 7, null, true) as $i => $value) {
-					var_dump($i, $value, gettype($value), gettype($base[lcfirst($value)]));//TODO IMPLEMENT
-					//if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
-					//TODO IMPLEMENT
-					#if (is_int($base[lcfirst($form->getElement($i)->getText())])) $value = (int)$value;
-					#$extraData[lcfirst($form->getElement($i)->getText())] = $value;//TODO
+				$base = ShapeRegistry::getDefaultShapeProperties(($new ? ShapeRegistry::getShape($shape) : $this->properties->shape));
+				$slice = array_values(array_slice($data, 7, null, true));//TODO use label?
+				$j = 0;
+				foreach ($base as $i => $value) {
+					$extraData[$i] = is_int($value) ? (int)$slice[$j] : $slice[$j];//TODO enhance
+					$j++;
 				}
 				#var_dump(__LINE__, $extraData);
 				//prepare data
@@ -174,7 +172,7 @@ class Brush extends WETool
 					$error['filter'] = $ex->getMessage();
 				}
 				try {
-					$shape = Loader::getShapeRegistry()::getShape($shape);
+					$shape = ($new ? ShapeRegistry::getShape($shape) : $this->properties->shape);
 				} catch (Exception $ex) {
 					$error['shape'] = $ex->getMessage();
 				}
