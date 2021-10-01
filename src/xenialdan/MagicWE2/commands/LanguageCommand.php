@@ -17,6 +17,7 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use function array_search;
+use function array_values;
 use function is_string;
 
 class LanguageCommand extends BaseCommand
@@ -58,13 +59,13 @@ class LanguageCommand extends BaseCommand
 			}
 			$languages = Loader::getInstance()->getLanguageList();
 			$form = (new CustomForm(function (Player $player, $data) use ($session, $languages) {
-				$langShort = array_search($data[1], $languages, true);
+				$langShort = array_search(array_values($languages)[$data[1]], $languages, true);
 				if (!is_string($langShort)) throw new InvalidArgumentException("Invalid data received");
 				$session->setLanguage($langShort);
 			}))
 				->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.language.title'))
 				->addLabel($lang->translateString('ui.language.label'))
-				->addDropdown($lang->translateString('ui.language.dropdown'), array_values($languages));
+				->addDropdown($lang->translateString('ui.language.dropdown'), array_values($languages), array_search($session->getLanguage()->getName(), array_values($languages), true));
 			//$dropdown->setOptionAsDefault($session->getLanguage()->getName());
 			$sender->sendForm($form);
 		} catch (Exception $error) {
