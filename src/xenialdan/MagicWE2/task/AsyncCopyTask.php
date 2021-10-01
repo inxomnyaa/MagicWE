@@ -97,7 +97,7 @@ class AsyncCopyTask extends MWEAsyncTask
 		/** @var Block $block */
 		foreach ($selection->getShape()->getBlocks($manager, BlockPalette::CREATE(), $this->flags) as $block) {
 			#var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
-			$newv3 = $block->getPos()->subtractVector($min)->floor();
+			$newv3 = $block->getPosition()->subtractVector($min)->floor();
 			/** @noinspection PhpInternalEntityUsedInspection */
 			$clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry($block->getFullId()));//TODO test tiles
 			#var_dump("copied selection block", $block);
@@ -123,9 +123,7 @@ class AsyncCopyTask extends MWEAsyncTask
 			$totalCount = $result["totalCount"];
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
 			$session->addClipboard($clipboard);
-		} catch (SessionException $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-		} catch (AssumptionFailedError $e) {
+		} catch (SessionException | AssumptionFailedError $e) {
 			Loader::getInstance()->getLogger()->logException($e);
 		}
 	}

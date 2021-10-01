@@ -16,7 +16,7 @@ foreach ($yaml["projects"] ?? [] as $project) {
 		$version = $lib["version"] ?? "*";
 		$branch = $lib["branch"] ?? ":default";
 
-		$urls[] = "https://poggit.pmmp.io/v.dl/{$src}/{$version}?branch={$branch}";
+		$urls[] = "https://poggit.pmmp.io/v.dl/$src/$version?branch=$branch";
 	}
 }
 

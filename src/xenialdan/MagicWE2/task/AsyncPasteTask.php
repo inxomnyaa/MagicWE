@@ -10,6 +10,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -81,7 +82,7 @@ class AsyncPasteTask extends MWEAsyncTask
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
-			return $chunk->isDirty();
+			return $chunk->isTerrainDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 	}
@@ -93,7 +94,7 @@ class AsyncPasteTask extends MWEAsyncTask
 	 * @param null|int $changed
 	 * @return Generator
 	 * @throws InvalidArgumentException
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard, ?int &$changed): Generator
 	{

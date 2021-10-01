@@ -29,11 +29,6 @@ class HPos1Command extends BaseCommand
 		$this->setPermission("we.command.selection.hpos");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -62,7 +57,7 @@ class HPos1Command extends BaseCommand
 				$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
 				return;
 			}
-			$selection->setPos1($target->getPos());
+			$selection->setPos1($target->getPosition());
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

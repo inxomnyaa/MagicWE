@@ -51,14 +51,14 @@ class ThawAction extends TaskAction
 		foreach ($blockFilterA as $ib => $blockF) {
 			foreach ($selection->getShape()->getBlocks($manager, BlockPalette::CREATE()) as $block) {//TODO merged generator iterating blocks and newblocks
 				$new = clone $newBlocksA[$ib];
-				#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->x, $block->y, $block->z);
-				$oldBlocksSingleClipboard->addEntry($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), BlockEntry::fromBlock($block));
-				$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-				if ($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ())->getId() !== $block->getId()) {
+				#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->x, $block->y, $block->z);
+				$oldBlocksSingleClipboard->addEntry($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), BlockEntry::fromBlock($block));
+				$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $new);
+				if ($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ())->getId() !== $block->getId()) {
 					$changed++;
 				}
 				$i++;
-				$progress = new Progress($i / $count, "Changed {$changed} blocks out of {$count}");
+				$progress = new Progress($i / $count, "Changed $changed blocks out of $count");
 				if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
 					yield $progress;
 					$lastProgress = $progress;

@@ -38,11 +38,6 @@ class BiomeInfoCommand extends BaseCommand
 		$this->setPermission("we.command.biome.info");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -76,7 +71,7 @@ class BiomeInfoCommand extends BaseCommand
 						$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
 						return;
 					}
-					$biomeId = $target->getPos()->getWorld()->getOrLoadChunkAtPosition($target->getPos())->getBiomeId($target->getPos()->getX() % 16, $target->getPos()->getZ() % 16);
+					$biomeId = $target->getPosition()->getWorld()->getOrLoadChunkAtPosition($target->getPosition())->getBiomeId($target->getPosition()->getX() % 16, $target->getPosition()->getZ() % 16);
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}

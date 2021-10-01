@@ -17,6 +17,7 @@ use pocketmine\block\utils\BlockDataSerializer;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\item\LegacyStringToItemParserException;
+use pocketmine\item\StringToItemParser;
 use pocketmine\math\Facing;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -209,11 +210,11 @@ final class BlockStatesParser
 	 */
 	public static function fromString(BlockQuery $query): Block
 	{
-		$namespacedSelectedBlockName = strpos($query->blockId, "minecraft:") === false ? "minecraft:" . $query->blockId : $query->blockId;
+		$namespacedSelectedBlockName = !str_contains($query->blockId, "minecraft:") ? "minecraft:" . $query->blockId : $query->blockId;
 		$selectedBlockName = strtolower(str_replace("minecraft:", "", $namespacedSelectedBlockName));//TODO try to keep namespace "minecraft:" to support custom blocks
 
-		$legacyStringToItemParser = LegacyStringToItemParser::getInstance();
-		$block = $legacyStringToItemParser->parse($selectedBlockName)->getBlock();
+		/** @noinspection PhpDeprecationInspection */
+		$block = StringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock() ?? LegacyStringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock();
 		//no states, just block
 		if (!$query->hasBlockStates()) {
 			$query->blockFullId = $block->getFullId();
@@ -238,9 +239,9 @@ final class BlockStatesParser
 			}
 		}
 		foreach ($statesExploded as $stateKeyValuePair) {
-			if (strpos($stateKeyValuePair, "=") === false) continue;
+			if (!str_contains($stateKeyValuePair, "=")) continue;
 			[$stateName, $value] = explode("=", $stateKeyValuePair);
-			$value = strtolower(trim((string)$value));
+			$value = strtolower(trim($value));
 			if ($value === '') {
 				throw new InvalidBlockStateException("Empty value for state $stateName");
 			}
@@ -268,7 +269,7 @@ final class BlockStatesParser
 		}
 		//return found block(s)
 		//doors.. special blocks annoying -.-
-		if (strpos($query->blockId, "_door") !== false) {
+		if (str_contains($query->blockId, "_door")) {
 			$block = self::buildDoor($query, $finalStatesList);
 			$query->blockFullId = $block->getFullId();
 			return $block;
@@ -324,7 +325,7 @@ final class BlockStatesParser
 			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
 		}
 
-		if (strpos($namespacedSelectedBlockName, "_door") !== false) {
+		if (str_contains($namespacedSelectedBlockName, "_door")) {
 			$door = self::buildDoor(BlockPalette::fromString($namespacedSelectedBlockName)->randomBlockQueries->generate(1)->current(), $states);
 			//return self::getStateByBlock($door);
 			return new BlockStatesEntry($namespacedSelectedBlockName, $states, $door);
@@ -451,13 +452,11 @@ final class BlockStatesParser
 				foreach (BlockPalette::fromString($test)->palette() as $block) {
 					assert($block instanceof Block);
 					$blockStatesEntry = self::getStateByBlock($block);
-					if($blockStatesEntry !== null) {
+					if ($blockStatesEntry !== null) {
 						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, true));
 						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, false));
-						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
-					}else{
-						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
 					}
+					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
 				}
 			} catch (Exception $e) {
 				Server::getInstance()->getLogger()->debug($e->getMessage());
@@ -650,7 +649,7 @@ final class BlockStatesParser
 							"end_portal",
 						];
 						foreach ($fullReplace as $stateAlias => $setTo)
-							if (strpos($alias, $stateAlias) !== false) {
+							if (str_contains($alias, $stateAlias)) {
 								$alias = $setTo;
 							}
 						foreach ($partReplace as $replace)
@@ -692,7 +691,7 @@ final class BlockStatesParser
 					}
 					if (!in_array($state->getValue(), $all[$stateName], true)) {
 						$all[(string)$stateName][] = $state->getValue();
-						if (strpos($stateName, "_bit") !== false) {
+						if (str_contains($stateName, "_bit")) {
 							var_dump("_bit");
 						} else {
 							var_dump("no _bit");
@@ -713,7 +712,7 @@ final class BlockStatesParser
 	 * @param string $property
 	 * @return mixed
 	 */
-	public static function &readAnyValue(object $object, string $property)
+	public static function &readAnyValue(object $object, string $property): mixed
 	{
 		$invoke = Closure::bind(function & () use ($property) {
 			return $this->$property;

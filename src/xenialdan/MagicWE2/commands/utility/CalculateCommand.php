@@ -32,11 +32,6 @@ class CalculateCommand extends BaseCommand
 		$this->setPermission("we.command.utility.calculate");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -47,10 +42,10 @@ class CalculateCommand extends BaseCommand
 			}
 		}
 		try {
-			$sender->sendMessage((string)$args["expression"] . " = " . API::evalAsMath((string)$args["expression"]));
+			$sender->sendMessage($args["expression"] . " = " . API::evalAsMath((string)$args["expression"]));
 		} catch (CalculationException $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
-			$sender->sendMessage(Loader::PREFIX . TF::RED . (string)$args["expression"]);
+			$sender->sendMessage(Loader::PREFIX . TF::RED . $args["expression"]);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

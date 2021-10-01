@@ -187,7 +187,7 @@ class SessionHelper
 		if ($contents === false) return null;
 		$data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
 		if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
-			Loader::getInstance()->getLogger()->error("Could not load user session from json file {$path}: " . json_last_error_msg());
+			Loader::getInstance()->getLogger()->error("Could not load user session from json file $path: " . json_last_error_msg());
 			#unlink($path);//TODO make safe
 			return null;
 		}
@@ -232,7 +232,7 @@ class SessionHelper
 							$latestSelection["pos2"]["z"],
 							$shape ?? null
 						);
-						if ($selection instanceof Selection && $selection->isValid()) {
+						if ($selection->isValid()) {
 							$session->addSelection($selection);
 						}
 					}

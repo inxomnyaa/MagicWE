@@ -12,9 +12,9 @@ projects:
     libs:
       - src: BlockHorizons/libschematic/libschematic
         version: ^2.0.1
-      - src: thebigsmilexd/customui/customui
-        version: ^4.0.0
-        branch: PM4
+      - src: WolvesFortress/FormAPI/libFormAPI
+        version: ^1.3.0
+        branch: pm4
       - src: thebigsmilexd/apibossbar/apibossbar
         version: ^0.1.4
         branch: PM4

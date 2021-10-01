@@ -22,7 +22,7 @@ class LanguageArgument extends StringEnumArgument
 	 * @return string
 	 * @throws LanguageNotFoundException
 	 */
-	public function parse(string $argument, CommandSender $sender)
+	public function parse(string $argument, CommandSender $sender): string
 	{
 		return (string)array_search($argument, Loader::getInstance()->getLanguageList(), true);
 	}

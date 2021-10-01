@@ -7,6 +7,7 @@ use Generator;
 use InvalidArgumentException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\world\Position;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -34,7 +35,7 @@ class AsyncRevertTask extends MWEAsyncTask
 	 * @param RevertClipboard $clipboard
 	 * @param int $type The type of clipboard pasting.
 	 */
-	public function __construct(UuidInterface $sessionUUID, RevertClipboard $clipboard, $type = self::TYPE_UNDO)
+	public function __construct(UuidInterface $sessionUUID, RevertClipboard $clipboard, int $type = self::TYPE_UNDO)
 	{
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->start = microtime(true);
@@ -69,7 +70,7 @@ class AsyncRevertTask extends MWEAsyncTask
 	 * @param RevertClipboard $clipboard
 	 * @return Generator
 	 * @throws InvalidArgumentException
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
@@ -80,7 +81,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		foreach ($clipboard->blocksAfter as $block) {
 			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
 		}
@@ -91,7 +92,7 @@ class AsyncRevertTask extends MWEAsyncTask
 	 * @param RevertClipboard $clipboard
 	 * @return Generator
 	 * @throws InvalidArgumentException
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
@@ -102,7 +103,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		foreach ($clipboard->blocksAfter as $block) {
 			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
 		}

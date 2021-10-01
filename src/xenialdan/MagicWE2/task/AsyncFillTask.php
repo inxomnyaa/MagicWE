@@ -11,6 +11,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -90,7 +91,7 @@ class AsyncFillTask extends MWEAsyncTask
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
-			return $chunk->isDirty();
+			return $chunk->isTerrainDirty();
 		});
 		#$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 		$this->setResult([
@@ -107,7 +108,7 @@ class AsyncFillTask extends MWEAsyncTask
 	 * @param null|int $changed
 	 * @return Generator
 	 * @throws InvalidArgumentException
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, BlockPalette $newBlocks, ?int &$changed): Generator
 	{
@@ -129,21 +130,21 @@ class AsyncFillTask extends MWEAsyncTask
 				$rel = $block->subtract($selection->shape->getPasteVector());
 				$block = API::setComponents($block,$rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
 			}*/
-			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
-				$lastchunkx = $block->getPos()->x >> 4;
-				$lastchunkz = $block->getPos()->z >> 4;
-				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
+			if (is_null($lastchunkx) || ($block->getPosition()->x >> 4 !== $lastchunkx && $block->getPosition()->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->getPosition()->x >> 4;
+				$lastchunkz = $block->getPosition()->z >> 4;
+				if (is_null($manager->getChunk($block->getPosition()->x >> 4, $block->getPosition()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
 			}
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks//TODO better method
-			#yield self::undoBlockHackToArray($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->getPos());
-			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), (int)$block->getPos()->x, (int)$block->getPos()->y, (int)$block->getPos()->z));
+			#yield self::undoBlockHackToArray($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->getPosition());
+			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()), (int)$block->getPosition()->x, (int)$block->getPosition()->y, (int)$block->getPosition()->z));
 			#yield $block;//backup
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $new);
 			/** @noinspection PhpInternalEntityUsedInspection */
-			if ($manager->getBlockFullIdAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== $block->getFullId()) {
+			if ($manager->getBlockFullIdAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()) !== $block->getFullId()) {
 				$changed++;
 			}
 			///
@@ -183,9 +184,9 @@ class AsyncFillTask extends MWEAsyncTask
 //		 */
 //		foreach ($oldBlocks as [$fullId, $pos]) {
 //			$b = BlockFactory::getInstance()->fromFullBlock($fullId);
-//			$b->getPos()->x = $pos->x;
-//			$b->getPos()->y = $pos->y;
-//			$b->getPos()->z = $pos->z;
+//			$b->getPosition()->x = $pos->x;
+//			$b->getPosition()->y = $pos->y;
+//			$b->getPosition()->z = $pos->z;
 //			$oldBlocks2[] = $b;
 //		}
 //		var_dump($oldBlocks2);

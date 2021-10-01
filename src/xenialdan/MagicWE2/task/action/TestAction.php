@@ -50,7 +50,7 @@ class TestAction extends TaskAction
 		BlockFactory::getInstance();
 		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
 			$changed++;
-			$messages[] = $block->getPos()->asVector3()->__toString() . " " . $block->getName();
+			$messages[] = $block->getPosition()->asVector3()->__toString() . " " . $block->getName();
 			$progress = new Progress($changed / $count, "$changed/$count");
 			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
 				yield $progress;

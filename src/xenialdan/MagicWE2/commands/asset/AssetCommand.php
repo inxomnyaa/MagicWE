@@ -8,16 +8,13 @@ use BlockHorizons\libschematic\Schematic;
 use CortexPE\Commando\BaseCommand;
 use Exception;
 use InvalidArgumentException;
+use jojoe77777\FormAPI\CustomForm;
+use jojoe77777\FormAPI\SimpleForm;
 use muqsit\invmenu\InvMenu;
+use muqsit\invmenu\type\InvMenuTypeIds;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\customui\elements\Button;
-use xenialdan\customui\elements\Label;
-use xenialdan\customui\elements\Toggle;
-use xenialdan\customui\elements\UIElement;
-use xenialdan\customui\windows\CustomForm;
-use xenialdan\customui\windows\SimpleForm;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -25,6 +22,16 @@ use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\data\Asset;
 use xenialdan\MagicWE2\session\UserSession;
+use function array_keys;
+use function array_values;
+use function count;
+use function mkdir;
+use function pathinfo;
+use function time;
+use function var_dump;
+use const DIRECTORY_SEPARATOR;
+use const PATHINFO_BASENAME;
+use const PATHINFO_DIRNAME;
 
 class AssetCommand extends BaseCommand
 {
@@ -38,11 +45,6 @@ class AssetCommand extends BaseCommand
 		$this->setPermission("we.command.asset");//TODO perm
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -62,17 +64,11 @@ class AssetCommand extends BaseCommand
 			if (!$session instanceof UserSession) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$form = new SimpleForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.title'), $lang->translateString('ui.asset.content'));//TODO
-			$form->addButton(new Button($lang->translateString('ui.asset.private')));
-			$form->addButton(new Button($lang->translateString('ui.asset.global')));
-			$form->addButton(new Button($lang->translateString('ui.asset.create.fromclipboard')));
-			$form->addButton(new Button($lang->translateString('ui.asset.settings')));
-			$form->addButton(new Button($lang->translateString('ui.asset.save')));
-			$form->setCallable(function (Player $player, $data) use ($lang, $session) {
+			$form = (new SimpleForm(function (Player $player, $data) use ($lang, $session) {
 				try {
 					$store = Loader::$assetCollection;//TODO allow private assets again
 					switch ($data) {
-						case $lang->translateString('ui.asset.create.fromclipboard'):
+						case 'ui.asset.create.fromclipboard':
 						{
 							//create clipboard asset
 							//input Name
@@ -88,23 +84,16 @@ class AssetCommand extends BaseCommand
 							$player->sendForm($asset->getSettingForm());
 							break;
 						}
-						case $lang->translateString('ui.asset.save'):
+						case 'ui.asset.save':
 						{
 							//save asset
 							//dropdown asset
 							//dropdown type
-							$form = new CustomForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.select'));
-							$options = [];
-							foreach ($store->getUnlockedAssets() as $asset) {
-								$options[$asset->filename] = $asset->filename;
-							}
-							$form->addDropdown("Asset", array_values($options));
-							$form->addDropdown("File type", [Asset::TYPE_SCHEMATIC, Asset::TYPE_MCSTRUCTURE]);
-							$form->setCallable(function (Player $player, $data) use (/*$lang, $session,*/ $store) {
+							$form = (new CustomForm(function (Player $player, $data) use (/*$lang, $session,*/ $store) {
 								[$filename, $type] = $data;
 								/** @var Asset $asset */
 								$asset = $store->assets[$filename];
-								$player->sendMessage('Saving ' . (string)$asset);
+								$player->sendMessage('Saving ' . $asset);
 								//TODO async, convert
 								if ($type === Asset::TYPE_SCHEMATIC) {
 									if ($asset->structure instanceof Schematic) {
@@ -129,33 +118,40 @@ class AssetCommand extends BaseCommand
 									$player->sendMessage('TODO');
 								}
 								//$asset->saveAs() //TODO
-							});
+							}))
+								->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.select'));
+							$options = [];
+							foreach ($store->getUnlockedAssets() as $asset) {
+								$options[$asset->filename] = $asset->filename;
+							}
+							$form->addDropdown("Asset", array_values($options))
+								->addDropdown("File type", [Asset::TYPE_SCHEMATIC, Asset::TYPE_MCSTRUCTURE]);
 							$player->sendForm($form);
 							break;
 						}
-						case $lang->translateString('ui.asset.settings'):
+						case 'ui.asset.settings':
 						{
 							//save asset
 							//dropdown asset
 							//dropdown type
-							$form = new CustomForm(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.select'));
+							$form = (new CustomForm(function (Player $player, $data) use (/*$lang, $session,*/ $store) {
+								[$filename] = $data;
+								/** @var Asset $asset */
+								$asset = $store->assets[$filename];
+								$player->sendForm($asset->getSettingForm());
+							}))
+								->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.select'));
 							$options = [];
 							foreach (Loader::$assetCollection->getAll() as $asset) {//TODO allow private assets again
 								$options[$asset->filename] = $asset->filename;
 							}
 							$form->addDropdown("Asset", array_values($options));
-							$form->setCallable(function (Player $player, $data) use (/*$lang, $session,*/ $store) {
-								[$filename] = $data;
-								/** @var Asset $asset */
-								$asset = $store->assets[$filename];
-								$player->sendForm($asset->getSettingForm());
-							});
 							$player->sendForm($form);
 							break;
 						}
-						case $lang->translateString('ui.asset.global'):
+						case 'ui.asset.global':
 						{
-							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
+							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							$store = Loader::$assetCollection;
 							foreach ($store->getSharedAssets() as $asset) {
 								$menu->getInventory()->addItem($asset->toItem());
@@ -163,9 +159,9 @@ class AssetCommand extends BaseCommand
 							$menu->send($player, "Shared assets (" . count($store->getSharedAssets()) . ")");
 							break;
 						}
-						case $lang->translateString('ui.asset.private'):
+						case 'ui.asset.private':
 						{
-							$menu = InvMenu::create(InvMenu::TYPE_DOUBLE_CHEST);
+							$menu = InvMenu::create(InvMenuTypeIds::TYPE_DOUBLE_CHEST);
 							$store = $session->getAssets();
 							$playerAssets = $store->getPlayerAssets($player->getXuid());
 							var_dump(array_keys($playerAssets), array_keys($store->getPlayerAssets()));
@@ -183,31 +179,19 @@ class AssetCommand extends BaseCommand
 					$session->sendMessage(TF::RED . $error->getMessage());
 					Loader::getInstance()->getLogger()->logException($error);
 				}
-			});
+			}))
+				->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.asset.title'))
+				->setContent($lang->translateString('ui.asset.content'))//TODO
+				->addButton($lang->translateString('ui.asset.private'), -1, "", 'ui.asset.private')
+				->addButton($lang->translateString('ui.asset.global'), -1, "", 'ui.asset.global')
+				->addButton($lang->translateString('ui.asset.create.fromclipboard'), -1, "", 'ui.asset.create.fromclipboard')
+				->addButton($lang->translateString('ui.asset.settings'), -1, "", 'ui.asset.settings')
+				->addButton($lang->translateString('ui.asset.save'), -1, "", 'ui.asset.save');
 			$sender->sendForm($form);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
 			$sender->sendMessage($this->getUsage());
 		}
-	}
-
-	/**
-	 * @param UIElement[] $elements
-	 * @param array $data
-	 * @return array
-	 */
-	public static function generateLore(array $elements, array $data): array
-	{
-		$return = [];
-		foreach ($elements as $i => $element) {
-			if ($element instanceof Label) continue;
-			if ($element instanceof Toggle) {
-				$return[] = ($element->getText() . ": " . ($data[$i] ? "Yes" : "No"));
-				continue;
-			}
-			$return[] = ($element->getText() . ": " . $data[$i]);
-		}
-		return $return;
 	}
 }

@@ -48,7 +48,7 @@ abstract class MWEAsyncTask extends AsyncTask
 	public static function singleBlockToData(Block $block, ?Position $position = null): array
 	{
 		/** @noinspection PhpInternalEntityUsedInspection */
-		return [$block->getFullId(), $position ?? $block->getPos()];
+		return [$block->getFullId(), $position ?? $block->getPosition()];
 	}
 
 	/**
@@ -74,10 +74,10 @@ abstract class MWEAsyncTask extends AsyncTask
 		$block = BlockFactory::getInstance()->fromFullBlock($data[0]);
 		/** @var Position $pos */
 		$pos = $data[1];
-		$block->getPos()->world = $pos->world;
-		$block->getPos()->x = $pos->x;
-		$block->getPos()->y = $pos->y;
-		$block->getPos()->z = $pos->z;
+		$block->getPosition()->world = $pos->world;
+		$block->getPosition()->x = $pos->x;
+		$block->getPosition()->y = $pos->y;
+		$block->getPosition()->z = $pos->z;
 		return $block;
 	}
 

@@ -312,8 +312,8 @@ class API
 	{
 		$shapeClass = $brush->properties->shape;
 		/** @var Shape $shape */
-		$shape = new $shapeClass($target->getPos()->asVector3(), ...array_values($brush->properties->shapeProperties));
-		$selection = new Selection($session->getUUID(), $target->getPos()->getWorld());
+		$shape = new $shapeClass($target->getPosition()->asVector3(), ...array_values($brush->properties->shapeProperties));
+		$selection = new Selection($session->getUUID(), $target->getPosition()->getWorld());
 		$selection->setShape($shape);
 		$actionClass = $brush->properties->action;
 		//TODO remove hack
@@ -333,7 +333,6 @@ class API
 	 */
 	public static function floodArea(Block $target, CompoundTag $settings, Session $session, int $flags = self::FLAG_BASE): bool
 	{ //TODO
-		if (!$settings instanceof CompoundTag) return false;
 		$session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
 		return false;/*
         $shape = ShapeRegistry::getShape($target->getWorld(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));
@@ -345,7 +344,6 @@ class API
 
 	public static function placeAsset(Position $target, Asset $asset, CompoundTag $settings, UserSession $session): bool
 	{
-		if (!$settings instanceof CompoundTag) return false;
 
 		#$start = clone $target->asVector3()->floor()->addVector($asset->getOrigin())->floor();//start pos of paste//TODO if using rotate, this fails
 		#$end = $start->addVector($asset->getSize()->subtractVector($asset->getOrigin()));//add size
@@ -465,7 +463,7 @@ class API
 	 * @return float|int
 	 * @throws CalculationException
 	 */
-	public static function evalAsMath(string $str)
+	public static function evalAsMath(string $str): float|int
 	{
 		$error = false;
 		$div_mul = false;
@@ -475,12 +473,12 @@ class API
 		$str = preg_replace('/[^\d.+\-*\/]/', '', $str);
 		$str = rtrim(trim($str, '/*+'), '-');
 
-		if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
+		if ((str_contains($str, '/') || str_contains($str, '*'))) {
 			$div_mul = true;
 			$operators = ['*', '/'];
 			while (!$error && !empty($operators)) {
 				$operator = array_pop($operators);
-				while ($operator !== null && strpos($str, $operator) !== false) {
+				while ($operator !== null && str_contains($str, $operator)) {
 					$regex = '/([\d\.]+)\\' . $operator . '(\-?[\d\.]+)/';
 					preg_match($regex, $str, $matches);
 					if (isset($matches[1], $matches[2])) {
@@ -503,7 +501,7 @@ class API
 			}
 		}
 
-		if (!$error && (strpos($str, '+') !== false || strpos($str, '-') !== false)) {
+		if (!$error && (str_contains($str, '+') || str_contains($str, '-'))) {
 			$add_sub = true;
 			preg_match_all('/([\d.]+|[+\-])/', $str, $matches);
 			if (isset($matches[0])) {
@@ -557,7 +555,7 @@ class API
 	 */
 	public static function setComponents(Block $block, int $x, int $y, int $z): Block
 	{
-		[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z];
+		[$block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z] = [$x, $y, $z];
 		return $block;
 	}
 

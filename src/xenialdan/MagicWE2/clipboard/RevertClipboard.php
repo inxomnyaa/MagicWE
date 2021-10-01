@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\clipboard;
 
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 
 class RevertClipboard extends Clipboard
 {
@@ -16,7 +17,7 @@ class RevertClipboard extends Clipboard
 	public array $chunks = [];
 	/**
 	 * @var array[]
-	 * @phpstan-var array<array{int, \pocketmine\world\Position|null}>
+	 * @phpstan-var array<array{int, Position|null}>
 	 */
 	public array $blocksAfter;
 
@@ -25,7 +26,7 @@ class RevertClipboard extends Clipboard
 	 * @param int $worldId
 	 * @param Chunk[] $chunks
 	 * @param array[] $blocksAfter //CHANGED AS HACK
-	 * @phpstan-param array<array{int, \pocketmine\world\Position|null}> $blocksAfter
+	 * @phpstan-param array<array{int, Position|null}> $blocksAfter
 	 */
 	public function __construct(int $worldId, array $chunks = [], array $blocksAfter = [])
 	{
@@ -40,7 +41,7 @@ class RevertClipboard extends Clipboard
 	 * @return string the string representation of the object or null
 	 * @since 5.1.0
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		$chunks = [];
 		foreach ($this->chunks as $hash => $chunk) {
@@ -56,20 +57,19 @@ class RevertClipboard extends Clipboard
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
-	 * @param string $serialized <p>
+	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
 	 * @return void
 	 * @since 5.1.0
-	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	public function unserialize($serialized)
+	public function unserialize($data)
 	{
 		[
 			$this->worldId,
 			$chunks,
 			$this->blocksAfter
-		] = unserialize($serialized/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
+		] = unserialize($data/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
 		foreach ($chunks as $hash => $chunk)
 			$this->chunks[$hash] = FastChunkSerializer::deserialize($chunk);
 	}

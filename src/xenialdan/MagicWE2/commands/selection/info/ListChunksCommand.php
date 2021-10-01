@@ -29,11 +29,6 @@ class ListChunksCommand extends BaseCommand
 		$this->setPermission("we.command.selection.info.listchunks");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -75,7 +70,7 @@ class ListChunksCommand extends BaseCommand
 				$biomecount = count($biomes);
 				$biomes = implode(", ", $biomes);
 				World::getXZ($chunkHash, $cx, $cz);
-				$session->sendMessage(TF::AQUA . "ID: {$chunkHash} | X: {$cx} Z: {$cz} | Subchunks: {$chunk->getHeight()} | Biomes: ($biomecount) $biomes");
+				$session->sendMessage(TF::AQUA . "ID: $chunkHash | X: $cx Z: $cz | Subchunks: {$chunk->getHeight()} | Biomes: ($biomecount) $biomes");
 			}
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));

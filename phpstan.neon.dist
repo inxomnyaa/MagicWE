@@ -12,7 +12,7 @@ parameters:
     scanDirectories:
         - /source/src
         - /source/vendor
-        - phar:///source/vendor/customui.phar/src
+        - phar:///source/vendor/libFormAPI.phar/src
         - phar:///source/vendor/apibossbar.phar/src
         - phar:///source/vendor/Commando.phar/src
         - phar:///source/vendor/libschematic.phar/src

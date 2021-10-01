@@ -63,7 +63,7 @@ class SingleClipboard extends Clipboard
 	 * @return string the string representation of the object or null
 	 * @since 5.1
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		// TODO: Implement serialize() method.
 		return serialize([
@@ -76,20 +76,19 @@ class SingleClipboard extends Clipboard
 	/**
 	 * Constructs the object
 	 * @link https://php.net/manual/en/serializable.unserialize.php
-	 * @param string $serialized <p>
+	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
 	 * @return void
 	 * @since 5.1
-	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	public function unserialize($serialized)
+	public function unserialize($data)
 	{
 		// TODO: Implement unserialize() method.
 		[
 			$this->entries,
 			$this->selection,
 			$this->position
-		] = unserialize($serialized/*, ['allowed_classes' => [BlockEntry::class, Selection::class, Vector3::class]]*/);
+		] = unserialize($data/*, ['allowed_classes' => [BlockEntry::class, Selection::class, Vector3::class]]*/);
 	}
 }

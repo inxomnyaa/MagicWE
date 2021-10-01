@@ -64,8 +64,7 @@ abstract class Session
 	{
 		$this->selections[$selection->getUUID()->toString()] = $selection;
 		$this->setLatestSelectionUUID($selection->getUUID());
-		$selection = $this->getLatestSelection();
-		return $selection;
+		return $this->getLatestSelection();
 	}
 
 	/**
@@ -113,7 +112,7 @@ abstract class Session
 	/**
 	 * @param mixed $selections
 	 */
-	public function setSelections($selections): void
+	public function setSelections(mixed $selections): void
 	{
 		$this->selections = $selections;
 	}
