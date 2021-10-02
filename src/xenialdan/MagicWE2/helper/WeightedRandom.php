@@ -169,4 +169,20 @@ class WeightedRandom
 			yield $index;
 		}
 	}
+
+	/**
+	 * @return array
+	 */
+	public function getIndexes(): array
+	{
+		return $this->indexes;
+	}
+
+	/**
+	 * @return float[]
+	 */
+	public function getProbabilities(): array
+	{
+		return $this->probabilities;
+	}
 }
