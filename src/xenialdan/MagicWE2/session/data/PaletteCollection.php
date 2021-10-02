@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\session\data;
 
 use pocketmine\item\Item;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\PaletteException;
@@ -15,7 +14,6 @@ use function json_encode;
 
 final class PaletteCollection
 {
-
 	/** @var array<string, BlockPalette> */
 	public array $palettes = [];
 	private UserSession $session;
@@ -44,6 +42,11 @@ final class PaletteCollection
 		return $this->palettes[$id];//TODO allow finding by custom name
 	}
 
+	public function addPalette(BlockPalette $palette, string $id): void
+	{
+		$this->palettes[$id] = $palette;
+	}
+
 	public function toJson(): string
 	{
 		//TODO
@@ -64,11 +67,11 @@ final class PaletteCollection
 	 */
 	public function getPaletteFromItem(Item $item): BlockPalette
 	{
-		if ((($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_PALETTE))) instanceof CompoundTag) {
+		if ((($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_PALETTE))) !== null) {
 			$id = $entry->getString("id");//todo check if not found
-			$brush = $this->getPalette($id);
-			if ($brush instanceof BlockPalette) {
-				return $brush;
+			$palette = $this->getPalette($id);
+			if ($palette instanceof BlockPalette) {
+				return $palette;
 			}
 			throw new PaletteException("No palette with the id $id could be found!");
 		}

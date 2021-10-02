@@ -46,9 +46,6 @@ class BlockPalette
 	 * @return BlockPalette
 	 * @throws BlockQueryAlreadyParsedException
 	 * @throws InvalidArgumentException
-	 * @throws InvalidBlockStateException
-	 * @throws LegacyStringToItemParserException
-	 * @throws UnexpectedTagTypeException
 	 * @throws \xenialdan\MagicWE2\exception\InvalidBlockStateException
 	 */
 	public static function fromString(string $blocksQuery): BlockPalette
@@ -58,13 +55,7 @@ class BlockPalette
 		$pregSplit = preg_split('/,(?![^\[]*])/', trim($blocksQuery), -1, PREG_SPLIT_NO_EMPTY);
 		if (!is_array($pregSplit)) throw new InvalidArgumentException("Regex matching failed");
 		foreach ($pregSplit as $query) {
-			// How to code ugly 101: https://3v4l.org/2KfNW
-			preg_match_all('/([\w:]+)(?:\[([\w=,]*)])?/m', $query, $matches, PREG_SET_ORDER);
-			[$blockMatch, $extraMatch] = [$matches[0] ?? [], $matches[1] ?? []];
-			$blockMatch += [null, null, null];
-			$extraMatch += [null, null];
-			[[$fullBlockQuery, $blockId, $blockStatesQuery], [$fullExtraQuery, $weight]] = [$blockMatch, $extraMatch];
-			$palette->addBlockQuery((new BlockQuery($query, $fullBlockQuery, $blockId, $blockStatesQuery, $fullExtraQuery, (float)$weight))->parse());
+			$palette->addBlockQuery(BlockQuery::fromString($query));
 		}
 		$palette->randomBlockQueries->setup();
 
@@ -82,7 +73,7 @@ class BlockPalette
 			//TODO this really isn't optimal..
 			$state = BlockStatesParser::getStateByBlock($block);
 			if ($state !== null) {
-				$palette->addBlockQuery(new BlockQuery($state->blockFull, null, null, null, null, 100));
+				$palette->addBlockQuery(BlockQuery::fromString($state->blockFull));
 			}//TODO exceptions
 		}
 		$palette->randomBlockQueries->setup();
@@ -162,7 +153,7 @@ class BlockPalette
 	{
 		$e = [];
 		foreach (json_decode($blocks, true, 512, JSON_THROW_ON_ERROR) as $query) {
-			$q = new BlockQuery($query, null, null, null, null);
+			$q = new BlockQuery($query, null, null, null, null, 100);
 			$q->parse();//TODO the weight might not be parsed
 			$e[] = $q;
 		}
@@ -182,7 +173,7 @@ class BlockPalette
 			CompoundTag::create()
 				->setString("id", $id)
 		);
-		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . "Palette $id");
+		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . "Palette");
 		$lines = [];
 		$blocks = $this->toStringArray();
 		$lines[] = TF::RESET . TF::BOLD . TF::GOLD . "Blocks: ";
