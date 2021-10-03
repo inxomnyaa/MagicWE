@@ -66,6 +66,7 @@ use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\tool\TogglewandCommand;
 use xenialdan\MagicWE2\commands\tool\WandCommand;
 use xenialdan\MagicWE2\commands\utility\CalculateCommand;
+use xenialdan\MagicWE2\commands\utility\ToggleOutlineCommand;
 use xenialdan\MagicWE2\commands\utility\ToggleSidebarCommand;
 use xenialdan\MagicWE2\commands\utility\ToggleWailaCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
@@ -307,6 +308,7 @@ class Loader extends PluginBase
 			new CalculateCommand($this, "/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
 			new ToggleWailaCommand($this, "/togglewaila", "Toggle the What Am I Looking At utility", ["/waila", "/wyla"]),
 			new ToggleSidebarCommand($this, "/togglesidebar", "Toggle the sidebar", ["/sidebar"]),
+			new ToggleOutlineCommand($this, "/toggleoutline", "Toggle the selection outline", ["/outline", "/showbounds"]),
 		]);
 		if ($registerDeveloperCommands) $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 			/* -- developer commands -- */
