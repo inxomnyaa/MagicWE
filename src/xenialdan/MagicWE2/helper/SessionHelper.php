@@ -199,12 +199,12 @@ class SessionHelper
 			$session->setWailaEnabled($data["wailaEnabled"]);
 			$session->setSidebarEnabled($data["sidebarEnabled"]);
 			$session->setLanguage($data["language"]);
-			foreach ($data["brushes"] as $brushUUID => $brushJson) {
+			foreach ($data["brushes"] as $brushJson) {
 				try {
 					$properties = BrushProperties::fromJson($brushJson["properties"]);
 					$brush = new Brush($properties);
 					$session->getBrushes()->addBrush($brush);
-				} catch (InvalidArgumentException $e) {
+				} catch (InvalidArgumentException) {
 					continue;
 				}
 			}
@@ -239,6 +239,7 @@ class SessionHelper
 				} catch (RuntimeException $e) {
 				}
 			}
+			$session->setOutlineEnabled($data["outlineEnabled"]);
 			//TODO clipboard
 		} catch (Exception $exception) {
 			return null;
