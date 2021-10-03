@@ -15,8 +15,10 @@ use xenialdan\apibossbar\BossBar;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\Scoreboard;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\data\BrushCollection;
+use xenialdan\MagicWE2\session\data\Outline;
 use xenialdan\MagicWE2\session\data\PaletteCollection;
 use function mkdir;
 
@@ -29,11 +31,12 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private bool $debugToolEnabled = true;
 	private bool $wailaEnabled = true;
 	private bool $sidebarEnabled = true;//TODO settings/commands
+	private bool $outlineEnabled = true;
+	private ?Outline $outline = null;
 	private BrushCollection $brushes;
 	private AssetCollection $assets;
 	private PaletteCollection $palettes;
 	private ?Language $lang = null;
-	public bool $displayOutline = false;
 
 	public function __construct(Player $player)
 	{
@@ -160,6 +163,39 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.waila.setenabled', [($wailaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
+	public function isOutlineEnabled(): bool
+	{
+		return $this->outlineEnabled;
+	}
+
+	public function setOutlineEnabled(bool $outlineEnabled): string
+	{
+		$player = $this->getPlayer();
+		if (!$player instanceof Player) return TF::RED . "Session has no player";
+		$this->outlineEnabled = $outlineEnabled;
+		if ($outlineEnabled) {
+			$selection = $this->getLatestSelection();
+			$this->outline = $this->createOrUpdateOutline($selection);
+		} else {
+			if ($this->outline instanceof Outline) {
+				$this->outline->remove();
+				$this->outline = null;
+			}
+		}
+		$this->sidebar?->handleScoreboard($this);
+		return Loader::PREFIX . $this->getLanguage()->translateString('tool.outline.setenabled', [($outlineEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
+	}
+
+	public function getOutline(): ?Outline
+	{
+		return $this->outline;
+	}
+
+	public function createOrUpdateOutline(Selection $selection): Outline
+	{
+		return $this->outline?->setSelection($selection) ?? new Outline($selection, $this->getPlayer());
+	}
+
 	public function getBossBar(): BossBar
 	{
 		return $this->bossBar;
@@ -207,6 +243,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			" Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
 			" WAILA enabled: " . ($this->isWailaEnabled() ? "enabled" : "disabled") .
 			" Sidebar enabled: " . ($this->sidebarEnabled ? "enabled" : "disabled") .
+			" Outline enabled: " . ($this->outlineEnabled ? "enabled" : "disabled") .
 			" BossBar: " . $this->getBossBar()->entityId .
 			" Selections: " . count($this->getSelections()) .
 			" Latest: " . $this->getLatestSelectionUUID() .
@@ -232,6 +269,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			"debugToolEnabled" => $this->debugToolEnabled,
 			"wailaEnabled" => $this->wailaEnabled,
 			"sidebarEnabled" => $this->sidebarEnabled,
+			"outlineEnabled" => $this->outlineEnabled,
 			"brushes" => $this->brushes->brushes,
 			//todo assets, palettes
 			"latestSelection" => $this->getLatestSelection(),
@@ -242,7 +280,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 
 	public function save(): void
 	{
-		@mkdir(Loader::getInstance()->getDataFolder() . "sessions",0777,true);
+		@mkdir(Loader::getInstance()->getDataFolder() . "sessions", 0777, true);
 		file_put_contents(Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
 			$this->getPlayer()->getName() . ".json",
 			json_encode($this, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)

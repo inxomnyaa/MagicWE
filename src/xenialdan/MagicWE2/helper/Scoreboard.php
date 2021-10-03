@@ -44,6 +44,7 @@ class Scoreboard
 					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Wand Tool: " . TF::RESET . API::boolToString($session->isWandEnabled()));
 					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Debug Tool: " . TF::RESET . API::boolToString($session->isDebugToolEnabled()));
 					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " WAILA: " . TF::RESET . API::boolToString($session->isWailaEnabled()));
+					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Outline: " . TF::RESET . API::boolToString($session->isOutlineEnabled()));
 
 					if (($cb = $session->getCurrentClipboard()) instanceof SingleClipboard) {
 						ScoreFactory::setScoreLine($player, ++$line, TF::GOLD . $session->getLanguage()->translateString("spacer", ["Clipboard"]));
