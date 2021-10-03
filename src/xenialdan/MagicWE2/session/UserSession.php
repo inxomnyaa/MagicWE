@@ -23,24 +23,16 @@ use function mkdir;
 
 class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
 {
-	/** @var Player|null */
 	private ?Player $player = null;
-	/** @var BossBar */
 	private BossBar $bossBar;
-	/** @var Scoreboard|null */
 	public ?Scoreboard $sidebar = null;
-	/** @var bool */
 	private bool $wandEnabled = true;
-	/** @var bool */
 	private bool $debugToolEnabled = true;
-	/** @var bool */
 	private bool $wailaEnabled = true;
-	/** @var bool */
 	private bool $sidebarEnabled = true;//TODO settings/commands
 	private BrushCollection $brushes;
 	private AssetCollection $assets;
 	private PaletteCollection $palettes;
-	/** @var Language|null */
 	private ?Language $lang = null;
 	public bool $displayOutline = false;
 
@@ -76,9 +68,6 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		}
 	}
 
-	/**
-	 * @return Language
-	 */
 	public function getLanguage(): Language
 	{
 		return $this->lang;
@@ -101,70 +90,43 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		}
 	}
 
-	/**
-	 * @param null|Player $player
-	 */
 	public function setPlayer(?Player $player): void
 	{
 		$this->player = $player;
 	}
 
-	/**
-	 * @return null|Player
-	 */
 	public function getPlayer(): ?Player
 	{
 		return $this->player;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isWandEnabled(): bool
 	{
 		return $this->wandEnabled;
 	}
 
-	/**
-	 * @param bool $wandEnabled
-	 * @return string
-	 */
 	public function setWandEnabled(bool $wandEnabled): string
 	{
 		$this->wandEnabled = $wandEnabled;
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.wand.setenabled', [($wandEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isDebugToolEnabled(): bool
 	{
 		return $this->debugToolEnabled;
 	}
 
-	/**
-	 * @param bool $debugToolEnabled
-	 * @return string
-	 */
 	public function setDebugToolEnabled(bool $debugToolEnabled): string
 	{
 		$this->debugToolEnabled = $debugToolEnabled;
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.debug.setenabled', [($debugToolEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isSidebarEnabled(): bool
 	{
 		return $this->sidebarEnabled;
 	}
 
-	/**
-	 * @param bool $sidebarEnabled
-	 * @return string
-	 */
 	public function setSidebarEnabled(bool $sidebarEnabled): string
 	{
 		$player = $this->getPlayer();
@@ -178,18 +140,11 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.sidebar.setenabled', [($sidebarEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isWailaEnabled(): bool
 	{
 		return $this->wailaEnabled;
 	}
 
-	/**
-	 * @param bool $wailaEnabled
-	 * @return string
-	 */
 	public function setWailaEnabled(bool $wailaEnabled): string
 	{
 		$player = $this->getPlayer();
@@ -203,9 +158,6 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.waila.setenabled', [($wailaEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}
 
-	/**
-	 * @return BossBar
-	 */
 	public function getBossBar(): BossBar
 	{
 		return $this->bossBar;
@@ -265,13 +217,6 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		$this->player->sendMessage(Loader::PREFIX . $message);
 	}
 
-	/**
-	 * Specify data which should be serialized to JSON
-	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-	 * @return array data which can be serialized by <b>json_encode</b>,
-	 * which is a value of any type other than a resource.
-	 * @since 5.4.0
-	 */
 	public function jsonSerialize(): array
 	{
 		return [
