@@ -12,11 +12,12 @@ use xenialdan\MagicWE2\session\UserSession;
 
 class MWESelectionChangeEvent extends MWEEvent
 {
-	public const TYPE_PLUGIN = 0;
-	public const TYPE_POS1 = 1;
-	public const TYPE_POS2 = 2;
-	public const TYPE_WORLD = 3;
-	public const TYPE_SHAPE = 4;
+	public const TYPE_CREATE = 0;
+	public const TYPE_PLUGIN = 1;
+	public const TYPE_POS1 = 2;
+	public const TYPE_POS2 = 3;
+	public const TYPE_WORLD = 4;
+	public const TYPE_SHAPE = 5;
 
 	private Selection $selection;
 	private ?Session $session = null;

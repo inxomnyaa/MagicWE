@@ -49,8 +49,8 @@ class Outline
 		$this->remove();
 		$this->updatePosition();
 		//TODO change position of fakeTile using reflection
-		#$this->fakeTile->setDirty();
 		$this->fakeTile->setShowBoundingBox(true)->setFromV3($selection->getPos1())->setToV3($selection->getPos2());
+		$this->fakeTile->setDirty();
 		$this->send();
 		return $this;
 	}

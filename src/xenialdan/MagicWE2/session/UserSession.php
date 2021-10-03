@@ -179,7 +179,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		} else {
 			if ($this->outline instanceof Outline) {
 				$this->outline->remove();
-				$this->outline = null;
+				#$this->outline = null;
 			}
 		}
 		$this->sidebar?->handleScoreboard($this);

@@ -380,11 +380,11 @@ class EventListener implements Listener
 
 	public function onSelectionChange(MWESelectionChangeEvent $event): void
 	{
-		Loader::getInstance()->getLogger()->debug("Called " . $event->getEventName());
+		#Loader::getInstance()->getLogger()->debug("Called " . $event->getEventName());
 		$session = $event->getSession();
 		if ($session instanceof UserSession && $event->getPlayer() !== null) {
 			/** @var UserSession $session */
-			$session->createOrUpdateOutline($event->getSelection());
+			if ($session->isOutlineEnabled()) $session->createOrUpdateOutline($event->getSelection());
 			$session->sidebar->handleScoreboard($session);
 		}
 	}

@@ -67,6 +67,10 @@ class Selection implements Serializable, JsonSerializable
 		}
 		if ($shape !== null) $this->shape = $shape;
 		$this->setUUID(Uuid::uuid4());
+		try {
+			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_CREATE))->call();
+		} catch (RuntimeException $e) {
+		}
 	}
 
 	/**
