@@ -26,7 +26,7 @@ abstract class Clipboard implements Serializable
 	public const FLIP_NORTH = 0x03;
 	public const FLIP_SOUTH = 0x03;
 
-	public ?int $worldId;
+	public ?int $worldId = null;
 	public string $customName = "";
 
 	/**
@@ -36,7 +36,7 @@ abstract class Clipboard implements Serializable
 	 */
 	public static function getChunkManager(array $chunks): AsyncChunkManager
 	{
-		$manager = new AsyncChunkManager();
+		$manager = new AsyncChunkManager(0, World::Y_MAX);
 		foreach ($chunks as $hash => $chunk) {
 			World::getXZ($hash, $x, $z);
 			$manager->setChunk($x, $z, $chunk);

@@ -11,8 +11,7 @@ use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\item\Durable;
 use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -33,11 +32,6 @@ class WandCommand extends BaseCommand
 		$this->setPermission("we.command.tool.wand");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -54,15 +48,15 @@ class WandCommand extends BaseCommand
 		/** @var Player $sender */
 		try {
 			/** @var Durable $item */
-			$item = ItemFactory::getInstance()->get(ItemIds::WOODEN_AXE);
-			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
-			$item->setUnbreakable(true);
-			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.wand'));
-			$item->setLore([
-				TF::RESET . $lang->translateString('tool.wand.lore.1'),
-				TF::RESET . $lang->translateString('tool.wand.lore.2'),
-				TF::RESET . $lang->translateString('tool.wand.lore.3')
-			]);
+			$item = VanillaItems::WOODEN_AXE()
+				->addEnchantment(new EnchantmentInstance(Loader::$ench))
+				->setUnbreakable(true)
+				->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.wand'))
+				->setLore([
+					TF::RESET . $lang->translateString('tool.wand.lore.1'),
+					TF::RESET . $lang->translateString('tool.wand.lore.2'),
+					TF::RESET . $lang->translateString('tool.wand.lore.3')
+				]);
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			if (!$sender->getInventory()->contains($item)) $sender->getInventory()->addItem($item);
 		} catch (Exception $error) {

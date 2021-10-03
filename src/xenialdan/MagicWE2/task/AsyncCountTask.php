@@ -3,13 +3,13 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
@@ -22,24 +22,24 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncCountTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var int */
-	private $flags;
+	private int $flags;
 	/** @var BlockPalette */
-	private $filterblocks;
+	private BlockPalette $filterblocks;
 
 	/**
 	 * AsyncCountTask constructor.
 	 * @param Selection $selection
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $filterblocks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $filterblocks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $filterblocks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->touchedChunks = serialize($touchedChunks);
@@ -88,17 +88,17 @@ class AsyncCountTask extends MWEAsyncTask
 		$counts = [];
 		/** @var Block $block */
 		foreach ($selection->getShape()->getBlocks($manager, $filterblocks, $this->flags) as $block) {
-			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
-				$lastchunkx = $block->getPos()->x >> 4;
-				$lastchunkz = $block->getPos()->z >> 4;
-				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
+			if (is_null($lastchunkx) || ($block->getPosition()->x >> 4 !== $lastchunkx && $block->getPosition()->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->getPosition()->x >> 4;
+				$lastchunkz = $block->getPosition()->z >> 4;
+				if (is_null($manager->getChunk($block->getPosition()->x >> 4, $block->getPosition()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
 			}
 			BlockFactory::getInstance();
-			$block1 = $manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ());
-			$tostring = (BlockFactory::getInstance()->get($block1[0], $block1[1]))->getName() . " " . $block1[0] . ":" . $block1[1];
+			$block1 = $manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ());
+			$tostring = $block1->getName() . " " . $block1->getId() . ":" . $block1->getMeta();
 			if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;
 			$counts[$tostring]++;
 			$changed++;
@@ -112,13 +112,12 @@ class AsyncCountTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 			$result = $this->getResult();
 			$counts = $result["counts"];

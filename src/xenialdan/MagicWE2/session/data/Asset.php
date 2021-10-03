@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\session\data;
 use BlockHorizons\libschematic\Schematic;
 use Exception;
 use InvalidArgumentException;
+use jojoe77777\FormAPI\CustomForm;
 use JsonSerializable;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
@@ -19,8 +20,6 @@ use pocketmine\plugin\PluginException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use TypeError;
-use UnexpectedValueException;
-use xenialdan\customui\windows\CustomForm;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -28,12 +27,15 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
+use function pathinfo;
+use function var_dump;
+use const PATHINFO_FILENAME;
 
 class Asset implements JsonSerializable
 {
 	const TYPE_SCHEMATIC = 'schematic';
 	const TYPE_MCSTRUCTURE = 'structure';
-	const TYPE_CLIPBOARD = 'clipboard';//TODO consider if this is even worth the efford, or instead just convert it to mcstructure before storing
+	const TYPE_CLIPBOARD = 'clipboard';//TODO consider if this is even worth the effort, or instead just convert it to mcstructure before storing
 
 	public Schematic|SingleClipboard|MCStructure $structure;
 	public string $filename;//used as identifier
@@ -66,14 +68,14 @@ class Asset implements JsonSerializable
 		if ($this->structure instanceof Schematic) return new Vector3($this->structure->getWidth(), $this->structure->getHeight(), $this->structure->getLength());
 		if ($this->structure instanceof MCStructure) return $this->structure->getSize();
 		if ($this->structure instanceof SingleClipboard) return new Vector3($this->structure->selection->getSizeX(), $this->structure->selection->getSizeY(), $this->structure->selection->getSizeZ());
-		throw new UnexpectedValueException('Invalid class as Asset');
+		throw new Exception("Unknown structure type");
 	}
 
 	public function getTotalCount(): int
 	{
 		if ($this->structure instanceof Schematic || $this->structure instanceof MCStructure) return $this->getSize()->getFloorX() * $this->getSize()->getFloorY() * $this->getSize()->getFloorZ();
 		if ($this->structure instanceof SingleClipboard) return $this->structure->getTotalCount();
-		throw new UnexpectedValueException('Invalid class as Asset');
+		throw new Exception("Unknown structure type");
 	}
 
 	public function getOrigin(): Vector3
@@ -81,7 +83,7 @@ class Asset implements JsonSerializable
 		if ($this->structure instanceof Schematic) return new Vector3(0, 0, 0);
 		if ($this->structure instanceof MCStructure) return $this->structure->getStructureWorldOrigin();
 		if ($this->structure instanceof SingleClipboard) return $this->structure->position;
-		throw new UnexpectedValueException('Invalid class as Asset');
+		throw new Exception("Unknown structure type");
 	}
 
 	/**
@@ -116,6 +118,7 @@ class Asset implements JsonSerializable
 
 	/**
 	 * @return array
+	 * @throws Exception
 	 */
 	private function generateLore(): array
 	{
@@ -154,7 +157,7 @@ class Asset implements JsonSerializable
 			$schematic->setBlockArray($blocks);
 			return $schematic;
 		}
-		throw new PluginException("Wrong type");
+		throw new Exception("Unknown structure type");
 	}
 
 	public function toMCStructure(): MCStructure
@@ -215,15 +218,7 @@ class Asset implements JsonSerializable
 		try {
 			// Form
 			//TODO display errors
-			$form = new CustomForm("Asset settings");
-			$form->addInput("Filename", "Filename", $this->filename);
-			$form->addToggle("Lock asset", $this->locked);
-			$form->addToggle("Shared asset", $this->shared);
-			foreach ($this->generateLore() as $value) {
-				$form->addLabel($value);
-			}
-			// Function
-			$form->setCallable(function (Player $player, $data) use ($form, $new) {
+			$form = (new CustomForm(function (Player $player, $data) /*use ($form, $new)*/ {
 				var_dump(__LINE__, $data);
 				[$filename, $this->locked, $shared] = $data;
 				var_dump($filename, $this->locked ? "true" : "false", $shared ? "true" : "false");
@@ -253,7 +248,11 @@ class Asset implements JsonSerializable
 					#print_r(AssetCollection::getInstance()->assets->values()->toArray());
 					#print_r(AssetCollection::getInstance()->assets->keys()->toArray());
 					#print_r(AssetCollection::getInstance()->getAssets());
-					AssetCollection::getInstance()->assets->put($this->filename, $this);//overwrites
+					if($shared){
+						Loader::$assetCollection->assets[$this->filename] = $this;//overwrites
+					}else{
+						$session->getAssets()->assets[$this->filename] = $this;//overwrites
+					}
 					$player->sendMessage("Asset stored in " . ($shared ? 'global' : 'private') . ' collection');
 					$player->sendMessage((string)$this);
 					#$player->sendMessage((string)$this->toItem(true));
@@ -261,7 +260,14 @@ class Asset implements JsonSerializable
 					$player->sendMessage($ex->getMessage());
 					Loader::getInstance()->getLogger()->logException($ex);
 				}
-			});
+			}))
+			->setTitle("Asset settings")
+			->addInput("Filename", "Filename", $this->filename)
+			->addToggle("Lock asset", $this->locked)
+			->addToggle("Shared asset", $this->shared);
+			foreach ($this->generateLore() as $value) {
+				$form->addLabel($value);
+			}
 			return $form;
 		} catch (Exception $e) {
 			Loader::getInstance()->getLogger()->logException($e);
@@ -269,12 +275,13 @@ class Asset implements JsonSerializable
 		}
 	}
 
-	public function jsonSerialize()
+	public function jsonSerialize(): array
 	{
 		return [
 			'filename' => $this->filename,
 			'displayname' => $this->displayname,
-			'type' => $this->structure instanceof Schematic ? self::TYPE_SCHEMATIC : ($this->structure instanceof MCStructure ? self::TYPE_MCSTRUCTURE : ($this->structure instanceof SingleClipboard ? self::TYPE_CLIPBOARD : '')),
+			//'type' => $this->structure instanceof Schematic ? self::TYPE_SCHEMATIC : ($this->structure instanceof MCStructure ? self::TYPE_MCSTRUCTURE : ($this->structure instanceof SingleClipboard ? self::TYPE_CLIPBOARD : '')),
+			'type' => $this->structure instanceof Schematic ? self::TYPE_SCHEMATIC : ($this->structure instanceof MCStructure ? self::TYPE_MCSTRUCTURE : self::TYPE_CLIPBOARD),
 			'locked' => $this->locked,
 			'owner' => $this->ownerXuid ?? 'none',
 			'shared' => $this->shared,

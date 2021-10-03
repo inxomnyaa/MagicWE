@@ -9,7 +9,7 @@ use xenialdan\MagicWE2\exception\ShapeNotFoundException;
 class ShapeRegistry//todo use SingletonTrait
 {
 	/** @var string[] */
-	private static $shapes = [];
+	private static array $shapes = [];
 
 	public const CUBOID = "Cuboid";
 	public const CUBE = "Cube";

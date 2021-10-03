@@ -15,9 +15,9 @@ use xenialdan\MagicWE2\selection\Selection;
 class SetBiomeAction extends TaskAction
 {
 	/** @var bool */
-	public $addRevert = false;
+	public bool $addRevert = false;
 	/** @var int */
-	private $biomeId;
+	private int $biomeId;
 
 	public function __construct(int $biomeId)
 	{
@@ -38,7 +38,7 @@ class SetBiomeAction extends TaskAction
 	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
+	 * @return Generator
 	 * @throws Exception
 	 */
 	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator

@@ -10,7 +10,7 @@ use xenialdan\MagicWE2\session\UserSession;
 class MWESessionLoadEvent extends MWEEvent
 {
 	/** @var Session */
-	private $session;
+	private Session $session;
 
 	/**
 	 * MWESessionLoadEvent constructor.

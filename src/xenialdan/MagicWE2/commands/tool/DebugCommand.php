@@ -10,8 +10,7 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\ItemIds;
+use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
@@ -32,11 +31,6 @@ class DebugCommand extends BaseCommand
 		$this->setPermission("we.command.tool.debug");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -52,14 +46,14 @@ class DebugCommand extends BaseCommand
 		}
 		/** @var Player $sender */
 		try {
-			$item = ItemFactory::getInstance()->get(ItemIds::STICK);
-			$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
-			$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug'));
-			$item->setLore([
-				TF::RESET . $lang->translateString('tool.debug.lore.1'),
-				TF::RESET . $lang->translateString('tool.debug.lore.2'),
-				TF::RESET . $lang->translateString('tool.debug.lore.3')
-			]);
+			$item = VanillaItems::STICK()
+				->addEnchantment(new EnchantmentInstance(Loader::$ench))
+				->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug'))
+				->setLore([
+					TF::RESET . $lang->translateString('tool.debug.lore.1'),
+					TF::RESET . $lang->translateString('tool.debug.lore.2'),
+					TF::RESET . $lang->translateString('tool.debug.lore.3')
+				]);
 			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 			$sender->getInventory()->addItem($item);
 		} catch (Exception $error) {

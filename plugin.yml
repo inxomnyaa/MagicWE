@@ -1,9 +1,9 @@
 ---
 name: MagicWE2
 main: xenialdan\MagicWE2\Loader
-version: 10.1.4
+version: 10.1.8
 api: ["4.0.0"]
-php: [ "7.4", "8.0" ]
+php: [ "8.0" ]
 softdepend: [ "DEVirion" ]
 authors:
   - XenialDan
@@ -19,6 +19,10 @@ permissions:
     default: op
   we.command.donate:
     default: true
+  we.command.asset:
+    default: op
+  we.command.palette:
+    default: op
   we.command.language:
     default: op
   we.command.help:
@@ -113,6 +117,8 @@ permissions:
     default: op
   we.command.utility.togglewaila:
     default: op
-  we.command.test:
+  we.command.utility.togglesidebar:
+    default: op
+  we.command.debug:
     default: op
 ...

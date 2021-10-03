@@ -9,7 +9,7 @@ use xenialdan\MagicWE2\exception\ActionNotFoundException;
 class ActionRegistry
 {
 	/** @var string[] */
-	private static $actions = [];
+	private static array $actions = [];
 
 	public function __construct()
 	{

@@ -5,31 +5,31 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
-use Ds\Deque;
 use Generator;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Random;
+use SplDoublyLinkedList;
 
 class WeightedRandom
 {
 
 	/** @var float[] */
-	private $probabilities = [];
+	private array $probabilities = [];
 
 	/** @var int[] */
-	private $aliases;
+	private array $aliases;
 
 	/** @var Random */
-	private $random;
+	private Random $random;
 
-	/** @var mixed[] */
-	protected $indexes = [];
+	/** @var array */
+	protected array $indexes = [];
 
 	/**
 	 * @param mixed $value
 	 * @param float $weight
 	 */
-	public function add($value, float $weight): void
+	public function add(mixed $value, float $weight): void
 	{
 		$this->probabilities[] = $weight;
 		$this->indexes[] = $value;
@@ -43,6 +43,7 @@ class WeightedRandom
 	private function normalize(): void
 	{
 		$sum = array_sum($this->probabilities);
+		if($sum < 1) return;
 		foreach ($this->probabilities as &$weight) {
 			$weight /= $sum;
 		}
@@ -67,10 +68,8 @@ class WeightedRandom
 		$probabilities = $this->probabilities;
 
 		// Create two stacks to act as worklists as we populate the tables.
-		$small = new Deque();
-		$small->allocate($probabilities_c);
-		$large = new Deque();
-		$large->allocate($probabilities_c);
+		$small = new SplDoublyLinkedList();
+		$large = new SplDoublyLinkedList();
 
 		// Populate the stacks with the input probabilities.
 		for ($i = 0; $i < $probabilities_c; ++$i) {

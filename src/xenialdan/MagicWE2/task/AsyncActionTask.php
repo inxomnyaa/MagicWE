@@ -3,15 +3,15 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use InvalidArgumentException;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -36,26 +36,26 @@ class AsyncActionTask extends MWEAsyncTask
 	*/
 
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var BlockPalette */
-	private $blockFilter;
+	private BlockPalette $blockFilter;
 	/** @var BlockPalette */
-	private $newBlocks;
+	private BlockPalette $newBlocks;
 	/** @var TaskAction */
-	private $action;
+	private TaskAction $action;
 
 	/**
 	 * AsyncActionTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param Selection $selection
 	 * @param TaskAction $action
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
@@ -103,7 +103,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
 		#$oldBlocks = [];
 		$messages = [];
-		$error = false;
+		//$error = false;
 		/** @var Progress $progress */
 		foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $this->newBlocks, $this->blockFilter, $oldBlocks, $messages) as $progress) {
 			$this->publishProgress($progress);
@@ -111,21 +111,18 @@ class AsyncActionTask extends MWEAsyncTask
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
-			return $chunk->isDirty();
+			return $chunk->isTerrainDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed", "messages"));
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
-	 * @throws Exception
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

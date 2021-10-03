@@ -8,26 +8,29 @@ use GlobalLogger;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\TextFormat;
 use RuntimeException;
 use Throwable;
+use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\task\action\FlipAction;
 
 class BlockStatesEntry
 {
 	/** @var string */
-	public $blockIdentifier;
+	public string $blockIdentifier;
 	/** @var CompoundTag */
-	public $blockStates;
+	public CompoundTag $blockStates;
 	/** @var string */
-	public $blockFull;
+	public string $blockFull;
 	/** @var Block|null */
-	public $block;
+	public ?Block $block = null;
 
 	/**
 	 * BlockStatesEntry constructor.
@@ -41,10 +44,7 @@ class BlockStatesEntry
 		$this->blockStates = $blockStates;
 		$this->block = $block;
 		try {
-			if ($this->blockStates !== null)
-				$this->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
-			else
-				$this->blockFull = $this->blockIdentifier;
+			$this->blockFull = TextFormat::clean(BlockStatesParser::printStates($this, false));
 		} catch (Throwable $e) {
 			GlobalLogger::get()->logException($e);
 			$this->blockFull = $this->blockIdentifier;
@@ -62,9 +62,12 @@ class BlockStatesEntry
 	/**
 	 * TODO hacky AF. clean up
 	 * @return Block
+	 * @throws BlockQueryAlreadyParsedException
 	 * @throws InvalidArgumentException
-	 * @throws RuntimeException
 	 * @throws InvalidBlockStateException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function toBlock(): Block
 	{
@@ -90,9 +93,8 @@ class BlockStatesEntry
 		$block = $clone->toBlock();
 		$idMapName = str_replace("minecraft:", "", BlockStatesParser::getBlockIdMapName($block));
 		$key = $idMapName . ":" . $block->getMeta();
-		/** @var BlockStatesParser $blockstateParser */
 		$blockstateParser = BlockStatesParser::getInstance();
-		if (strpos($idMapName, "_door") !== false) {
+		if (str_contains($idMapName, "_door")) {
 			$fromMap = $blockstateParser::getDoorRotationFlipMap()[$block->getMeta()] ?? null;
 		} else {
 			$fromMap = $blockstateParser::getRotationFlipMap()[$key] ?? null;
@@ -127,7 +129,7 @@ class BlockStatesEntry
 		}
 		$clone->blockStates = $bsCompound;
 		$clone->blockFull = TextFormat::clean($blockstateParser::printStates($clone, false));
-		if (strpos($idMapName, "_door") !== false) {
+		if (str_contains($idMapName, "_door")) {
 			$clone->block = $clone->toBlock();//TODO check
 		} else
 			$clone->block = null;
@@ -169,15 +171,15 @@ class BlockStatesEntry
 		$bsCompound = clone $clone->blockStates;//TODO check if clone is necessary
 		#$bsCompound->setName("minecraft:$key");//TODO this might cause issues with the parser since it stays same //seems to work ¯\_(ツ)_/¯
 		if ($axis === FlipAction::AXIS_Y && !(//TODO maybe add vine + mushroom block directions
-				$bsCompound->hasTag("attachment") ||
-				$bsCompound->hasTag("facing_direction") ||
-				$bsCompound->hasTag("hanging") ||
-				$bsCompound->hasTag("lever_direction") ||
-				$bsCompound->hasTag("rail_direction") ||
-				$bsCompound->hasTag("top_slot_bit") ||
-				$bsCompound->hasTag("torch_facing_direction") ||
-				$bsCompound->hasTag("upper_block_bit") ||
-				$bsCompound->hasTag("upside_down_bit")
+				$bsCompound->getTag("attachment") !== null ||
+				$bsCompound->getTag("facing_direction") !== null ||
+				$bsCompound->getTag("hanging") !== null ||
+				$bsCompound->getTag("lever_direction") !== null ||
+				$bsCompound->getTag("rail_direction") !== null ||
+				$bsCompound->getTag("top_slot_bit") !== null ||
+				$bsCompound->getTag("torch_facing_direction") !== null ||
+				$bsCompound->getTag("upper_block_bit") !== null ||
+				$bsCompound->getTag("upside_down_bit") !== null
 			)) {//ugly hack for y flip
 			#var_dump("nothing can be flipped around y axis");
 			return $clone;

@@ -5,8 +5,8 @@ namespace xenialdan\MagicWE2\task;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\scheduler\AsyncTask;
-use pocketmine\uuid\UUID;
 use pocketmine\world\Position;
+use Ramsey\Uuid\Uuid;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
@@ -15,9 +15,9 @@ use xenialdan\MagicWE2\session\UserSession;
 abstract class MWEAsyncTask extends AsyncTask
 {
 	/** @var string */
-	public $sessionUUID;
+	public string $sessionUUID;
 	/** @var float */
-	public $start;
+	public float $start;
 
 	public function onProgressUpdate($progress): void
 	{
@@ -25,7 +25,7 @@ abstract class MWEAsyncTask extends AsyncTask
 			$progress = new Progress($progress[0] / 100, $progress[1]);
 		}
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			/** @var Progress $progress */
 			if ($session instanceof UserSession) $session->getBossBar()->setPercentage($progress->progress)->setSubTitle(str_replace("%", "%%%%", $progress->string . " | " . floor($progress->progress * 100) . "%"));
 			else $session->sendMessage($progress->string . " | " . floor($progress->progress * 100) . "%");//TODO remove, debug
@@ -48,7 +48,7 @@ abstract class MWEAsyncTask extends AsyncTask
 	public static function singleBlockToData(Block $block, ?Position $position = null): array
 	{
 		/** @noinspection PhpInternalEntityUsedInspection */
-		return [$block->getFullId(), $position ?? $block->getPos()];
+		return [$block->getFullId(), $position ?? $block->getPosition()];
 	}
 
 	/**
@@ -74,10 +74,10 @@ abstract class MWEAsyncTask extends AsyncTask
 		$block = BlockFactory::getInstance()->fromFullBlock($data[0]);
 		/** @var Position $pos */
 		$pos = $data[1];
-		$block->getPos()->world = $pos->world;
-		$block->getPos()->x = $pos->x;
-		$block->getPos()->y = $pos->y;
-		$block->getPos()->z = $pos->z;
+		$block->getPosition()->world = $pos->world;
+		$block->getPosition()->x = $pos->x;
+		$block->getPosition()->y = $pos->y;
+		$block->getPosition()->z = $pos->z;
 		return $block;
 	}
 

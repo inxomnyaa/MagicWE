@@ -4,7 +4,6 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use Exception;
 use Generator;
-use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
@@ -17,7 +16,7 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 class Custom extends Shape
 {
 	/** @var Vector3[] */
-	public $positions = [];
+	public array $positions = [];
 
 	/**
 	 * Custom constructor.
@@ -35,10 +34,10 @@ class Custom extends Shape
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		foreach ($this->positions as $position) {
@@ -51,10 +50,10 @@ class Custom extends Shape
 	 * Returns a flat layer of all included x z positions in selection
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param int $flags
-	 * @return Generator|Vector2[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		/* Mapping: $walked[$hash]=true */
@@ -72,7 +71,7 @@ class Custom extends Shape
 	 * @return string[] fastSerialized chunks
 	 * @throws Exception
 	 */
-	public function getTouchedChunks($manager): array
+	public function getTouchedChunks(AsyncChunkManager|World $manager): array
 	{
 		$this->validateChunkManager($manager);
 		$touchedChunks = [];

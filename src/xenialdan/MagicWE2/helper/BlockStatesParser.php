@@ -16,15 +16,19 @@ use pocketmine\block\Door;
 use pocketmine\block\utils\BlockDataSerializer;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
 use pocketmine\item\LegacyStringToItemParser;
+use pocketmine\item\LegacyStringToItemParserException;
+use pocketmine\item\StringToItemParser;
 use pocketmine\math\Facing;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
+use pocketmine\network\mcpe\convert\GlobalItemTypeDictionary;
 use pocketmine\network\mcpe\convert\R12ToCurrentBlockMapEntry;
 use pocketmine\network\mcpe\protocol\serializer\NetworkNbtSerializer;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\protocol\serializer\PacketSerializerContext;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -33,8 +37,11 @@ use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
+use Webmozart\PathUtil\Path;
 use xenialdan\MagicWE2\exception\InvalidBlockStateException;
 use xenialdan\MagicWE2\Loader;
+use function array_key_exists;
+use function file_get_contents;
 use const pocketmine\RESOURCE_PATH;
 
 final class BlockStatesParser
@@ -42,26 +49,26 @@ final class BlockStatesParser
 	use SingletonTrait;
 
 	/** @var string */
-	public static $rotPath;
+	public static string $rotPath = "";
 	/** @var string */
-	public static $doorRotPath;
+	public static string $doorRotPath = "";
 
 	/** @var R12ToCurrentBlockMapEntry[][] *///TODO check type correct? phpstan!
-	private static $legacyStateMap;
+	private static array $legacyStateMap;
 
 	/** @var array */
-	private static $aliasMap = [];
+	private static array $aliasMap = [];
 	/** @var array */
-	private static $rotationFlipMap = [];
+	private static array $rotationFlipMap = [];
 	/** @var array */
-	private static $doorRotationFlipMap = [];
+	private static array $doorRotationFlipMap = [];
 
 	private function __construct()
 	{
-//		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
-//		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
-		$this->loadRotationAndFlipData(self::$rotPath);
-		$this->loadDoorRotationAndFlipData(self::$doorRotPath);
+		$this->loadRotationAndFlipData(Loader::getRotFlipPath());
+		$this->loadDoorRotationAndFlipData(Loader::getDoorRotFlipPath());
+		//$this->loadRotationAndFlipData(self::$rotPath);
+		//$this->loadDoorRotationAndFlipData(self::$doorRotPath);
 		$this->loadLegacyMappings();
 	}
 
@@ -70,7 +77,7 @@ final class BlockStatesParser
 		self::$legacyStateMap = [];
 		$contents = file_get_contents(RESOURCE_PATH . "vanilla/r12_to_current_block_map.bin");
 		if ($contents === false) throw new PluginException("Can not get contents of r12_to_current_block_map");
-		$legacyStateMapReader = new PacketSerializer($contents);
+		$legacyStateMapReader = PacketSerializer::decoder(file_get_contents(Path::join(RESOURCE_PATH, "vanilla", "r12_to_current_block_map.bin")), 0, new PacketSerializerContext(GlobalItemTypeDictionary::getInstance()->getDictionary()));
 		$nbtReader = new NetworkNbtSerializer();
 		while (!$legacyStateMapReader->feof()) {
 			$id = $legacyStateMapReader->getString();
@@ -142,7 +149,10 @@ final class BlockStatesParser
 	 * @param CompoundTag $states
 	 * @return Door
 	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws UnexpectedTagTypeException
 	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
 	 */
 	private static function buildDoor(BlockQuery $query, CompoundTag $states): Door
 	{
@@ -180,6 +190,7 @@ final class BlockStatesParser
 	/**
 	 * @param string $blockIdentifier
 	 * @return CompoundTag
+	 * @throws UnexpectedTagTypeException
 	 */
 	protected static function getDefaultStates(string $blockIdentifier): CompoundTag
 	{
@@ -190,17 +201,20 @@ final class BlockStatesParser
 	 * Parses a BlockQuery (acquired using BlockPalette::fromString()) to a block and sets the BlockQuery's blockFullId
 	 * @param BlockQuery $query
 	 * @return Block
-	 * @throws InvalidArgumentException|\pocketmine\block\utils\InvalidBlockStateException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws UnexpectedTagTypeException
+	 * @throws \pocketmine\block\utils\InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
 	 * @noinspection PhpInternalEntityUsedInspection
 	 */
 	public static function fromString(BlockQuery $query): Block
 	{
-		$namespacedSelectedBlockName = strpos($query->blockId, "minecraft:") === false ? "minecraft:" . $query->blockId : $query->blockId;
+		$namespacedSelectedBlockName = !str_contains($query->blockId, "minecraft:") ? "minecraft:" . $query->blockId : $query->blockId;
 		$selectedBlockName = strtolower(str_replace("minecraft:", "", $namespacedSelectedBlockName));//TODO try to keep namespace "minecraft:" to support custom blocks
 
-		/** @var LegacyStringToItemParser $legacyStringToItemParser */
-		$legacyStringToItemParser = LegacyStringToItemParser::getInstance();
-		$block = $legacyStringToItemParser->parse($selectedBlockName)->getBlock();
+		/** @noinspection PhpDeprecationInspection */
+		$block = StringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock() ?? LegacyStringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock();
 		//no states, just block
 		if (!$query->hasBlockStates()) {
 			$query->blockFullId = $block->getFullId();
@@ -225,22 +239,18 @@ final class BlockStatesParser
 			}
 		}
 		foreach ($statesExploded as $stateKeyValuePair) {
-			if (strpos($stateKeyValuePair, "=") === false) continue;
+			if (!str_contains($stateKeyValuePair, "=")) continue;
 			[$stateName, $value] = explode("=", $stateKeyValuePair);
-			$value = strtolower(trim((string)$value));
+			$value = strtolower(trim($value));
 			if ($value === '') {
 				throw new InvalidBlockStateException("Empty value for state $stateName");
 			}
 			//change blockstate alias to blockstate name
 			$stateName = $availableAliases[$stateName] ?? $stateName;
 			//TODO maybe validate wrong states here? i.e. stone[type=wrongtype] => Exception, "wrongtype" is invalid value
-			try {
-				$tag = $finalStatesList->getTag($stateName);
-			} catch (UnexpectedTagTypeException $e) {
-				throw new InvalidBlockStateException("Default states for block '$query->blockId' do not contain Tag with name '$stateName'");
-			}
+			$tag = $finalStatesList->getTag($stateName);
 			if ($tag === null) {
-				throw new InvalidBlockStateException("Invalid state $stateName");
+				throw new InvalidBlockStateException("Default states for block '$query->blockId' do not contain Tag with name '$stateName'");
 			}
 			if ($tag instanceof StringTag) {
 				$finalStatesList->setString($stateName, $value);
@@ -259,7 +269,7 @@ final class BlockStatesParser
 		}
 		//return found block(s)
 		//doors.. special blocks annoying -.-
-		if (strpos($query->blockId, "_door") !== false) {
+		if (str_contains($query->blockId, "_door")) {
 			$block = self::buildDoor($query, $finalStatesList);
 			$query->blockFullId = $block->getFullId();
 			return $block;
@@ -269,8 +279,8 @@ final class BlockStatesParser
 		foreach (self::$legacyStateMap[$namespacedSelectedBlockName] as $meta => $r12ToCurrentBlockMapEntry) {
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
 			if ($clonedPrintedCompound->equals($finalStatesList)) {
-				/** @var BlockFactory $blockFactory */
 				$blockFactory = BlockFactory::getInstance();
+				/** @noinspection PhpDeprecationInspection */
 				$block = $blockFactory->get($block->getId(), $meta & 0xf);
 				$blocks[] = $block;
 			}
@@ -298,6 +308,9 @@ final class BlockStatesParser
 		$name = self::getBlockIdMapName($block);
 		if ($name === null) return null;
 		$damage = $block->getMeta();
+		if(!array_key_exists($name,self::$legacyStateMap)){
+			return null;
+		}
 		$blockStates = clone self::$legacyStateMap[$name][$damage]->getBlockState()->getCompoundTag('states');
 		if ($blockStates === null) return null;
 		return new BlockStatesEntry($name, $blockStates, $block);
@@ -312,7 +325,7 @@ final class BlockStatesParser
 			throw new InvalidArgumentException("Could not find default block states for $namespacedSelectedBlockName");
 		}
 
-		if (strpos($namespacedSelectedBlockName, "_door") !== false) {
+		if (str_contains($namespacedSelectedBlockName, "_door")) {
 			$door = self::buildDoor(BlockPalette::fromString($namespacedSelectedBlockName)->randomBlockQueries->generate(1)->current(), $states);
 			//return self::getStateByBlock($door);
 			return new BlockStatesEntry($namespacedSelectedBlockName, $states, $door);
@@ -332,7 +345,7 @@ final class BlockStatesParser
 	 * @param BlockStatesEntry $entry
 	 * @param bool $skipDefaults
 	 * @return string
-	 * @throws RuntimeException
+	 * @throws UnexpectedTagTypeException
 	 */
 	public static function printStates(BlockStatesEntry $entry, bool $skipDefaults): string
 	{
@@ -340,7 +353,6 @@ final class BlockStatesParser
 		$blockIdentifier = $entry->blockIdentifier;
 		$s = [];
 		foreach ($printedCompound as $statesTagEntryName => $statesTagEntry) {
-			/** @var CompoundTag $defaultStatesNamedTag */
 			$defaultStatesNamedTag = self::getDefaultStates($blockIdentifier);
 			$namedTag = $defaultStatesNamedTag->getTag($statesTagEntryName);
 			if (!$namedTag instanceof ByteTag && !$namedTag instanceof StringTag && !$namedTag instanceof IntTag) {
@@ -440,8 +452,10 @@ final class BlockStatesParser
 				foreach (BlockPalette::fromString($test)->palette() as $block) {
 					assert($block instanceof Block);
 					$blockStatesEntry = self::getStateByBlock($block);
-					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, true));
-					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, false));
+					if ($blockStatesEntry !== null) {
+						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, true));
+						Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . self::printStates($blockStatesEntry, false));
+					}
 					Server::getInstance()->getLogger()->debug(TF::LIGHT_PURPLE . "Final block: " . TF::AQUA . $block);
 				}
 			} catch (Exception $e) {
@@ -451,7 +465,6 @@ final class BlockStatesParser
 		}
 		//return;//TODO
 		//test flip+rotation
-		/** @noinspection PhpUnreachableStatementInspection */
 		// $tests2 = [
 		// 	#"minecraft:wooden_slab[wood_type=oak]",
 		// 	#"minecraft:wooden_slab[wood_type=spruce,top_slot_bit=true]",
@@ -570,8 +583,9 @@ final class BlockStatesParser
 	/**
 	 * Generates an alias map for blockstates
 	 * Only call from main thread!
-	 * @throws InvalidStateException
 	 * @throws AssumptionFailedError
+	 * @throws InvalidStateException
+	 * @throws UnexpectedTagTypeException
 	 * @internal
 	 * @noinspection PhpUnusedPrivateMethodInspection
 	 */
@@ -635,7 +649,7 @@ final class BlockStatesParser
 							"end_portal",
 						];
 						foreach ($fullReplace as $stateAlias => $setTo)
-							if (strpos($alias, $stateAlias) !== false) {
+							if (str_contains($alias, $stateAlias)) {
 								$alias = $setTo;
 							}
 						foreach ($partReplace as $replace)
@@ -659,6 +673,7 @@ final class BlockStatesParser
 	 * Generates an alias map for blockstates
 	 * Only call from main thread!
 	 * @throws InvalidStateException
+	 * @throws UnexpectedTagTypeException
 	 * @internal
 	 */
 	public static function generatePossibleStatesJson(): void
@@ -676,7 +691,7 @@ final class BlockStatesParser
 					}
 					if (!in_array($state->getValue(), $all[$stateName], true)) {
 						$all[(string)$stateName][] = $state->getValue();
-						if (strpos($stateName, "_bit") !== false) {
+						if (str_contains($stateName, "_bit")) {
 							var_dump("_bit");
 						} else {
 							var_dump("no _bit");
@@ -697,7 +712,7 @@ final class BlockStatesParser
 	 * @param string $property
 	 * @return mixed
 	 */
-	public static function &readAnyValue(object $object, string $property)
+	public static function &readAnyValue(object $object, string $property): mixed
 	{
 		$invoke = Closure::bind(function & () use ($property) {
 			return $this->$property;

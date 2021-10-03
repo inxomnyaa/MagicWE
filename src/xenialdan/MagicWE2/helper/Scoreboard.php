@@ -31,7 +31,10 @@ class Scoreboard
 					ScoreFactory::setScoreLine($player, ++$line, TF::GOLD . $session->getLanguage()->translateString("spacer", ["Selection"]));
 					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Position: " . TF::RESET . API::vecToString($selection->getPos1()->asVector3()) . " » " . API::vecToString($selection->getPos2()->asVector3()));
 					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " World: " . TF::RESET . $selection->getWorld()->getFolderName());
-					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Shape: " . TF::RESET . (new ReflectionClass($selection->shape))->getShortName());
+					if ($selection->shape === null)
+						ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Shape: " . TF::RESET . 'N/A');
+					else
+						ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Shape: " . TF::RESET . (new ReflectionClass($selection->shape))->getShortName());
 					ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Size: " . TF::RESET . API::vecToString(new Vector3($selection->getSizeX(), $selection->getSizeY(), $selection->getSizeZ())) . " ({$selection->getShape()->getTotalCount()})");
 
 					ScoreFactory::setScoreLine($player, ++$line, TF::GOLD . $session->getLanguage()->translateString("spacer", ["Settings"]));
@@ -48,7 +51,10 @@ class Scoreboard
 						if ($cb->customName !== "")
 							ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Name: " . TF::RESET . $cb->customName);
 						if ($cb->selection instanceof Selection) {
-							ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Shape: " . TF::RESET . (new ReflectionClass($cb->selection->shape))->getShortName());
+							if ($cb->selection->shape === null)
+								ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Shape: " . TF::RESET . 'N/A');
+							else
+								ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Shape: " . TF::RESET . (new ReflectionClass($cb->selection->shape))->getShortName());
 							ScoreFactory::setScoreLine($player, ++$line, TF::BOLD . " Size: " . TF::RESET . API::vecToString(new Vector3($cb->selection->getSizeX(), $cb->selection->getSizeY(), $cb->selection->getSizeZ())) . " ({$cb->getTotalCount()})");
 						}
 					}

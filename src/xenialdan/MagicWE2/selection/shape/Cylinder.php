@@ -4,7 +4,6 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use Exception;
 use Generator;
-use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -18,9 +17,9 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 class Cylinder extends Shape
 {
 	/** @var int */
-	public $height = 1;
+	public int $height = 1;
 	/** @var int */
-	public $diameter = 5;
+	public int $diameter = 5;
 
 	/**
 	 * Cylinder constructor.
@@ -40,10 +39,10 @@ class Cylinder extends Shape
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -58,7 +57,7 @@ class Cylinder extends Shape
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO fuufufufuuu
+					if ($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < 0) continue;//TODO fuufufufuuu
 					if ($filterblocks->empty()) yield $block;
 					else {
 						foreach ($filterblocks->palette() as $filterblock) {
@@ -75,10 +74,10 @@ class Cylinder extends Shape
 	 * Returns a flat layer of all included x z positions in selection
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param int $flags
-	 * @return Generator|Vector2[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
@@ -97,7 +96,7 @@ class Cylinder extends Shape
 	 * @return string[] fastSerialized chunks
 	 * @throws Exception
 	 */
-	public function getTouchedChunks($manager): array
+	public function getTouchedChunks(AsyncChunkManager|World $manager): array
 	{//TODO optimize to remove "corner" chunks
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;

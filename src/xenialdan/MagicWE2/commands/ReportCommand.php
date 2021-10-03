@@ -10,7 +10,7 @@ use CortexPE\Commando\exception\ArgumentOrderException;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\command\ConsoleCommandSender;
+use pocketmine\console\ConsoleCommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -31,11 +31,6 @@ class ReportCommand extends BaseCommand
 		$this->setPermission("we.command.report");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

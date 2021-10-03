@@ -16,9 +16,9 @@ use xenialdan\MagicWE2\selection\Selection;
 class TestAction extends TaskAction
 {
 	/** @var bool */
-	public $addRevert = false;
+	public bool $addRevert = false;
 	/** @var string */
-	public $completionString = '{%name} succeed, took {%took}, tested {%changed} blocks';
+	public string $completionString = '{%name} succeed, took {%took}, tested {%changed} blocks';
 
 	public function __construct()
 	{
@@ -38,7 +38,7 @@ class TestAction extends TaskAction
 	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator|Progress[]
+	 * @return Generator
 	 * @throws Exception
 	 */
 	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
@@ -50,7 +50,7 @@ class TestAction extends TaskAction
 		BlockFactory::getInstance();
 		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {
 			$changed++;
-			$messages[] = $block->getPos()->asVector3()->__toString() . " " . $block->getName();
+			$messages[] = $block->getPosition()->asVector3()->__toString() . " " . $block->getName();
 			$progress = new Progress($changed / $count, "$changed/$count");
 			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
 				yield $progress;

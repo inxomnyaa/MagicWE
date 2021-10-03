@@ -9,10 +9,12 @@ use MultipleIterator;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -27,27 +29,27 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncReplaceTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var int */
-	private $flags;
+	private int $flags;
 	/** @var BlockPalette */
-	private $replaceBlocks;
+	private BlockPalette $replaceBlocks;
 	/** @var BlockPalette */
-	private $newBlocks;
+	private BlockPalette $newBlocks;
 
 	/**
 	 * AsyncReplaceTask constructor.
 	 * @param Selection $selection
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $replaceBlocks
 	 * @param BlockPalette $newBlocks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $replaceBlocks, BlockPalette $newBlocks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $replaceBlocks, BlockPalette $newBlocks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
@@ -82,7 +84,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
-			return $chunk->isDirty();
+			return $chunk->isTerrainDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 	}
@@ -93,9 +95,9 @@ class AsyncReplaceTask extends MWEAsyncTask
 	 * @param BlockPalette $replaceBlocks
 	 * @param BlockPalette $newBlocks
 	 * @param null|int $changed
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
-	 * @throws Exception
+	 * @return Generator
+	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, BlockPalette $replaceBlocks, BlockPalette $newBlocks, ?int &$changed): Generator
 	{
@@ -113,18 +115,19 @@ class AsyncReplaceTask extends MWEAsyncTask
 			 * @var Block $block
 			 * @var Block $new
 			 */
-			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
-				$lastchunkx = $block->getPos()->x >> 4;
-				$lastchunkz = $block->getPos()->z >> 4;
-				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
+			if (is_null($lastchunkx) || ($block->getPosition()->x >> 4 !== $lastchunkx && $block->getPosition()->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->getPosition()->x >> 4;
+				$lastchunkz = $block->getPosition()->z >> 4;
+				if (is_null($manager->getChunk($block->getPosition()->x >> 4, $block->getPosition()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
 			}
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
-			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), (int)$block->getPos()->x, (int)$block->getPos()->y, (int)$block->getPos()->z));
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
+			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()), (int)$block->getPosition()->x, (int)$block->getPosition()->y, (int)$block->getPosition()->z));
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $new);
+			/** @noinspection PhpInternalEntityUsedInspection */
+			if ($manager->getBlockFullIdAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()) !== $block->getFullId()) {
 				$changed++;
 			}
 			///
@@ -138,15 +141,12 @@ class AsyncReplaceTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
-	 * @throws Exception
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

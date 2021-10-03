@@ -27,7 +27,7 @@ class RotateAngleArgument extends StringEnumArgument
 	 * @param CommandSender $sender
 	 * @return int
 	 */
-	public function parse(string $argument, CommandSender $sender)
+	public function parse(string $argument, CommandSender $sender): int
 	{
 		return (int)$this->getValue($argument);
 	}

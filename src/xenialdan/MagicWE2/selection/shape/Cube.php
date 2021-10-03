@@ -4,7 +4,6 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use Exception;
 use Generator;
-use pocketmine\block\Block;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -18,7 +17,7 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 class Cube extends Shape
 {
 	/** @var int */
-	public $width = 5;
+	public int $width = 5;
 
 	public function __construct(Vector3 $pasteVector, int $width)
 	{
@@ -31,10 +30,10 @@ class Cube extends Shape
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->getMinVec3()->x), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
@@ -44,8 +43,8 @@ class Cube extends Shape
 					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-					if ($block->getPos()->y >= World::Y_MAX || $block->getPos()->y < 0) continue;//TODO check for removal because relative might be at other y
-					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPos()->x > $this->getMinVec3()->getX() && $block->getPos()->x < $this->getMaxVec3()->getX()) && ($block->getPos()->y > $this->getMinVec3()->getY() && $block->getPos()->y < $this->getMaxVec3()->getY()) && ($block->getPos()->z > $this->getMinVec3()->getZ() && $block->getPos()->z < $this->getMaxVec3()->getZ())) continue;
+					if ($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < 0) continue;//TODO check for removal because relative might be at other y
+					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPosition()->x > $this->getMinVec3()->getX() && $block->getPosition()->x < $this->getMaxVec3()->getX()) && ($block->getPosition()->y > $this->getMinVec3()->getY() && $block->getPosition()->y < $this->getMaxVec3()->getY()) && ($block->getPosition()->z > $this->getMinVec3()->getZ() && $block->getPosition()->z < $this->getMaxVec3()->getZ())) continue;
 					if ($filterblocks->empty()) yield $block;
 					else {
 						foreach ($filterblocks->palette() as $filterblock) {
@@ -62,10 +61,10 @@ class Cube extends Shape
 	 * Returns a flat layer of all included x z positions in selection
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param int $flags
-	 * @return Generator|Vector2[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
@@ -80,7 +79,7 @@ class Cube extends Shape
 	 * @return string[] fastSerialized chunks
 	 * @throws Exception
 	 */
-	public function getTouchedChunks($manager): array
+	public function getTouchedChunks(AsyncChunkManager|World $manager): array
 	{
 		$this->validateChunkManager($manager);
 		$maxX = ($this->getMaxVec3()->x + 1) >> 4;

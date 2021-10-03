@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session;
 
-use Ds\Deque;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\lang\Language;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\World;
+use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
+use SplDoublyLinkedList;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\Loader;
@@ -23,35 +23,35 @@ abstract class Session
 {
 	public const MAX_CLIPBOARDS = 5;
 	public const MAX_HISTORY = 32;
-	/** @var UUID */
-	private $uuid;
+	/** @var UuidInterface */
+	private UuidInterface $uuid;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Selection[] */
-	private $selections = [];
-	/** @var UUID|null */
-	private $latestselection;
+	private array $selections = [];
+	/** @var UuidInterface|null */
+	private ?UuidInterface $latestselection = null;
 	//todo change to a list of objects with a pointer of the latest action
 	/** @var Clipboard[] */
-	private $clipboards = [];
+	private array $clipboards = [];
 	/** @var int */
-	private $currentClipboard = -1;
-	/** @var Deque<RevertClipboard> */
-	public $undoHistory;
-	/** @var Deque<RevertClipboard> */
-	public $redoHistory;
+	private int $currentClipboard = -1;
+	/** @var SplDoublyLinkedList<RevertClipboard> */
+	public SplDoublyLinkedList $undoHistory;
+	/** @var SplDoublyLinkedList<RevertClipboard> */
+	public SplDoublyLinkedList $redoHistory;
 
 	/**
-	 * @return UUID
+	 * @return UuidInterface
 	 */
-	public function getUUID(): UUID
+	public function getUUID(): UuidInterface
 	{
 		return $this->uuid;
 	}
 
 	/**
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 */
-	public function setUUID(UUID $uuid): void
+	public function setUUID(UuidInterface $uuid): void
 	{
 		$this->uuid = $uuid;
 	}
@@ -64,15 +64,14 @@ abstract class Session
 	{
 		$this->selections[$selection->getUUID()->toString()] = $selection;
 		$this->setLatestSelectionUUID($selection->getUUID());
-		$selection = $this->getLatestSelection();
-		return $selection;
+		return $this->getLatestSelection();
 	}
 
 	/**
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 * @return null|Selection
 	 */
-	public function &getSelectionByUUID(UUID $uuid): ?Selection
+	public function &getSelectionByUUID(UuidInterface $uuid): ?Selection
 	{
 		$selection = $this->selections[$uuid->toString()] ?? null;
 		return $selection;
@@ -113,23 +112,23 @@ abstract class Session
 	/**
 	 * @param mixed $selections
 	 */
-	public function setSelections($selections): void
+	public function setSelections(mixed $selections): void
 	{
 		$this->selections = $selections;
 	}
 
 	/**
-	 * @return UUID|null
+	 * @return UuidInterface|null
 	 */
-	public function getLatestSelectionUUID(): ?UUID
+	public function getLatestSelectionUUID(): ?UuidInterface
 	{
 		return $this->latestselection;
 	}
 
 	/**
-	 * @param UUID $latestselection
+	 * @param UuidInterface $latestselection
 	 */
-	public function setLatestSelectionUUID(UUID $latestselection): void
+	public function setLatestSelectionUUID(UuidInterface $latestselection): void
 	{
 		$this->latestselection = $latestselection;
 	}
@@ -213,7 +212,7 @@ abstract class Session
 	 */
 	public function addRevert(RevertClipboard $revertClipboard): void
 	{
-		$this->redoHistory->clear();
+		$this->redoHistory = new SplDoublyLinkedList();
 		$this->undoHistory->push($revertClipboard);
 		while ($this->undoHistory->count() > self::MAX_HISTORY) {
 			$this->undoHistory->shift();
@@ -258,8 +257,8 @@ abstract class Session
 
 	public function clearHistory(): void
 	{
-		$this->undoHistory->clear();
-		$this->redoHistory->clear();
+		$this->undoHistory = new SplDoublyLinkedList();
+		$this->redoHistory = new SplDoublyLinkedList();
 	}
 
 	public function clearClipboard(): void

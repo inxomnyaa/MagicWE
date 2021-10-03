@@ -8,10 +8,12 @@ use InvalidArgumentException;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -27,23 +29,23 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncPasteTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var string */
-	private $clipboard;
+	private string $clipboard;
 	/** @var Vector3 */
-	private $offset;
+	private Vector3 $offset;
 
 	/**
 	 * AsyncPasteTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param Selection $selection
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param SingleClipboard $clipboard
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, SingleClipboard $clipboard)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, SingleClipboard $clipboard)
 	{
 		$this->start = microtime(true);
 		$this->offset = $selection->getShape()->getPasteVector()->addVector($clipboard->position)->floor();
@@ -80,7 +82,7 @@ class AsyncPasteTask extends MWEAsyncTask
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
-			return $chunk->isDirty();
+			return $chunk->isTerrainDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 	}
@@ -90,9 +92,9 @@ class AsyncPasteTask extends MWEAsyncTask
 	 * @param AsyncChunkManager $manager
 	 * @param SingleClipboard $clipboard
 	 * @param null|int $changed
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @return Generator
 	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard, ?int &$changed): Generator
 	{
@@ -127,9 +129,7 @@ class AsyncPasteTask extends MWEAsyncTask
 			#var_dump("old", $old, "new", $new);
 			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z));
 			$manager->setBlockAt($x, $y, $z, $new);
-			if ($manager->getBlockArrayAt($x, $y, $z) !== [$manager->getBlockAt($x, $y, $z)->getId(), $manager->getBlockAt($x, $y, $z)->getMeta()]) {//TODO remove? Just useless waste imo
-				$changed++;
-			}
+			$changed++;
 			///
 			$i++;
 			$progress = floor($i / $blockCount * 100);
@@ -142,14 +142,11 @@ class AsyncPasteTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws InvalidArgumentException
-	 * @throws Exception
-	 * @throws Exception
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

@@ -23,14 +23,9 @@ class PlaceAllBlockstatesCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->setPermission("we.command.test");
+		$this->setPermission("we.command.debug");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

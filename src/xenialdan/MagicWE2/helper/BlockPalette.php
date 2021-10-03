@@ -10,7 +10,17 @@ use JsonException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\InvalidBlockStateException;
+use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\Item;
+use pocketmine\item\LegacyStringToItemParserException;
+use pocketmine\item\VanillaItems;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\UnexpectedTagTypeException;
+use pocketmine\utils\TextFormat as TF;
+use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
+use xenialdan\MagicWE2\Loader;
+use const JSON_THROW_ON_ERROR;
 
 class BlockPalette
 {
@@ -34,7 +44,12 @@ class BlockPalette
 	/**
 	 * @param string $blocksQuery
 	 * @return BlockPalette
-	 * @throws InvalidArgumentException|BlockQueryAlreadyParsedException|InvalidBlockStateException
+	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
+	 * @throws \xenialdan\MagicWE2\exception\InvalidBlockStateException
 	 */
 	public static function fromString(string $blocksQuery): BlockPalette
 	{
@@ -49,7 +64,26 @@ class BlockPalette
 			$blockMatch += [null, null, null];
 			$extraMatch += [null, null];
 			[[$fullBlockQuery, $blockId, $blockStatesQuery], [$fullExtraQuery, $weight]] = [$blockMatch, $extraMatch];
-			$palette->addBlockQuery((new BlockQuery($query, $fullBlockQuery, $blockId, $blockStatesQuery, $fullExtraQuery, $weight))->parse());
+			$palette->addBlockQuery((new BlockQuery($query, $fullBlockQuery, $blockId, $blockStatesQuery, $fullExtraQuery, (float)$weight))->parse());
+		}
+		$palette->randomBlockQueries->setup();
+
+		return $palette;
+	}
+
+	/**
+	 * @param Block[] $blocks
+	 * @return BlockPalette
+	 */
+	public static function fromBlocks(array $blocks): BlockPalette
+	{
+		$palette = self::CREATE();
+		foreach ($blocks as $block) {
+			//TODO this really isn't optimal..
+			$state = BlockStatesParser::getStateByBlock($block);
+			if ($state !== null) {
+				$palette->addBlockQuery(new BlockQuery($state->blockFull, null, null, null, null, 100));
+			}//TODO exceptions
 		}
 		$palette->randomBlockQueries->setup();
 
@@ -65,13 +99,12 @@ class BlockPalette
 
 	/**
 	 * @param int $amount
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
 	public function blocks(int $amount = 1): Generator
 	{
 		if ($amount < 1) throw new InvalidArgumentException('$amount must be greater than 0');
-		/** @var BlockFactory $blockFactory */
 		$blockFactory = BlockFactory::getInstance();
 		/** @var BlockQuery $blockQuery */
 		foreach ($this->randomBlockQueries->generate($amount) as $blockQuery) {//TODO yield from?
@@ -80,11 +113,10 @@ class BlockPalette
 	}
 
 	/**
-	 * @return Generator|Block[]
+	 * @return Generator
 	 */
 	public function palette(): Generator
 	{
-		/** @var BlockFactory $blockFactory */
 		$blockFactory = BlockFactory::getInstance();
 		/** @var BlockQuery $blockQuery */
 		foreach ($this->randomBlockQueries->indexes() as $blockQuery) {//TODO yield from?
@@ -103,36 +135,61 @@ class BlockPalette
 	}
 
 	/**
-	 * @return string
-	 * @throws JsonException
+	 * @return array
 	 */
-	public function encode(): string
+	public function toStringArray(): array
 	{
 		$e = [];
 		/** @var BlockQuery $blockQuery */
-		foreach ($this->randomBlockQueries->generate($this->randomBlockQueries->count()) as $blockQuery)
-			$e[] = $blockQuery->blockFullId;
-		return json_encode($e, JSON_THROW_ON_ERROR);
+		foreach ($this->randomBlockQueries->indexes() as $blockQuery)//TODO check if this isn't random
+		{
+			$e[] = $blockQuery->query . '%' . $blockQuery->weight;
+		}
+		return $e;
 	}
 
 	/**
 	 * @param string $blocks
 	 * @return array
+	 * @throws BlockQueryAlreadyParsedException
+	 * @throws InvalidArgumentException
+	 * @throws InvalidBlockStateException
 	 * @throws JsonException
+	 * @throws LegacyStringToItemParserException
+	 * @throws UnexpectedTagTypeException
 	 */
-	public static function decode(string $blocks): array
+	public static function fromStringArray(string $blocks): array
 	{
 		$e = [];
-		/** @var BlockFactory $blockFactory */
-		$blockFactory = BlockFactory::getInstance();
-		foreach (json_decode($blocks, true, 512, JSON_THROW_ON_ERROR) as $block)
-			$e[] = $blockFactory->fromFullBlock($block);
+		foreach (json_decode($blocks, true, 512, JSON_THROW_ON_ERROR) as $query) {
+			$q = new BlockQuery($query, null, null, null, null);
+			$q->parse();//TODO the weight might not be parsed
+			$e[] = $q;
+		}
 		return $e;
 	}
 
 	public static function CREATE(): self
 	{
 		return new self;
+	}
+
+	public function toItem(string $id): Item
+	{
+		$item = VanillaItems::BLUE_DYE();//placeholder. Maybe make it the most used item or replace with bundles
+		$item->addEnchantment(new EnchantmentInstance(Loader::$ench));
+		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_PALETTE,
+			CompoundTag::create()
+				->setString("id", $id)
+		);
+		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . "Palette $id");
+		$lines = [];
+		$blocks = $this->toStringArray();
+		$lines[] = TF::RESET . TF::BOLD . TF::GOLD . "Blocks: ";
+		foreach ($blocks as $block)
+			$lines[] = TF::RESET . $block;
+		$item->setLore($lines);
+		return $item;
 	}
 
 }

@@ -7,9 +7,7 @@ use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
-use pocketmine\world\ChunkManager;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\World;
 use Serializable;
@@ -20,7 +18,7 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 abstract class Shape implements Serializable
 {
 	/** @var null|Vector3 */
-	public $pasteVector;
+	public ?Vector3 $pasteVector = null;
 
 	public function getPasteVector(): ?Vector3
 	{
@@ -39,7 +37,7 @@ abstract class Shape implements Serializable
 	 */
 	public static function getChunkManager(array $chunks): AsyncChunkManager
 	{
-		$manager = new AsyncChunkManager();
+		$manager = new AsyncChunkManager(0, World::Y_MAX);
 		foreach ($chunks as $hash => $chunk) {
 			World::getXZ($hash, $chunkX, $chunkZ);
 			$manager->setChunk($chunkX, $chunkZ, $chunk);
@@ -51,7 +49,7 @@ abstract class Shape implements Serializable
 	 * @param mixed $manager
 	 * @throws InvalidArgumentException
 	 */
-	public function validateChunkManager($manager): void
+	public function validateChunkManager(mixed $manager): void
 	{
 		if (!$manager instanceof World && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncChunkManager");
 	}
@@ -65,24 +63,25 @@ abstract class Shape implements Serializable
 	 * @param int $flags
 	 * @return Generator|Block[]
 	 * @throws Exception
+	 * @noinspection PhpDocSignatureInspection
 	 */
-	abstract public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator;
+	abstract public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator;
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param int $flags
-	 * @return Generator|Vector2[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	abstract public function getLayer($manager, int $flags = API::FLAG_BASE): Generator;
+	abstract public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator;
 
 	/**
-	 * @param ChunkManager $manager
+	 * @param World|AsyncChunkManager $manager
 	 * @return string[] fastSerialized chunks
 	 * @throws Exception
 	 */
-	abstract public function getTouchedChunks(ChunkManager $manager): array;
+	abstract public function getTouchedChunks(AsyncChunkManager|World $manager): array;
 
 	abstract public function getAABB(): AxisAlignedBB;
 
@@ -115,7 +114,7 @@ abstract class Shape implements Serializable
 	 * @return string the string representation of the object or null
 	 * @since 5.1.0
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		return serialize((array)$this);
 	}
@@ -123,16 +122,15 @@ abstract class Shape implements Serializable
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
-	 * @param string $serialized <p>
+	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
 	 * @return void
 	 * @since 5.1.0
-	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	public function unserialize($serialized)
+	public function unserialize($data)
 	{
-		$unserialize = unserialize($serialized/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
+		$unserialize = unserialize($data/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
 		array_walk($unserialize, function ($value, $key) {
 			$this->$key = $value;
 		});

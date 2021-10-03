@@ -22,36 +22,36 @@ class BrushProperties implements JsonSerializable
 
 	public const VERSION = 1;
 	/** @var int */
-	public $version = self::VERSION;
+	public int $version = self::VERSION;
 	/** @var string */
-	public $customName = "";
+	public string $customName = "";
 	/** @var string */
-	public $shape = Sphere::class;
+	public string $shape = Sphere::class;
 	/** @var array */
-	public $shapeProperties = [];
+	public array $shapeProperties = [];
 	/** @var string */
-	public $action = SetBlockAction::class;
+	public string $action = SetBlockAction::class;
 	/** @var array */
-	public $actionProperties = [];
+	public array $actionProperties = [];
 	/** @var bool */
-	public $hollow = false;//TODO consider moving into shape properties
+	public bool $hollow = false;//TODO consider moving into shape properties
 	/** @var string */
-	public $blocks = "stone";
+	public string $blocks = "stone";
 	/** @var string */
-	public $filter = "";
+	public string $filter = "";
 	/** @var int */
-	public $biomeId = BiomeIds::PLAINS;
+	public int $biomeId = BiomeIds::PLAINS;
 	/** @var string */
-	public $uuid;
+	public string $uuid;
 
 	/**
 	 * Specify data which should be serialized to JSON
 	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * @return array data which can be serialized by <b>json_encode</b>,
 	 * which is a value of any type other than a resource.
 	 * @since 5.4.0
 	 */
-	public function jsonSerialize()
+	public function jsonSerialize(): array
 	{
 		return (array)$this;
 	}
@@ -143,7 +143,7 @@ class BrushProperties implements JsonSerializable
 				TF::RESET . TF::BOLD . TF::GOLD . "Filter: " . TF::RESET . $this->filter,
 				TF::RESET . TF::BOLD . TF::GOLD . "Biome: " . TF::RESET . $this->biomeId,
 				TF::RESET . TF::BOLD . TF::GOLD . "Hollow: " . TF::RESET . ($this->hollow ? TF::GREEN . "Yes" : TF::RED . "No"),
-				//TF::GOLD . "UUID: {$this->uuid}",
+				//TF::GOLD . "UuidInterface: {$this->uuid}",
 			]
 		);
 	}

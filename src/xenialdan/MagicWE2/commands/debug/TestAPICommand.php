@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace xenialdan\MagicWE2\commands;
+namespace xenialdan\MagicWE2\commands\debug;
 
 use CortexPE\Commando\BaseCommand;
 use Exception;
@@ -19,7 +19,7 @@ use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\task\action\TestAction;
 use xenialdan\MagicWE2\task\AsyncActionTask;
 
-class TestCommand extends BaseCommand
+class TestAPICommand extends BaseCommand
 {
 
 	/**
@@ -28,14 +28,9 @@ class TestCommand extends BaseCommand
 	 */
 	protected function prepare(): void
 	{
-		$this->setPermission("we.command.test");
+		$this->setPermission("we.command.debug");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

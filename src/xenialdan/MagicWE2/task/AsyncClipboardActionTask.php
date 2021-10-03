@@ -3,11 +3,11 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use InvalidArgumentException;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\BlockStatesParser;
@@ -22,23 +22,23 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 {
 
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var ClipboardAction */
-	private $action;
+	private ClipboardAction $action;
 	/** @var string */
-	private $clipboard;
+	private string $clipboard;
 
 	private string $rotPath;
 	private string $doorRotPath;
 
 	/**
 	 * AsyncClipboardActionTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param Selection $selection
 	 * @param ClipboardAction $action
 	 * @param SingleClipboard $clipboard
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, ClipboardAction $action, SingleClipboard $clipboard)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, ClipboardAction $action, SingleClipboard $clipboard)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
@@ -90,14 +90,12 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

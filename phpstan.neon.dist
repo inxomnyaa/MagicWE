@@ -11,12 +11,14 @@ parameters:
         - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
     scanDirectories:
         - /source/src
-        - phar:///source/vendor/customui.phar/src
+        - /source/vendor
+        - phar:///source/vendor/libFormAPI.phar/src
         - phar:///source/vendor/apibossbar.phar/src
         - phar:///source/vendor/Commando.phar/src
         - phar:///source/vendor/libschematic.phar/src
         - phar:///source/vendor/InvMenu.phar/src
         - phar:///source/vendor/libstructure.phar/src
         - phar:///source/vendor/ScoreFactory.phar/src
+        - phar:///pocketmine/PocketMine-MP.phar
     excludes_analyse:
         - source/vendor

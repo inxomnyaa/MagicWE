@@ -4,46 +4,54 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\session\data;
 
-use Ds\Map;
-use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\libstructure\exception\StructureFileException;
 use xenialdan\MagicWE2\helper\StructureStore;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\session\Session;
+use function array_filter;
 
 final class AssetCollection
 {
-	use SingletonTrait;
+	/** @var array<string, Asset> */
+	public array $assets = [];
+	private Session $session;
 
-	/** @var Map<Asset> */
-	public Map $assets;
-
-	public function __construct()
+	public function __construct(Session $session)
 	{
-		$this->assets = new Map();
+		$this->session = $session;
 		$this->initFolders();
 	}
 
-	/** @return Asset[] */
-	public function getAssets(): array
+	/**
+	 * @return Session
+	 */
+	public function getSession(): Session
 	{
-		return $this->assets->values()->toArray();
+		return $this->session;
+	}
+
+	/** @return Asset[] */
+	public function getAll(): array
+	{
+		return $this->assets;
 	}
 
 	/** @return Asset[] */
 	public function getUnlockedAssets(): array
 	{
-		return $this->assets->filter(function (string $key, Asset $value) {
+		return array_filter($this->assets, function (Asset $value) {
 			return !$value->locked;
-		})->values()->toArray();
+		});
 	}
 
 	/** @return Asset[] */
 	public function getSharedAssets(): array
 	{
-		return $this->assets->filter(function (string $key, Asset $value) {
+		//TODO remove
+		return array_filter($this->assets, function (Asset $value) {
 			return $value->shared;
-		})->values()->toArray();
+		});
 	}
 
 	/**
@@ -52,30 +60,35 @@ final class AssetCollection
 	 */
 	public function getPlayerAssets(?string $xuid = null): array
 	{
-		return $this->assets->filter(function (string $key, Asset $value) use ($xuid) {
+		//TODO remove
+		return array_filter($this->assets, function (string $key, Asset $value) use ($xuid) {
 			if ($xuid === null) return $value->ownerXuid !== null;
 			else return $value->ownerXuid === $xuid;
-		})->values()->toArray();
+		});
 	}
 
 	private function initFolders(): void
 	{
 		//Load mcstructure and schematic files and lock them to prevent editing
 		$store = $this;
-		$schematicFiles = array_merge(glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.mcstructure"), glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.schematic"));//glob might return false
-		if ($schematicFiles !== false)
-			foreach ($schematicFiles as $file) {
-				['basename' => $basename, 'extension' => $extension] = pathinfo($file);
-				Loader::getInstance()->getLogger()->debug(TF::GOLD . "Loading " . $basename);
-				try {
-					if ($extension === 'mcstructure') {
-						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadStructure($basename), true, null, true));
-					} else if ($extension === 'schematic') {
-						$store->assets->put($basename, new Asset($basename, StructureStore::getInstance()->loadSchematic($basename), true, null, true));
+		$globStructure = glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.mcstructure");
+		$globSchematic =  glob(Loader::getInstance()->getDataFolder() . 'assets' . DIRECTORY_SEPARATOR . "*.schematic");
+		if($globStructure && $globSchematic) {
+			$schematicFiles = array_merge($globStructure, $globSchematic);
+			if ($schematicFiles !== false)
+				foreach ($schematicFiles as $file) {
+					['basename' => $basename, 'extension' => $extension] = pathinfo($file);
+					Loader::getInstance()->getLogger()->debug(TF::GOLD . "Loading " . $basename);
+					try {
+						if ($extension === 'mcstructure') {
+							$store->assets[$basename] = new Asset($basename, StructureStore::getInstance()->loadStructure($basename), true, null, true);
+						} else if ($extension === 'schematic') {
+							$store->assets[$basename] = new Asset($basename, StructureStore::getInstance()->loadSchematic($basename), true, null, true);
+						}
+					} catch (StructureFileException $e) {
+						Loader::getInstance()->getLogger()->debug($e->getMessage());
 					}
-				} catch (StructureFileException $e) {
-					Loader::getInstance()->getLogger()->debug($e->getMessage());
 				}
-			}
+		}
 	}
 }

@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpPrivateFieldCanBeLocalVariableInspection */
+<?php
 
 namespace xenialdan\MagicWE2\tool;
 
@@ -19,13 +19,13 @@ use xenialdan\MagicWE2\helper\BlockPalette;
 class Flood extends WETool
 {
 	/** @var int */
-	private $limit;
+	private int $limit;
 	/** @var Block[] */
-	private $walked = [];
+	private array $walked = [];
 	/** @var Block[] */
-	private $nextToCheck = [];
+	private array $nextToCheck = [];
 	/** @var int */
-	private $y;
+	private int $y;
 
 	/**
 	 * Square constructor.
@@ -41,10 +41,10 @@ class Flood extends WETool
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 * @param int $flags
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getBlocks($manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		$this->y = $this->getCenter()->getFloorY();
@@ -61,14 +61,14 @@ class Flood extends WETool
 	 * Returns a flat layer of all included x z positions in selection
 	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
 	 * @param int $flags
-	 * @return Generator|Vector2[]
+	 * @return Generator
 	 * @throws Exception
 	 */
-	public function getLayer($manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
 		foreach ($this->getBlocks($manager, BlockPalette::CREATE()) as $block) {
-			yield new Vector2($block->getPos()->x, $block->getPos()->z);
+			yield new Vector2($block->getPosition()->x, $block->getPosition()->z);
 		}
 	}
 
@@ -78,15 +78,15 @@ class Flood extends WETool
 	 * @throws InvalidArgumentException
 	 * @noinspection SlowArrayOperationsInLoopInspection
 	 */
-	private function walk($manager): array
+	private function walk(AsyncChunkManager|World $manager): array
 	{
 		$this->validateChunkManager($manager);
 		/** @var Block[] $walkTo */
 		$walkTo = [];
 		foreach ($this->nextToCheck as $next) {
-			$sides = iterator_to_array($this->getHorizontalSides($manager, $next->getPos()));
+			$sides = iterator_to_array($this->getHorizontalSides($manager, $next->getPosition()));
 			$walkTo = array_merge($walkTo, array_filter($sides, function (Block $side) use ($walkTo) {
-				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->getPos()->distanceSquared($this->getCenter()) <= ($this->limit / M_PI);
+				return $side->getId() === 0 && !in_array($side, $walkTo, true) && !in_array($side, $this->walked, true) && !in_array($side, $this->nextToCheck, true) && $side->getPosition()->distanceSquared($this->getCenter()) <= ($this->limit / M_PI);
 			}));
 		}
 		$this->walked = array_merge($this->walked, $walkTo);
@@ -98,10 +98,10 @@ class Flood extends WETool
 	/**
 	 * @param World|AsyncChunkManager $manager
 	 * @param Vector3 $vector3
-	 * @return Generator|Block[]
+	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
-	private function getHorizontalSides($manager, Vector3 $vector3): Generator
+	private function getHorizontalSides(AsyncChunkManager|World $manager, Vector3 $vector3): Generator
 	{
 		$this->validateChunkManager($manager);
 		foreach ([Facing::NORTH, Facing::SOUTH, Facing::WEST, Facing::EAST] as $vSide) {
@@ -122,7 +122,7 @@ class Flood extends WETool
 	 * @return array
 	 * @throws InvalidArgumentException
 	 */
-	public function getTouchedChunks($chunkManager): array
+	public function getTouchedChunks(AsyncChunkManager|World $chunkManager): array
 	{
 		$this->validateChunkManager($chunkManager);
 		$maxRadius = sqrt($this->limit / M_PI);
@@ -159,7 +159,7 @@ class Flood extends WETool
 	 * @param mixed $manager
 	 * @throws InvalidArgumentException
 	 */
-	public function validateChunkManager($manager): void
+	public function validateChunkManager(mixed $manager): void
 	{
 		if (!$manager instanceof World && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncChunkManager");
 	}
@@ -178,7 +178,7 @@ class Flood extends WETool
 	 */
 	public static function getChunkManager(array $chunks): AsyncChunkManager
 	{
-		$manager = new AsyncChunkManager();
+		$manager = new AsyncChunkManager(0, World::Y_MAX);
 		foreach ($chunks as $hash => $chunk) {
 			World::getXZ($hash, $x, $z);
 			$manager->setChunk($x, $z, $chunk);

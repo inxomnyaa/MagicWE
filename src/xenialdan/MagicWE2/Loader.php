@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2;
 
 use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
+use jojoe77777\FormAPI\FormAPI;
 use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
@@ -22,9 +23,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
-use xenialdan\customui\API as CustomUIAPI;
 use xenialdan\libstructure\PacketListener;
-use xenialdan\MagicWE2\commands\asset\AssetCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
 use xenialdan\MagicWE2\commands\biome\SetBiomeCommand;
@@ -36,7 +35,9 @@ use xenialdan\MagicWE2\commands\clipboard\CutCommand;
 use xenialdan\MagicWE2\commands\clipboard\FlipCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
 use xenialdan\MagicWE2\commands\clipboard\RotateCommand;
+use xenialdan\MagicWE2\commands\debug\GenerateCommandsMDCommand;
 use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
+use xenialdan\MagicWE2\commands\debug\TestAPICommand;
 use xenialdan\MagicWE2\commands\DonateCommand;
 use xenialdan\MagicWE2\commands\generation\CylinderCommand;
 use xenialdan\MagicWE2\commands\HelpCommand;
@@ -46,6 +47,7 @@ use xenialdan\MagicWE2\commands\history\UndoCommand;
 use xenialdan\MagicWE2\commands\InfoCommand;
 use xenialdan\MagicWE2\commands\LanguageCommand;
 use xenialdan\MagicWE2\commands\LimitCommand;
+use xenialdan\MagicWE2\commands\palette\PaletteCommand;
 use xenialdan\MagicWE2\commands\region\ReplaceCommand;
 use xenialdan\MagicWE2\commands\region\SetCommand;
 use xenialdan\MagicWE2\commands\ReportCommand;
@@ -58,13 +60,13 @@ use xenialdan\MagicWE2\commands\selection\info\SizeCommand;
 use xenialdan\MagicWE2\commands\selection\Pos1Command;
 use xenialdan\MagicWE2\commands\selection\Pos2Command;
 use xenialdan\MagicWE2\commands\SetRangeCommand;
-use xenialdan\MagicWE2\commands\TestCommand;
 use xenialdan\MagicWE2\commands\tool\DebugCommand;
 use xenialdan\MagicWE2\commands\tool\FloodCommand;
 use xenialdan\MagicWE2\commands\tool\ToggledebugCommand;
 use xenialdan\MagicWE2\commands\tool\TogglewandCommand;
 use xenialdan\MagicWE2\commands\tool\WandCommand;
 use xenialdan\MagicWE2\commands\utility\CalculateCommand;
+use xenialdan\MagicWE2\commands\utility\ToggleSidebarCommand;
 use xenialdan\MagicWE2\commands\utility\ToggleWailaCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
@@ -74,6 +76,7 @@ use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\data\AssetCollection;
+use xenialdan\MagicWE2\session\PluginSession;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
@@ -82,29 +85,31 @@ class Loader extends PluginBase
 	public const FAKE_ENCH_ID = 201;
 	public const PREFIX = TF::RESET . TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
 	public const PREFIX_ASSETS = TF::RESET . TF::BOLD . TF::GOLD . "[Asset]" . TF::RESET . " ";
+	public const PREFIX_BRUSH = TF::RESET . TF::BOLD . TF::GOLD . "[Brush]" . TF::RESET . " ";
+	public const PREFIX_PALETTE = TF::RESET . TF::BOLD . TF::GOLD . "[Palette]" . TF::RESET . " ";
 	public const PREFIX_FORM = TF::RESET . TF::BOLD . TF::DARK_PURPLE . "[MWE2]" . TF::RESET . " ";
 	/** @var Loader|null */
-	private static $instance;
+	private static ?Loader $instance;
 	/** @var null|ShapeRegistry */
-	public static $shapeRegistry;
+	public static ?ShapeRegistry $shapeRegistry;
 	/** @var null|ActionRegistry */
-	public static $actionRegistry;
+	public static ?ActionRegistry $actionRegistry;
 	/** @var Enchantment */
-	public static $ench;
+	public static Enchantment $ench;
 	/** @var Language */
-	private $baseLang;
+	private Language $baseLang;
 	/** @var string[] Donator names */
-	public $donators = [];
+	public array $donators = [];
 	/** @var string */
-	public $donatorData = "";
+	public string $donatorData = "";
 	/** @var string */
-	private static $rotPath;
+	private static string $rotPath;
 	/** @var string */
-	private static $doorRotPath;
+	private static string $doorRotPath;
 	/** @var DiverseBossBar */#BossBar
-	public $wailaBossBar;
+	public DiverseBossBar $wailaBossBar;
 	/** @var null|string */
-	public static $scoreboardAPI;
+	public static ?string $scoreboardAPI;
 	/** @var AssetCollection */
 	public static AssetCollection $assetCollection;
 
@@ -153,12 +158,12 @@ class Loader extends PluginBase
 	 * @throws RuntimeException
 	 * @throws JsonException
 	 * @throws AssumptionFailedError
+	 * @throws InvalidArgumentException
 	 */
 	public function onLoad(): void
 	{
 		self::$instance = $this;
-		self::$ench = new Enchantment(self::FAKE_ENCH_ID, "", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
-		/** @var EnchantmentIdMap $enchantmapinstance */
+		self::$ench = new Enchantment("", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
 		$enchantmapinstance = EnchantmentIdMap::getInstance();
 		$enchantmapinstance->register(self::FAKE_ENCH_ID, self::$ench);
 		self::$shapeRegistry = new ShapeRegistry();
@@ -169,7 +174,6 @@ class Loader extends PluginBase
 
 		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
-		/** @var BlockStatesParser $blockstateparserInstance */
 		$blockstateparserInstance = BlockStatesParser::getInstance();
 		$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
@@ -182,7 +186,7 @@ class Loader extends PluginBase
 		$blockstateparserInstance->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
 		//$blockstateparserInstance::runTests();//TODO REMOVE, DEBUG!!!!!!!
 
-		self::$assetCollection = new AssetCollection();
+		self::$assetCollection = new AssetCollection(new PluginSession($this));
 	}
 
 	/**
@@ -206,8 +210,7 @@ class Loader extends PluginBase
 	{
 		$lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
 		$this->baseLang = new Language((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
-		if ($this->getConfig()->get("show-startup-icon", false)) $this->showStartupIcon();
-		//$this->loadDonator();
+		$registerDeveloperCommands = $this->getConfig()->get("developer-commands", false);
 		$this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
 		if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
 		if (!PacketListener::isRegistered()) PacketListener::register($this);
@@ -220,8 +223,6 @@ class Loader extends PluginBase
 			new HPos1Command($this, "/hpos1", "Set position 1 to targeted block", ["/h1"]),
 			new HPos2Command($this, "/hpos2", "Set position 2 to targeted block", ["/h2"]),
 			new ChunkCommand($this, "/chunk", "Set the selection to your current chunk"),
-			/* -- assets -- */
-			new AssetCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
 			/* -- tool -- */
 			new WandCommand($this, "/wand", "Gives you the selection wand"),
 			new TogglewandCommand($this, "/togglewand", "Toggle the wand tool on/off", ["/toggleeditwand"]),
@@ -284,7 +285,6 @@ class Loader extends PluginBase
 			//new TogglePlaceCommand($this,"/toggleplace", "Switch between your position and pos1 for placement"),
 			//new SearchItemCommand($this,"/searchitem", "Search for an item"),
 			//new RangeCommand($this,"/range", "Set the brush range"),
-			new TestCommand($this, "/test", "test action"),//TODO REMOVE
 			new SetRangeCommand($this, "/setrange", "Set tool range", ["/toolrange"]),
 			new LimitCommand($this, "/limit", "Set the block change limit. Use -1 to disable"),
 			new HelpCommand($this, "/help", "MagicWE help command", ["/?", "/mwe", "/wehelp"]),//Blame MCPE for client side /help shit! only the aliases work
@@ -306,19 +306,28 @@ class Loader extends PluginBase
 			//new ThawCommand($this,"/thaw", "Thaws blocks in the selection"),
 			new CalculateCommand($this, "/calculate", "Evaluate a mathematical expression", ["/calc", "/eval", "/evaluate", "/solve"]),
 			new ToggleWailaCommand($this, "/togglewaila", "Toggle the What Am I Looking At utility", ["/waila", "/wyla"]),
-			/* -- debugging -- */
-			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
+			new ToggleSidebarCommand($this, "/togglesidebar", "Toggle the sidebar", ["/sidebar"]),
 		]);
-		if (class_exists(CustomUIAPI::class)) {
-			$this->getLogger()->notice("CustomUI found, can use ui-based commands");
+		if ($registerDeveloperCommands) $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
+			/* -- developer commands -- */
+			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
+			new TestAPICommand($this, "/testapi", "Internal command for testing API methods"),
+			new GenerateCommandsMDCommand($this, "/generatecommandsmd", "Generates the commands.md file"),
+		]);
+		if (class_exists(FormAPI::class)) {
+			$this->getLogger()->notice("FormAPI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
+				/* -- assets -- */
+				#new AssetCommand($this, "/asset", "Manage assets (schematics, structures, clipboard)"),
 				/* -- brush -- */
 				new BrushCommand($this, "/brush", "Opens the brush tool menu"),
+				/* -- palette -- */
+				new PaletteCommand($this, "/palette", "Manage block palettes"),
 				/* -- tool -- */
 				new FloodCommand($this, "/flood", "Opens the flood fill tool menu", ["/floodfill"]),
 			]);
 		} else {
-			$this->getLogger()->notice(TF::RED . "CustomUI NOT found, can NOT use ui-based commands");
+			$this->getLogger()->notice(TF::RED . "FormAPI NOT found, can NOT use ui-based commands");
 		}
 		if (class_exists(ScoreFactory::class)) {
 			$this->getLogger()->notice("Scoreboard API found, can use scoreboards");
@@ -346,7 +355,7 @@ class Loader extends PluginBase
 					if ($stateEntry instanceof BlockStatesEntry) {
 						$sub = implode("," . TF::EOL, explode(",", BlockStatesParser::printStates($stateEntry, false)));
 					}
-					$distancePercentage = round(floor($block->getPos()->distance($player->getEyePos())) / 10, 1);
+					$distancePercentage = round(floor($block->getPosition()->distance($player->getEyePos())) / 10, 1);
 					Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
 				} else
 					Loader::getInstance()->wailaBossBar->hideFrom([$player]);
@@ -401,47 +410,13 @@ class Loader extends PluginBase
 			"| Plugin API Version | " . implode(", ", self::getInstance()->getDescription()->getCompatibleApis()) . " |",
 			"| Authors | " . implode(", ", self::getInstance()->getDescription()->getAuthors()) . " |",
 			"| Enabled | " . (Server::getInstance()->getPluginManager()->isPluginEnabled(self::getInstance()) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Uses UI | " . (class_exists(CustomUIAPI::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Uses UI | " . (class_exists(FormAPI::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
 			"| Uses ScoreFactory | " . (class_exists(ScoreFactory::class) ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
-			"| Phar | " . (strpos(self::getInstance()->getFile(), 'phar:') !== false ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
+			"| Phar | " . (str_contains(self::getInstance()->getFile(), 'phar:') ? TF::GREEN . "Yes" : TF::RED . "No") . TF::RESET . " |",
 			"| PMMP Protocol Version | " . Server::getInstance()->getVersion() . " |",
 			"| PMMP Version | " . Server::getInstance()->getPocketMineVersion() . " |",
 			"| PMMP API Version | " . Server::getInstance()->getApiVersion() . " |",
 		];
-	}
-
-	private function showStartupIcon(): void
-	{
-		$colorAxe = TF::BOLD . TF::DARK_PURPLE;
-		$colorAxeStem = TF::LIGHT_PURPLE;
-		$colorAxeSky = TF::LIGHT_PURPLE;
-		$colorAxeFill = TF::GOLD;
-		$axe = [
-			"              {$colorAxe}####{$colorAxeSky}      ",
-			"            {$colorAxe}##{$colorAxeFill}####{$colorAxe}##{$colorAxeSky}    ",
-			"          {$colorAxe}##{$colorAxeFill}######{$colorAxe}##{$colorAxeSky}    ",
-			"        {$colorAxe}##{$colorAxeFill}########{$colorAxe}####{$colorAxeSky}  ",
-			"        {$colorAxe}##{$colorAxeFill}######{$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}  ",
-			"          {$colorAxe}######{$colorAxeStem}##{$colorAxe}##{$colorAxeFill}##{$colorAxe}##",
-			"            {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeFill}####{$colorAxe}##",
-			"          {$colorAxe}##{$colorAxeStem}##{$colorAxe}##  {$colorAxe}####{$colorAxeSky}  ",
-			"        {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}          ",
-			"      {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}            ",
-			"    {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}              ",
-			"  {$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}                ",
-			"{$colorAxe}##{$colorAxeStem}##{$colorAxe}##{$colorAxeSky}       MagicWE v.2",
-			"{$colorAxe}####{$colorAxeSky}        by XenialDan"];
-		foreach (array_map(static function ($line) {
-			return preg_replace_callback(
-				'/ +(?<![#§l5d6]] )(?= [#§l5d6]+)|(?<=[#§l5d6] ) +(?=\s)/u',
-				#'/ +(?<!# )(?= #+)|(?<=# ) +(?=\s)/',
-				static function ($v) {
-					return substr(str_shuffle(str_pad('+*~', strlen($v[0]))), 0, strlen($v[0]));
-				},
-				TF::LIGHT_PURPLE . $line
-			);
-		}, $axe) as $axeMsg)
-			$this->getLogger()->info($axeMsg);
 	}
 
 	/**

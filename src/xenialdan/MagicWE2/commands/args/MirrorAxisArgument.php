@@ -26,7 +26,7 @@ class MirrorAxisArgument extends StringEnumArgument
 	 * @param CommandSender $sender
 	 * @return string //TODO consider changing to Axis
 	 */
-	public function parse(string $argument, CommandSender $sender)
+	public function parse(string $argument, CommandSender $sender): string
 	{
 		return (string)$this->getValue($argument);
 	}

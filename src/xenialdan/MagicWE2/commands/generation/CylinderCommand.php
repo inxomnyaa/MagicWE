@@ -12,7 +12,6 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\commands\args\BlocksArgument;
@@ -38,12 +37,6 @@ class CylinderCommand extends BaseCommand
 		$this->setPermission("we.command.generation.cyl");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 * @throws AssumptionFailedError
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

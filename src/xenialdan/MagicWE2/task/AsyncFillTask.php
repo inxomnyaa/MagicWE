@@ -9,10 +9,12 @@ use MultipleIterator;
 use pocketmine\block\Block;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -27,31 +29,35 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncFillTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var int */
-	private $flags;
+	private int $flags;
 	///** @var string */
 	//private $newBlocks;
 	/** @var BlockPalette */
-	private $newBlocks;
+	private BlockPalette $newBlocks;
 
 	/**
 	 * AsyncFillTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param Selection $selection
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $newBlocks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $newBlocks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $newBlocks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
-		$this->selection = igbinary_serialize($selection);
-		$this->touchedChunks = igbinary_serialize($touchedChunks);
+		$s1 = igbinary_serialize($selection);
+		if ($s1 === null) throw new Exception("Couldn't serialize selection");
+		$s2 = igbinary_serialize($touchedChunks);
+		if ($s2 === null) throw new Exception("Couldn't serialize touched chunks");
+		$this->selection = $s1;
+		$this->touchedChunks = $s2;
 		//$this->newBlocks = BlockPalette::encode($newBlocks);
 		$this->newBlocks = $newBlocks;//TODO check if serializes
 		var_dump($this->newBlocks);
@@ -85,7 +91,7 @@ class AsyncFillTask extends MWEAsyncTask
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
-			return $chunk->isDirty();
+			return $chunk->isTerrainDirty();
 		});
 		#$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 		$this->setResult([
@@ -100,9 +106,9 @@ class AsyncFillTask extends MWEAsyncTask
 	 * @param AsyncChunkManager $manager
 	 * @param BlockPalette $newBlocks
 	 * @param null|int $changed
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
-	 * @throws Exception
+	 * @return Generator
+	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function execute(Selection $selection, AsyncChunkManager $manager, BlockPalette $newBlocks, ?int &$changed): Generator
 	{
@@ -124,20 +130,21 @@ class AsyncFillTask extends MWEAsyncTask
 				$rel = $block->subtract($selection->shape->getPasteVector());
 				$block = API::setComponents($block,$rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
 			}*/
-			if (is_null($lastchunkx) || ($block->getPos()->x >> 4 !== $lastchunkx && $block->getPos()->z >> 4 !== $lastchunkz)) {
-				$lastchunkx = $block->getPos()->x >> 4;
-				$lastchunkz = $block->getPos()->z >> 4;
-				if (is_null($manager->getChunk($block->getPos()->x >> 4, $block->getPos()->z >> 4))) {
+			if (is_null($lastchunkx) || ($block->getPosition()->x >> 4 !== $lastchunkx && $block->getPosition()->z >> 4 !== $lastchunkz)) {
+				$lastchunkx = $block->getPosition()->x >> 4;
+				$lastchunkz = $block->getPosition()->z >> 4;
+				if (is_null($manager->getChunk($block->getPosition()->x >> 4, $block->getPosition()->z >> 4))) {
 					#print PHP_EOL . "Not found: " . strval($block->x >> 4) . ":" . strval($block->z >> 4) . PHP_EOL;
 					continue;
 				}
 			}
 			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks//TODO better method
-			#yield self::undoBlockHackToArray($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()),$block->getPos());
-			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()), (int)$block->getPos()->x, (int)$block->getPos()->y, (int)$block->getPos()->z));
+			#yield self::undoBlockHackToArray($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->getPosition());
+			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()), (int)$block->getPosition()->x, (int)$block->getPosition()->y, (int)$block->getPosition()->z));
 			#yield $block;//backup
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $new);
-			if ($manager->getBlockArrayAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ()) !== [$block->getId(), $block->getMeta()]) {
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $new);
+			/** @noinspection PhpInternalEntityUsedInspection */
+			if ($manager->getBlockFullIdAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()) !== $block->getFullId()) {
 				$changed++;
 			}
 			///
@@ -151,15 +158,12 @@ class AsyncFillTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
-	 * @throws Exception
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);
@@ -180,9 +184,9 @@ class AsyncFillTask extends MWEAsyncTask
 //		 */
 //		foreach ($oldBlocks as [$fullId, $pos]) {
 //			$b = BlockFactory::getInstance()->fromFullBlock($fullId);
-//			$b->getPos()->x = $pos->x;
-//			$b->getPos()->y = $pos->y;
-//			$b->getPos()->z = $pos->z;
+//			$b->getPosition()->x = $pos->x;
+//			$b->getPosition()->y = $pos->y;
+//			$b->getPosition()->z = $pos->z;
 //			$oldBlocks2[] = $b;
 //		}
 //		var_dump($oldBlocks2);

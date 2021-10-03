@@ -7,8 +7,10 @@ use Generator;
 use InvalidArgumentException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
+use pocketmine\world\Position;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -23,17 +25,17 @@ class AsyncRevertTask extends MWEAsyncTask
 	public const TYPE_REDO = 1;
 
 	/** @var string */
-	private $clipboard;
+	private string $clipboard;
 	/** @var int */
-	private $type;
+	private int $type;
 
 	/**
 	 * AsyncRevertTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param RevertClipboard $clipboard
 	 * @param int $type The type of clipboard pasting.
 	 */
-	public function __construct(UUID $sessionUUID, RevertClipboard $clipboard, $type = self::TYPE_UNDO)
+	public function __construct(UuidInterface $sessionUUID, RevertClipboard $clipboard, int $type = self::TYPE_UNDO)
 	{
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->start = microtime(true);
@@ -66,9 +68,9 @@ class AsyncRevertTask extends MWEAsyncTask
 	/**
 	 * @param AsyncChunkManager $manager
 	 * @param RevertClipboard $clipboard
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @return Generator
 	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function undoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
@@ -79,7 +81,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		foreach ($clipboard->blocksAfter as $block) {
 			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
 		}
@@ -88,9 +90,9 @@ class AsyncRevertTask extends MWEAsyncTask
 	/**
 	 * @param AsyncChunkManager $manager
 	 * @param RevertClipboard $clipboard
-	 * @return Generator|array[]
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @return Generator
 	 * @throws InvalidArgumentException
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function redoChunks(AsyncChunkManager $manager, RevertClipboard $clipboard): Generator
 	{
@@ -101,21 +103,19 @@ class AsyncRevertTask extends MWEAsyncTask
 		foreach ($clipboard->blocksAfter as $block) {
 			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$manager->setBlockAt($block->getPos()->getFloorX(), $block->getPos()->getFloorY(), $block->getPos()->getFloorZ(), $block);
+			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
 		}
 	}
 
 	/**
-	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
-	 * @throws Exception
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);

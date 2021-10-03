@@ -6,14 +6,17 @@ use BlockHorizons\libschematic\Schematic;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use OutOfBoundsException;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
+use pocketmine\world\Position;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
@@ -31,26 +34,26 @@ use xenialdan\MagicWE2\session\UserSession;
 class AsyncPasteAssetTask extends MWEAsyncTask
 {
 	/** @var string */
-	private $touchedChunks;
+	private string $touchedChunks;
 	/** @var Selection */
-	private $selection;
+	private Selection $selection;
 	/** @var string */
-	private $asset;
+	private string $asset;
+	/** @var null|Vector3 */
+	private ?Vector3 $pasteVector;
 	/** @var Vector3 */
-	private $pasteVector;
-	/** @var Vector3 */
-	private $target;
+	private Vector3 $target;
 
 	/**
 	 * AsyncPasteTask constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param Vector3 $target
 	 * @param Selection $selection
 	 * @param string[] $touchedChunks serialized chunks
 	 * @param Asset $asset
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Vector3 $target, Selection $selection, array $touchedChunks, Asset $asset)
+	public function __construct(UuidInterface $sessionUUID, Vector3 $target, Selection $selection, array $touchedChunks, Asset $asset)
 	{
 		$this->start = microtime(true);
 		$this->pasteVector = $selection->getShape()->getPasteVector();#->addVector($asset->getOrigin())->floor();
@@ -67,6 +70,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	 *
 	 * @return void
 	 * @throws InvalidArgumentException
+	 * @throws OutOfBoundsException
 	 */
 	public function onRun(): void
 	{
@@ -79,9 +83,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		$manager = Shape::getChunkManager($touchedChunks);
 		unset($touchedChunks);
 
-		/** @var Selection $selection */
 		//$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
-		$selection = $this->selection;
+		//$selection = $this->selection;
 
 		/** @var Asset $asset */
 		$asset = unserialize($this->asset/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
@@ -89,7 +92,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
-			return $chunk->isDirty();
+			return $chunk->isTerrainDirty();
 		});
 		$this->setResult(compact("resultChunks", "oldBlocks", "changed"));
 	}
@@ -100,8 +103,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 	 * @param null|int $changed
 	 * @return Generator
 	 * @throws InvalidArgumentException
-	 * @throws \UnexpectedValueException
-	 * @phpstan-return Generator<int, array{int, \pocketmine\world\Position|null}, void, void>
+	 * @throws OutOfBoundsException
+	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function execute(AsyncChunkManager $manager, Asset $asset, ?int &$changed): Generator
 	{
@@ -115,10 +118,10 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		if ($structure instanceof MCStructure) {
 			/** @var Block $block */
 			foreach ($structure->blocks() as $block) {// [0,0,0 -> sizex,sizey,sizez]
-				#var_dump($block->getPos()->asVector3(), $this->pasteVector, $this->selection);
-				$pos = $block->getPos()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
-				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
-				#var_dump($block->getPos()->asVector3());
+				#var_dump($block->getPosition()->asVector3(), $this->pasteVector, $this->selection);
+				$pos = $block->getPosition()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+				[$block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
+				#var_dump($block->getPosition()->asVector3());
 				if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
 					$lastchunkx = $x >> 4;
 					$lastchunkz = $z >> 4;
@@ -130,9 +133,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 				$new = $block;
 				yield self::singleBlockToData(API::setComponents($manager->getBlockAt((int)$x, (int)$y, (int)$z), (int)$x, (int)$y, (int)$z));
 				$manager->setBlockAt((int)$x, (int)$y, (int)$z, $new);
-				if ($manager->getBlockArrayAt((int)$x, (int)$y, (int)$z) !== [$manager->getBlockAt((int)$x, (int)$y, (int)$z)->getId(), $manager->getBlockAt((int)$x, (int)$y, (int)$z)->getMeta()]) {//TODO remove? Just useless waste imo
-					$changed++;
-				}
+				$changed++;
 				///
 				$i++;
 				$progress = floor($i / $blockCount * 100);
@@ -159,9 +160,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 				$new = $entry->toBlock();
 				yield self::singleBlockToData(API::setComponents($manager->getBlockAt((int)$v->x, (int)$v->y, (int)$v->z), (int)$v->x, (int)$v->y, (int)$v->z));
 				$manager->setBlockAt((int)$v->x, (int)$v->y, (int)$v->z, $new);
-				if ($manager->getBlockArrayAt((int)$v->x, (int)$v->y, (int)$v->z) !== [$manager->getBlockAt((int)$v->x, (int)$v->y, (int)$v->z)->getId(), $manager->getBlockAt((int)$v->x, (int)$v->y, (int)$v->z)->getMeta()]) {//TODO remove? Just useless waste imo
-					$changed++;
-				}
+				$changed++;
 				///
 				$i++;
 				$progress = floor($i / $blockCount * 100);
@@ -172,8 +171,8 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 			}
 		} else if ($structure instanceof Schematic) {
 			foreach ($structure->blocks() as $block) {
-				$pos = $block->getPos()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
-				[$block->getPos()->x, $block->getPos()->y, $block->getPos()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
+				$pos = $block->getPosition()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+				[$block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
 				if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
 					$lastchunkx = $x >> 4;
 					$lastchunkz = $z >> 4;
@@ -185,9 +184,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 				$new = $block;
 				yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z));
 				$manager->setBlockAt($x, $y, $z, $new);
-				if ($manager->getBlockArrayAt($x, $y, $z) !== [$manager->getBlockAt($x, $y, $z)->getId(), $manager->getBlockAt($x, $y, $z)->getMeta()]) {//TODO remove? Just useless waste imo
-					$changed++;
-				}
+				$changed++;
 				///
 				$i++;
 				$progress = floor($i / $blockCount * 100);
@@ -201,14 +198,11 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws InvalidArgumentException
-	 * @throws Exception
-	 * @throws Exception
 	 */
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 		} catch (SessionException $e) {
 			Loader::getInstance()->getLogger()->logException($e);
@@ -222,7 +216,6 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];//already data array
 		$changed = $result["changed"];
-		/** @var Selection $selection */
 		//$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$selection = $this->selection;
 		$totalCount = $selection->getShape()->getTotalCount();

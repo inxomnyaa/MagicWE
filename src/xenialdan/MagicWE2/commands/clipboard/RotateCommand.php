@@ -36,11 +36,6 @@ class RotateCommand extends BaseCommand
 		//$this->setUsage("//rotate <degrees: 1|2|3|-1|-2|-3>");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
@@ -57,7 +52,7 @@ class RotateCommand extends BaseCommand
 		/** @var Player $sender */
 		try {
 			$angle = (int)$args["angle"];
-			$aroundOrigin = $args["aroundOrigin"] ?? true;
+			//$aroundOrigin = $args["aroundOrigin"] ?? true;
 			$sender->sendMessage(Loader::PREFIX . $lang->translateString('command.rotate.try', [$angle]));
 			$session = SessionHelper::getUserSession($sender);
 			if (is_null($session)) {

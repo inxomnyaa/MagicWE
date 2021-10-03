@@ -3,13 +3,13 @@
 namespace xenialdan\MagicWE2\task;
 
 use Exception;
-use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\format\io\FastChunkSerializer;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
@@ -25,24 +25,24 @@ class AsyncCopyTask extends MWEAsyncTask
 {
 
 	/** @var string */
-	private $chunks;
+	private string $chunks;
 	/** @var string */
-	private $selection;
+	private string $selection;
 	/** @var Vector3 */
-	private $offset;
+	private Vector3 $offset;
 	/** @var int */
-	private $flags;
+	private int $flags;
 
 	/**
 	 * AsyncCopyTask constructor.
 	 * @param Selection $selection
 	 * @param Vector3 $offset
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param string[] $chunks serialized chunks
 	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UUID $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, Vector3 $offset, array $chunks, int $flags)
 	{
 		$this->start = microtime(true);
 		$this->chunks = serialize($chunks);
@@ -97,7 +97,8 @@ class AsyncCopyTask extends MWEAsyncTask
 		/** @var Block $block */
 		foreach ($selection->getShape()->getBlocks($manager, BlockPalette::CREATE(), $this->flags) as $block) {
 			#var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
-			$newv3 = $block->getPos()->subtractVector($min)->floor();
+			$newv3 = $block->getPosition()->subtractVector($min)->floor();
+			/** @noinspection PhpInternalEntityUsedInspection */
 			$clipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), new BlockEntry($block->getFullId()));//TODO test tiles
 			#var_dump("copied selection block", $block);
 			$i++;
@@ -113,7 +114,7 @@ class AsyncCopyTask extends MWEAsyncTask
 	public function onCompletion(): void
 	{
 		try {
-			$session = SessionHelper::getSessionByUUID(UUID::fromString($this->sessionUUID));
+			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if ($session instanceof UserSession) $session->getBossBar()->hideFromAll();
 			$result = $this->getResult();
 			$copied = $result["copied"];
@@ -122,11 +123,7 @@ class AsyncCopyTask extends MWEAsyncTask
 			$totalCount = $result["totalCount"];
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.copy.success', [$this->generateTookString(), $copied, $totalCount]));
 			$session->addClipboard($clipboard);
-		} catch (SessionException $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-		} catch (InvalidArgumentException $e) {
-			Loader::getInstance()->getLogger()->logException($e);
-		} catch (AssumptionFailedError $e) {
+		} catch (SessionException | AssumptionFailedError $e) {
 			Loader::getInstance()->getLogger()->logException($e);
 		}
 	}

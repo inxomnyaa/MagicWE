@@ -6,7 +6,10 @@ namespace xenialdan\MagicWE2\helper;
 
 use BlockHorizons\libschematic\Schematic;
 use InvalidArgumentException;
+use pocketmine\nbt\NbtDataException;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\SingletonTrait;
+use UnexpectedValueException;
 use xenialdan\libstructure\exception\StructureFileException;
 use xenialdan\libstructure\exception\StructureFormatException;
 use xenialdan\libstructure\format\MCStructure;
@@ -19,11 +22,11 @@ final class StructureStore
 	/**
 	 * @var MCStructure[]
 	 */
-	private $structures;
+	private array $structures;
 	/**
 	 * @var Schematic[]
 	 */
-	private $schematics;
+	private array $schematics;
 
 	/** @noinspection MkdirRaceConditionInspection */
 	public function __construct()
@@ -38,6 +41,9 @@ final class StructureStore
 	 * @throws InvalidArgumentException
 	 * @throws StructureFileException
 	 * @throws StructureFormatException
+	 * @throws UnexpectedValueException
+	 * @throws NbtDataException
+	 * @throws UnexpectedTagTypeException
 	 */
 	public function loadStructure(string $filename, bool $override = true): MCStructure
 	{

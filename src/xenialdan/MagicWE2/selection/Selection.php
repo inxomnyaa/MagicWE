@@ -10,9 +10,10 @@ use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
 use pocketmine\world\Position;
 use pocketmine\world\World;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use Serializable;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
@@ -30,21 +31,21 @@ use xenialdan\MagicWE2\session\Session;
 class Selection implements Serializable, JsonSerializable
 {
 	/** @var int|null */
-	public $worldId;
+	public ?int $worldId = null;
 	/** @var Vector3|null */
-	public $pos1;
+	public ?Vector3 $pos1 = null;
 	/** @var Vector3|null */
-	public $pos2;
-	/** @var UUID */
-	public $uuid;
-	/** @var UUID */
-	public $sessionUUID;
+	public ?Vector3 $pos2 = null;
+	/** @var UuidInterface */
+	public UuidInterface $uuid;
+	/** @var UuidInterface */
+	public UuidInterface $sessionUUID;
 	/** @var Shape|null */
-	public $shape;
+	public ?Shape $shape = null;
 
 	/**
 	 * Selection constructor.
-	 * @param UUID $sessionUUID
+	 * @param UuidInterface $sessionUUID
 	 * @param World $world
 	 * @param ?int $minX
 	 * @param ?int $minY
@@ -54,7 +55,7 @@ class Selection implements Serializable, JsonSerializable
 	 * @param ?int $maxZ
 	 * @param ?Shape $shape
 	 */
-	public function __construct(UUID $sessionUUID, World $world, $minX = null, $minY = null, $minZ = null, $maxX = null, $maxY = null, $maxZ = null, ?Shape $shape = null)
+	public function __construct(UuidInterface $sessionUUID, World $world, ?int $minX = null, ?int $minY = null, ?int $minZ = null, ?int $maxX = null, ?int $maxY = null, ?int $maxZ = null, ?Shape $shape = null)
 	{
 		$this->sessionUUID = $sessionUUID;
 		$this->worldId = $world->getId();
@@ -65,7 +66,7 @@ class Selection implements Serializable, JsonSerializable
 			$this->pos2 = (new Vector3($maxX, $maxY, $maxZ))->floor();
 		}
 		if ($shape !== null) $this->shape = $shape;
-		$this->setUUID(UUID::fromRandom());
+		$this->setUUID(Uuid::uuid4());
 	}
 
 	/**
@@ -246,17 +247,17 @@ class Selection implements Serializable, JsonSerializable
 	}
 
 	/**
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 */
-	public function setUUID(UUID $uuid): void
+	public function setUUID(UuidInterface $uuid): void
 	{
 		$this->uuid = $uuid;
 	}
 
 	/**
-	 * @return UUID
+	 * @return UuidInterface
 	 */
-	public function getUUID(): UUID
+	public function getUUID(): UuidInterface
 	{
 		return $this->uuid;
 	}
@@ -267,7 +268,7 @@ class Selection implements Serializable, JsonSerializable
 	 * @return string the string representation of the object or null
 	 * @since 5.1.0
 	 */
-	public function serialize()
+	public function serialize(): string
 	{
 		return serialize([
 			$this->worldId,
@@ -282,16 +283,15 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
-	 * @param string $serialized <p>
+	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
 	 * @return void
 	 * @since 5.1.0
-	 * @noinspection PhpMissingParamTypeInspection
 	 */
-	public function unserialize($serialized)
+	public function unserialize($data)
 	{
-		var_dump($serialized);
+		var_dump($data);
 		[
 			$this->worldId,
 			$this->pos1,
@@ -299,17 +299,17 @@ class Selection implements Serializable, JsonSerializable
 			$this->uuid,
 			$this->sessionUUID,
 			$this->shape
-		] = unserialize($serialized/*, ['allowed_classes' => [__CLASS__, Vector3::class,UUID::class,Shape::class]]*/);//TODO test pm4
+		] = unserialize($data/*, ['allowed_classes' => [__CLASS__, Vector3::class,UuidInterface::class,Shape::class]]*/);//TODO test pm4
 	}
 
 	/**
 	 * Specify data which should be serialized to JSON
 	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
-	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * @return array data which can be serialized by <b>json_encode</b>,
 	 * which is a value of any type other than a resource.
 	 * @since 5.4.0
 	 */
-	public function jsonSerialize()
+	public function jsonSerialize(): array
 	{
 		$arr = (array)$this;
 		if ($this->shape !== null)

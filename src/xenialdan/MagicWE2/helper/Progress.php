@@ -7,9 +7,9 @@ namespace xenialdan\MagicWE2\helper;
 class Progress
 {
 	/** @var float Percentage */
-	public $progress = 0.0;
+	public float $progress = 0.0;
 	/** @var string */
-	public $string = "";
+	public string $string = "";
 
 	/**
 	 * Progress constructor.

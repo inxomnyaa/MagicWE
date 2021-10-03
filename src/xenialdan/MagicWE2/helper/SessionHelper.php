@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
-use Ds\Map;
 use Exception;
 use InvalidArgumentException;
 use JsonException;
@@ -14,9 +13,9 @@ use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\uuid\UUID;
+use Ramsey\Uuid\Rfc4122\UuidV4;
+use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use xenialdan\MagicWE2\event\MWESessionLoadEvent;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -28,21 +27,22 @@ use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
+use function array_filter;
+use function array_values;
+use function count;
 
 class SessionHelper
 {
-	/** @var Map<UUID,UserSession> */
-	private static $userSessions;
-	/** @var Map<UUID,PluginSession> */
-	private static $pluginSessions;
+	/** @var array<string,UserSession> */
+	private static array $userSessions = [];
+	/** @var array<string,PluginSession> */
+	private static array $pluginSessions = [];
 
 	public static function init(): void
 	{
 		if (!@mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "sessions") && !is_dir($concurrentDirectory)) {
 			throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
-		self::$userSessions = new Map();
-		self::$pluginSessions = new Map();
 	}
 
 	/**
@@ -52,14 +52,14 @@ class SessionHelper
 	public static function addSession(Session $session): void
 	{
 		if ($session instanceof UserSession) {
-			self::$userSessions->put($session->getUUID(), $session);
+			self::$userSessions[$session->getUUID()->toString()] = $session;
 			if (!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))) {
 				$oldSkin = $player->getSkin();
 				$newSkin = new Skin($oldSkin->getSkinId(), $oldSkin->getSkinData(), Loader::getInstance()->donatorData, $oldSkin->getGeometryName(), $oldSkin->getGeometryData());
 				$player->setSkin($newSkin);
 				$player->sendSkin();
 			}
-		} else if ($session instanceof PluginSession) self::$pluginSessions->put($session->getUUID(), $session);
+		} else if ($session instanceof PluginSession) self::$pluginSessions[$session->getUUID()->toString()] = $session;
 	}
 
 	/**
@@ -72,8 +72,8 @@ class SessionHelper
 	{
 		if ($session instanceof UserSession) {
 			$session->cleanupInventory();
-			self::$userSessions->remove($session->getUUID());
-		} else if ($session instanceof PluginSession) self::$pluginSessions->remove($session->getUUID());
+			unset(self::$userSessions[$session->getUUID()->toString()]);
+		} else if ($session instanceof PluginSession) unset(self::$pluginSessions[($session->getUUID()->toString())]);
 		if ($save && $session instanceof UserSession) {
 			$session->save();
 		}
@@ -133,67 +133,47 @@ class SessionHelper
 	 */
 	public static function getUserSession(Player $player): ?UserSession
 	{
-		if (self::$userSessions->isEmpty()) return null;
-		$filtered = self::$userSessions->filter(function (UUID $uuid, Session $session) use ($player) {
+		if (count(self::$userSessions) === 0) return null;
+		$filtered = array_filter(self::$userSessions, function (Session $session) use ($player) {
 			return $session instanceof UserSession && $session->getPlayer() === $player;
 		});
-		if ($filtered->isEmpty()) return null;
+		if (count($filtered) === 0) return null;
 		if (count($filtered) > 1) throw new SessionException("Multiple sessions found for player {$player->getName()}. This should never happen!");
-		return $filtered->values()->first();
+		return array_values($filtered)[0];
 	}
 
 	/**
 	 * TODO cleanup or optimize
-	 * @param UUID $uuid
+	 * @param UuidInterface $uuid
 	 * @return null|Session
 	 * @throws SessionException
 	 */
-	public static function getSessionByUUID(UUID $uuid): ?Session
+	public static function getSessionByUUID(UuidInterface $uuid): ?Session
 	{
-		$v = null;
-		if (self::$userSessions->hasKey($uuid)) {
-			$v = self::$userSessions->get($uuid, null);
-		} else if (self::$pluginSessions->hasKey($uuid)) {
-			$v = self::$pluginSessions->get($uuid, null);
-		} else {
-			/*
-			 * Sadly, this part is necessary. If you use UUID::fromString, the object "id" in the map does not match anymore
-			 */
-			$userFiltered = self::$userSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
-				return $uuid2->equals($uuid);
-			});
-			if (!$userFiltered->isEmpty()) $v = $userFiltered->values()->first();
-			else {
-				$pluginFiltered = self::$pluginSessions->filter(function (UUID $uuid2, Session $session) use ($uuid) {
-					return $uuid2->equals($uuid);
-				});
-				if (!$pluginFiltered->isEmpty()) $v = $pluginFiltered->values()->first();
-			}
-		}
+		$v = self::$userSessions[$uuid->toString()] ?? self::$pluginSessions[$uuid->toString()] ?? null;
 		if (!$v instanceof Session) throw new SessionException("Session with uuid {$uuid->toString()} not found");
 		return $v;
 	}
 
 	/**
-	 * @return array|UserSession[]
+	 * @return array
 	 */
 	public static function getUserSessions(): array
 	{
-		return self::$userSessions->values()->toArray();
+		return self::$userSessions;
 	}
 
 	/**
-	 * @return array|PluginSession[]
+	 * @return array
 	 */
 	public static function getPluginSessions(): array
 	{
-		return self::$pluginSessions->values()->toArray();
+		return self::$pluginSessions;
 	}
 
 	/**
 	 * @param Player $player
 	 * @return UserSession|null
-	 * @throws AssumptionFailedError
 	 * @throws InvalidSkinException
 	 * @throws JsonException
 	 * @throws RuntimeException
@@ -207,13 +187,13 @@ class SessionHelper
 		if ($contents === false) return null;
 		$data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
 		if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
-			Loader::getInstance()->getLogger()->error("Could not load user session from json file {$path}: " . json_last_error_msg());
+			Loader::getInstance()->getLogger()->error("Could not load user session from json file $path: " . json_last_error_msg());
 			#unlink($path);//TODO make safe
 			return null;
 		}
 		$session = new UserSession($player);
 		try {
-			$session->setUUID(UUID::fromString($data["uuid"]));
+			$session->setUUID(UuidV4::fromString($data["uuid"]));
 			$session->setWandEnabled($data["wandEnabled"]);
 			$session->setDebugToolEnabled($data["debugToolEnabled"]);
 			$session->setWailaEnabled($data["wailaEnabled"]);
@@ -223,7 +203,7 @@ class SessionHelper
 				try {
 					$properties = BrushProperties::fromJson($brushJson["properties"]);
 					$brush = new Brush($properties);
-					$session->addBrush($brush);
+					$session->getBrushes()->addBrush($brush);
 				} catch (InvalidArgumentException $e) {
 					continue;
 				}
@@ -252,7 +232,7 @@ class SessionHelper
 							$latestSelection["pos2"]["z"],
 							$shape ?? null
 						);
-						if ($selection instanceof Selection && $selection->isValid()) {
+						if ($selection->isValid()) {
 							$session->addSelection($selection);
 						}
 					}

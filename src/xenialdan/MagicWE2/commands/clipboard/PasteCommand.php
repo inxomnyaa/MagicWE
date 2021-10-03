@@ -11,7 +11,6 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -34,12 +33,6 @@ class PasteCommand extends BaseCommand
 		$this->setPermission("we.command.clipboard.paste");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string $aliasUsed
-	 * @param mixed[] $args
-	 * @throws AssumptionFailedError
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
