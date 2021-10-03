@@ -8,7 +8,6 @@ use jackmd\scorefactory\ScoreFactory;
 use JsonSerializable;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use SplDoublyLinkedList;
@@ -181,11 +180,16 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	public function cleanupInventory(): void
 	{
 		foreach ($this->getPlayer()->getInventory()->getContents() as $slot => $item) {
-			/** @var CompoundTag $entry */
-			if (!is_null(($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)))) {
+			if (!is_null(($item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_BRUSH)))) {
 				$this->getPlayer()->getInventory()->clear($slot);
 			}
-			if (!is_null(($entry = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)))) {
+			if (!is_null(($item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE)))) {
+				$this->getPlayer()->getInventory()->clear($slot);
+			}
+			if (!is_null(($item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_ASSET)))) {
+				$this->getPlayer()->getInventory()->clear($slot);
+			}
+			if (!is_null(($item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_PALETTE)))) {
 				$this->getPlayer()->getInventory()->clear($slot);
 			}
 		}
