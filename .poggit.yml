@@ -25,7 +25,7 @@ projects:
         version: ^4.1.0
         branch: "4.0"
       - src: thebigsmilexd/libstructure/libstructure
-        version: ^0.1.4
+        version: ^0.1.5
         branch: mcstructure
       - src: buchwasa/scorefactory/ScoreFactory
         version: ^3.0.1
