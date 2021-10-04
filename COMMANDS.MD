@@ -8,7 +8,6 @@ This list is automatically generated. If you have noticed an error, please creat
 | `//hpos1` | Set position 1 to targeted block | `//hpos1 ` | `//h1` |
 | `//hpos2` | Set position 2 to targeted block | `//hpos2 ` | `//h2` |
 | `//chunk` | Set the selection to your current chunk | `//chunk ` |  |
-| `//palette` | Manage block palettes | `//palette ` |  |
 | `//wand` | Gives you the selection wand | `//wand ` |  |
 | `//togglewand` | Toggle the wand tool on/off | `//togglewand ` | `//toggleeditwand` |
 | `//debug` | Gives you the debug stick, which gives information about the clicked block | `//debug ` |  |
@@ -43,9 +42,11 @@ This list is automatically generated. If you have noticed an error, please creat
 | `//calculate` | Evaluate a mathematical expression | `//calculate <expression:text>` | `//calc, //eval, //evaluate, //solve` |
 | `//togglewaila` | Toggle the What Am I Looking At utility | `//togglewaila ` | `//waila, //wyla` |
 | `//togglesidebar` | Toggle the sidebar | `//togglesidebar ` | `//sidebar` |
+| `//toggleoutline` | Toggle the selection outline | `//toggleoutline ` | `//outline, //showbounds` |
 | `//placeallblockstates` | Place all blockstates similar to Java debug worlds | `//placeallblockstates ` |  |
 | `//testapi` | Internal command for testing API methods | `//testapi ` |  |
 | `//generatecommandsmd` | Generates the commands.md file | `//generatecommandsmd ` |  |
 | `//brush` | Opens the brush tool menu | `//brush` |  |
 | `//brush name` | Get name or rename a brush | `/brush name [name:string]` |  |
+| `//palette` | Manage block palettes | `//palette ` |  |
 | `//flood` | Opens the flood fill tool menu | `//flood ` | `//floodfill` |
