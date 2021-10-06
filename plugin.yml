@@ -3,12 +3,12 @@ name: MagicWE2
 main: xenialdan\MagicWE2\Loader
 version: 10.1.8
 api: ["4.0.0"]
-php: [ "8.0" ]
-softdepend: [ "DEVirion" ]
+php: ["8.0"]
+softdepend: ["DEVirion"]
 authors:
   - XenialDan
 description: Lag free asynchronous world editor for PMMP with plenty of options
-prefix: 'MWE2'
+prefix: "MWE2"
 website: https://github.com/thebigsmileXD/MagicWE2
 permissions:
   we.session:
@@ -123,4 +123,3 @@ permissions:
     default: op
   we.command.debug:
     default: op
-...
