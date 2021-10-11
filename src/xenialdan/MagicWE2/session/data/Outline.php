@@ -13,11 +13,9 @@ use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
-use ReflectionException;
-use ReflectionProperty;
+use ReflectionClass;
 use xenialdan\libstructure\tile\StructureBlockTile;
 use xenialdan\MagicWE2\selection\Selection;
-use function get_class;
 
 class Outline
 {
@@ -82,13 +80,11 @@ class Outline
 		return 'Outline';
 	}
 
-	/**
-	 * @throws ReflectionException
-	 */
 	private function updatePosition(): Position
 	{
 		$this->position = $this->updateBlockPosition();
-		$reflection = new ReflectionProperty(get_class($this->fakeTile), 'position');
+		$reflectionc = new ReflectionClass($this->fakeTile);
+		$reflection = $reflectionc->getProperty('position');
 		$reflection->setAccessible(true);
 		$reflection->setValue($this->fakeTile, $this->position);
 		return $this->position;
@@ -97,5 +93,10 @@ class Outline
 	private function updateBlockPosition(): Position
 	{
 		return Position::fromObject($this->player->getPosition()->withComponents(null, $this->player->getPosition()->getWorld()->getMinY(), null)->floor(), $this->player->getWorld());
+	}
+
+	public function getPosition(): Position
+	{
+		return $this->position;
 	}
 }
