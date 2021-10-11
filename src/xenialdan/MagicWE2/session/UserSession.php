@@ -175,7 +175,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		$this->outlineEnabled = $outlineEnabled;
 		if ($outlineEnabled) {
 			$selection = $this->getLatestSelection();
-			if ($selection instanceof Selection) $this->outline = $this->createOrUpdateOutline($selection);
+			if ($selection instanceof Selection && $selection->isValid()) $this->outline = $this->createOrUpdateOutline($selection);
 		} else {
 			if ($this->outline instanceof Outline) {
 				$this->outline->remove();
