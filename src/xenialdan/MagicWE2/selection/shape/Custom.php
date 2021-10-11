@@ -75,6 +75,7 @@ class Custom extends Shape
 	{
 		$this->validateChunkManager($manager);
 		$touchedChunks = [];
+		/** @var Vector2 $vector2 */
 		foreach ($this->getLayer($manager) as $vector2) {
 			$x = $vector2->getFloorX() >> 4;
 			$z = $vector2->getFloorY() >> 4;

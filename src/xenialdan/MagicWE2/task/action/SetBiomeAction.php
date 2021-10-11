@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\task\action;
 
 use Exception;
 use Generator;
+use pocketmine\math\Vector2;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
@@ -47,6 +48,7 @@ class SetBiomeAction extends TaskAction
 		#$oldBlocks = [];
 		$count = null;
 		$lastProgress = new Progress(0, "");
+		/** @var Vector2 $vec2 */
 		foreach (($all = $selection->getShape()->getLayer($manager)) as $vec2) {
 			if (is_null($count)) $count = count(iterator_to_array($all));
 			$manager->getChunk($vec2->x >> 4, $vec2->y >> 4)->setBiomeId($vec2->x % 16, $vec2->y % 16, $this->biomeId);
