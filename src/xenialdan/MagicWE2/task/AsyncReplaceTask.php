@@ -71,7 +71,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 
 		$touchedChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 
 		$manager = Shape::getChunkManager($touchedChunks);
@@ -156,7 +156,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];//this is already as data
 		$changed = $result["changed"];

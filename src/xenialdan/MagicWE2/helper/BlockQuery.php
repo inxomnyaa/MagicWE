@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2\helper;
 use InvalidArgumentException;
 use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\item\LegacyStringToItemParserException;
+use pocketmine\nbt\NbtException;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use function preg_match_all;
@@ -51,6 +52,7 @@ final class BlockQuery
 	 * @throws LegacyStringToItemParserException
 	 * @throws UnexpectedTagTypeException
 	 * @throws \xenialdan\MagicWE2\exception\InvalidBlockStateException
+	 * @throws NbtException
 	 */
 	public function parse(bool $update = true): self
 	{

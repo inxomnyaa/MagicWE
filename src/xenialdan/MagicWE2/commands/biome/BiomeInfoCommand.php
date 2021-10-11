@@ -97,7 +97,7 @@ class BiomeInfoCommand extends BaseCommand
 			foreach ($touchedChunks as $touchedChunk) {
 				for ($x = 0; $x < 16; $x++)
 					for ($z = 0; $z < 16; $z++)
-						$biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
+						$biomes[] = (FastChunkSerializer::deserializeTerrain($touchedChunk)->getBiomeId($x, $z));//TODO dylan might have plans to remove biomes from this
 			}
 			$biomes = array_unique($biomes);
 			$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.result', [count($biomes)]));

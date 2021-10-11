@@ -90,7 +90,7 @@ class AsyncActionTask extends MWEAsyncTask
 
 		$touchedChunks = unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/);
 		$touchedChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, $touchedChunks);
 
 		$manager = Shape::getChunkManager($touchedChunks);
@@ -132,7 +132,7 @@ class AsyncActionTask extends MWEAsyncTask
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		/** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere
 		$oldBlocks = $result["oldBlocks"];

@@ -45,7 +45,7 @@ class RevertClipboard extends Clipboard
 	{
 		$chunks = [];
 		foreach ($this->chunks as $hash => $chunk) {
-			$chunks[$hash] = FastChunkSerializer::serialize($chunk);
+			$chunks[$hash] = FastChunkSerializer::serializeTerrain($chunk);
 		}
 		return serialize([
 			$this->worldId,
@@ -71,6 +71,6 @@ class RevertClipboard extends Clipboard
 			$this->blocksAfter
 		] = unserialize($data/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
 		foreach ($chunks as $hash => $chunk)
-			$this->chunks[$hash] = FastChunkSerializer::deserialize($chunk);
+			$this->chunks[$hash] = FastChunkSerializer::deserializeTerrain($chunk);
 	}
 }

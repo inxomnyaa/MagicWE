@@ -60,7 +60,7 @@ class AsyncCountTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 		$chunks = unserialize($this->touchedChunks/*, ['allowed_classes' => [false]]*/);//TODO test pm4
 		foreach ($chunks as $hash => $data) {
-			$chunks[$hash] = FastChunkSerializer::deserialize($data);
+			$chunks[$hash] = FastChunkSerializer::deserializeTerrain($data);
 		}
 		/** @var Selection $selection */
 		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4

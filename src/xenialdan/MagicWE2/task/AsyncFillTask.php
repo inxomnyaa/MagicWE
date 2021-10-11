@@ -75,7 +75,7 @@ class AsyncFillTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 
 		$touchedChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 
 		$manager = Shape::getChunkManager($touchedChunks);
@@ -173,7 +173,7 @@ class AsyncFillTask extends MWEAsyncTask
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4)
 		#$oldBlocks = igbinary_unserialize($result["oldBlocks"]);
 		$oldBlocks = $result["oldBlocks"];//this is already a data map

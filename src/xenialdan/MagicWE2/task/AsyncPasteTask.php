@@ -67,7 +67,7 @@ class AsyncPasteTask extends MWEAsyncTask
 		$this->publishProgress([0, "Start"]);
 
 		$touchedChunks = array_map(static function ($chunk) {//todo add hash as key
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 
 		$manager = Shape::getChunkManager($touchedChunks);
@@ -156,7 +156,7 @@ class AsyncPasteTask extends MWEAsyncTask
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
 		$undoChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserialize($chunk);
+			return FastChunkSerializer::deserializeTerrain($chunk);
 		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];//already data array
 		$changed = $result["changed"];

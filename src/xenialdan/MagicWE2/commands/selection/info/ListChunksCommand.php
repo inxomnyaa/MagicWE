@@ -61,11 +61,11 @@ class ListChunksCommand extends BaseCommand
 			$touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
 			$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.listchunks.found', [count($touchedChunks)]));
 			foreach ($touchedChunks as $chunkHash => $touchedChunk) {
-				$chunk = FastChunkSerializer::deserialize($touchedChunk);
+				$chunk = FastChunkSerializer::deserializeTerrain($touchedChunk);
 				$biomes = [];
 				for ($x = 0; $x < 16; $x++)
 					for ($z = 0; $z < 16; $z++)
-						$biomes[] = (FastChunkSerializer::deserialize($touchedChunk)->getBiomeId($x, $z));
+						$biomes[] = (FastChunkSerializer::deserializeTerrain($touchedChunk)->getBiomeId($x, $z));
 				$biomes = array_unique($biomes);
 				$biomecount = count($biomes);
 				$biomes = implode(", ", $biomes);

@@ -15,10 +15,10 @@ use pocketmine\block\BlockFactory;
 use pocketmine\block\Door;
 use pocketmine\block\utils\BlockDataSerializer;
 use pocketmine\data\bedrock\LegacyBlockIdToStringIdMap;
-use pocketmine\item\LegacyStringToItemParser;
 use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\item\StringToItemParser;
 use pocketmine\math\Facing;
+use pocketmine\nbt\NbtException;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
@@ -153,6 +153,7 @@ final class BlockStatesParser
 	 * @throws UnexpectedTagTypeException
 	 * @throws \pocketmine\block\utils\InvalidBlockStateException
 	 * @throws LegacyStringToItemParserException
+	 * @throws NbtException
 	 */
 	private static function buildDoor(BlockQuery $query, CompoundTag $states): Door
 	{
@@ -206,6 +207,7 @@ final class BlockStatesParser
 	 * @throws UnexpectedTagTypeException
 	 * @throws \pocketmine\block\utils\InvalidBlockStateException
 	 * @throws LegacyStringToItemParserException
+	 * @throws NbtException
 	 * @noinspection PhpInternalEntityUsedInspection
 	 */
 	public static function fromString(BlockQuery $query): Block
@@ -213,8 +215,7 @@ final class BlockStatesParser
 		$namespacedSelectedBlockName = !str_contains($query->blockId, "minecraft:") ? "minecraft:" . $query->blockId : $query->blockId;
 		$selectedBlockName = strtolower(str_replace("minecraft:", "", $namespacedSelectedBlockName));//TODO try to keep namespace "minecraft:" to support custom blocks
 
-		/** @noinspection PhpDeprecationInspection */
-		$block = StringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock() ?? LegacyStringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock();
+		$block = StringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock() ?? StringToItemParser::getInstance()->parse($selectedBlockName)?->getBlock();
 		//no states, just block
 		if (!$query->hasBlockStates()) {
 			$query->blockFullId = $block->getFullId();
@@ -280,7 +281,6 @@ final class BlockStatesParser
 			$clonedPrintedCompound = clone $r12ToCurrentBlockMapEntry->getBlockState()->getCompoundTag('states');
 			if ($clonedPrintedCompound->equals($finalStatesList)) {
 				$blockFactory = BlockFactory::getInstance();
-				/** @noinspection PhpDeprecationInspection */
 				$block = $blockFactory->get($block->getId(), $meta & 0xf);
 				$blocks[] = $block;
 			}

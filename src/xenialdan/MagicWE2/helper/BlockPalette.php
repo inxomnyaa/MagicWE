@@ -14,6 +14,7 @@ use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\item\VanillaItems;
+use pocketmine\nbt\NbtException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\TextFormat as TF;
@@ -148,6 +149,7 @@ class BlockPalette
 	 * @throws JsonException
 	 * @throws LegacyStringToItemParserException
 	 * @throws UnexpectedTagTypeException
+	 * @throws NbtException
 	 */
 	public static function fromStringArray(string $blocks): array
 	{

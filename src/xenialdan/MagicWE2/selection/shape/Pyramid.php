@@ -127,7 +127,7 @@ class Pyramid extends Shape
 					continue;
 				}
 				print "Touched Chunk at: $x:$z" . PHP_EOL;
-				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serializeTerrain($chunk);
 			}
 		}
 		print "Touched chunks count: " . count($touchedChunks) . PHP_EOL;
