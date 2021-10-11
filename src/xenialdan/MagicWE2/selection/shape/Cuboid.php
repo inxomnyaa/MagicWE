@@ -115,7 +115,7 @@ class Cuboid extends Shape
 				if ($chunk === null) {
 					continue;
 				}
-				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serialize($chunk);
+				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serializeTerrain($chunk);
 			}
 		}
 		return $touchedChunks;

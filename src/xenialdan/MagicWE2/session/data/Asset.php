@@ -14,6 +14,7 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\NbtException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginException;
@@ -90,6 +91,7 @@ class Asset implements JsonSerializable
 	 * @param bool $renew
 	 * @return Item
 	 * @throws InvalidArgumentException
+	 * @throws NbtException
 	 */
 	public function toItem(bool $renew = false): Item
 	{

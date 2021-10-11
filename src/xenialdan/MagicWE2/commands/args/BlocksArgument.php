@@ -6,10 +6,7 @@ namespace xenialdan\MagicWE2\commands\args;
 
 use CortexPE\Commando\args\RawStringArgument;
 use InvalidArgumentException as InvalidArgumentExceptionAlias;
-use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\command\CommandSender;
-use pocketmine\item\LegacyStringToItemParserException;
-use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
@@ -36,14 +33,12 @@ class BlocksArgument extends RawStringArgument
 	 *
 	 * @return BlockPalette
 	 * @throws SessionException
-	 * @throws LegacyStringToItemParserException
-	 * @throws UnexpectedTagTypeException
 	 */
 	public function parse(string $argument, CommandSender $sender): BlockPalette
 	{
 		try {
 			return BlockPalette::fromString($argument);
-		} catch (BlockQueryAlreadyParsedException|InvalidArgumentExceptionAlias|InvalidBlockStateException $error) {
+		} catch (BlockQueryAlreadyParsedException | InvalidArgumentExceptionAlias $error) {
 			if ($sender instanceof Player)
 				SessionHelper::getUserSession($sender)->sendMessage('error.command-error');
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

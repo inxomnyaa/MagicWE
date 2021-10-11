@@ -392,8 +392,6 @@ class EventListener implements Listener
 	/**
 	 * TODO use tool classes
 	 * @param PlayerItemHeldEvent $event
-	 * @throws SessionException
-	 * @throws UnexpectedTagTypeException
 	 */
 	public function onChangeSlot(PlayerItemHeldEvent $event): void
 	{
