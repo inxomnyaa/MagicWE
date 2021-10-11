@@ -562,4 +562,9 @@ class API
 	{
 		return $b ? TF::RESET . TF::GREEN . "On" . TF::RESET : TF::RESET . TF::RED . "Off" . TF::RESET;
 	}
+
+	public static function positiveModulo(int $i, int $n): int
+	{
+		return ($i % $n + $n) % $n;
+	}
 }
