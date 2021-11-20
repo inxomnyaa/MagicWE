@@ -23,6 +23,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
 use xenialdan\apibossbar\DiverseBossBar;
+use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\libstructure\PacketListener;
 use xenialdan\MagicWE2\commands\biome\BiomeInfoCommand;
 use xenialdan\MagicWE2\commands\biome\BiomeListCommand;
@@ -73,7 +74,6 @@ use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
 use xenialdan\MagicWE2\exception\ShapeRegistryException;
 use xenialdan\MagicWE2\helper\BlockStatesEntry;
-use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\data\AssetCollection;
@@ -176,8 +176,8 @@ class Loader extends PluginBase
 		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 		$blockstateparserInstance = BlockStatesParser::getInstance();
-		$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		#$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
+		#$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
 		if ($fileGetContents === false) {
