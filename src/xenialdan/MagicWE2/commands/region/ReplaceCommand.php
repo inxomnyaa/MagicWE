@@ -44,7 +44,7 @@ class ReplaceCommand extends BaseCommand
 		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
 			try {
 				$lang = SessionHelper::getUserSession($sender)->getLanguage();
-			} catch (SessionException $e) {
+			} catch (SessionException) {
 			}
 		}
 		if (!$sender instanceof Player) {
@@ -69,8 +69,8 @@ class ReplaceCommand extends BaseCommand
 			if ($selection->getWorld() !== $sender->getWorld()) {
 				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 			}
-			$hasFlags = isset($args["flags"]);
-			API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks, $hasFlags ? API::flagParser(explode(" ", (string)$args["flags"])) : API::FLAG_BASE);
+			//$hasFlags = isset($args["flags"]);
+			API::replaceAsync($selection, $session, $findBlocks, $replaceBlocks);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

@@ -76,7 +76,7 @@ class BrushProperties implements JsonSerializable
 		$str = "";
 		try {
 			$str = trim(($this->hasCustomName() ? $this->customName : $this->getShapeName()) /*. " " . $this->action->getName() . */);
-		} catch (ShapeNotFoundException $e) {
+		} catch (ShapeNotFoundException) {
 		}
 		if (stripos(TF::clean($str), "brush") === false) {
 			$str .= " Brush";

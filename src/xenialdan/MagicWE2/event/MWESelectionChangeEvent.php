@@ -30,7 +30,7 @@ class MWESelectionChangeEvent extends MWEEvent
 		$this->type = $type;
 		try {
 			$this->session = SessionHelper::getSessionByUUID($selection->sessionUUID);
-		} catch (SessionException $e) {
+		} catch (SessionException) {
 		}
 	}
 

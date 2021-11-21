@@ -38,6 +38,7 @@ use function array_search;
 use function array_slice;
 use function array_values;
 use function array_walk;
+use function count;
 use function gettype;
 use function is_bool;
 use function is_int;
@@ -121,7 +122,7 @@ class Brush extends WETool
 				$dropdownActionOptions[$name] = $class === $brushProperties->action;
 			}
 			$dropdownBiomeOptions = [];
-			foreach ((new ReflectionClass(BiomeIds::class))->getConstants() as $name => $value) {
+			foreach ((new ReflectionClass(BiomeIds::class))->getConstants() as /*$name =>*/ $value) {
 				if ($value === BiomeIds::HELL) continue;
 				$dropdownBiomeOptions[BiomeRegistry::getInstance()->getBiome($value)->getName()] = $value === $brushProperties->biomeId;
 			}
@@ -140,10 +141,12 @@ class Brush extends WETool
 				#var_dump(__LINE__, array_slice($data, 7));
 				$base = ShapeRegistry::getDefaultShapeProperties(($new ? ShapeRegistry::getShape($shape) : $this->properties->shape));
 				$slice = array_values(array_slice($data, 7, null, true));//TODO use label?
-				$j = 0;
-				foreach ($base as $i => $value) {
-					$extraData[$i] = is_int($value) ? (int)$slice[$j] : $slice[$j];//TODO enhance
-					$j++;
+				if (count($slice) > 0) {
+					$j = 0;
+					foreach ($base as $i => $value) {
+						$extraData[$i] = is_int($value) ? (int)$slice[$j] : $slice[$j];//TODO enhance
+						$j++;
+					}
 				}
 				#var_dump(__LINE__, $extraData);
 				//prepare data
@@ -251,7 +254,7 @@ class Brush extends WETool
 			}
 			// Function
 			return $form;
-		} catch (Exception $e) {
+		} catch (Exception) {
 			throw new AssumptionFailedError("Could not create brush form");
 		}
 	}

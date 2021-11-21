@@ -56,7 +56,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		try {
 			if (is_null($this->lang))
 				$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
-		} catch (LanguageNotFoundException $e) {
+		} catch (LanguageNotFoundException) {
 		}
 		Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
 	}

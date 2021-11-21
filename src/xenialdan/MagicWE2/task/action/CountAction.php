@@ -9,7 +9,6 @@ use Generator;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -33,7 +32,6 @@ class CountAction extends TaskAction
 	/**
 	 * @param string $sessionUUID
 	 * @param Selection $selection
-	 * @param AsyncChunkManager $manager
 	 * @param null|int $changed
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
@@ -42,8 +40,9 @@ class CountAction extends TaskAction
 	 * @return Generator
 	 * @throws Exception
 	 */
-	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
 	{
+		$manager = $selection->getIterator()->getManager();
 		$changed = 0;
 		#$oldBlocks = [];
 		$count = $selection->getShape()->getTotalCount();

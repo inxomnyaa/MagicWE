@@ -61,7 +61,7 @@ class Scoreboard
 					}
 					//todo current block palette, schematics, brushes
 				}
-			} catch (BadFunctionCallException | OutOfBoundsException | ReflectionException $e) {
+			} catch (BadFunctionCallException | OutOfBoundsException | ReflectionException) {
 			}
 		}
 	}

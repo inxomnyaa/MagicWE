@@ -9,7 +9,6 @@ use pocketmine\math\Vector3;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\format\Chunk;
-use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
@@ -19,41 +18,34 @@ use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
+use function igbinary_serialize;
+use function igbinary_unserialize;
 
 class AsyncPasteTask extends MWEAsyncTask
 {
-	/** @var string */
-	private string $touchedChunks;
-	/** @var string */
 	private string $selection;
-	/** @var string */
 	private string $clipboard;
-	/** @var Vector3 */
 	private Vector3 $offset;
 
 	/**
 	 * AsyncPasteTask constructor.
 	 * @param UuidInterface $sessionUUID
 	 * @param Selection $selection
-	 * @param string[] $touchedChunks serialized chunks
 	 * @param SingleClipboard $clipboard
 	 * @throws Exception
 	 */
-	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, SingleClipboard $clipboard)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, SingleClipboard $clipboard)
 	{
 		$this->start = microtime(true);
 		$this->offset = $selection->getShape()->getPasteVector()->addVector($clipboard->position)->floor();
 		#var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
 		$this->sessionUUID = $sessionUUID->toString();
-		$this->selection = serialize($selection);
-		$this->touchedChunks = serialize($touchedChunks);
-		$this->clipboard = serialize($clipboard);
+		$this->selection = igbinary_serialize($selection);
+		$this->clipboard = igbinary_serialize($clipboard);
 	}
 
 	/**
@@ -66,20 +58,20 @@ class AsyncPasteTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 
-		$touchedChunks = array_map(static function ($chunk) {//todo add hash as key
-			return FastChunkSerializer::deserializeTerrain($chunk);
-		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
-
-		$manager = Shape::getChunkManager($touchedChunks);
+//		$touchedChunks = array_map(static function ($chunk) {//todo add hash as key
+//			return FastChunkSerializer::deserializeTerrain($chunk);
+//		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		unset($touchedChunks);
 
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
 		/** @var SingleClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
-		$oldBlocks = iterator_to_array($this->execute($selection, $manager, $clipboard, $changed));
+		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
 
+		$oldBlocks = iterator_to_array($this->execute($selection, $clipboard, $changed));
+
+		$manager = $selection->getIterator()->getManager();
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isTerrainDirty();
@@ -89,15 +81,15 @@ class AsyncPasteTask extends MWEAsyncTask
 
 	/**
 	 * @param Selection $selection
-	 * @param AsyncChunkManager $manager
 	 * @param SingleClipboard $clipboard
 	 * @param null|int $changed
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
-	private function execute(Selection $selection, AsyncChunkManager $manager, SingleClipboard $clipboard, ?int &$changed): Generator
+	private function execute(Selection $selection, SingleClipboard $clipboard, ?int &$changed): Generator
 	{
+		$manager = $selection->getIterator()->getManager();
 		$blockCount = $clipboard->getTotalCount();
 		$lastchunkx = $lastchunkz = $x = $y = $z = null;
 		$lastprogress = 0;
@@ -155,13 +147,14 @@ class AsyncPasteTask extends MWEAsyncTask
 		$result = $this->getResult();
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
-		$undoChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserializeTerrain($chunk);
-		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
+//		$undoChunks = array_map(static function ($chunk) {
+//			return FastChunkSerializer::deserializeTerrain($chunk);
+//		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];//already data array
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$undoChunks = $selection->getIterator()->getManager()->getChunks();
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {

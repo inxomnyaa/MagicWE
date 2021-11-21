@@ -7,26 +7,21 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\format\io\FastChunkSerializer;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\exception\SessionException;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
+use function igbinary_serialize;
+use function igbinary_unserialize;
 
 class AsyncCountTask extends MWEAsyncTask
 {
 	/** @var string */
-	private string $touchedChunks;
-	/** @var string */
 	private string $selection;
-	/** @var int */
-	private int $flags;
 	/** @var BlockPalette */
 	private BlockPalette $filterblocks;
 
@@ -34,19 +29,15 @@ class AsyncCountTask extends MWEAsyncTask
 	 * AsyncCountTask constructor.
 	 * @param Selection $selection
 	 * @param UuidInterface $sessionUUID
-	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $filterblocks
-	 * @param int $flags
 	 * @throws Exception
 	 */
-	public function __construct(UuidInterface $sessionUUID, Selection $selection, array $touchedChunks, BlockPalette $filterblocks, int $flags)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, BlockPalette $filterblocks)
 	{
 		$this->start = microtime(true);
-		$this->touchedChunks = serialize($touchedChunks);
 		$this->sessionUUID = $sessionUUID->toString();
-		$this->selection = serialize($selection);
+		$this->selection = igbinary_serialize($selection);
 		$this->filterblocks = $filterblocks;
-		$this->flags = $flags;
 	}
 
 	/**
@@ -58,28 +49,22 @@ class AsyncCountTask extends MWEAsyncTask
 	public function onRun(): void
 	{
 		$this->publishProgress([0, "Start"]);
-		$chunks = unserialize($this->touchedChunks/*, ['allowed_classes' => [false]]*/);//TODO test pm4
-		foreach ($chunks as $hash => $data) {
-			$chunks[$hash] = FastChunkSerializer::deserializeTerrain($data);
-		}
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
-		$manager = Shape::getChunkManager($chunks);
-		unset($chunks);
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
-		$counts = $this->countBlocks($selection, $manager, $this->filterblocks);
+		$counts = $this->countBlocks($selection, $this->filterblocks);
 		$this->setResult(compact("counts", "totalCount"));
 	}
 
 	/**
 	 * @param Selection $selection
-	 * @param AsyncChunkManager $manager
 	 * @param BlockPalette $filterblocks
 	 * @return array
 	 * @throws Exception
 	 */
-	private function countBlocks(Selection $selection, AsyncChunkManager $manager, BlockPalette $filterblocks): array
+	private function countBlocks(Selection $selection, BlockPalette $filterblocks): array
 	{
+		$manager = $selection->getIterator()->getManager();
 		$blockCount = $selection->getShape()->getTotalCount();
 		$changed = 0;
 		$this->publishProgress([0, "Running, counting $changed blocks out of $blockCount"]);
@@ -87,7 +72,7 @@ class AsyncCountTask extends MWEAsyncTask
 		$lastprogress = 0;
 		$counts = [];
 		/** @var Block $block */
-		foreach ($selection->getShape()->getBlocks($manager, $filterblocks, $this->flags) as $block) {
+		foreach ($selection->getShape()->getBlocks($manager, $filterblocks) as $block) {
 			if (is_null($lastchunkx) || ($block->getPosition()->x >> 4 !== $lastchunkx && $block->getPosition()->z >> 4 !== $lastchunkz)) {
 				$lastchunkx = $block->getPosition()->x >> 4;
 				$lastchunkz = $block->getPosition()->z >> 4;

@@ -61,7 +61,7 @@ class EventListener implements Listener
 				Loader::getInstance()->getLogger()->debug("Restored cached session for player {$session->getPlayer()->getName()}");
 			} else if (($session = SessionHelper::loadUserSession($event->getPlayer())) instanceof UserSession) {
 				Loader::getInstance()->getLogger()->debug("Restored session from file for player {$session->getPlayer()->getName()}");
-			} else ($session = SessionHelper::createUserSession($event->getPlayer()));
+			} else (SessionHelper::createUserSession($event->getPlayer()));
 		}
 	}
 
@@ -375,7 +375,7 @@ class EventListener implements Listener
 				$event->cancel();
 				$event->getPlayer()->getInventory()->remove($event->getItem());
 			}
-		} catch (Exception $e) {
+		} catch (Exception) {
 		}
 	}
 

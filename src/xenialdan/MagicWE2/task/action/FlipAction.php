@@ -9,7 +9,6 @@ use Generator;
 use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
 use xenialdan\libblockstate\BlockEntry;
-use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -55,8 +54,8 @@ class FlipAction extends ClipboardAction
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		BlockFactory::getInstance();
-		/** @var BlockStatesParser $blockStatesParser */
-		$blockStatesParser = BlockStatesParser::getInstance();
+//		/** @var BlockStatesParser $blockStatesParser */
+//		$blockStatesParser = BlockStatesParser::getInstance();
 		$clonedClipboard = clone $clipboard;
 		$x = $y = $z = null;
 		$maxX = $clipboard->selection->getSizeX() - 1;

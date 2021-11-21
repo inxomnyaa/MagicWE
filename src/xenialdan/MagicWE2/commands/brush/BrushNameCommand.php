@@ -30,16 +30,13 @@ class BrushNameCommand extends BaseSubCommand
 		$this->setPermission("we.command.brush.name");
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
 		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
 			try {
 				$lang = SessionHelper::getUserSession($sender)->getLanguage();
-			} catch (SessionException $e) {
+			} catch (SessionException) {
 			}
 		}
 		if (!$sender instanceof Player) {

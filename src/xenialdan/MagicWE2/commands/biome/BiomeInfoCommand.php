@@ -11,16 +11,16 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
+use pocketmine\data\bedrock\BiomeIds;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\biome\Biome;
 use pocketmine\world\biome\BiomeRegistry;
-use pocketmine\world\format\io\FastChunkSerializer;
 use ReflectionClass;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
+use function abs;
 
 class BiomeInfoCommand extends BaseCommand
 {
@@ -47,7 +47,7 @@ class BiomeInfoCommand extends BaseCommand
 		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
 			try {
 				$lang = SessionHelper::getUserSession($sender)->getLanguage();
-			} catch (SessionException $e) {
+			} catch (SessionException) {
 			}
 		}
 		if (!$sender instanceof Player) {
@@ -60,9 +60,8 @@ class BiomeInfoCommand extends BaseCommand
 			if (is_null($session)) {
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$biomeNames = (new ReflectionClass(Biome::class))->getConstants();
+			$biomeNames = (new ReflectionClass(BiomeIds::class))->getConstants();
 			$biomeNames = array_flip($biomeNames);
-			unset($biomeNames[Biome::MAX_BIOMES]);
 			array_walk($biomeNames, static function (&$value, $key) {
 				$value = BiomeRegistry::getInstance()->getBiome($key)->getName();
 			});
@@ -74,12 +73,12 @@ class BiomeInfoCommand extends BaseCommand
 						$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
 						return;
 					}
-					$biomeId = $target->getPosition()->getWorld()->getOrLoadChunkAtPosition($target->getPosition())->getBiomeId($target->getPosition()->getX() % 16, $target->getPosition()->getZ() % 16);
+					$biomeId = $target->getPosition()->getWorld()->getOrLoadChunkAtPosition($target->getPosition())->getBiomeId(abs($target->getPosition()->getX() % 16), abs($target->getPosition()->getZ() % 16));
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.attarget'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}
 				if (in_array(self::FLAG_P, $flagArray, true)) {
-					$biomeId = $sender->getWorld()->getOrLoadChunkAtPosition($sender->getPosition())->getBiomeId($sender->getPosition()->getX() % 16, $sender->getPosition()->getZ() % 16);
+					$biomeId = $sender->getWorld()->getOrLoadChunkAtPosition($sender->getPosition())->getBiomeId(abs($sender->getPosition()->getX() % 16), abs($sender->getPosition()->getZ() % 16));
 					$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.atposition'));
 					$session->sendMessage(TF::AQUA . "ID: $biomeId Name: " . $biomeNames[$biomeId]);
 				}
@@ -95,12 +94,12 @@ class BiomeInfoCommand extends BaseCommand
 			if ($selection->getWorld() !== $sender->getWorld()) {
 				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 			}
-			$touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
+			$touchedChunks = $selection->getIterator()->getManager()->getChunks();
 			$biomes = [];
 			foreach ($touchedChunks as $touchedChunk) {
 				for ($x = 0; $x < 16; $x++)
 					for ($z = 0; $z < 16; $z++)
-						$biomes[] = (FastChunkSerializer::deserializeTerrain($touchedChunk)->getBiomeId($x, $z));//TODO dylan might have plans to remove biomes from this
+						$biomes[] = $touchedChunk->getBiomeId($x, $z);//TODO dylan might have plans to remove biomes from this
 			}
 			$biomes = array_unique($biomes);
 			$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.biomeinfo.result', [count($biomes)]));

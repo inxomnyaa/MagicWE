@@ -105,7 +105,9 @@ class BlockPalette
 	}
 
 	/**
-	 * @return Generator
+	 * @return Block[]|Generator
+	 * @phpstan-return Generator<int, Block, void, void>
+	 * @noinspection PhpDocSignatureInspection
 	 */
 	public function palette(): Generator
 	{

@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use pocketmine\block\Block;
 use xenialdan\libblockstate\BlockEntry;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -29,7 +28,6 @@ class SetBlockAction extends TaskAction
 	/**
 	 * @param string $sessionUUID
 	 * @param Selection $selection
-	 * @param AsyncChunkManager $manager
 	 * @param null|int $changed
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
@@ -38,8 +36,9 @@ class SetBlockAction extends TaskAction
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
-	public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
+	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
 	{
+		$manager = $selection->getIterator()->getManager();
 		$changed = 0;
 		$i = 0;
 		#$oldBlocks = [];

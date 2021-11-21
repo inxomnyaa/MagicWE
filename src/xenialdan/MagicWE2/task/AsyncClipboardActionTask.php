@@ -17,15 +17,14 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ClipboardAction;
+use function igbinary_serialize;
+use function igbinary_unserialize;
 
 class AsyncClipboardActionTask extends MWEAsyncTask
 {
 
-	/** @var string */
 	private string $selection;
-	/** @var ClipboardAction */
 	private ClipboardAction $action;
-	/** @var string */
 	private string $clipboard;
 
 	private string $rotPath;
@@ -42,8 +41,8 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
-		$this->selection = serialize($selection);//TODO check if needed, $clipboard already holds the selection
-		$this->clipboard = serialize($clipboard);//TODO check if this even needs to be serialized
+		$this->selection = igbinary_serialize($selection);//TODO check if needed, $clipboard already holds the selection
+		$this->clipboard = igbinary_serialize($clipboard);//TODO check if this even needs to be serialized
 		$this->action = $action;
 
 		$this->rotPath = Loader::getRotFlipPath();
@@ -75,9 +74,9 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 		BlockStatesParser::$rotPath = $this->rotPath;
 
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		/** @var SingleClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
+		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
 		$clipboard->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
 		$messages = [];
 		/** @var Progress $progress */
@@ -106,7 +105,7 @@ class AsyncClipboardActionTask extends MWEAsyncTask
 		$clipboard = $result["clipboard"];
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		$totalCount = $selection->getShape()->getTotalCount();
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));

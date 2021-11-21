@@ -141,23 +141,20 @@ class Asset implements JsonSerializable
 	{
 		$structure = $this->structure;
 		if ($structure instanceof Schematic) return $structure;
+		$schematic = new Schematic();
 		if ($structure instanceof MCStructure) {
-			$schematic = new Schematic();
 			$blocks = iterator_to_array($structure->blocks());
 			$schematic->setWidth((int)$this->getSize()->getX());
 			$schematic->setHeight((int)$this->getSize()->getY());
 			$schematic->setLength((int)$this->getSize()->getZ());
-			$schematic->setBlockArray($blocks);
-			return $schematic;
 		} else {
-			$schematic = new Schematic();
 			$blocks = [];
 			foreach ($structure->iterateEntries($x, $y, $z) as $block) {
 				$blocks[] = API::setComponents($block->toBlock(), (int)$x, (int)$y, (int)$z);//turn BlockEntry to blocks
 			}
-			$schematic->setBlockArray($blocks);
-			return $schematic;
 		}
+		$schematic->setBlockArray($blocks);
+		return $schematic;
 		//throw new Exception("Unknown structure type");
 	}
 

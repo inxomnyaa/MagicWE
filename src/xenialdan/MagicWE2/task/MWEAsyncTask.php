@@ -14,9 +14,7 @@ use xenialdan\MagicWE2\session\UserSession;
 
 abstract class MWEAsyncTask extends AsyncTask
 {
-	/** @var string */
 	public string $sessionUUID;
-	/** @var float */
 	public float $start;
 
 	public function onProgressUpdate($progress): void
@@ -29,7 +27,7 @@ abstract class MWEAsyncTask extends AsyncTask
 			/** @var Progress $progress */
 			if ($session instanceof UserSession) $session->getBossBar()->setPercentage($progress->progress)->setSubTitle(str_replace("%", "%%%%", $progress->string . " | " . floor($progress->progress * 100) . "%"));
 			else $session->sendMessage($progress->string . " | " . floor($progress->progress * 100) . "%");//TODO remove, debug
-		} catch (SessionException $e) {
+		} catch (SessionException) {
 			//TODO log?
 		}
 	}

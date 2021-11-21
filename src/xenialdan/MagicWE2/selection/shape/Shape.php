@@ -4,7 +4,6 @@ namespace xenialdan\MagicWE2\selection\shape;
 
 use Exception;
 use Generator;
-use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
@@ -13,6 +12,7 @@ use pocketmine\world\World;
 use Serializable;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 
 abstract class Shape implements Serializable
@@ -45,43 +45,27 @@ abstract class Shape implements Serializable
 		return $manager;
 	}
 
-	/**
-	 * @param mixed $manager
-	 * @throws InvalidArgumentException
-	 */
-	public function validateChunkManager(mixed $manager): void
-	{
-		if (!$manager instanceof World && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncChunkManager");
-	}
-
 	abstract public function getTotalCount(): int;
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param AsyncWorld $manager The world or AsyncWorld
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
-	 * @param int $flags
-	 * @return Generator|Block[]
+	 * @return Block[]|Generator
+	 * @phpstan-return Generator<int, Block, void, void>
 	 * @throws Exception
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	abstract public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator;
+	abstract public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks): Generator;
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param AsyncWorld $manager The world or AsyncWorld
 	 * @param int $flags
 	 * @return Generator
 	 * @throws Exception
 	 */
-	abstract public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator;
-
-	/**
-	 * @param World|AsyncChunkManager $manager
-	 * @return string[] fastSerialized chunks
-	 * @throws Exception
-	 */
-	abstract public function getTouchedChunks(AsyncChunkManager|World $manager): array;
+	abstract public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator;
 
 	abstract public function getAABB(): AxisAlignedBB;
 

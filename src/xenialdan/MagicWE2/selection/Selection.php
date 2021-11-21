@@ -11,6 +11,7 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
+use pocketmine\world\SimpleChunkManager;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -19,7 +20,9 @@ use Serializable;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\SessionHelper;
+use xenialdan\MagicWE2\helper\SubChunkIterator;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
@@ -43,6 +46,8 @@ class Selection implements Serializable, JsonSerializable
 	/** @var Shape|null */
 	public ?Shape $shape = null;
 
+	private SubChunkIterator $iterator;
+
 	/**
 	 * Selection constructor.
 	 * @param UuidInterface $sessionUUID
@@ -57,6 +62,7 @@ class Selection implements Serializable, JsonSerializable
 	 */
 	public function __construct(UuidInterface $sessionUUID, World $world, ?int $minX = null, ?int $minY = null, ?int $minZ = null, ?int $maxX = null, ?int $maxY = null, ?int $maxZ = null, ?Shape $shape = null)
 	{
+
 		$this->sessionUUID = $sessionUUID;
 		$this->worldId = $world->getId();
 		if (isset($minX, $minY, $minZ)) {
@@ -67,10 +73,20 @@ class Selection implements Serializable, JsonSerializable
 		}
 		if ($shape !== null) $this->shape = $shape;
 		$this->setUUID(Uuid::uuid4());
+
 		try {
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_CREATE))->call();
-		} catch (RuntimeException $e) {
+		} catch (RuntimeException) {
 		}
+
+		$this->iterator = new SubChunkIterator(new AsyncWorld($this));
+	}
+
+	public function free(): void
+	{
+		$this->iterator->invalidate();
+		$manager = $this->iterator->getManager();
+		if ($manager instanceof SimpleChunkManager) $manager->cleanChunks();
 	}
 
 	/**
@@ -89,16 +105,16 @@ class Selection implements Serializable, JsonSerializable
 		return $world;
 	}
 
-	/**
-	 * @param World $world
-	 */
 	public function setWorld(World $world): void
 	{
 		$this->worldId = $world->getId();
 		try {
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_WORLD))->call();
-		} catch (RuntimeException $e) {
+		} catch (RuntimeException) {
 		}
+		$this->free();
+		$manager = $this->getIterator()->getManager();
+		if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
 	}
 
 	/**
@@ -134,10 +150,13 @@ class Selection implements Serializable, JsonSerializable
 				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos1.set', [$this->pos1->getX(), $this->pos1->getY(), $this->pos1->getZ()]));
 				try {
 					(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS1))->call();
-				} catch (RuntimeException $e) {
+				} catch (RuntimeException) {
 				}
+				$this->free();
+				$manager = $this->getIterator()->getManager();
+				if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
 			}
-		} catch (SessionException $e) {
+		} catch (SessionException) {
 			//TODO log? kick?
 		}
 	}
@@ -175,10 +194,13 @@ class Selection implements Serializable, JsonSerializable
 				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos2.set', [$this->pos2->getX(), $this->pos2->getY(), $this->pos2->getZ()]));
 				try {
 					(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS2))->call();
-				} catch (RuntimeException $e) {
+				} catch (RuntimeException) {
 				}
+				$this->free();
+				$manager = $this->getIterator()->getManager();
+				if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
 			}
-		} catch (SessionException $e) {
+		} catch (SessionException) {
 			//TODO log? kick?
 		}
 	}
@@ -193,16 +215,16 @@ class Selection implements Serializable, JsonSerializable
 		return $this->shape;
 	}
 
-	/**
-	 * @param Shape $shape
-	 */
 	public function setShape(Shape $shape): void
 	{
 		$this->shape = $shape;
 		try {
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();
-		} catch (RuntimeException $e) {
+		} catch (RuntimeException) {
 		}//might cause duplicated call
+		$this->free();
+		$manager = $this->getIterator()->getManager();
+		if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
 	}
 
 	/**
@@ -220,50 +242,40 @@ class Selection implements Serializable, JsonSerializable
 			$this->getWorld();
 			$this->getPos1();
 			$this->getPos2();
-		} catch (Exception $e) {
+		} catch (Exception) {
 			return false;
 		}
 		return true;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getSizeX(): int
 	{
 		return (int)(abs($this->pos1->x - $this->pos2->x) + 1);
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getSizeY(): int
 	{
 		return (int)(abs($this->pos1->y - $this->pos2->y) + 1);
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getSizeZ(): int
 	{
 		return (int)(abs($this->pos1->z - $this->pos2->z) + 1);
 	}
 
-	/**
-	 * @param UuidInterface $uuid
-	 */
 	public function setUUID(UuidInterface $uuid): void
 	{
 		$this->uuid = $uuid;
 	}
 
-	/**
-	 * @return UuidInterface
-	 */
 	public function getUUID(): UuidInterface
 	{
 		return $this->uuid;
+	}
+
+	public function getIterator(): SubChunkIterator
+	{
+		return $this->iterator;
 	}
 
 	/**
@@ -280,7 +292,8 @@ class Selection implements Serializable, JsonSerializable
 			$this->pos2,
 			$this->uuid,
 			$this->sessionUUID,
-			$this->shape
+			$this->shape,
+			$this->iterator,
 		]);
 	}
 
@@ -295,14 +308,14 @@ class Selection implements Serializable, JsonSerializable
 	 */
 	public function unserialize($data)
 	{
-		var_dump($data);
 		[
 			$this->worldId,
 			$this->pos1,
 			$this->pos2,
 			$this->uuid,
 			$this->sessionUUID,
-			$this->shape
+			$this->shape,
+			$this->iterator
 		] = unserialize($data/*, ['allowed_classes' => [__CLASS__, Vector3::class,UuidInterface::class,Shape::class]]*/);//TODO test pm4
 	}
 

@@ -17,6 +17,8 @@ use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
+use function igbinary_serialize;
+use function igbinary_unserialize;
 
 class AsyncRevertTask extends MWEAsyncTask
 {
@@ -39,7 +41,7 @@ class AsyncRevertTask extends MWEAsyncTask
 	{
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->start = microtime(true);
-		$this->clipboard = serialize($clipboard);
+		$this->clipboard = igbinary_serialize($clipboard);
 		$this->type = $type;
 	}
 
@@ -53,7 +55,8 @@ class AsyncRevertTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 		/** @var RevertClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
+		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
+
 		$totalCount = count($clipboard->blocksAfter);
 		$manager = $clipboard::getChunkManager($clipboard->chunks);
 		$oldBlocks = [];
@@ -123,7 +126,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		}
 		$result = $this->getResult();
 		/** @var RevertClipboard $clipboard */
-		$clipboard = unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
+		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
 		$clipboard->chunks = $result["chunks"];
 		$totalCount = $result["totalCount"];
 		$changed = count($result["oldBlocks"]);

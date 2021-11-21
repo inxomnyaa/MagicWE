@@ -10,7 +10,6 @@ use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
 use pocketmine\math\Vector3;
 use xenialdan\libblockstate\BlockEntry;
-use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -59,8 +58,8 @@ class RotateAction extends ClipboardAction
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		BlockFactory::getInstance();
-		/** @var BlockStatesParser $instance */
-		$instance = BlockStatesParser::getInstance();
+//		/** @var BlockStatesParser $blockStatesParser */
+//		$blockStatesParser = BlockStatesParser::getInstance();
 		$clonedClipboard = clone $clipboard;
 		$clonedClipboard->clear();
 		$x = $y = $z = null;

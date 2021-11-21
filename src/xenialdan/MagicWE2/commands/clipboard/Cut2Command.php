@@ -45,7 +45,7 @@ class Cut2Command extends BaseCommand
 		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
 			try {
 				$lang = SessionHelper::getUserSession($sender)->getLanguage();
-			} catch (SessionException $e) {
+			} catch (SessionException) {
 			}
 		}
 		if (!$sender instanceof Player) {
@@ -77,7 +77,6 @@ class Cut2Command extends BaseCommand
 					$session->getUUID(),
 					$selection,
 					$action,
-					$selection->getShape()->getTouchedChunks($selection->getWorld()),
 					BlockPalette::fromString("air"),//TODO option
 					BlockPalette::CREATE()
 				)

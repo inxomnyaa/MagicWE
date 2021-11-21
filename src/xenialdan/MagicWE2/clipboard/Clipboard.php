@@ -36,7 +36,7 @@ abstract class Clipboard implements Serializable
 	 */
 	public static function getChunkManager(array $chunks): AsyncChunkManager
 	{
-		$manager = new AsyncChunkManager(0, World::Y_MAX);
+		$manager = new AsyncChunkManager(World::Y_MIN, World::Y_MAX);
 		foreach ($chunks as $hash => $chunk) {
 			World::getXZ($hash, $x, $z);
 			$manager->setChunk($x, $z, $chunk);

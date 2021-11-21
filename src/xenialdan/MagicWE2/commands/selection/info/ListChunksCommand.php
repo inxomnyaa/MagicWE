@@ -10,7 +10,6 @@ use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -38,7 +37,7 @@ class ListChunksCommand extends BaseCommand
 		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
 			try {
 				$lang = SessionHelper::getUserSession($sender)->getLanguage();
-			} catch (SessionException $e) {
+			} catch (SessionException) {
 			}
 		}
 		if (!$sender instanceof Player) {
@@ -61,14 +60,13 @@ class ListChunksCommand extends BaseCommand
 			if ($selection->getWorld() !== $sender->getWorld()) {
 				$sender->sendMessage(Loader::PREFIX . TF::GOLD . $lang->translateString('warning.differentworld'));
 			}
-			$touchedChunks = $selection->getShape()->getTouchedChunks($selection->getWorld());
+			$touchedChunks = $selection->getIterator()->getManager()->getChunks();
 			$session->sendMessage(TF::DARK_AQUA . $lang->translateString('command.listchunks.found', [count($touchedChunks)]));
-			foreach ($touchedChunks as $chunkHash => $touchedChunk) {
-				$chunk = FastChunkSerializer::deserializeTerrain($touchedChunk);
+			foreach ($touchedChunks as $chunkHash => $chunk) {
 				$biomes = [];
 				for ($x = 0; $x < 16; $x++)
 					for ($z = 0; $z < 16; $z++)
-						$biomes[] = (FastChunkSerializer::deserializeTerrain($touchedChunk)->getBiomeId($x, $z));
+						$biomes[] = $chunk->getBiomeId($x, $z);
 				$biomes = array_unique($biomes);
 				$biomecount = count($biomes);
 				$biomes = implode(", ", $biomes);

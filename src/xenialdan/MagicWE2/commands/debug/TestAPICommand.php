@@ -40,7 +40,7 @@ class TestAPICommand extends BaseCommand
 		if ($sender instanceof Player && SessionHelper::hasSession($sender)) {
 			try {
 				$lang = SessionHelper::getUserSession($sender)->getLanguage();
-			} catch (SessionException $e) {
+			} catch (SessionException) {
 			}
 		}
 		try {
@@ -53,7 +53,6 @@ class TestAPICommand extends BaseCommand
 					$pluginSession->getUUID(),
 					$selection,
 					new TestAction(),
-					$selection->getShape()->getTouchedChunks($selection->getWorld()),
 					BlockPalette::fromString("minecraft:snow_block"),
 					BlockPalette::fromString("minecraft:tnt")
 				)
@@ -64,7 +63,6 @@ class TestAPICommand extends BaseCommand
 					$pluginSession->getUUID(),
 					$selection,
 					new TestAction(),
-					$selection->getShape()->getTouchedChunks($selection->getWorld()),
 					BlockPalette::fromString("minecraft:snow_block"),
 					BlockPalette::fromString("minecraft:tnt")
 				)
@@ -75,7 +73,6 @@ class TestAPICommand extends BaseCommand
 					$pluginSession->getUUID(),
 					$selection,
 					new TestAction(),
-					$selection->getShape()->getTouchedChunks($selection->getWorld()),
 					BlockPalette::fromString("minecraft:snow_block"),
 					BlockPalette::fromString("minecraft:tnt")
 				)
@@ -86,7 +83,6 @@ class TestAPICommand extends BaseCommand
 					$pluginSession->getUUID(),
 					$selection,
 					new TestAction(),
-					$selection->getShape()->getTouchedChunks($selection->getWorld()),
 					BlockPalette::fromString("minecraft:snow_block"),
 					BlockPalette::fromString("minecraft:tnt")
 				)

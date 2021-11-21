@@ -8,17 +8,13 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
-use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\ChunkManager;
-use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\Position;
-use pocketmine\world\World;
 use RuntimeException;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -103,7 +99,7 @@ class API
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $newblocks, $flags));
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncFillTask($session->getUUID(), $selection, $newblocks));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);
@@ -117,10 +113,9 @@ class API
 	 * @param Session $session
 	 * @param BlockPalette $oldBlocks
 	 * @param BlockPalette $newBlocks
-	 * @param int $flags
 	 * @return bool
 	 */
-	public static function replaceAsync(Selection $selection, Session $session, BlockPalette $oldBlocks, BlockPalette $newBlocks, int $flags = self::FLAG_BASE): bool
+	public static function replaceAsync(Selection $selection, Session $session, BlockPalette $oldBlocks, BlockPalette $newBlocks): bool
 	{
 		if ($oldBlocks->empty()) $session->sendMessage(TF::RED . "Old blocks is empty!");
 		if ($newBlocks->empty()) $session->sendMessage(TF::RED . "New blocks is empty!");
@@ -135,7 +130,7 @@ class API
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $oldBlocks, $newBlocks, $flags));
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncReplaceTask($session->getUUID(), $selection, $oldBlocks, $newBlocks));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);
@@ -168,7 +163,7 @@ class API
 				$session->getBossBar()->showTo([$player]);
 			}
 			#var_dump($selection->getShape()->getMinVec3(), $session->getPlayer()->asVector3(), $selection->getShape()->getMinVec3()->subtract($session->getPlayer()), $offset);
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset, $selection->getShape()->getTouchedChunks($selection->getWorld()), $flags));
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCopyTask($session->getUUID(), $selection, $offset));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);
@@ -184,7 +179,6 @@ class API
 	 * @param Position $target CURRENTLY SENDER POSITION
 	 * @param int $flags
 	 * @return bool
-	 * @throws AssumptionFailedError
 	 */
 	public static function pasteAsync(SingleClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE): bool
 	{
@@ -201,46 +195,18 @@ class API
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
-			$start = clone $target->asVector3()->floor()->addVector($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
-			$end = $start->addVector($clipboard->selection->getShape()->getMaxVec3()->subtractVector($clipboard->selection->getShape()->getMinVec3()));//add size
-			$aabb = new AxisAlignedBB($start->getFloorX(), $start->getFloorY(), $start->getFloorZ(), $end->getFloorX(), $end->getFloorY(), $end->getFloorZ());//create paste aabb
+//			$start = clone $target->asVector3()->floor()->addVector($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
+//			$end = $start->addVector($clipboard->selection->getShape()->getMaxVec3()->subtractVector($clipboard->selection->getShape()->getMinVec3()));//add size
 			$shape = clone $clipboard->selection->getShape();//needed
 			$shape->setPasteVector($target->asVector3()->floor());//needed
 			$clipboard->selection->setShape($shape);//needed
-			$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb);//TODO clean up or move somewhere else. Better not touch, it works.
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $touchedChunks, $clipboard));
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $clipboard));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * @param ChunkManager $manager
-	 * @param AxisAlignedBB $aabb
-	 * @return string[]
-	 */
-	private static function getAABBTouchedChunksTemp(ChunkManager $manager, AxisAlignedBB $aabb): array
-	{
-		$maxX = $aabb->maxX >> 4;
-		$minX = $aabb->minX >> 4;
-		$maxZ = $aabb->maxZ >> 4;
-		$minZ = $aabb->minZ >> 4;
-		$touchedChunks = [];
-		for ($x = $minX; $x <= $maxX; $x++) {
-			for ($z = $minZ; $z <= $maxZ; $z++) {
-				$chunk = $manager->getChunk($x, $z);
-				if ($chunk === null) {
-					continue;
-				}
-				print __METHOD__ . " Touched Chunk at: $x:$z" . PHP_EOL;
-				$touchedChunks[World::chunkHash($x, $z)] = FastChunkSerializer::serializeTerrain($chunk);
-			}
-		}
-		print  __METHOD__ . " Touched chunks count: " . count($touchedChunks) . PHP_EOL;
-		return $touchedChunks;
 	}
 
 	/**
@@ -257,7 +223,7 @@ class API
 			if ($limit !== -1 && $selection->getShape()->getTotalCount() > $limit) {
 				throw new LimitExceededException("You are trying to count too many blocks at once. Reduce the selection or raise the limit");
 			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $selection->getShape()->getTouchedChunks($selection->getWorld()), $filterBlocks, $flags));
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $filterBlocks));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);
@@ -284,7 +250,7 @@ class API
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), $selection->getShape()->getTouchedChunks($selection->getWorld()), BlockPalette::CREATE(), BlockPalette::CREATE()));
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, new SetBiomeAction($biomeId), BlockPalette::CREATE(), BlockPalette::CREATE()));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);
@@ -318,7 +284,7 @@ class API
 		/** @var TaskAction $action */
 		$action = new $actionClass(...array_values($brush->properties->actionProperties));
 		$action->prefix = "Brush";
-		Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, $selection->getShape()->getTouchedChunks($selection->getWorld()), BlockPalette::fromString($brush->properties->blocks), BlockPalette::fromString($brush->properties->filter)));
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncActionTask($session->getUUID(), $selection, $action, BlockPalette::fromString($brush->properties->blocks), BlockPalette::fromString($brush->properties->filter)));
 	}
 
 	/**
@@ -348,13 +314,13 @@ class API
 		$start = clone $target->asVector3();//start pos of paste//TODO if using rotate, this fails
 		$end = $start->addVector($asset->getSize());//add size
 		$shape = Cuboid::constructFromPositions(Vector3::minComponents($start, $end), Vector3::maxComponents($start, $end));
-		$offset = new Vector3($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
+		#$offset = new Vector3($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
 		#$shape->setPasteVector($target->asVector3()->subtract(($asset->getSize()->getX()) / 2, 0, ($asset->getSize()->getZ()) / 2));//TODO this causes a size +0.5x +0.5z shift
 		$selection = new Selection($session->getUUID(), $target->getWorld());
 		$selection->setShape($shape);
-		$aabb = $shape->getAABB();
-		$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb->offset(-$offset->getX(), -$offset->getY(), -$offset->getZ()));//TODO clean up or move somewhere else. Better not touch, it works.
-		Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteAssetTask($session->getUUID(), $target->asVector3(), $selection, $touchedChunks, $asset));
+		#$aabb = $shape->getAABB();
+		#$touchedChunks = self::getAABBTouchedChunksTemp($target->getWorld(), $aabb->offset(-$offset->getX(), -$offset->getY(), -$offset->getZ()));//TODO clean up or move somewhere else. Better not touch, it works.
+		Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteAssetTask($session->getUUID(), $target->asVector3(), $selection, $asset));
 		return true;
 	}
 

@@ -8,7 +8,6 @@ use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\format\Chunk;
-use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -21,9 +20,10 @@ use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
-use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\TaskAction;
+use function igbinary_serialize;
+use function igbinary_unserialize;
 
 class AsyncActionTask extends MWEAsyncTask
 {
@@ -35,15 +35,9 @@ class AsyncActionTask extends MWEAsyncTask
 	 * Strings: Begin, completion, bossbar, other stuff can be in the action
 	*/
 
-	/** @var string */
-	private string $touchedChunks;
-	/** @var string */
 	private string $selection;
-	/** @var BlockPalette */
 	private BlockPalette $blockFilter;
-	/** @var BlockPalette */
 	private BlockPalette $newBlocks;
-	/** @var TaskAction */
 	private TaskAction $action;
 
 	/**
@@ -51,17 +45,15 @@ class AsyncActionTask extends MWEAsyncTask
 	 * @param UuidInterface $sessionUUID
 	 * @param Selection $selection
 	 * @param TaskAction $action
-	 * @param string[] $touchedChunks serialized chunks
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
 	 */
-	public function __construct(UuidInterface $sessionUUID, Selection $selection, TaskAction $action, array $touchedChunks, BlockPalette $newBlocks, BlockPalette $blockFilter)
+	public function __construct(UuidInterface $sessionUUID, Selection $selection, TaskAction $action, BlockPalette $newBlocks, BlockPalette $blockFilter)
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
-		$this->selection = serialize($selection);
+		$this->selection = igbinary_serialize($selection);
 		$this->action = $action;
-		$this->touchedChunks = serialize($touchedChunks);
 		$this->newBlocks = $newBlocks;
 		$this->blockFilter = $blockFilter;
 
@@ -88,16 +80,8 @@ class AsyncActionTask extends MWEAsyncTask
 	{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
-		$touchedChunks = unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/);
-		$touchedChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserializeTerrain($chunk);
-		}, $touchedChunks);
-
-		$manager = Shape::getChunkManager($touchedChunks);
-		unset($touchedChunks);
-
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
 		$oldBlocks = new SingleClipboard($this->action->clipboardVector ?? new Vector3(0, 0, 0));//TODO Test if null V3 is ok //TODO test if the vector works
 		$oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
@@ -105,10 +89,11 @@ class AsyncActionTask extends MWEAsyncTask
 		$messages = [];
 		//$error = false;
 		/** @var Progress $progress */
-		foreach ($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $this->newBlocks, $this->blockFilter, $oldBlocks, $messages) as $progress) {
+		foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $this->newBlocks, $this->blockFilter, $oldBlocks, $messages) as $progress) {
 			$this->publishProgress($progress);
 		}
 
+		$manager = $selection->getIterator()->getManager();
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isTerrainDirty();
@@ -131,9 +116,9 @@ class AsyncActionTask extends MWEAsyncTask
 		$result = $this->getResult();
 		/** @var Chunk[] $resultChunks */
 		$resultChunks = $result["resultChunks"];
-		$undoChunks = array_map(static function ($chunk) {
-			return FastChunkSerializer::deserializeTerrain($chunk);
-		}, unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
+//		$undoChunks = array_map(static function ($chunk) {
+//			return FastChunkSerializer::deserializeTerrain($chunk);
+//		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		/** @var SingleClipboard $oldBlocks *///TODO make sure changed everywhere
 		$oldBlocks = $result["oldBlocks"];
 		//TODO Test this new behaviour!
@@ -145,7 +130,8 @@ class AsyncActionTask extends MWEAsyncTask
 		}
 		$changed = $result["changed"];
 		/** @var Selection $selection */
-		$selection = unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$undoChunks = $selection->getIterator()->getManager()->getChunks();
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {

@@ -2,7 +2,6 @@
 
 namespace xenialdan\MagicWE2\tool;
 
-use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\Block;
@@ -12,8 +11,8 @@ use pocketmine\math\Vector3;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncChunkManager;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 
 class Flood extends WETool
@@ -36,13 +35,12 @@ class Flood extends WETool
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
+	 * @param AsyncWorld $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
-	 * @param int $flags
 	 * @return Generator
-	 * @throws Exception
+	 * @throws InvalidArgumentException
 	 */
-	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
+	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks): Generator
 	{
 		$this->validateChunkManager($manager);
 		$block = $manager->getBlockAt($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
@@ -56,12 +54,11 @@ class Flood extends WETool
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
-	 * @param World|AsyncChunkManager $manager The world or AsyncChunkManager
-	 * @param int $flags
+	 * @param AsyncWorld $manager The world or AsyncChunkManager
 	 * @return Generator
-	 * @throws Exception
+	 * @throws InvalidArgumentException
 	 */
-	public function getLayer(AsyncChunkManager|World $manager, int $flags = API::FLAG_BASE): Generator
+	public function getLayer(AsyncWorld $manager): Generator
 	{
 		$this->validateChunkManager($manager);
 		foreach ($this->getBlocks($manager, BlockPalette::CREATE()) as $block) {
@@ -70,12 +67,12 @@ class Flood extends WETool
 	}
 
 	/**
-	 * @param World|AsyncChunkManager $manager
+	 * @param AsyncWorld $manager
 	 * @return Block[]
 	 * @throws InvalidArgumentException
 	 * @noinspection SlowArrayOperationsInLoopInspection
 	 */
-	private function walk(AsyncChunkManager|World $manager): array
+	private function walk(AsyncWorld $manager): array
 	{
 		$this->validateChunkManager($manager);
 		/** @var Block[] $walkTo */
@@ -93,12 +90,12 @@ class Flood extends WETool
 	}
 
 	/**
-	 * @param World|AsyncChunkManager $manager
+	 * @param AsyncWorld $manager
 	 * @param Vector3 $vector3
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
-	private function getHorizontalSides(AsyncChunkManager|World $manager, Vector3 $vector3): Generator
+	private function getHorizontalSides(AsyncWorld $manager, Vector3 $vector3): Generator
 	{
 		$this->validateChunkManager($manager);
 		foreach ([Facing::NORTH, Facing::SOUTH, Facing::WEST, Facing::EAST] as $vSide) {

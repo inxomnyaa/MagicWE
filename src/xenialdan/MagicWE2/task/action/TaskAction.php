@@ -7,7 +7,6 @@ namespace xenialdan\MagicWE2\task\action;
 use Generator;
 use pocketmine\math\Vector3;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\selection\Selection;
 
@@ -30,7 +29,6 @@ abstract class TaskAction
 	/**
 	 * @param string $sessionUUID
 	 * @param Selection $selection
-	 * @param AsyncChunkManager $manager
 	 * @param null|int $changed
 	 * @param BlockPalette $newBlocks
 	 * @param BlockPalette $blockFilter
@@ -38,7 +36,7 @@ abstract class TaskAction
 	 * @param string[] $messages
 	 * @return Generator
 	 */
-	abstract public function execute(string $sessionUUID, Selection $selection, AsyncChunkManager $manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;
+	abstract public function execute(string $sessionUUID, Selection $selection, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator;
 
 	abstract public static function getName(): string;
 

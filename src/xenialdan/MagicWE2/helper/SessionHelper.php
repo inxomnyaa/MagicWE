@@ -121,7 +121,7 @@ class SessionHelper
 	{
 		try {
 			return self::getUserSession($player) instanceof UserSession;
-		} catch (SessionException $exception) {
+		} catch (SessionException) {
 			return false;
 		}
 	}
@@ -236,12 +236,12 @@ class SessionHelper
 							$session->addSelection($selection);
 						}
 					}
-				} catch (RuntimeException $e) {
+				} catch (RuntimeException) {
 				}
 			}
 			$session->setOutlineEnabled($data["outlineEnabled"]);
 			//TODO clipboard
-		} catch (Exception $exception) {
+		} catch (Exception) {
 			return null;
 		}
 		self::addSession($session);
