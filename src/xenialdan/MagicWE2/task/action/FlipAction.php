@@ -72,15 +72,12 @@ class FlipAction extends ClipboardAction
 				$y = $maxY - $y;
 			#var_dump("$x $y $z");
 			$block1 = $blockEntry->toBlock();
-			$blockState = $blockStatesParser->getFromBlock($block1);
-			if ($blockState === null) {
-				$block = $block1;
-			} else {
-				$block = $block1;
-				//TODO re-add flip/rotate in libblockstate
-//				$mirrored = $blockState->mirror($this->axis);
-//				$block = $mirrored->toBlock();
-			}
+			#$blockState = $blockStatesParser->getFromBlock($block1);
+			$block = $block1;
+			//TODO re-add flip/rotate in libblockstate
+//			$mirrored = $blockState->mirror($this->axis);
+//			$block = $mirrored->toBlock();
+
 			$entry = BlockEntry::fromBlock($block);
 			//var_dump($blockState->__toString(), $mirrored->__toString(), $block);
 			/** @var int $x */

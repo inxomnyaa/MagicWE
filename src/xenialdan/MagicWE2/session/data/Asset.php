@@ -68,23 +68,23 @@ class Asset implements JsonSerializable
 	{
 		if ($this->structure instanceof Schematic) return new Vector3($this->structure->getWidth(), $this->structure->getHeight(), $this->structure->getLength());
 		if ($this->structure instanceof MCStructure) return $this->structure->getSize();
-		if ($this->structure instanceof SingleClipboard) return new Vector3($this->structure->selection->getSizeX(), $this->structure->selection->getSizeY(), $this->structure->selection->getSizeZ());
-		throw new Exception("Unknown structure type");
+		else return new Vector3($this->structure->selection->getSizeX(), $this->structure->selection->getSizeY(), $this->structure->selection->getSizeZ());
+		//throw new Exception("Unknown structure type");
 	}
 
 	public function getTotalCount(): int
 	{
 		if ($this->structure instanceof Schematic || $this->structure instanceof MCStructure) return $this->getSize()->getFloorX() * $this->getSize()->getFloorY() * $this->getSize()->getFloorZ();
-		if ($this->structure instanceof SingleClipboard) return $this->structure->getTotalCount();
-		throw new Exception("Unknown structure type");
+		else return $this->structure->getTotalCount();
+		//throw new Exception("Unknown structure type");
 	}
 
 	public function getOrigin(): Vector3
 	{
 		if ($this->structure instanceof Schematic) return new Vector3(0, 0, 0);
 		if ($this->structure instanceof MCStructure) return $this->structure->getStructureWorldOrigin();
-		if ($this->structure instanceof SingleClipboard) return $this->structure->position;
-		throw new Exception("Unknown structure type");
+		else return $this->structure->position;
+		//throw new Exception("Unknown structure type");
 	}
 
 	/**
@@ -149,8 +149,7 @@ class Asset implements JsonSerializable
 			$schematic->setLength((int)$this->getSize()->getZ());
 			$schematic->setBlockArray($blocks);
 			return $schematic;
-		}
-		if ($structure instanceof SingleClipboard) {
+		} else {
 			$schematic = new Schematic();
 			$blocks = [];
 			foreach ($structure->iterateEntries($x, $y, $z) as $block) {
@@ -159,7 +158,7 @@ class Asset implements JsonSerializable
 			$schematic->setBlockArray($blocks);
 			return $schematic;
 		}
-		throw new Exception("Unknown structure type");
+		//throw new Exception("Unknown structure type");
 	}
 
 	public function toMCStructure(): MCStructure

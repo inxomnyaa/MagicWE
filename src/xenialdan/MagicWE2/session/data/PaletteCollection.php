@@ -54,9 +54,11 @@ final class PaletteCollection
 		foreach ($this->getAll() as $id => $palette) {
 			$queries[$id] = $palette->toStringArray();
 		}
-		return json_encode(
+		$r = json_encode(
 			$queries
 		);
+		if ($r === false) $r = "";//?
+		return $r;
 	}
 
 	/**

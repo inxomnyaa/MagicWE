@@ -61,6 +61,8 @@ class LanguageCommand extends BaseCommand
 				return;
 			}
 			$languages = Loader::getInstance()->getLanguageList();
+			$default = array_search($session->getLanguage()->getName(), array_values($languages), true);
+			if ($default === false) $default = null;
 			$form = (new CustomForm(function (Player $player, $data) use ($session, $languages) {
 				$langShort = array_search(array_values($languages)[$data[1]], $languages, true);
 				if (!is_string($langShort)) throw new InvalidArgumentException("Invalid data received");
@@ -68,7 +70,7 @@ class LanguageCommand extends BaseCommand
 			}))
 				->setTitle(Loader::PREFIX_FORM . TF::BOLD . TF::DARK_PURPLE . $lang->translateString('ui.language.title'))
 				->addLabel($lang->translateString('ui.language.label'))
-				->addDropdown($lang->translateString('ui.language.dropdown'), array_values($languages), array_search($session->getLanguage()->getName(), array_values($languages), true));
+				->addDropdown($lang->translateString('ui.language.dropdown'), array_values($languages), $default);
 			//$dropdown->setOptionAsDefault($session->getLanguage()->getName());
 			$sender->sendForm($form);
 		} catch (Exception $error) {

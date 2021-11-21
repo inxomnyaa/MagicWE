@@ -11,6 +11,7 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -66,7 +67,7 @@ class HelpCommand extends BaseCommand
 					}
 					$message .= TF::RESET . TF::LIGHT_PURPLE . " [" . implode(",", $aliases) . "]";
 				}
-				$message .= TF::RESET . TF::WHITE . " " . $command->getDescription() . TF::EOL . " » " . $command->getUsage();
+				$message .= TF::RESET . TF::WHITE . " " . ($command->getDescription() instanceof Translatable ? $lang->translate($command->getDescription()) : $command->getDescription()) . TF::EOL . " » " . ($command->getDescription() instanceof Translatable ? $lang->translate($command->getDescription()) : $command->getDescription());
 				$sender->sendMessage($message);
 			}
 		} catch (Exception $error) {

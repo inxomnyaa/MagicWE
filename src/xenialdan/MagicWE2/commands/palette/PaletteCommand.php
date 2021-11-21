@@ -127,11 +127,11 @@ class PaletteCommand extends BaseCommand
 
 										$palette = $session->getPalettes()->getPalette($id);
 										var_dump($itemClicked, $palette, $id);
-										$form1 = (new SimpleForm(static function (Player $player, $data) use ($lang, $palette, $id): void {
+										$form1 = (new SimpleForm(static function (Player $player, $data) use ($palette): void {
 											switch ($data) {
 												case 'ui.palette.modify.weights':
 												{
-													$form2 = (new CustomForm(static function (Player $player, $data) use ($lang, $palette): void {
+													$form2 = (new CustomForm(static function (Player $player, $data) /*use ($lang, $palette)*/ : void {
 														var_dump($data);
 													}))
 														->setTitle("Modify weights");

@@ -53,9 +53,9 @@ class AsyncFillTask extends MWEAsyncTask
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
 		$s1 = igbinary_serialize($selection);
-		if ($s1 === null) throw new Exception("Couldn't serialize selection");
+		#if ($s1 === null) throw new Exception("Couldn't serialize selection");
 		$s2 = igbinary_serialize($touchedChunks);
-		if ($s2 === null) throw new Exception("Couldn't serialize touched chunks");
+		#if ($s2 === null) throw new Exception("Couldn't serialize touched chunks");
 		$this->selection = $s1;
 		$this->touchedChunks = $s2;
 		//$this->newBlocks = BlockPalette::encode($newBlocks);

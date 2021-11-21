@@ -95,15 +95,11 @@ class RotateAction extends ClipboardAction
 			}
 			#var_dump("$newX $y $newZ");
 			$block1 = $blockEntry->toBlock();
-			$blockStatesEntry = $instance->getFromBlock($block1);
-			if ($blockStatesEntry === null) {
-				$block = $block1;
-			} else {
-				$block = $block1;
-				//TODO re-add flip/rotate in libblockstate
-//				$rotated = $blockStatesEntry->rotate($this->rotation);
-//				$block = $rotated->toBlock();
-			}
+			#$blockStatesEntry = $instance->getFromBlock($block1);
+			$block = $block1;
+			//TODO re-add flip/rotate in libblockstate
+//			$rotated = $blockStatesEntry->rotate($this->rotation);
+//			$block = $rotated->toBlock();
 			$entry = BlockEntry::fromBlock($block);
 			#var_dump($blockStatesEntry->__toString(), $rotated->__toString(), $entry);
 			/** @var int $y */

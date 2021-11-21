@@ -9,6 +9,7 @@ use Exception;
 use InvalidArgumentException;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\lang\Translatable;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\Loader;
 use function array_filter;
@@ -38,7 +39,7 @@ class GenerateCommandsMDCommand extends BaseCommand
 		$lang = Loader::getInstance()->getLanguage();
 		try {
 			$cmds = [];
-			foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), static function (Command $command) use ($sender) {
+			foreach (array_filter(Loader::getInstance()->getServer()->getCommandMap()->getCommands(), static function (Command $command) /*use ($sender)*/ {
 				return str_contains($command->getName(), "/");
 			}) as $cmd) {
 				/** @var Command $cmd */
@@ -57,14 +58,14 @@ class GenerateCommandsMDCommand extends BaseCommand
 					}
 					$aliasStr = '`' . implode(", ", $aliases) . '`';
 				}
-				$usage = $command->getUsage();
+				$usage = ($command->getUsage() instanceof Translatable ? $lang->translate($command->getUsage()) : $command->getUsage());
 				//subcommand hack
 				$subCommands = $command->getSubCommands();
 				if (count($subCommands) > 0) {
 					$pos = stripos($usage, " \n");
 					if ($pos !== false) $usage = substr($usage, 0, $pos);
 				}
-				$lines[] = "| `/{$command->getName()}` | {$command->getDescription()} | `$usage` | $aliasStr |";
+				$lines[] = "| `/{$command->getName()}` | " . ($command->getDescription() instanceof Translatable ? $lang->translate($command->getDescription()) : $command->getDescription()) . " | `$usage` | $aliasStr |";
 				foreach ($subCommands as $subCommand) {
 					$aliasStr = '';
 					if (!empty(($aliases = $subCommand->getAliases()))) {

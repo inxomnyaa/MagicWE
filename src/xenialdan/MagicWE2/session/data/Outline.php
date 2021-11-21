@@ -67,10 +67,10 @@ class Outline
 		$network = $this->player->getNetworkSession();
 		$world = $this->player->getWorld();
 		$runtime_block_mapping = RuntimeBlockMapping::getInstance();
-		$block = $world->getBlockAt($this->position->x, $this->position->y, $this->position->z);
+		$block = $world->getBlockAt((int)$this->position->x, (int)$this->position->y, (int)$this->position->z);
 		$network->sendDataPacket(UpdateBlockPacket::create(BlockPosition::fromVector3($this->position->asVector3()), $runtime_block_mapping->toRuntimeId($block->getFullId()), UpdateBlockPacket::FLAG_NETWORK, UpdateBlockPacket::DATA_LAYER_NORMAL), true);
 
-		$tile = $world->getTileAt($this->position->x, $this->position->y, $this->position->z);
+		$tile = $world->getTileAt((int)$this->position->x, (int)$this->position->y, (int)$this->position->z);
 		if ($tile instanceof Spawnable) {
 			$network->sendDataPacket(BlockActorDataPacket::create(BlockPosition::fromVector3($this->position->asVector3()), $tile->getSerializedSpawnCompound()), true);
 		}
