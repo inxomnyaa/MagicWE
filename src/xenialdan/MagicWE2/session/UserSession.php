@@ -243,7 +243,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			" WAILA enabled: " . ($this->isWailaEnabled() ? "enabled" : "disabled") .
 			" Sidebar enabled: " . ($this->sidebarEnabled ? "enabled" : "disabled") .
 			" Outline enabled: " . ($this->outlineEnabled ? "enabled" : "disabled") .
-			" BossBar: " . $this->getBossBar()->entityId .
+			" BossBar: " . $this->getBossBar()->actorId .
 			" Selections: " . count($this->getSelections()) .
 			" Latest: " . $this->getLatestSelectionUUID() .
 			" Clipboards: " . count($this->getClipboards()) .

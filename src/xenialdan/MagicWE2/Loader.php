@@ -33,9 +33,7 @@ use xenialdan\MagicWE2\commands\clipboard\ClearClipboardCommand;
 use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
 use xenialdan\MagicWE2\commands\clipboard\Cut2Command;
 use xenialdan\MagicWE2\commands\clipboard\CutCommand;
-use xenialdan\MagicWE2\commands\clipboard\FlipCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
-use xenialdan\MagicWE2\commands\clipboard\RotateCommand;
 use xenialdan\MagicWE2\commands\debug\GenerateCommandsMDCommand;
 use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
 use xenialdan\MagicWE2\commands\debug\TestAPICommand;
@@ -73,7 +71,6 @@ use xenialdan\MagicWE2\commands\utility\ToggleWailaCommand;
 use xenialdan\MagicWE2\commands\VersionCommand;
 use xenialdan\MagicWE2\exception\ActionRegistryException;
 use xenialdan\MagicWE2\exception\ShapeRegistryException;
-use xenialdan\MagicWE2\helper\BlockStatesEntry;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\shape\ShapeRegistry;
 use xenialdan\MagicWE2\session\data\AssetCollection;
@@ -175,6 +172,7 @@ class Loader extends PluginBase
 
 		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		/** @var BlockStatesParser $blockstateparserInstance */
 		$blockstateparserInstance = BlockStatesParser::getInstance();
 		#$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
 		#$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
@@ -185,7 +183,7 @@ class Loader extends PluginBase
 		}
 
 		$blockstateparserInstance->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
-		//$blockstateparserInstance::runTests();//TODO REMOVE, DEBUG!!!!!!!
+		if ($this->getConfig()->get("developer-extended-debug", false)) $blockstateparserInstance->runTest();
 
 		self::$assetCollection = new AssetCollection(new PluginSession($this));
 	}
@@ -212,7 +210,6 @@ class Loader extends PluginBase
 		$lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
 		$this->baseLang = new Language((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
 		$registerDeveloperCommands = $this->getConfig()->get("developer-commands", false);
-		$this->getLogger()->warning("WARNING! Commands and their permissions changed! Make sure to update your permission sets!");
 		if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
 		if (!PacketListener::isRegistered()) PacketListener::register($this);
 		//PacketListener::register($this);//TODO currently this just doubles the debug spam
@@ -267,8 +264,9 @@ class Loader extends PluginBase
 			new CutCommand($this, "/cut", "Cut the selection to the clipboard"),
 			new Cut2Command($this, "/cut2", "Cut the selection to the clipboard - the new way"),
 			new ClearClipboardCommand($this, "/clearclipboard", "Clear your clipboard"),
-			new FlipCommand($this, "/flip", "Flip the contents of the clipboard across the origin", ["/mirror"]),
-			new RotateCommand($this, "/rotate", "Rotate the contents of the clipboard around the origin"),
+			//TODO re-add flip/rotate in libblockstate
+			#new FlipCommand($this, "/flip", "Flip the contents of the clipboard across the origin", ["/mirror"]),
+			#new RotateCommand($this, "/rotate", "Rotate the contents of the clipboard around the origin"),
 			/* -- history -- */
 			new UndoCommand($this, "/undo", "Rolls back the last action"),
 			new RedoCommand($this, "/redo", "Applies the last undo action again"),
@@ -343,6 +341,8 @@ class Loader extends PluginBase
 		$this->wailaBossBar->setPercentage(1.0);
 		//WAILA updater
 		$this->getScheduler()->scheduleDelayedRepeatingTask(new ClosureTask(function (): void {
+			/** @var BlockStatesParser $blockStatesParser */
+			$blockStatesParser = BlockStatesParser::getInstance();
 			$players = Loader::getInstance()->wailaBossBar->getPlayers();
 			foreach ($players as $player) {
 				if (!$player->isOnline() || !SessionHelper::hasSession($player) || (($session = SessionHelper::getUserSession($player)) instanceof UserSession && !$session->isWailaEnabled())) {
@@ -351,12 +351,9 @@ class Loader extends PluginBase
 				}
 				if (($block = $player->getTargetBlock(10)) instanceof Block && $block->getId() !== 0) {
 					Loader::getInstance()->wailaBossBar->showTo([$player]);
-					$stateEntry = BlockStatesParser::getStateByBlock($block);
-					$sub = $block->getName();
+					$stateEntry = $blockStatesParser->get($block->getId(), $block->getMeta());
 					$title = (string)$block;
-					if ($stateEntry instanceof BlockStatesEntry) {
-						$sub = implode("," . TF::EOL, explode(",", BlockStatesParser::printStates($stateEntry, false)));
-					}
+					$sub = implode("," . TF::EOL, explode(",", $blockStatesParser->prettyPrintStates($stateEntry, false)));
 					$distancePercentage = round(floor($block->getPosition()->distance($player->getEyePos())) / 10, 1);
 					Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
 				} else

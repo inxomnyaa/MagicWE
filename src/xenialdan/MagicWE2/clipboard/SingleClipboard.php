@@ -7,7 +7,7 @@ namespace xenialdan\MagicWE2\clipboard;
 use Generator;
 use pocketmine\math\Vector3;
 use pocketmine\world\World;
-use xenialdan\MagicWE2\helper\BlockEntry;
+use xenialdan\libblockstate\BlockEntry;
 use xenialdan\MagicWE2\selection\Selection;
 
 class SingleClipboard extends Clipboard

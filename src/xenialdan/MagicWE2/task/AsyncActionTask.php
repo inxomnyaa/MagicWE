@@ -150,7 +150,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {
 			World::getXZ($hash, $x, $z);
-			$world->setChunk($x, $z, $chunk, false);
+			$world->setChunk($x, $z, $chunk);
 		}
 		if (!is_null($session)) {
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString($this->action->completionString, ["name" => trim($this->action->prefix . " " . $this->action::getName()), "took" => $this->generateTookString(), "changed" => $changed, "total" => $totalCount]));

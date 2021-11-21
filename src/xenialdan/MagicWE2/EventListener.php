@@ -5,9 +5,9 @@ namespace xenialdan\MagicWE2;
 use Error;
 use Exception;
 use InvalidArgumentException;
-use InvalidStateException;
 use jojoe77777\FormAPI\ModalForm;
 use JsonException;
+use LogicException;
 use pocketmine\block\BlockLegacyIds;
 use pocketmine\entity\InvalidSkinException;
 use pocketmine\event\block\BlockBreakEvent;
@@ -210,9 +210,9 @@ class EventListener implements Listener
 	 * @throws AssumptionFailedError
 	 * @throws Error
 	 * @throws InvalidArgumentException
-	 * @throws InvalidStateException
 	 * @throws SessionException
 	 * @throws UnexpectedTagTypeException
+	 * @throws LogicException
 	 */
 	private function onRightClickBlock(PlayerInteractEvent $event): void
 	{
@@ -280,9 +280,9 @@ class EventListener implements Listener
 	 * @throws AssumptionFailedError
 	 * @throws Error
 	 * @throws InvalidArgumentException
-	 * @throws InvalidStateException
 	 * @throws SessionException
 	 * @throws UnexpectedTagTypeException
+	 * @throws LogicException
 	 */
 	private function onLeftClickBlock(PlayerInteractEvent $event): void
 	{

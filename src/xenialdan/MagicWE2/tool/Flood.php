@@ -24,8 +24,6 @@ class Flood extends WETool
 	private array $walked = [];
 	/** @var Block[] */
 	private array $nextToCheck = [];
-	/** @var int */
-	private int $y;
 
 	/**
 	 * Square constructor.
@@ -47,7 +45,6 @@ class Flood extends WETool
 	public function getBlocks(AsyncChunkManager|World $manager, BlockPalette $filterblocks, int $flags = API::FLAG_BASE): Generator
 	{
 		$this->validateChunkManager($manager);
-		$this->y = $this->getCenter()->getFloorY();
 		$block = $manager->getBlockAt($this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
 		//$block = API::setComponents($block,$this->getCenter()->getFloorX(), $this->getCenter()->getFloorY(), $this->getCenter()->getFloorZ());
 		$this->walked[] = $block;
@@ -132,12 +129,12 @@ class Flood extends WETool
 		$minX = ($v2center->x - $maxRadius) >> 4;
 		$maxZ = ($v2center->y + $maxRadius) >> 4;
 		$minZ = ($v2center->y - $maxRadius) >> 4;
-		$cmaxRadius = $cv2center->distanceSquared($minX - 0.5, $minZ - 0.5);
+		$cmaxRadius = $cv2center->distanceSquared(new Vector2($minX - 0.5, $minZ - 0.5));
 		#print "from $minX:$minZ to $maxX:$maxZ" . PHP_EOL;
 		$touchedChunks = [];
 		for ($x = $minX - 1; $x <= $maxX + 1; $x++) {
 			for ($z = $minZ - 1; $z <= $maxZ + 1; $z++) {
-				if ($cv2center->distanceSquared($x, $z) > $cmaxRadius) continue;
+				if ($cv2center->distanceSquared(new Vector2($x, $z)) > $cmaxRadius) continue;
 				$chunk = $chunkManager->getChunk($x, $z);
 				if ($chunk === null) {
 					continue;

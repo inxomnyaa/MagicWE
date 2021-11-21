@@ -10,8 +10,8 @@ use InvalidArgumentException;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\MagicWE2\exception\SessionException;
-use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 
@@ -41,7 +41,7 @@ class PlaceAllBlockstatesCommand extends BaseCommand
 		}
 		/** @var Player $sender */
 		try {
-			BlockStatesParser::placeAllBlockstates($sender->getPosition());
+			BlockStatesParser::getInstance()->placeAllBlockstates($sender->getPosition());
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

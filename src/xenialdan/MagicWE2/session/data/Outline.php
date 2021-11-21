@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpInternalEntityUsedInspection */
 
 declare(strict_types=1);
 
@@ -81,14 +81,13 @@ class Outline
 		return 'Outline';
 	}
 
-	private function updatePosition(): Position
+	private function updatePosition(): void
 	{
 		$this->position = $this->updateBlockPosition();
 		$reflectionc = new ReflectionClass($this->fakeTile);
 		$reflection = $reflectionc->getProperty('position');
 		$reflection->setAccessible(true);
 		$reflection->setValue($this->fakeTile, $this->position);
-		return $this->position;
 	}
 
 	private function updateBlockPosition(): Position

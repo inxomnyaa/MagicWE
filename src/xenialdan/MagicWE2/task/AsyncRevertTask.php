@@ -131,7 +131,7 @@ class AsyncRevertTask extends MWEAsyncTask
 		$world = $clipboard->getWorld();
 		foreach ($clipboard->chunks as $hash => $chunk) {
 			World::getXZ($hash, $x, $z);
-			$world->setChunk($x, $z, $chunk, false);
+			$world->setChunk($x, $z, $chunk);
 		}
 		if (!is_null($session)) {
 			switch ($this->type) {

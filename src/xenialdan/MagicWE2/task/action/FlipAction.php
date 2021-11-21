@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\task\action;
 
+use Exception;
 use Generator;
 use InvalidArgumentException;
 use pocketmine\block\BlockFactory;
-use RuntimeException;
+use xenialdan\libblockstate\BlockEntry;
+use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
-use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
-use xenialdan\MagicWE2\exception\InvalidBlockStateException;
-use xenialdan\MagicWE2\helper\BlockEntry;
-use xenialdan\MagicWE2\helper\BlockStatesParser;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
 
@@ -47,11 +45,7 @@ class FlipAction extends ClipboardAction
 	 * @param SingleClipboard $clipboard
 	 * @param string[] $messages
 	 * @return Generator
-	 * @throws InvalidArgumentException
-	 * @throws RuntimeException
-	 * @throws \pocketmine\block\utils\InvalidBlockStateException
-	 * @throws BlockQueryAlreadyParsedException
-	 * @throws InvalidBlockStateException
+	 * @throws Exception
 	 */
 	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator
 	{
@@ -61,6 +55,8 @@ class FlipAction extends ClipboardAction
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		BlockFactory::getInstance();
+		/** @var BlockStatesParser $blockStatesParser */
+		$blockStatesParser = BlockStatesParser::getInstance();
 		$clonedClipboard = clone $clipboard;
 		$x = $y = $z = null;
 		$maxX = $clipboard->selection->getSizeX() - 1;
@@ -76,15 +72,17 @@ class FlipAction extends ClipboardAction
 				$y = $maxY - $y;
 			#var_dump("$x $y $z");
 			$block1 = $blockEntry->toBlock();
-			$blockStatesEntry = BlockStatesParser::getInstance()::getStateByBlock($block1);
-			if($blockStatesEntry === null){
+			$blockState = $blockStatesParser->getFromBlock($block1);
+			if ($blockState === null) {
 				$block = $block1;
-			}else{
-				$mirrored = $blockStatesEntry->mirror($this->axis);
-				$block = $mirrored->toBlock();
+			} else {
+				$block = $block1;
+				//TODO re-add flip/rotate in libblockstate
+//				$mirrored = $blockState->mirror($this->axis);
+//				$block = $mirrored->toBlock();
 			}
 			$entry = BlockEntry::fromBlock($block);
-			//var_dump($blockStatesEntry->__toString(), $mirrored->__toString(), $block);
+			//var_dump($blockState->__toString(), $mirrored->__toString(), $block);
 			/** @var int $x */
 			/** @var int $y */
 			/** @var int $z */

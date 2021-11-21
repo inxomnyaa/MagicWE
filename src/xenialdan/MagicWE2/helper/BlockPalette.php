@@ -12,12 +12,11 @@ use pocketmine\block\BlockFactory;
 use pocketmine\block\utils\InvalidBlockStateException;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
-use pocketmine\item\LegacyStringToItemParserException;
 use pocketmine\item\VanillaItems;
-use pocketmine\nbt\NbtException;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\TextFormat as TF;
+use xenialdan\libblockstate\BlockQuery;
+use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\Loader;
@@ -47,7 +46,6 @@ class BlockPalette
 	 * @return BlockPalette
 	 * @throws BlockQueryAlreadyParsedException
 	 * @throws InvalidArgumentException
-	 * @throws \xenialdan\MagicWE2\exception\InvalidBlockStateException
 	 */
 	public static function fromString(string $blocksQuery): BlockPalette
 	{
@@ -70,11 +68,13 @@ class BlockPalette
 	public static function fromBlocks(array $blocks): BlockPalette
 	{
 		$palette = self::CREATE();
+		/** @var BlockStatesParser $blockStatesParser */
+		$blockStatesParser = BlockStatesParser::getInstance();
 		foreach ($blocks as $block) {
 			//TODO this really isn't optimal..
-			$state = BlockStatesParser::getStateByBlock($block);
+			$state = $blockStatesParser->get($block->getId(), $block->getMeta());
 			if ($state !== null) {
-				$palette->addBlockQuery(BlockQuery::fromString($state->blockFull));
+				$palette->addBlockQuery(BlockQuery::fromString((string)$state));
 			}//TODO exceptions
 		}
 		$palette->randomBlockQueries->setup();
@@ -147,9 +147,6 @@ class BlockPalette
 	 * @throws InvalidArgumentException
 	 * @throws InvalidBlockStateException
 	 * @throws JsonException
-	 * @throws LegacyStringToItemParserException
-	 * @throws UnexpectedTagTypeException
-	 * @throws NbtException
 	 */
 	public static function fromStringArray(string $blocks): array
 	{

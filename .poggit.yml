@@ -16,21 +16,21 @@ projects:
         version: ^1.3.0
         branch: pm4
       - src: thebigsmilexd/apibossbar/apibossbar
-        version: ^0.1.4
+        version: ^0.1.5
         branch: PM4
       - src: CortexPE/Commando/Commando
         version: ^3.0.0
         branch: PM4
       - src: muqsit/invmenu/InvMenu
-        version: ^4.1.0
+        version: ^4.3.4
         branch: "4.0"
       - src: thebigsmilexd/libstructure/libstructure
-        version: ^0.1.5
-        branch: mcstructure
+        version: ^0.1.6
+        branch: libblockstate
       - src: thebigsmilexd/libblockstate/libblockstate
-        version: ^0.0.0
+        version: ^0.0.1
         branch: master
-      - src: buchwasa/scorefactory/ScoreFactory
-        version: ^3.0.1
+      - src: Ifera/scorefactory/ScoreFactory
+        version: ^3.0.2
         branch: pm4
 ...
