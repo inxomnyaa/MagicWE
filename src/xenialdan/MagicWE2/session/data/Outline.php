@@ -10,6 +10,7 @@ use pocketmine\block\BlockLegacyIds;
 use pocketmine\block\tile\Spawnable;
 use pocketmine\network\mcpe\convert\RuntimeBlockMapping;
 use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
+use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
@@ -55,9 +56,9 @@ class Outline
 
 	public function send(): void
 	{
-		$this->player->getNetworkSession()->sendDataPacket(UpdateBlockPacket::create($this->position->x, $this->position->y, $this->position->z, RuntimeBlockMapping::getInstance()->toRuntimeId($this->fakeBlock->getFullId())));
+		$this->player->getNetworkSession()->sendDataPacket(UpdateBlockPacket::create(BlockPosition::fromVector3($this->position->asVector3()), RuntimeBlockMapping::getInstance()->toRuntimeId($this->fakeBlock->getFullId()), UpdateBlockPacket::FLAG_NETWORK, UpdateBlockPacket::DATA_LAYER_NORMAL));
 		if ($this->fakeTile instanceof Spawnable) {
-			$this->player->getNetworkSession()->sendDataPacket(BlockActorDataPacket::create($this->position->x, $this->position->y, $this->position->z, $this->fakeTile->getSerializedSpawnCompound()), true);
+			$this->player->getNetworkSession()->sendDataPacket(BlockActorDataPacket::create(BlockPosition::fromVector3($this->position->asVector3()), $this->fakeTile->getSerializedSpawnCompound()), true);
 		}
 	}
 
@@ -67,11 +68,11 @@ class Outline
 		$world = $this->player->getWorld();
 		$runtime_block_mapping = RuntimeBlockMapping::getInstance();
 		$block = $world->getBlockAt($this->position->x, $this->position->y, $this->position->z);
-		$network->sendDataPacket(UpdateBlockPacket::create($this->position->x, $this->position->y, $this->position->z, $runtime_block_mapping->toRuntimeId($block->getFullId())), true);
+		$network->sendDataPacket(UpdateBlockPacket::create(BlockPosition::fromVector3($this->position->asVector3()), $runtime_block_mapping->toRuntimeId($block->getFullId()), UpdateBlockPacket::FLAG_NETWORK, UpdateBlockPacket::DATA_LAYER_NORMAL), true);
 
 		$tile = $world->getTileAt($this->position->x, $this->position->y, $this->position->z);
 		if ($tile instanceof Spawnable) {
-			$network->sendDataPacket(BlockActorDataPacket::create($this->position->x, $this->position->y, $this->position->z, $tile->getSerializedSpawnCompound()), true);
+			$network->sendDataPacket(BlockActorDataPacket::create(BlockPosition::fromVector3($this->position->asVector3()), $tile->getSerializedSpawnCompound()), true);
 		}
 	}
 
