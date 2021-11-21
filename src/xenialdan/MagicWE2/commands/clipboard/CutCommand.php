@@ -33,6 +33,9 @@ class CutCommand extends BaseCommand
 		$this->setPermission("we.command.clipboard.cut");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

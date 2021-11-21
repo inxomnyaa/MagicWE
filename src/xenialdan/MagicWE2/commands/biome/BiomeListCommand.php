@@ -29,6 +29,9 @@ class BiomeListCommand extends BaseCommand
 		$this->setPermission("we.command.biome.list");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

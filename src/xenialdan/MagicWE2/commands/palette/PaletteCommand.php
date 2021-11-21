@@ -41,6 +41,9 @@ class PaletteCommand extends BaseCommand
 		$this->setPermission("we.command.palette");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

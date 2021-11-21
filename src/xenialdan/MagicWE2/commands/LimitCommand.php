@@ -31,6 +31,9 @@ class LimitCommand extends BaseCommand
 		$this->setUsage("//limit [limit: int|-1]");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

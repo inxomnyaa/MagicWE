@@ -27,6 +27,9 @@ class SizeCommand extends BaseCommand
 		$this->setPermission("we.command.selection.info.size");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

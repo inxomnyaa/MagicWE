@@ -21,6 +21,9 @@ class FloodCommand extends BaseCommand
 		$this->setPermission("we.command.tool.floodfill");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$sender->sendMessage(TF::RED . "TEMPORARILY DISABLED!");

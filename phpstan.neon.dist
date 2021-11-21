@@ -16,6 +16,7 @@ parameters:
         - phar:///source/vendor/apibossbar.phar/src
         - phar:///source/vendor/Commando.phar/src
         - phar:///source/vendor/libschematic.phar/src
+        - phar:///source/vendor/libblockstate.phar/src
         - phar:///source/vendor/InvMenu.phar/src
         - phar:///source/vendor/libstructure.phar/src
         - phar:///source/vendor/ScoreFactory.phar/src

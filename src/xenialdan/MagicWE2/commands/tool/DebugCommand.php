@@ -31,6 +31,9 @@ class DebugCommand extends BaseCommand
 		$this->setPermission("we.command.tool.debug");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();

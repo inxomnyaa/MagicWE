@@ -29,6 +29,9 @@ class Pos2Command extends BaseCommand
 		$this->setPermission("we.command.selection.pos");
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
 	{
 		$lang = Loader::getInstance()->getLanguage();
