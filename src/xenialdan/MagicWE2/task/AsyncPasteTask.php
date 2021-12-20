@@ -15,6 +15,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use xenialdan\libblockstate\BlockEntry;
 use xenialdan\MagicWE2\API;
+use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -27,24 +28,21 @@ use function igbinary_unserialize;
 
 class AsyncPasteTask extends MWEAsyncTask
 {
-	private string $selection;
 	private string $clipboard;
 	private Vector3 $offset;
 
 	/**
 	 * AsyncPasteTask constructor.
 	 * @param UuidInterface $sessionUUID
-	 * @param Selection $selection
 	 * @param SingleClipboard $clipboard
 	 * @throws Exception
 	 */
-	public function __construct(UuidInterface $sessionUUID, Selection $selection, SingleClipboard $clipboard)
+	public function __construct(UuidInterface $sessionUUID, SingleClipboard $clipboard)
 	{
 		$this->start = microtime(true);
-		$this->offset = $selection->getShape()->getPasteVector()->addVector($clipboard->position)->floor();
+		$this->offset = $clipboard->selection->getShape()->getPasteVector()->addVector($clipboard->position)->floor();
 		#var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
 		$this->sessionUUID = $sessionUUID->toString();
-		$this->selection = igbinary_serialize($selection);
 		$this->clipboard = igbinary_serialize($clipboard);
 	}
 
@@ -63,15 +61,12 @@ class AsyncPasteTask extends MWEAsyncTask
 //		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		unset($touchedChunks);
 
-		/** @var Selection $selection */
-		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
-
 		/** @var SingleClipboard $clipboard */
 		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
 
-		$oldBlocks = iterator_to_array($this->execute($selection, $clipboard, $changed));
+		$oldBlocks = iterator_to_array($this->execute($clipboard, $changed));
 
-		$manager = $selection->getIterator()->getManager();
+		$manager = $clipboard->selection->getIterator()->getManager();
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isTerrainDirty();
@@ -80,18 +75,17 @@ class AsyncPasteTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @param Selection $selection
 	 * @param SingleClipboard $clipboard
 	 * @param null|int $changed
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
-	private function execute(Selection $selection, SingleClipboard $clipboard, ?int &$changed): Generator
+	private function execute(SingleClipboard $clipboard, ?int &$changed): Generator
 	{
-		$manager = $selection->getIterator()->getManager();
+		$manager = $clipboard->selection->getIterator()->getManager();
 		$blockCount = $clipboard->getTotalCount();
-		$lastchunkx = $lastchunkz = $x = $y = $z = null;
+		$x = $y = $z = null;
 		$lastprogress = 0;
 		$i = 0;
 		$changed = 0;
@@ -103,14 +97,6 @@ class AsyncPasteTask extends MWEAsyncTask
 			$y += $this->offset->getFloorY();
 			$z += $this->offset->getFloorZ();
 			#var_dump("add offset xyz $x $y $z");
-			if (($x >> 4 !== $lastchunkx && $z >> 4 !== $lastchunkz) || is_null($lastchunkx)) {
-				$lastchunkx = $x >> 4;
-				$lastchunkz = $z >> 4;
-				if (is_null($manager->getChunk($x >> 4, $z >> 4))) {
-					print PHP_EOL . "Paste chunk not found in async paste manager: " . ($x >> 4) . ":" . ($z >> 4) . PHP_EOL;
-					continue;
-				}
-			}
 			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
 				$rel = $block->subtract($selection->shape->getPasteVector());
 				$block = API::setComponents($block,$rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
@@ -152,8 +138,9 @@ class AsyncPasteTask extends MWEAsyncTask
 //		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
 		$oldBlocks = $result["oldBlocks"];//already data array
 		$changed = $result["changed"];
-		/** @var Selection $selection */
-		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		/** @var SingleClipboard $clipboard */
+		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$selection = $clipboard->selection;
 		$undoChunks = $selection->getIterator()->getManager()->getChunks();
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
@@ -162,7 +149,7 @@ class AsyncPasteTask extends MWEAsyncTask
 			$world->setChunk($x, $z, $chunk);
 		}
 		if (!is_null($session)) {
-			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.fill.success', [$this->generateTookString(), $changed, $totalCount]));
+			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.paste.success', [$this->generateTookString(), $changed, $totalCount]));
 			$session->addRevert(new RevertClipboard($selection->worldId, $undoChunks, $oldBlocks));
 		}
 	}

@@ -28,6 +28,16 @@ class Custom extends Shape
 		$this->positions = $positions;
 	}
 
+	public function offset(Vector3 $offset): Shape
+	{
+		$shape = clone $this;
+		$pos = $this->positions;
+		$this->positions = [];
+		foreach ($pos as $vector3)$this->positions[]=$vector3->addVector($offset);
+		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		return $shape;
+	}
+
 	/**
 	 * Returns the blocks by their actual position
 	 * @param AsyncWorld $manager The world or AsyncChunkManager

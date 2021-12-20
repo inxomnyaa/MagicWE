@@ -36,6 +36,13 @@ class Ellipsoid extends Shape
 		$this->depth = $depth;
 	}
 
+	public function offset(Vector3 $offset): Shape
+	{
+		$shape = clone $this;
+		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		return $shape;
+	}
+
 	/**
 	 * Returns the blocks by their actual position
 	 * @param AsyncWorld $manager The world or AsyncChunkManager

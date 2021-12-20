@@ -23,6 +23,13 @@ class Cube extends Shape
 		$this->width = $width;
 	}
 
+	public function offset(Vector3 $offset): Shape
+	{
+		$shape = clone $this;
+		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		return $shape;
+	}
+
 	/**
 	 * Returns the blocks by their actual position
 	 * @param AsyncWorld $manager The world or AsyncChunkManager

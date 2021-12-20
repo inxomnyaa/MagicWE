@@ -44,6 +44,13 @@ class Cuboid extends Shape
 		return new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, min($pos1->y, $pos2->y), ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
 	}
 
+	public function offset(Vector3 $offset): Shape
+	{
+		$shape = clone $this;
+		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		return $shape;
+	}
+
 	/**
 	 * Returns the blocks by their actual position
 	 * @param AsyncWorld $manager The world or AsyncChunkManager

@@ -197,10 +197,11 @@ class API
 			}
 //			$start = clone $target->asVector3()->floor()->addVector($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
 //			$end = $start->addVector($clipboard->selection->getShape()->getMaxVec3()->subtractVector($clipboard->selection->getShape()->getMinVec3()));//add size
-			$shape = clone $clipboard->selection->getShape();//needed
+			$shape = $clipboard->selection->getShape();
+			$shape->offset($shape->getPasteVector()->subtractVector($target->asVector3()));
 			$shape->setPasteVector($target->asVector3()->floor());//needed
-			$clipboard->selection->setShape($shape);//needed
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard->selection, $clipboard));
+			$clipboard->selection->setShape($shape);//TODO probably need to update selection
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);

@@ -30,20 +30,7 @@ abstract class Shape implements Serializable
 		$this->pasteVector = $pasteVector->asVector3();
 	}
 
-	/**
-	 * Creates a chunk manager used for async editing
-	 * @param Chunk[] $chunks
-	 * @return AsyncChunkManager
-	 */
-	public static function getChunkManager(array $chunks): AsyncChunkManager
-	{
-		$manager = new AsyncChunkManager(0, World::Y_MAX);
-		foreach ($chunks as $hash => $chunk) {
-			World::getXZ($hash, $chunkX, $chunkZ);
-			$manager->setChunk($chunkX, $chunkZ, $chunk);
-		}
-		return $manager;
-	}
+	abstract public function offset(Vector3 $offset):self;
 
 	abstract public function getTotalCount(): int;
 

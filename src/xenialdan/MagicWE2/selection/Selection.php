@@ -62,7 +62,6 @@ class Selection implements Serializable, JsonSerializable
 	 */
 	public function __construct(UuidInterface $sessionUUID, World $world, ?int $minX = null, ?int $minY = null, ?int $minZ = null, ?int $maxX = null, ?int $maxY = null, ?int $maxZ = null, ?Shape $shape = null)
 	{
-
 		$this->sessionUUID = $sessionUUID;
 		$this->worldId = $world->getId();
 		if (isset($minX, $minY, $minZ)) {
@@ -86,7 +85,7 @@ class Selection implements Serializable, JsonSerializable
 	{
 		$this->iterator->invalidate();
 		$manager = $this->iterator->getManager();
-		if ($manager instanceof SimpleChunkManager) $manager->cleanChunks();
+		if ($manager instanceof AsyncWorld) $manager->cleanChunks();
 	}
 
 	/**

@@ -337,8 +337,8 @@ class Loader extends PluginBase
 		}
 
 		//register WAILA bar
-		$this->wailaBossBar = new DiverseBossBar();
-		$this->wailaBossBar->setPercentage(1.0);
+		$this->wailaBossBar = (new DiverseBossBar())->setPercentage(1.0)/*->setColor(BarColor::RED)*/
+		;
 		//WAILA updater
 		$this->getScheduler()->scheduleDelayedRepeatingTask(new ClosureTask(function (): void {
 			/** @var BlockStatesParser $blockStatesParser */
@@ -350,11 +350,11 @@ class Loader extends PluginBase
 					continue;
 				}
 				if (($block = $player->getTargetBlock(10)) instanceof Block && $block->getId() !== 0) {
-					Loader::getInstance()->wailaBossBar->showTo([$player]);
 					$stateEntry = $blockStatesParser->get($block->getId(), $block->getMeta());
 					$title = (string)$block;
 					$sub = implode("," . TF::EOL, explode(",", $blockStatesParser->prettyPrintStates($stateEntry, false)));
 					$distancePercentage = round(floor($block->getPosition()->distance($player->getEyePos())) / 10, 1);
+					Loader::getInstance()->wailaBossBar->showTo([$player]);
 					Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
 				} else
 					Loader::getInstance()->wailaBossBar->hideFrom([$player]);
