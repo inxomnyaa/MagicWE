@@ -17,7 +17,6 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemIds;
 use pocketmine\nbt\UnexpectedTagTypeException;
@@ -460,19 +459,5 @@ class EventListener implements Listener
 			}
 		}
 
-	}
-
-	public function onStructureBlockOutOfView(PlayerMoveEvent $event): void
-	{
-		if ($event->getFrom()->floor()->equals($event->getTo()->floor())) return;
-		$player = $event->getPlayer();
-		$session = SessionHelper::getUserSession($player);
-		if (!$session instanceof UserSession) return;
-		$selection = $session->getLatestSelection();
-		if (!$selection instanceof Selection) return;
-		if (!$session->isOutlineEnabled()) return;
-		if (!$player->isUsingChunk($session->getOutline()->getPosition()->getFloorX() >> 4, $session->getOutline()->getPosition()->getFloorZ())) {
-			$session->createOrUpdateOutline($selection);
-		}
 	}
 }
