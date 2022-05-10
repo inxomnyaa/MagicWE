@@ -1,4 +1,5 @@
 ![MagicWE2's awesome wide banner!](/resources/magicwe_icon_wide.png)
+<img src="/resources/magicwe_icon_wide.png" />
 ---
 # MagicWE2
 Lag free asynchronous world editor for [PMMP](https://github.com/pmmp/PocketMine-MP)
