@@ -47,7 +47,9 @@ class SessionHelper
 
 	/**
 	 * @param Session $session
+	 *
 	 * @throws InvalidSkinException
+	 * @throws JsonException
 	 */
 	public static function addSession(Session $session): void
 	{
@@ -81,12 +83,15 @@ class SessionHelper
 
 	/**
 	 * Creates an UserSession used to execute MagicWE2's functions
+	 *
 	 * @param Player $player
-	 * @param bool $add If true, the session will be cached in SessionHelper
+	 * @param bool   $add If true, the session will be cached in SessionHelper
+	 *
 	 * @return UserSession
 	 * @throws InvalidSkinException
 	 * @throws RuntimeException
-	 * @throws SessionException
+	 * @throws SessionException*@throws JsonException
+	 * @throws JsonException
 	 */
 	public static function createUserSession(Player $player, bool $add = true): UserSession
 	{
@@ -101,10 +106,13 @@ class SessionHelper
 
 	/**
 	 * Creates a PluginSession used to call API functions via a plugin
+	 *
 	 * @param Plugin $plugin
-	 * @param bool $add If true, the session will be cached in SessionHelper
+	 * @param bool   $add If true, the session will be cached in SessionHelper
+	 *
 	 * @return PluginSession
-	 * @throws InvalidSkinException
+	 * @throws InvalidSkinException*@throws JsonException
+	 * @throws JsonException
 	 */
 	public static function createPluginSession(Plugin $plugin, bool $add = true): PluginSession
 	{

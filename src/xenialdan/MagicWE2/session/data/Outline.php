@@ -30,7 +30,7 @@ class Outline
 	{
 		$this->selection = $selection;
 		$this->player = $player;
-		$this->fakeBlock = BlockFactory::getInstance()->get(BlockLegacyIds::STRUCTURE_BLOCK, 0);
+		$this->fakeBlock = BlockFactory::getInstance()->get(BlockLegacyIds::STRUCTURE_BLOCK);
 		$this->position = $this->updateBlockPosition();
 		$this->fakeTile = new StructureBlockTile($this->position->getWorld(), $this->position);
 		$this->fakeTile->setShowBoundingBox(true)->setFromV3($selection->getPos1())->setToV3($selection->getPos2());
@@ -49,7 +49,7 @@ class Outline
 		$this->updatePosition();
 		//TODO change position of fakeTile using reflection
 		$this->fakeTile->setShowBoundingBox(true)->setFromV3($selection->getPos1())->setToV3($selection->getPos2());
-		$this->fakeTile->setDirty();
+		$this->fakeTile->clearSpawnCompoundCache();
 		$this->send();
 		return $this;
 	}

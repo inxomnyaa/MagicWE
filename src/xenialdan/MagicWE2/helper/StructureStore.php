@@ -6,6 +6,7 @@ namespace xenialdan\MagicWE2\helper;
 
 use BlockHorizons\libschematic\Schematic;
 use InvalidArgumentException;
+use OutOfRangeException;
 use pocketmine\nbt\NbtDataException;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\SingletonTrait;
@@ -36,14 +37,16 @@ final class StructureStore
 
 	/**
 	 * @param string $filename Filename without folder. Can have .mcstructure extension in the name
-	 * @param bool $override Use this if you want to reload the file
+	 * @param bool   $override Use this if you want to reload the file
+	 *
 	 * @return MCStructure
 	 * @throws InvalidArgumentException
+	 * @throws NbtDataException
 	 * @throws StructureFileException
 	 * @throws StructureFormatException
-	 * @throws UnexpectedValueException
-	 * @throws NbtDataException
 	 * @throws UnexpectedTagTypeException
+	 * @throws UnexpectedValueException
+	 * @throws OutOfRangeException
 	 */
 	public function loadStructure(string $filename, bool $override = true): MCStructure
 	{

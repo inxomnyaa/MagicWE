@@ -15,13 +15,11 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use xenialdan\libblockstate\BlockEntry;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
-use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 use function igbinary_serialize;
 use function igbinary_unserialize;
@@ -59,7 +57,7 @@ class AsyncPasteTask extends MWEAsyncTask
 //		$touchedChunks = array_map(static function ($chunk) {//todo add hash as key
 //			return FastChunkSerializer::deserializeTerrain($chunk);
 //		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
-		unset($touchedChunks);
+//		unset($touchedChunks);
 
 		/** @var SingleClipboard $clipboard */
 		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4

@@ -57,20 +57,21 @@ class RevertClipboard extends Clipboard
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
+	 *
 	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
+	 *
 	 * @return void
 	 * @since 5.1.0
 	 */
-	public function unserialize($data)
-	{
+	public function unserialize(string $data){
 		[
 			$this->worldId,
 			$chunks,
 			$this->blocksAfter
 		] = unserialize($data/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
-		foreach ($chunks as $hash => $chunk)
+		foreach($chunks as $hash => $chunk)
 			$this->chunks[$hash] = FastChunkSerializer::deserializeTerrain($chunk);
 	}
 }

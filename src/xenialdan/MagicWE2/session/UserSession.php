@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace xenialdan\MagicWE2\session;
 
 use jackmd\scorefactory\ScoreFactory;
+use jackmd\scorefactory\ScoreFactoryException;
 use JsonSerializable;
 use pocketmine\lang\Language;
 use pocketmine\lang\LanguageNotFoundException;
@@ -53,24 +54,26 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		$this->brushes = new BrushCollection($this);
 		$this->assets = new AssetCollection($this);
 		$this->palettes = new PaletteCollection($this);
-		try {
-			if (is_null($this->lang))
+		try{
+			if(is_null($this->lang))
 				$this->lang = new Language(Language::FALLBACK_LANGUAGE, Loader::getInstance()->getLanguageFolder());
-		} catch (LanguageNotFoundException) {
+		}catch(LanguageNotFoundException){
 		}
 		Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
 	}
 
-	public function __destruct()
-	{
+	/**
+	 * @throws ScoreFactoryException
+	 */
+	public function __destruct(){
 		Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
 		$this->bossBar->removeAllPlayers();
-		if (Loader::hasScoreboard() && $this->sidebar !== null) {
-			ScoreFactory::removeScore($this->getPlayer());
+		if(Loader::hasScoreboard() && $this->sidebar !== null){
+			ScoreFactory::removeObjective($this->getPlayer(), true);
 		}
 	}
 
-	public function getLanguage(): Language
+	public function getLanguage() : Language
 	{
 		return $this->lang;
 	}
@@ -139,7 +142,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		if ($sidebarEnabled) {
 			$this->sidebar->handleScoreboard($this);
 		} else {
-			ScoreFactory::removeScore($player);
+			ScoreFactory::removeObjective($player);
 		}
 		return Loader::PREFIX . $this->getLanguage()->translateString('tool.sidebar.setenabled', [($sidebarEnabled ? TF::GREEN . $this->getLanguage()->translateString('enabled') : TF::RED . $this->getLanguage()->translateString('disabled'))]);
 	}

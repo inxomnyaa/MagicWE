@@ -11,6 +11,7 @@ use JsonException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\EnchantmentIdMap;
+use pocketmine\entity\InvalidSkinException;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\ItemFlags;
 use pocketmine\lang\Language;
@@ -22,6 +23,10 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
+use wfcore\lib\exception\GeometryNotFoundException;
+use wfcore\lib\exception\GeometryParsingException;
+use wfcore\lib\exception\SplitIDException;
+use wfcore\lib\exception\TextureNotFoundException;
 use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\libstructure\PacketListener;
@@ -152,11 +157,16 @@ class Loader extends PluginBase
 	}
 
 	/**
-	 * @throws PluginException
-	 * @throws RuntimeException
-	 * @throws JsonException
 	 * @throws AssumptionFailedError
 	 * @throws InvalidArgumentException
+	 * @throws JsonException
+	 * @throws PluginException
+	 * @throws RuntimeException
+	 * @throws InvalidSkinException
+	 * @throws GeometryNotFoundException
+	 * @throws GeometryParsingException
+	 * @throws SplitIDException
+	 * @throws TextureNotFoundException
 	 */
 	public function onLoad(): void
 	{

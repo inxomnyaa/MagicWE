@@ -76,14 +76,15 @@ class SingleClipboard extends Clipboard
 	/**
 	 * Constructs the object
 	 * @link https://php.net/manual/en/serializable.unserialize.php
+	 *
 	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
+	 *
 	 * @return void
 	 * @since 5.1
 	 */
-	public function unserialize($data)
-	{
+	public function unserialize(string $data){
 		// TODO: Implement unserialize() method.
 		[
 			$this->entries,

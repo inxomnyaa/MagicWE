@@ -20,6 +20,7 @@ use pocketmine\world\Position;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use TypeError;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
@@ -141,6 +142,7 @@ class AsyncFillTask extends MWEAsyncTask
 
 	/**
 	 * @throws AssumptionFailedError
+	 * @throws TypeError
 	 */
 	public function onCompletion(): void
 	{

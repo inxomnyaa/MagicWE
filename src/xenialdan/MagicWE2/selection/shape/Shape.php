@@ -7,11 +7,8 @@ use Generator;
 use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\world\format\Chunk;
-use pocketmine\world\World;
 use Serializable;
 use xenialdan\MagicWE2\API;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 
@@ -93,16 +90,17 @@ abstract class Shape implements Serializable
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
+	 *
 	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
+	 *
 	 * @return void
 	 * @since 5.1.0
 	 */
-	public function unserialize($data)
-	{
+	public function unserialize(string $data){
 		$unserialize = unserialize($data/*, ['allowed_classes' => [__CLASS__]]*/);//TODO test pm4
-		array_walk($unserialize, function ($value, $key) {
+		array_walk($unserialize, function($value, $key){
 			$this->$key = $value;
 		});
 	}

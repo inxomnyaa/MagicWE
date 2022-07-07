@@ -593,7 +593,7 @@ class API
 				RotateAction::ROTATE_270 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
 				default => new Vector3($x, $y, $z)
 			};
-			$newClipboard->addEntry($newV3->getX(), $newV3->getY(), $newV3->getZ(), $entry);
+			$newClipboard->addEntry($newV3->getFloorX(), $newV3->getFloorY(), $newV3->getFloorZ(), $entry);
 			//TODO move origin of structure
 		}
 		return $newClipboard;

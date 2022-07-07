@@ -73,7 +73,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
 		$manager = $selection->getIterator()->getManager();
-		unset($touchedChunks);
+//		unset($touchedChunks);
 
 		//$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 		//$selection = $this->selection;

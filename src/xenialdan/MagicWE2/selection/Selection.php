@@ -11,7 +11,6 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
-use pocketmine\world\SimpleChunkManager;
 use pocketmine\world\World;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
@@ -299,14 +298,15 @@ class Selection implements Serializable, JsonSerializable
 	/**
 	 * Constructs the object
 	 * @link http://php.net/manual/en/serializable.unserialize.php
+	 *
 	 * @param string $data <p>
 	 * The string representation of the object.
 	 * </p>
+	 *
 	 * @return void
 	 * @since 5.1.0
 	 */
-	public function unserialize($data)
-	{
+	public function unserialize(string $data){
 		[
 			$this->worldId,
 			$this->pos1,
