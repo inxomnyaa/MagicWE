@@ -519,18 +519,30 @@ class API
 		return ($i % $n + $n) % $n;
 	}
 
+	/**
+	 * @throws InvalidArgumentException
+	 */
 	public static function rotate(Schematic|MCStructure|SingleClipboard $structure, int $rotation) : Schematic|MCStructure|SingleClipboard{
-		if($rotation !== RotateAction::ROTATE_90 && $rotation !== RotateAction::ROTATE_180 && $rotation !== RotateAction::ROTATE_270){
-			throw new \InvalidArgumentException("Invalid rotation");
+		$rotation = self::positiveModulo($rotation, 360);
+		if($rotation % 90 !== 0){
+			throw new InvalidArgumentException("Rotation must be divisible by 90");
 		}
 		if($structure instanceof Schematic) return self::rotateSchematic($structure, $rotation);
 		elseif($structure instanceof MCStructure) return self::rotateStructure($structure, $rotation);//TODO add support for creating new structures to libstructures
 		elseif($structure instanceof SingleClipboard) return self::rotateClipboard($structure, $rotation);
-		throw new \InvalidArgumentException("Invalid structure");
+		throw new InvalidArgumentException("Invalid structure");
 	}
 
-	//TODO allow passing any rotation divisible by 90, allow -90
+	/**
+	 * @throws InvalidArgumentException
+	 */
 	private static function rotateSchematic(Schematic $structure, int $rotation) : Schematic{
+		if($rotation % 90 !== 0){
+			throw new InvalidArgumentException("Rotation must be divisible by 90");
+		}
+		$rotation = self::positiveModulo($rotation, 360);
+		if($rotation === 0) return $structure;
+
 		//width is x axis, length is z axis
 		/** @var Block[] $blocks */
 		$blocks = [];
@@ -540,9 +552,10 @@ class API
 
 			$blocks[] = match ($rotation) {
 				//TODO check if the new positions are calculated correctly
-				RotateAction::ROTATE_90 => self::setComponents($block, $block->getPosition()->getZ(), $block->getPosition()->getY(), $structure->getWidth() - $block->getPosition()->getX() - 1),
-				RotateAction::ROTATE_180 => self::setComponents($block, $structure->getWidth() - $block->getPosition()->getX() - 1, $block->getPosition()->getY(), $structure->getLength() - $block->getPosition()->getZ() - 1),//TODO is this flip instead of rotate?
-				RotateAction::ROTATE_270 => self::setComponents($block, $structure->getLength() - $block->getPosition()->getZ() - 1, $block->getPosition()->getY(), $block->getPosition()->getX()),
+				RotateAction::ROTATE_90 => self::setComponents($block, $block->getPosition()->getFloorZ(), $block->getPosition()->getFloorY(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1),
+				RotateAction::ROTATE_180 => self::setComponents($block, $structure->getWidth() - $block->getPosition()->getFloorX() - 1, $block->getPosition()->getFloorY(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1),
+				RotateAction::ROTATE_270 => self::setComponents($block, $structure->getLength() - $block->getPosition()->getFloorZ() - 1, $block->getPosition()->getFloorY(), $block->getPosition()->getFloorX()),
+				default => $block
 			};
 			//TODO move origin of structure
 		}
@@ -556,7 +569,16 @@ class API
 		return $structure;
 	}
 
+	/**
+	 * @throws InvalidArgumentException
+	 */
 	private static function rotateClipboard(SingleClipboard $structure, int $rotation) : SingleClipboard{
+		if($rotation % 90 !== 0){
+			throw new InvalidArgumentException("Rotation must be divisible by 90");
+		}
+		$rotation = self::positiveModulo($rotation, 360);
+		if($rotation === 0) return $structure;
+
 		//width is x axis, length is z axis
 		$newClipboard = new SingleClipboard(Vector3::zero());
 		//$x = $y = $z = null;
@@ -564,12 +586,12 @@ class API
 		foreach($structure->iterateEntries($x, $y, $z) as $entry){
 			//TODO set entry to rotated blockstate
 
-			$newV3 = match ($rotation)//TODO figure out how to not create new Vector3 objects
+			$newV3 = match ($rotation)//TODO figure out how to avoid new Vector3 objects
 			{
-				//TODO figure out correct blockIndex
 				RotateAction::ROTATE_90 => new Vector3($z, $y, $structure->selection->getSizeX() - $x - 1),
 				RotateAction::ROTATE_180 => new Vector3($structure->selection->getSizeX() - $x - 1, $y, $structure->selection->getSizeZ() - $z - 1),//TODO is this flip instead of rotate?
 				RotateAction::ROTATE_270 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
+				default => new Vector3($x, $y, $z)
 			};
 			$newClipboard->addEntry($newV3->getX(), $newV3->getY(), $newV3->getZ(), $entry);
 			//TODO move origin of structure
