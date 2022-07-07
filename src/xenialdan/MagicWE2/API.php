@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2;
 
+use BlockHorizons\libschematic\Schematic;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\block\Block;
@@ -16,6 +17,8 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
 use RuntimeException;
+use xenialdan\libblockstate\BlockEntry;
+use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
@@ -28,6 +31,7 @@ use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\data\Asset;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\task\action\RotateAction;
 use xenialdan\MagicWE2\task\action\SetBiomeAction;
 use xenialdan\MagicWE2\task\action\TaskAction;
 use xenialdan\MagicWE2\task\AsyncActionTask;
@@ -83,8 +87,7 @@ class API
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function fillAsync(Selection $selection, Session $session, BlockPalette $newblocks, int $flags = self::FLAG_BASE): bool
-	{
+	public static function fillAsync(Selection $selection, Session $session, BlockPalette $newblocks, int $flags = self::FLAG_BASE): bool{
 		if ($newblocks->empty()) {
 			$session->sendMessage(TF::RED . "New blocks is empty!");
 			return false;
@@ -115,8 +118,7 @@ class API
 	 * @param BlockPalette $newBlocks
 	 * @return bool
 	 */
-	public static function replaceAsync(Selection $selection, Session $session, BlockPalette $oldBlocks, BlockPalette $newBlocks): bool
-	{
+	public static function replaceAsync(Selection $selection, Session $session, BlockPalette $oldBlocks, BlockPalette $newBlocks): bool{
 		if ($oldBlocks->empty()) $session->sendMessage(TF::RED . "Old blocks is empty!");
 		if ($newBlocks->empty()) $session->sendMessage(TF::RED . "New blocks is empty!");
 		if ($oldBlocks->empty() || $newBlocks->empty()) return false;
@@ -145,8 +147,7 @@ class API
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function copyAsync(Selection $selection, Session $session, int $flags = self::FLAG_BASE): bool
-	{
+	public static function copyAsync(Selection $selection, Session $session, int $flags = self::FLAG_BASE): bool{
 		#return false;
 		try {
 			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
@@ -180,8 +181,7 @@ class API
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function pasteAsync(SingleClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE): bool
-	{
+	public static function pasteAsync(SingleClipboard $clipboard, Session $session, Position $target, int $flags = self::FLAG_BASE): bool{
 		#return false;
 		try {
 			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
@@ -217,8 +217,7 @@ class API
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function countAsync(Selection $selection, Session $session, BlockPalette $filterBlocks, int $flags = self::FLAG_BASE): bool
-	{
+	public static function countAsync(Selection $selection, Session $session, BlockPalette $filterBlocks, int $flags = self::FLAG_BASE): bool{
 		try {
 			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
 			if ($limit !== -1 && $selection->getShape()->getTotalCount() > $limit) {
@@ -239,8 +238,7 @@ class API
 	 * @param int $biomeId
 	 * @return bool
 	 */
-	public static function setBiomeAsync(Selection $selection, Session $session, int $biomeId): bool
-	{
+	public static function setBiomeAsync(Selection $selection, Session $session, int $biomeId): bool{
 		try {
 			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
 			if ($limit !== -1 && $selection->getShape()->getTotalCount() > $limit) {
@@ -272,8 +270,7 @@ class API
 	 * @throws Exception
 	 * @throws Exception
 	 */
-	public static function createBrush(Block $target, Brush $brush, Session $session): void
-	{
+	public static function createBrush(Block $target, Brush $brush, Session $session): void{
 		$shapeClass = $brush->properties->shape;
 		/** @var Shape $shape */
 		$shape = new $shapeClass($target->getPosition()->asVector3(), ...array_values($brush->properties->shapeProperties));
@@ -295,8 +292,7 @@ class API
 	 * @param int $flags
 	 * @return bool
 	 */
-	public static function floodArea(Block $target, CompoundTag $settings, Session $session, int $flags = self::FLAG_BASE): bool
-	{ //TODO
+	public static function floodArea(Block $target, CompoundTag $settings, Session $session, int $flags = self::FLAG_BASE): bool{ //TODO
 		$session->sendMessage(TF::RED . "TEMPORARILY DISABLED!");
 		return false;/*
         $shape = ShapeRegistry::getShape($target->getWorld(), ShapeRegistry::TYPE_FLOOD, self::compoundToArray($settings));
@@ -306,8 +302,7 @@ class API
         return self::fillAsync($shape, $session, self::blockParser($shape->options['blocks'], $messages, $error), $flags);*/
 	}
 
-	public static function placeAsset(Position $target, Asset $asset, CompoundTag $settings, UserSession $session): bool
-	{
+	public static function placeAsset(Position $target, Asset $asset, CompoundTag $settings, UserSession $session): bool{
 
 		#$start = clone $target->asVector3()->floor()->addVector($asset->getOrigin())->floor();//start pos of paste//TODO if using rotate, this fails
 		#$end = $start->addVector($asset->getSize()->subtractVector($asset->getOrigin()));//add size
@@ -330,16 +325,14 @@ class API
 	/**
 	 * @return Clipboard[]
 	 */
-	public static function getSchematics(): array
-	{
+	public static function getSchematics(): array{
 		return self::$schematics;
 	}
 
 	/**
 	 * @param Clipboard[] $schematics
 	 */
-	public static function setSchematics(array $schematics): void
-	{
+	public static function setSchematics(array $schematics): void{
 		self::$schematics = $schematics;
 	}
 
@@ -351,8 +344,7 @@ class API
 	 * @return int
 	 * @throws RuntimeException
 	 */
-	public static function flagParser(array $flags): int
-	{
+	public static function flagParser(array $flags): int{
 		$flagmeta = self::FLAG_BASE;
 		foreach ($flags as $flag) {
 			switch ($flag) {
@@ -396,8 +388,7 @@ class API
 	 * @param int $check The flag to check
 	 * @return bool
 	 */
-	public static function hasFlag(int $flags, int $check): bool
-	{
+	public static function hasFlag(int $flags, int $check): bool{
 		return ($flags & (self::FLAG_BASE << $check)) > 0;
 	}
 
@@ -411,8 +402,7 @@ class API
 	 * @throws InvalidArgumentException
 	 * @deprecated Use BlockPalette::fromString()
 	 */
-	public static function blockParser(string $fullstring, array &$messages, bool &$error): BlockPalette
-	{
+	public static function blockParser(string $fullstring, array &$messages, bool &$error): BlockPalette{
 		BlockFactory::getInstance();
 		return BlockPalette::fromString($fullstring);
 	}
@@ -424,8 +414,7 @@ class API
 	 * @return float|int
 	 * @throws CalculationException
 	 */
-	public static function evalAsMath(string $str): float|int
-	{
+	public static function evalAsMath(string $str): float|int{
 		$error = false;
 		$div_mul = false;
 		$add_sub = false;
@@ -493,8 +482,7 @@ class API
 	 * @param CompoundTag $compoundTag
 	 * @return array
 	 */
-	public static function compoundToArray(CompoundTag $compoundTag): array
-	{
+	public static function compoundToArray(CompoundTag $compoundTag): array{
 		$a = [];
 		foreach ($compoundTag->getValue() as $key => $value) {
 			$a[$key] = $value;
@@ -514,24 +502,79 @@ class API
 	 * @param int $z
 	 * @return Block
 	 */
-	public static function setComponents(Block $block, int $x, int $y, int $z): Block
-	{
+	public static function setComponents(Block $block, int $x, int $y, int $z): Block{
 		[$block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z] = [$x, $y, $z];
 		return $block;
 	}
 
-	public static function vecToString(Vector3 $v): string
-	{
+	public static function vecToString(Vector3 $v): string{
 		return TF::RESET . "[" . TF::RED . $v->getFloorX() . TF::RESET . ":" . TF::GREEN . $v->getFloorY() . TF::RESET . ":" . TF::AQUA . $v->getFloorZ() . TF::RESET . "]";
 	}
 
-	public static function boolToString(bool $b): string
-	{
+	public static function boolToString(bool $b) : string{
 		return $b ? TF::RESET . TF::GREEN . "On" . TF::RESET : TF::RESET . TF::RED . "Off" . TF::RESET;
 	}
 
-	public static function positiveModulo(int $i, int $n): int
-	{
+	public static function positiveModulo(int $i, int $n) : int{
 		return ($i % $n + $n) % $n;
 	}
+
+	public static function rotate(Schematic|MCStructure|SingleClipboard $structure, int $rotation) : Schematic|MCStructure|SingleClipboard{
+		if($rotation !== RotateAction::ROTATE_90 && $rotation !== RotateAction::ROTATE_180 && $rotation !== RotateAction::ROTATE_270){
+			throw new \InvalidArgumentException("Invalid rotation");
+		}
+		if($structure instanceof Schematic) return self::rotateSchematic($structure, $rotation);
+		elseif($structure instanceof MCStructure) return self::rotateStructure($structure, $rotation);//TODO add support for creating new structures to libstructures
+		elseif($structure instanceof SingleClipboard) return self::rotateClipboard($structure, $rotation);
+		throw new \InvalidArgumentException("Invalid structure");
+	}
+
+	//TODO allow passing any rotation divisible by 90, allow -90
+	private static function rotateSchematic(Schematic $structure, int $rotation) : Schematic{
+		//width is x axis, length is z axis
+		/** @var Block[] $blocks */
+		$blocks = [];
+		/** @var Block $block */
+		foreach($structure->blocks() as $block){
+			//TODO set block to rotated blockstate
+
+			$blocks[] = match ($rotation) {
+				//TODO check if the new positions are calculated correctly
+				RotateAction::ROTATE_90 => self::setComponents($block, $block->getPosition()->getZ(), $block->getPosition()->getY(), $structure->getWidth() - $block->getPosition()->getX() - 1),
+				RotateAction::ROTATE_180 => self::setComponents($block, $structure->getWidth() - $block->getPosition()->getX() - 1, $block->getPosition()->getY(), $structure->getLength() - $block->getPosition()->getZ() - 1),//TODO is this flip instead of rotate?
+				RotateAction::ROTATE_270 => self::setComponents($block, $structure->getLength() - $block->getPosition()->getZ() - 1, $block->getPosition()->getY(), $block->getPosition()->getX()),
+			};
+			//TODO move origin of structure
+		}
+		$newSchematic = new Schematic();
+		$newSchematic->setBlockArray($blocks);
+		return $newSchematic;
+	}
+
+	private static function rotateStructure(MCStructure $structure, int $rotation) : MCStructure{
+		//TODO this is not yet implemented due to lack of support for creating new MCStructures in libstructure
+		return $structure;
+	}
+
+	private static function rotateClipboard(SingleClipboard $structure, int $rotation) : SingleClipboard{
+		//width is x axis, length is z axis
+		$newClipboard = new SingleClipboard(Vector3::zero());
+		//$x = $y = $z = null;
+		/** @var BlockEntry $entry */
+		foreach($structure->iterateEntries($x, $y, $z) as $entry){
+			//TODO set entry to rotated blockstate
+
+			$newV3 = match ($rotation)//TODO figure out how to not create new Vector3 objects
+			{
+				//TODO figure out correct blockIndex
+				RotateAction::ROTATE_90 => new Vector3($z, $y, $structure->selection->getSizeX() - $x - 1),
+				RotateAction::ROTATE_180 => new Vector3($structure->selection->getSizeX() - $x - 1, $y, $structure->selection->getSizeZ() - $z - 1),//TODO is this flip instead of rotate?
+				RotateAction::ROTATE_270 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
+			};
+			$newClipboard->addEntry($newV3->getX(), $newV3->getY(), $newV3->getZ(), $entry);
+			//TODO move origin of structure
+		}
+		return $newClipboard;
+	}
+
 }

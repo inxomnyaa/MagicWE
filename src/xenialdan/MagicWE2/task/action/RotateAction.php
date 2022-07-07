@@ -62,7 +62,7 @@ class RotateAction extends ClipboardAction
 //		$blockStatesParser = BlockStatesParser::getInstance();
 		$clonedClipboard = clone $clipboard;
 		$clonedClipboard->clear();
-		$x = $y = $z = null;
+		//$x = $y = $z = null;
 		$maxX = $clipboard->selection->getSizeX() - 1;
 		$maxZ = $clipboard->selection->getSizeZ() - 1;
 		foreach ($clipboard->iterateEntries($x, $y, $z) as $blockEntry) {//only fully works if xyz is positive //TODO make sure this is always positive, see next comment

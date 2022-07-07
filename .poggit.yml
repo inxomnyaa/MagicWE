@@ -25,7 +25,7 @@ projects:
         version: ^4.3.4
         branch: "4.0"
       - src: thebigsmilexd/libstructure/libstructure
-        version: ^0.1.6
+        version: ^0.1.7
         branch: libblockstate
       - src: thebigsmilexd/libblockstate/libblockstate
         version: ^0.0.1
