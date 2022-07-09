@@ -103,8 +103,10 @@ class Selection implements Serializable, JsonSerializable
 		return $world;
 	}
 
-	public function setWorld(World $world): void
-	{
+	public function setWorld(World $world) : void{
+		if($this->worldId === $world->getId()){
+			return;
+		}
 		$this->worldId = $world->getId();
 		try {
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_WORLD))->call();
