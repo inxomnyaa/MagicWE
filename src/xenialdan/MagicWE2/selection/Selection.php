@@ -117,9 +117,9 @@ class Selection implements Serializable, JsonSerializable{
 	 */
 	public function setPos1(Position $position) : void{
 		$this->pos1 = $position->asVector3()->floor();
-		if ($this->pos1->y >= World::Y_MAX) $this->pos1->y = World::Y_MAX;
-		if ($this->pos1->y < 0) $this->pos1->y = 0;
-		if ($this->worldId !== $position->getWorld()->getId()) {//reset other position if in different world
+		if($this->pos1->y > World::Y_MAX) $this->pos1->y = World::Y_MAX;//TODO check if this should be 255 or World::Y_MAX
+		if($this->pos1->y < World::Y_MIN) $this->pos1->y = World::Y_MIN;
+		if($this->worldId !== $position->getWorld()->getId()){//reset other position if in different world
 			$this->pos2 = null;
 		}
 		$this->setWorld($position->getWorld());
@@ -163,9 +163,9 @@ class Selection implements Serializable, JsonSerializable{
 	 */
 	public function setPos2(Position $position) : void{
 		$this->pos2 = $position->asVector3()->floor();
-		if ($this->pos2->y >= World::Y_MAX) $this->pos2->y = World::Y_MAX;
-		if ($this->pos2->y < 0) $this->pos2->y = 0;
-		if ($this->worldId !== $position->getWorld()->getId()) {
+		if($this->pos2->y > World::Y_MAX) $this->pos2->y = World::Y_MAX;
+		if($this->pos2->y < World::Y_MIN) $this->pos2->y = World::Y_MIN;
+		if($this->worldId !== $position->getWorld()->getId()){
 			$this->pos1 = null;
 		}
 		$this->setWorld($position->getWorld());

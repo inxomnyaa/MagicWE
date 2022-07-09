@@ -63,7 +63,7 @@ class SubChunkIterator extends SubChunkExplorer
 	 */
 	public function getBlockAt(int $x, int $y, int $z): int
 	{
-		$y = (int)min(World::Y_MAX - 1, max(0, $y));
+		$y = (int) min(World::Y_MAX - 1, max(World::Y_MIN, $y));//TODO check if this should be 255 or World::Y_MAX - 1
 		$this->moveTo($x, $y, $z);
 		return $this->getCurrentSubChunk()->getFullBlock($x & 0x0f, $y & 0x0f, $z & 0x0f);
 	}
@@ -87,9 +87,8 @@ class SubChunkIterator extends SubChunkExplorer
 	 * @throws BadMethodCallException
 	 * @throws BadMethodCallException
 	 */
-	public function setBlockAt(int $x, int $y, int $z, int $block): void
-	{
-		$y = (int)min(World::Y_MAX - 1, max(0, $y));
+	public function setBlockAt(int $x, int $y, int $z, int $block): void{
+		$y = (int) min(World::Y_MAX - 1, max(World::Y_MIN, $y));//TODO check if this should be 255 or World::Y_MAX - 1
 		$this->moveTo($x, $y, $z);
 		$this->getCurrentSubChunk()->setFullBlock($x & 0x0f, $y & 0x0f, $z & 0x0f, $block);
 	}

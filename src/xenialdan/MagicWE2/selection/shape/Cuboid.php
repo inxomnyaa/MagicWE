@@ -79,13 +79,13 @@ class Cuboid extends Shape
 //					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 //					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-					if ($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < 0) continue;//TODO check for removal because relative might be at other y
+					if($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < World::Y_MIN) continue;//TODO check if this should be 255 or World::Y_MAX //TODO check for removal because relative might be at other y
 //					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPosition()->x > $this->getMinVec3()->getX() && $block->getPosition()->x < $this->getMaxVec3()->getX()) && ($block->getPosition()->y > $this->getMinVec3()->getY() && $block->getPosition()->y < $this->getMaxVec3()->getY()) && ($block->getPosition()->z > $this->getMinVec3()->getZ() && $block->getPosition()->z < $this->getMaxVec3()->getZ())) continue;
-					if ($filterblocks->empty()) yield $block;
-					else {
-						foreach ($filterblocks->palette() as $filterblock) {
+					if($filterblocks->empty()) yield $block;
+					else{
+						foreach($filterblocks->palette() as $filterblock){
 //							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-							if ($block->getFullId() === $filterblock->getFullId())
+							if($block->getFullId() === $filterblock->getFullId())
 								yield $block;
 						}
 					}

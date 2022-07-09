@@ -172,8 +172,8 @@ class Flood extends WETool
 	 */
 	public static function getChunkManager(array $chunks): AsyncChunkManager
 	{
-		$manager = new AsyncChunkManager(0, World::Y_MAX);
-		foreach ($chunks as $hash => $chunk) {
+		$manager = new AsyncChunkManager(World::Y_MIN, World::Y_MAX);//TODO replace AsyncChunkManager with AsyncWorld
+		foreach($chunks as $hash => $chunk){
 			World::getXZ($hash, $x, $z);
 			$manager->setChunk($x, $z, $chunk);
 		}

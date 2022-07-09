@@ -75,12 +75,12 @@ class Cone extends Shape
 //					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 //					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-					if ($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < 0) continue;//TODO fuufufufuuu EDIT: And.. fufufu is what?
-					if ($filterblocks->empty()) yield $block;
-					else {
-						foreach ($filterblocks->palette() as $filterblock) {
+					if($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < World::Y_MIN) continue;//TODO check if this should be 255 or World::Y_MAX
+					if($filterblocks->empty()) yield $block;
+					else{
+						foreach($filterblocks->palette() as $filterblock){
 //							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-							if ($block->getFullId() === $filterblock->getFullId())
+							if($block->getFullId() === $filterblock->getFullId())
 								yield $block;
 						}
 					}

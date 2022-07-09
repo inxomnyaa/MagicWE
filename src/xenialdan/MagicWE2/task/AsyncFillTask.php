@@ -186,7 +186,7 @@ class AsyncFillTask extends MWEAsyncTask
 		foreach($resultChunks as $hash => $chunk){
 			World::getXZ($hash, $x, $z);
 			$world->setChunk($x, $z, $chunk);
-			for($y = World::Y_MIN; $y < World::Y_MAX; $y += Chunk::EDGE_LENGTH){
+			for($y = World::Y_MIN; $y < World::Y_MAX; $y += Chunk::EDGE_LENGTH){//TODO check if this should be 255 or World::Y_MAX
 				$vector3 = new Vector3($x * 16, 0, $z * 16);
 				$renderHack[] = $vector3;
 				//$pk = UpdateBlockPacket::create($blockPosition, $fullId,0b1111, UpdateBlockPacket::DATA_LAYER_NORMAL);

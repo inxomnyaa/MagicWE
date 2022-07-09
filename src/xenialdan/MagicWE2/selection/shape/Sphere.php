@@ -56,16 +56,16 @@ class Sphere extends Shape
 					$vec3 = new Vector3($x, $y, $z);
 //					if ($vec3->distanceSquared($this->pasteVector) > (($this->diameter / 2) ** 2) || (API::hasFlag(API::FLAG_BASE, API::FLAG_HOLLOW) && $vec3->distanceSquared($this->pasteVector) <= ((($this->diameter / 2) - 1) ** 2)))
 //						continue;
-					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int)$vec3->x, (int)$vec3->y, (int)$vec3->z);
+					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int) $vec3->x, (int) $vec3->y, (int) $vec3->z);
 //					if (API::hasFlag(API::FLAG_BASE, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 //					if (API::hasFlag(API::FLAG_BASE, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-					if ($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < 0) continue;//TODO fufufufuuu
-					if ($filterblocks->empty()) yield $block;
-					else {
-						foreach ($filterblocks->palette() as $filterblock) {
+					if($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < World::Y_MIN) continue;//TODO check if this should be 255 or World::Y_MAX
+					if($filterblocks->empty()) yield $block;
+					else{
+						foreach($filterblocks->palette() as $filterblock){
 //							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-							if ($block->getFullId() === $filterblock->getFullId())
+							if($block->getFullId() === $filterblock->getFullId())
 								yield $block;
 						}
 					}
