@@ -183,17 +183,13 @@ class EventListener implements Listener
 					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 					break;
 				}
-				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 				if(($selection = $session->getLatestSelection()) === null){
-					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
 				}
 				if(is_null($selection)){
 					throw new Error("No selection created - Check the console for errors");
 				}
-				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 				$selection->setPos1($event->getBlock()->getPosition());
-				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 				break;
 			}
 			case ItemIds::STICK:
@@ -231,17 +227,13 @@ class EventListener implements Listener
 						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 						break;
 					}
-					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					if(($selection = $session->getLatestSelection()) === null){
-						var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 						$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
 					}
 					if(is_null($selection)){
 						throw new Error("No selection created - Check the console for errors");
 					}
-					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					$selection->setPos2($event->getBlock()->getPosition());
-					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					break;
 				}
 				case ItemIds::STICK:
@@ -307,17 +299,13 @@ class EventListener implements Listener
 						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 						break;
 					}
-					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					if(($selection = $session->getLatestSelection()) === null){
-						var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 						$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
 					}
 					if(is_null($selection)){
 						throw new Error("No selection created - Check the console for errors");
 					}
-					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					$selection->setPos1($event->getBlock()->getPosition());
-					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					break;
 				}
 				case ItemIds::STICK:

@@ -30,7 +30,6 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 use function array_filter;
 use function array_values;
 use function count;
-use function var_dump;
 
 class SessionHelper{
 	/** @var array<string,UserSession> */
@@ -233,11 +232,8 @@ class SessionHelper{
 							isset($latestSelection["pos2"]) ? new Vector3($latestSelection["pos2"]["x"], $latestSelection["pos2"]["y"], $latestSelection["pos2"]["z"]) : null,
 							$shape ?? null
 						);
-						var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 						if($selection->isValid()){
-							var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 							$session->addSelection($selection);
-							var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 						}
 					}
 				}catch(RuntimeException $e){

@@ -17,7 +17,6 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 use function is_null;
-use function var_dump;
 
 class Pos1Command extends BaseCommand{
 
@@ -51,17 +50,13 @@ class Pos1Command extends BaseCommand{
 			if(!$session instanceof UserSession){
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 			if(($selection = $session->getLatestSelection()) === null){
-				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 				$session->addSelection(($selection = new Selection($session->getUUID(), $sender->getWorld()))); // TODO check if the selection inside of the session updates
 			}
 			if(is_null($selection)){
 				throw new Error("No selection created - Check the console for errors");
 			}
-			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 			$selection->setPos1($sender->getPosition());
-			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 		} catch (Exception $error) {
 			Loader::getInstance()->getLogger()->logException($error);
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
