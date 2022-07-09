@@ -552,9 +552,9 @@ class API
 
 			$blocks[] = match ($rotation) {
 				//TODO check if the new positions are calculated correctly
-				RotateAction::ROTATE_90 => self::setComponents($block, $block->getPosition()->getFloorZ(), $block->getPosition()->getFloorY(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1),
+				RotateAction::ROTATE_90 => self::setComponents($block, $structure->getLength() - $block->getPosition()->getFloorZ() - 1, $block->getPosition()->getFloorY(), $block->getPosition()->getFloorX()),
 				RotateAction::ROTATE_180 => self::setComponents($block, $structure->getWidth() - $block->getPosition()->getFloorX() - 1, $block->getPosition()->getFloorY(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1),
-				RotateAction::ROTATE_270 => self::setComponents($block, $structure->getLength() - $block->getPosition()->getFloorZ() - 1, $block->getPosition()->getFloorY(), $block->getPosition()->getFloorX()),
+				RotateAction::ROTATE_270 => self::setComponents($block, $block->getPosition()->getFloorZ(), $block->getPosition()->getFloorY(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1),
 				default => $block
 			};
 			//TODO move origin of structure
