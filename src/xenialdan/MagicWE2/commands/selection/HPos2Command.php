@@ -16,16 +16,16 @@ use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
+use function is_null;
+use function var_dump;
 
-class HPos2Command extends BaseCommand
-{
+class HPos2Command extends BaseCommand{
 
 	/**
 	 * This is where all the arguments, permissions, sub-commands, etc would be registered
 	 * @throws InvalidArgumentException
 	 */
-	protected function prepare(): void
-	{
+	protected function prepare() : void{
 		$this->setPermission("we.command.selection.hpos");
 	}
 
@@ -46,21 +46,27 @@ class HPos2Command extends BaseCommand
 			return;
 		}
 		/** @var Player $sender */
-		try {
+		try{
 			$session = SessionHelper::getUserSession($sender);
-			if (!$session instanceof UserSession) {
+			if(!$session instanceof UserSession){
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getWorld())); // TODO check if the selection inside of the session updates
-			if (is_null($selection)) {
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+			if(($selection = $session->getLatestSelection()) === null){
+				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+				$session->addSelection(($selection = new Selection($session->getUUID(), $sender->getWorld()))); // TODO check if the selection inside of the session updates
+			}
+			if(is_null($selection)){
 				throw new Error("No selection created - Check the console for errors");
 			}
 			$target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
-			if ($target === null) {
+			if($target === null){
 				$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.notarget'));
 				return;
 			}
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 			$selection->setPos2($target->getPosition());
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

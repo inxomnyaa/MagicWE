@@ -24,7 +24,6 @@ use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\libstructure\tile\StructureBlockTile;
 use xenialdan\MagicWE2\event\MWESelectionChangeEvent;
@@ -34,6 +33,7 @@ use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
+use function is_null;
 use function var_dump;
 
 class EventListener implements Listener
@@ -170,7 +170,6 @@ class EventListener implements Listener
 	 * @param BlockBreakEvent $event
 	 * @throws AssumptionFailedError
 	 * @throws Error
-	 * @throws InvalidArgumentException
 	 * @throws SessionException
 	 */
 	private function onBreakBlock(BlockBreakEvent $event): void
@@ -180,15 +179,21 @@ class EventListener implements Listener
 		switch ($event->getItem()->getId()) {
 			case ItemIds::WOODEN_AXE:
 			{
-				if (!$session->isWandEnabled()) {
+				if(!$session->isWandEnabled()){
 					$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 					break;
 				}
-				$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld())); // TODO check if the selection inside of the session updates
-				if (is_null($selection)) {
+				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+				if(($selection = $session->getLatestSelection()) === null){
+					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+					$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
+				}
+				if(is_null($selection)){
 					throw new Error("No selection created - Check the console for errors");
 				}
-				$selection->setPos1(new Position($event->getBlock()->getPosition()->x, $event->getBlock()->getPosition()->y, $event->getBlock()->getPosition()->z, $event->getBlock()->getPosition()->getWorld()));
+				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+				$selection->setPos1($event->getBlock()->getPosition());
+				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 				break;
 			}
 			case ItemIds::STICK:
@@ -222,15 +227,21 @@ class EventListener implements Listener
 			switch ($event->getItem()->getId()) {
 				case ItemIds::WOODEN_AXE:
 				{
-					if (!$session->isWandEnabled()) {
+					if(!$session->isWandEnabled()){
 						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 						break;
 					}
-					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld())); // TODO check if the selection inside of the session updates
-					if (is_null($selection)) {
+					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+					if(($selection = $session->getLatestSelection()) === null){
+						var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+						$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
+					}
+					if(is_null($selection)){
 						throw new Error("No selection created - Check the console for errors");
 					}
-					$selection->setPos2(new Position($event->getBlock()->getPosition()->x, $event->getBlock()->getPosition()->y, $event->getBlock()->getPosition()->z, $event->getBlock()->getPosition()->getWorld()));
+					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+					$selection->setPos2($event->getBlock()->getPosition());
+					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					break;
 				}
 				case ItemIds::STICK:
@@ -292,15 +303,21 @@ class EventListener implements Listener
 			switch ($event->getItem()->getId()) {
 				case ItemIds::WOODEN_AXE:
 				{
-					if (!$session->isWandEnabled()) {
+					if(!$session->isWandEnabled()){
 						$session->sendMessage(TF::RED . $session->getLanguage()->translateString("tool.wand.disabled"));
 						break;
 					}
-					$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld())); // TODO check if the selection inside of the session updates
-					if (is_null($selection)) {
+					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+					if(($selection = $session->getLatestSelection()) === null){
+						var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+						$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
+					}
+					if(is_null($selection)){
 						throw new Error("No selection created - Check the console for errors");
 					}
-					$selection->setPos1(new Position($event->getBlock()->getPosition()->x, $event->getBlock()->getPosition()->y, $event->getBlock()->getPosition()->z, $event->getBlock()->getPosition()->getWorld()));
+					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+					$selection->setPos1($event->getBlock()->getPosition());
+					var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 					break;
 				}
 				case ItemIds::STICK:
@@ -382,9 +399,10 @@ class EventListener implements Listener
 	{
 		#Loader::getInstance()->getLogger()->debug("Called " . $event->getEventName());
 		$session = $event->getSession();
-		if ($session instanceof UserSession && $event->getPlayer() !== null) {
+		if ($session instanceof UserSession && $event->getPlayer() !== null){
 			/** @var UserSession $session */
-			if ($session->isOutlineEnabled()) $session->createOrUpdateOutline($event->getSelection());
+			$session->setOutlineEnabled($session->isOutlineEnabled());
+			//if ($session->isOutlineEnabled()) $session->createOrUpdateOutline($event->getSelection());
 			$session->sidebar->handleScoreboard($session);
 		}
 	}

@@ -3,6 +3,7 @@
 namespace xenialdan\MagicWE2\selection\shape;
 
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -36,25 +37,35 @@ class Ellipsoid extends Shape
 		$this->depth = $depth;
 	}
 
-	public function offset(Vector3 $offset): Shape
-	{
+	public function offset(Vector3 $offset) : Shape{
 		$shape = clone $this;
-		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		$shape->setPasteVector($this->pasteVector->addVector($offset));
 		return $shape;
+	}
+
+	public function rotate(int $rotation) : self{
+		if($rotation % 90 !== 0){
+			throw new InvalidArgumentException("Rotation must be divisible by 90");
+		}
+		return match ($rotation % 180 === 0) {
+			true => clone $this,
+			false => new self($this->pasteVector, $this->depth, $this->height, $this->width)
+		};
 	}
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 *
+	 * @param AsyncWorld   $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
+	 *
 	 * @return Block[]|Generator
 	 * @phpstan-return Generator<int, Block, void, void>
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks): Generator
-	{
-		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
-		$this->pasteVector = $this->getPasteVector()->add(0, -0.5, 0);
+	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks) : Generator{
+		$centerVec2 = new Vector2($this->pasteVector->getX(), $this->pasteVector->getZ());
+		$this->pasteVector = $this->pasteVector->add(0, -0.5, 0);
 
 		$xrad = $this->width / 2;
 		$yrad = $this->height / 2;
@@ -68,15 +79,15 @@ class Ellipsoid extends Shape
 
 		for ($x = (int)floor($centerVec2->x - $this->width / 2 /*- 1*/); $x <= floor($centerVec2->x + $this->width / 2 /*+ 1*/); $x++) {
 			$xSquared = ($targetX - $x) ** 2;
-			for ($y = (int)floor($this->getPasteVector()->y) + 1, $ry = 0; $y <= floor($this->getPasteVector()->y + $this->height); $y++, $ry++) {
+			for($y = (int) floor($this->pasteVector->y) + 1, $ry = 0; $y <= floor($this->pasteVector->y + $this->height); $y++, $ry++){
 				$ySquared = ($targetY - $y + $yrad) ** 2;
-				for ($z = (int)floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++) {
+				for($z = (int) floor($centerVec2->y - $this->depth / 2 /*- 1*/); $z <= floor($centerVec2->y + $this->depth / 2 /*+ 1*/); $z++){
 					$zSquared = ($targetZ - $z) ** 2;
 
 					$vec3 = new Vector3($x, $y, $z);
 					//TODO hollow
-					if ($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) continue;
-					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int)$vec3->x, (int)$vec3->y, (int)$vec3->z);
+					if($xSquared / $xradSquared + $ySquared / $yradSquared + $zSquared / $zradSquared >= 1) continue;
+					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int) $vec3->x, (int) $vec3->y, (int) $vec3->z);
 //					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 //					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
@@ -100,9 +111,8 @@ class Ellipsoid extends Shape
 	 * @param int $flags
 	 * @return Generator
 	 */
-	public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator
-	{
-		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+	public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator{
+		$centerVec2 = new Vector2($this->pasteVector->getX(), $this->pasteVector->getZ());
 
 		$xrad = $this->width / 2;
 		$zrad = $this->depth / 2;

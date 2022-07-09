@@ -19,16 +19,16 @@ use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
+use function is_null;
+use function var_dump;
 
-class ChunkCommand extends BaseCommand
-{
+class ChunkCommand extends BaseCommand{
 
 	/**
 	 * This is where all the arguments, permissions, sub-commands, etc would be registered
 	 * @throws InvalidArgumentException
 	 */
-	protected function prepare(): void
-	{
+	protected function prepare() : void{
 		$this->setPermission("we.command.selection.chunk");
 	}
 
@@ -49,23 +49,31 @@ class ChunkCommand extends BaseCommand
 			return;
 		}
 		/** @var Player $sender */
-		try {
+		try{
 			$session = SessionHelper::getUserSession($sender);
-			if (!$session instanceof UserSession) {
+			if(!$session instanceof UserSession){
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getWorld())); // TODO check if the selection inside of the session updates
-			if (is_null($selection)) {
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+			if(($selection = $session->getLatestSelection()) === null){
+				var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+				$session->addSelection(($selection = new Selection($session->getUUID(), $sender->getWorld()))); // TODO check if the selection inside of the session updates
+			}
+			if(is_null($selection)){
 				throw new Error("No selection created - Check the console for errors");
 			}
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 			$chunk = $sender->getWorld()->getOrLoadChunkAtPosition($sender->getPosition());
-			if (is_null($chunk)) {
+			if(is_null($chunk)){
 				throw new Error("Could not find a chunk at your position");
 			}
 			$x = $sender->getPosition()->x >> 4;
 			$z = $sender->getPosition()->x >> 4;
-			$selection->setPos1(Position::fromObject(new Vector3($x * 16, 0, $z * 16), $sender->getWorld()));
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+			$selection->setPos1(Position::fromObject(new Vector3($x * 16, World::Y_MIN, $z * 16), $sender->getWorld()));
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 			$selection->setPos2(Position::fromObject(new Vector3($x * 16 + 15, World::Y_MAX, $z * 16 + 15), $sender->getWorld()));
+			var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());

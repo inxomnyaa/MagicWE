@@ -28,28 +28,33 @@ class Sphere extends Shape
 		$this->diameter = $diameter;
 	}
 
-	public function offset(Vector3 $offset): Shape
-	{
+	public function offset(Vector3 $offset) : Shape{
 		$shape = clone $this;
-		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		$shape->setPasteVector($this->pasteVector->addVector($offset));
 		return $shape;
+	}
+
+	public function rotate(int $rotation) : self{
+		return clone $this;
 	}
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 *
+	 * @param AsyncWorld   $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
+	 *
 	 * @return Block[]|Generator
 	 * @phpstan-return Generator<int, Block, void, void>
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks): Generator
+	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks) : Generator
 	{
 		for ($x = (int)floor($this->pasteVector->x - $this->diameter / 2 - 1); $x <= floor($this->pasteVector->x + $this->diameter / 2 + 1); $x++) {
 			for ($y = (int)floor($this->pasteVector->y - $this->diameter / 2 - 1); $y <= floor($this->pasteVector->y + $this->diameter / 2 + 1); $y++) {
 				for ($z = (int)floor($this->pasteVector->z - $this->diameter / 2 - 1); $z <= floor($this->pasteVector->z + $this->diameter / 2 + 1); $z++) {
 					$vec3 = new Vector3($x, $y, $z);
-//					if ($vec3->distanceSquared($this->getPasteVector()) > (($this->diameter / 2) ** 2) || (API::hasFlag(API::FLAG_BASE, API::FLAG_HOLLOW) && $vec3->distanceSquared($this->getPasteVector()) <= ((($this->diameter / 2) - 1) ** 2)))
+//					if ($vec3->distanceSquared($this->pasteVector) > (($this->diameter / 2) ** 2) || (API::hasFlag(API::FLAG_BASE, API::FLAG_HOLLOW) && $vec3->distanceSquared($this->pasteVector) <= ((($this->diameter / 2) - 1) ** 2)))
 //						continue;
 					$block = API::setComponents($manager->getBlockAt($vec3->getFloorX(), $vec3->getFloorY(), $vec3->getFloorZ()), (int)$vec3->x, (int)$vec3->y, (int)$vec3->z);
 //					if (API::hasFlag(API::FLAG_BASE, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
@@ -75,9 +80,8 @@ class Sphere extends Shape
 	 * @param int $flags
 	 * @return Generator
 	 */
-	public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator
-	{
-		$centerVec2 = new Vector2($this->getPasteVector()->getX(), $this->getPasteVector()->getZ());
+	public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator{
+		$centerVec2 = new Vector2($this->pasteVector->getX(), $this->pasteVector->getZ());
 		for ($x = (int)floor($centerVec2->x - $this->diameter / 2 - 1); $x <= floor($centerVec2->x + $this->diameter / 2 + 1); $x++) {
 			for ($z = (int)floor($centerVec2->y - $this->diameter / 2 - 1); $z <= floor($centerVec2->y + $this->diameter / 2 + 1); $z++) {
 				$vec2 = new Vector2($x, $z);

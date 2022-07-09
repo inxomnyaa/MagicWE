@@ -23,22 +23,27 @@ class Cube extends Shape
 		$this->width = $width;
 	}
 
-	public function offset(Vector3 $offset): Shape
-	{
+	public function offset(Vector3 $offset) : Shape{
 		$shape = clone $this;
-		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		$shape->setPasteVector($this->pasteVector->addVector($offset));
 		return $shape;
+	}
+
+	public function rotate(int $rotation) : self{
+		return clone $this;
 	}
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 *
+	 * @param AsyncWorld   $manager The world or AsyncChunkManager
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
+	 *
 	 * @return Block[]|Generator
 	 * @phpstan-return Generator<int, Block, void, void>
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks): Generator
+	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks) : Generator
 	{
 		for ($x = (int)floor($this->getMinVec3()->x), $rx = 0; $x <= floor($this->getMaxVec3()->x); $x++, $rx++) {
 			for ($y = (int)floor($this->getMinVec3()->y), $ry = 0; $y <= floor($this->getMaxVec3()->y); $y++, $ry++) {

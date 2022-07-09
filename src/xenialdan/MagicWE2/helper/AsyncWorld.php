@@ -7,15 +7,19 @@ namespace xenialdan\MagicWE2\helper;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\SimpleChunkManager;
 use pocketmine\world\World;
+use RuntimeException;
+use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\selection\Selection;
 
-class AsyncWorld extends SimpleChunkManager
-{
+class AsyncWorld extends SimpleChunkManager{
 //	/** @var CompoundTag[] *///TODO maybe CacheableNbt
 //	protected array $tiles = [];
 
-	public function __construct(Selection $selection)
-	{
+	/**
+	 * @throws SelectionException
+	 * @throws RuntimeException
+	 */
+	public function __construct(Selection $selection){
 		parent::__construct(World::Y_MIN, World::Y_MAX);
 		$this->copyChunks($selection);
 	}
@@ -23,14 +27,15 @@ class AsyncWorld extends SimpleChunkManager
 	/**
 	 * @return Chunk[]
 	 */
-	public function getChunks(): array
-	{
+	public function getChunks() : array{
 		return $this->chunks;
 	}
 
-	public function copyChunks(Selection $selection): void
-	{
-		if (!$selection->isValid()) return;
+	/**
+	 * @throws SelectionException|RuntimeException
+	 */
+	public function copyChunks(Selection $selection) : void{
+		if(!$selection->isValid()) return;
 		$this->cleanChunks();
 
 		$shape = $selection->getShape();

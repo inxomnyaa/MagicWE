@@ -30,17 +30,16 @@ use xenialdan\MagicWE2\tool\BrushProperties;
 use function array_filter;
 use function array_values;
 use function count;
+use function var_dump;
 
-class SessionHelper
-{
+class SessionHelper{
 	/** @var array<string,UserSession> */
 	private static array $userSessions = [];
 	/** @var array<string,PluginSession> */
 	private static array $pluginSessions = [];
 
-	public static function init(): void
-	{
-		if (!@mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "sessions") && !is_dir($concurrentDirectory)) {
+	public static function init() : void{
+		if(!@mkdir($concurrentDirectory = Loader::getInstance()->getDataFolder() . "sessions") && !is_dir($concurrentDirectory)){
 			throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
 		}
 	}
@@ -51,32 +50,32 @@ class SessionHelper
 	 * @throws InvalidSkinException
 	 * @throws JsonException
 	 */
-	public static function addSession(Session $session): void
-	{
-		if ($session instanceof UserSession) {
+	public static function addSession(Session $session) : void{
+		if($session instanceof UserSession){
 			self::$userSessions[$session->getUUID()->toString()] = $session;
-			if (!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))) {
+			if(!empty(Loader::getInstance()->donatorData) && (($player = $session->getPlayer())->hasPermission("we.donator") || in_array($player->getName(), Loader::getInstance()->donators))){
 				$oldSkin = $player->getSkin();
 				$newSkin = new Skin($oldSkin->getSkinId(), $oldSkin->getSkinData(), Loader::getInstance()->donatorData, $oldSkin->getGeometryName(), $oldSkin->getGeometryData());
 				$player->setSkin($newSkin);
 				$player->sendSkin();
 			}
-		} else if ($session instanceof PluginSession) self::$pluginSessions[$session->getUUID()->toString()] = $session;
+		}else if($session instanceof PluginSession) self::$pluginSessions[$session->getUUID()->toString()] = $session;
 	}
 
 	/**
 	 * Destroys a session and removes it from cache. Saves to file if $save is true
+	 *
 	 * @param Session $session
-	 * @param bool $save
+	 * @param bool    $save
+	 *
 	 * @throws JsonException
 	 */
-	public static function destroySession(Session $session, bool $save = true): void
-	{
-		if ($session instanceof UserSession) {
+	public static function destroySession(Session $session, bool $save = true) : void{
+		if($session instanceof UserSession){
 			$session->cleanupInventory();
 			unset(self::$userSessions[$session->getUUID()->toString()]);
-		} else if ($session instanceof PluginSession) unset(self::$pluginSessions[($session->getUUID()->toString())]);
-		if ($save && $session instanceof UserSession) {
+		}else if($session instanceof PluginSession) unset(self::$pluginSessions[($session->getUUID()->toString())]);
+		if($save && $session instanceof UserSession){
 			$session->save();
 		}
 	}
@@ -93,11 +92,10 @@ class SessionHelper
 	 * @throws SessionException*@throws JsonException
 	 * @throws JsonException
 	 */
-	public static function createUserSession(Player $player, bool $add = true): UserSession
-	{
-		if (!$player->hasPermission("we.session")) throw new SessionException(TF::RED . "You do not have the permission \"magicwe.session\"");
+	public static function createUserSession(Player $player, bool $add = true) : UserSession{
+		if(!$player->hasPermission("we.session")) throw new SessionException(TF::RED . "You do not have the permission \"magicwe.session\"");
 		$session = new UserSession($player);
-		if ($add) {
+		if($add){
 			self::addSession($session);
 			(new MWESessionLoadEvent(Loader::getInstance(), $session))->call();
 		}
@@ -114,142 +112,142 @@ class SessionHelper
 	 * @throws InvalidSkinException*@throws JsonException
 	 * @throws JsonException
 	 */
-	public static function createPluginSession(Plugin $plugin, bool $add = true): PluginSession
-	{
+	public static function createPluginSession(Plugin $plugin, bool $add = true) : PluginSession{
 		$session = new PluginSession($plugin);
-		if ($add) self::addSession($session);
+		if($add) self::addSession($session);
 		return $session;
 	}
 
 	/**
 	 * @param Player $player
+	 *
 	 * @return bool
 	 */
-	public static function hasSession(Player $player): bool
-	{
-		try {
+	public static function hasSession(Player $player) : bool{
+		try{
 			return self::getUserSession($player) instanceof UserSession;
-		} catch (SessionException) {
+		}catch(SessionException){
 			return false;
 		}
 	}
 
 	/**
 	 * @param Player $player
+	 *
 	 * @return null|UserSession
 	 * @throws SessionException
 	 */
-	public static function getUserSession(Player $player): ?UserSession
-	{
-		if (count(self::$userSessions) === 0) return null;
-		$filtered = array_filter(self::$userSessions, function (Session $session) use ($player) {
+	public static function getUserSession(Player $player) : ?UserSession{
+		if(count(self::$userSessions) === 0) return null;
+		$filtered = array_filter(self::$userSessions, function(Session $session) use ($player){
 			return $session instanceof UserSession && $session->getPlayer() === $player;
 		});
-		if (count($filtered) === 0) return null;
-		if (count($filtered) > 1) throw new SessionException("Multiple sessions found for player {$player->getName()}. This should never happen!");
+		if(count($filtered) === 0) return null;
+		if(count($filtered) > 1) throw new SessionException("Multiple sessions found for player {$player->getName()}. This should never happen!");
 		return array_values($filtered)[0];
 	}
 
 	/**
 	 * TODO cleanup or optimize
+	 *
 	 * @param UuidInterface $uuid
+	 *
 	 * @return null|Session
 	 * @throws SessionException
 	 */
-	public static function getSessionByUUID(UuidInterface $uuid): ?Session
-	{
+	public static function getSessionByUUID(UuidInterface $uuid) : ?Session{
 		$v = self::$userSessions[$uuid->toString()] ?? self::$pluginSessions[$uuid->toString()] ?? null;
-		if (!$v instanceof Session) throw new SessionException("Session with uuid {$uuid->toString()} not found");
+		if(!$v instanceof Session) throw new SessionException("Session with uuid {$uuid->toString()} not found");
 		return $v;
 	}
 
 	/**
 	 * @return array
 	 */
-	public static function getUserSessions(): array
-	{
+	public static function getUserSessions() : array{
 		return self::$userSessions;
 	}
 
 	/**
 	 * @return array
 	 */
-	public static function getPluginSessions(): array
-	{
+	public static function getPluginSessions() : array{
 		return self::$pluginSessions;
 	}
 
 	/**
 	 * @param Player $player
+	 *
 	 * @return UserSession|null
 	 * @throws InvalidSkinException
 	 * @throws JsonException
 	 * @throws RuntimeException
+	 *
+	 * TODO use libmarshal
 	 */
-	public static function loadUserSession(Player $player): ?UserSession
-	{
-		$path = Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR .
-			$player->getName() . ".json";
-		if (!file_exists($path)) return null;
+	public static function loadUserSession(Player $player) : ?UserSession{
+		$path = Loader::getInstance()->getDataFolder() . "sessions" . DIRECTORY_SEPARATOR . $player->getName() . ".json";
+		if(!file_exists($path)) return null;
 		$contents = file_get_contents($path);
-		if ($contents === false) return null;
+		if($contents === false) return null;
 		$data = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
-		if (is_null($data) || json_last_error() !== JSON_ERROR_NONE) {
+		if(is_null($data) || json_last_error() !== JSON_ERROR_NONE){
 			Loader::getInstance()->getLogger()->error("Could not load user session from json file $path: " . json_last_error_msg());
 			#unlink($path);//TODO make safe
 			return null;
 		}
 		$session = new UserSession($player);
-		try {
+		try{
 			$session->setUUID(UuidV4::fromString($data["uuid"]));
 			$session->setWandEnabled($data["wandEnabled"]);
 			$session->setDebugToolEnabled($data["debugToolEnabled"]);
 			$session->setWailaEnabled($data["wailaEnabled"]);
 			$session->setSidebarEnabled($data["sidebarEnabled"]);
 			$session->setLanguage($data["language"]);
-			foreach ($data["brushes"] as $brushJson) {
-				try {
+			foreach($data["brushes"] as $brushJson){
+				try{
 					$properties = BrushProperties::fromJson($brushJson["properties"]);
 					$brush = new Brush($properties);
 					$session->getBrushes()->addBrush($brush);
-				} catch (InvalidArgumentException) {
+				}catch(InvalidArgumentException){
 					continue;
 				}
 			}
-			if (!is_null(($latestSelection = $data["latestSelection"] ?? null))) {
-				try {
+			if(!is_null(($latestSelection = $data["latestSelection"] ?? null))){
+				try{
 					$world = Server::getInstance()->getWorldManager()->getWorld($latestSelection["worldId"]);
-					if (is_null($world)) {
+					if(is_null($world)){
 						$session->sendMessage(TF::RED . "The world of the saved sessions selection is not loaded, the last selection was not restored.");//TODO translate better
-					} else {
+					}else{
 						$shapeClass = $latestSelection["shapeClass"] ?? Cuboid::class;
-						$pasteVector = $latestSelection["shape"]["pasteVector"];
+						$pasteVector = $latestSelection["shape"]["pasteVector"] ?? null;
 						unset($latestSelection["shape"]["pasteVector"]);
-						if (!is_null($pasteVector)) {
+						if(!is_null($pasteVector)){
 							$pasteV = new Vector3(...array_values($pasteVector));
-							$shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));
+							$shape = new $shapeClass($pasteV, ...array_values($latestSelection["shape"]));//TODO why is this done this way
 						}
 						$selection = new Selection(
 							$session->getUUID(),
-							Server::getInstance()->getWorldManager()->getWorld($latestSelection["worldId"]),
-							$latestSelection["pos1"]["x"],
-							$latestSelection["pos1"]["y"],
-							$latestSelection["pos1"]["z"],
-							$latestSelection["pos2"]["x"],
-							$latestSelection["pos2"]["y"],
-							$latestSelection["pos2"]["z"],
+							$world,
+							isset($latestSelection["pos1"]) ? new Vector3($latestSelection["pos1"]["x"], $latestSelection["pos1"]["y"], $latestSelection["pos1"]["z"]) : null,
+							isset($latestSelection["pos2"]) ? new Vector3($latestSelection["pos2"]["x"], $latestSelection["pos2"]["y"], $latestSelection["pos2"]["z"]) : null,
 							$shape ?? null
 						);
-						if ($selection->isValid()) {
+						var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
+						if($selection->isValid()){
+							var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 							$session->addSelection($selection);
+							var_dump(__CLASS__ . "::" . __FUNCTION__ . " (line " . __LINE__ . ")");
 						}
 					}
-				} catch (RuntimeException) {
+				}catch(RuntimeException $e){
+					Loader::getInstance()->getLogger()->logException($e);
 				}
 			}
 			$session->setOutlineEnabled($data["outlineEnabled"]);
 			//TODO clipboard
-		} catch (Exception) {
+		}catch(Exception $e){
+			Loader::getInstance()->getLogger()->logException($e);
 			return null;
 		}
 		self::addSession($session);

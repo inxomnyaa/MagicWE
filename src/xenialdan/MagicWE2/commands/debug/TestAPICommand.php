@@ -8,6 +8,7 @@ use CortexPE\Commando\BaseCommand;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
+use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
@@ -46,7 +47,7 @@ class TestAPICommand extends BaseCommand
 		try {
 			//TODO REMOVE DEBUG
 			$pluginSession = SessionHelper::createPluginSession(Loader::getInstance());
-			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 0, 0, 0);
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), new Vector3(0, 0, 0), new Vector3(0, 0, 0));
 			$pluginSession->addSelection($selection);
 			Server::getInstance()->getAsyncPool()->submitTask(
 				new AsyncActionTask(
@@ -57,7 +58,7 @@ class TestAPICommand extends BaseCommand
 					BlockPalette::fromString("minecraft:tnt")
 				)
 			);
-			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 1, 1, 1);
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), new Vector3(0, 0, 0), new Vector3(1, 1, 1));
 			Server::getInstance()->getAsyncPool()->submitTask(
 				new AsyncActionTask(
 					$pluginSession->getUUID(),
@@ -67,7 +68,7 @@ class TestAPICommand extends BaseCommand
 					BlockPalette::fromString("minecraft:tnt")
 				)
 			);
-			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 2, 2, 2);
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), new Vector3(0, 0, 0), new Vector3(2, 2, 2));
 			Server::getInstance()->getAsyncPool()->submitTask(
 				new AsyncActionTask(
 					$pluginSession->getUUID(),
@@ -77,7 +78,7 @@ class TestAPICommand extends BaseCommand
 					BlockPalette::fromString("minecraft:tnt")
 				)
 			);
-			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), 0, 0, 0, 1, 2, 3);
+			$selection = new Selection($pluginSession->getUUID(), Server::getInstance()->getWorldManager()->getDefaultWorld(), new Vector3(0, 0, 0), new Vector3(1, 2, 3));
 			Server::getInstance()->getAsyncPool()->submitTask(
 				new AsyncActionTask(
 					$pluginSession->getUUID(),

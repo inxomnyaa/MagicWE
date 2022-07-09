@@ -580,7 +580,11 @@ class API
 		if($rotation === 0) return $structure;
 
 		//width is x axis, length is z axis
-		$newClipboard = new SingleClipboard(Vector3::zero());
+		$newClipboard = new SingleClipboard($structure->position);
+		$newClipboard->selection = $structure->selection;
+		$newClipboard->selection->free();//TODO check if this is necessary
+		$newClipboard->selection->shape = $structure->selection->getShape()->rotate($rotation);
+
 		//$x = $y = $z = null;
 		/** @var BlockEntry $entry */
 		foreach($structure->iterateEntries($x, $y, $z) as $entry){

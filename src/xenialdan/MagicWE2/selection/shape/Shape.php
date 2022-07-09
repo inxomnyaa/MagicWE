@@ -69,12 +69,14 @@ abstract class Shape implements Serializable
 		return new Vector3($this->getAABB()->maxX, $this->getAABB()->maxY, $this->getAABB()->maxZ);
 	}
 
-	abstract public static function getName(): string;
+	abstract public static function getName() : string;
 
-	public function getShapeProperties(): array
-	{
+	public function getShapeProperties() : array{
 		return array_diff(get_object_vars($this), get_class_vars(__CLASS__));
 	}
+
+	//TODO add Shape::flip() and Shape::rotate()
+	abstract public function rotate(int $rotation) : self;
 
 	/**
 	 * String representation of object
@@ -82,9 +84,8 @@ abstract class Shape implements Serializable
 	 * @return string the string representation of the object or null
 	 * @since 5.1.0
 	 */
-	public function serialize(): string
-	{
-		return serialize((array)$this);
+	public function serialize() : string{
+		return serialize((array) $this);
 	}
 
 	/**

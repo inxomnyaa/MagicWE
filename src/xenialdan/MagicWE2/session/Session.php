@@ -56,15 +56,10 @@ abstract class Session
 		$this->uuid = $uuid;
 	}
 
-	/**
-	 * @param Selection $selection
-	 * @return null|Selection
-	 */
-	public function &addSelection(Selection $selection): ?Selection
+	public function addSelection(Selection $selection) : void//TODO why do i return the same thing?
 	{
 		$this->selections[$selection->getUUID()->toString()] = $selection;
 		$this->setLatestSelectionUUID($selection->getUUID());
-		return $this->getLatestSelection();
 	}
 
 	/**

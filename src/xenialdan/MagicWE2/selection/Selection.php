@@ -22,82 +22,63 @@ use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\helper\SubChunkIterator;
+use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
+use function var_dump;
 
 /**
  * Class Selection
  * @package xenialdan\MagicWE2
  */
-class Selection implements Serializable, JsonSerializable
-{
-	/** @var int|null */
+class Selection implements Serializable, JsonSerializable{
 	public ?int $worldId = null;
-	/** @var Vector3|null */
 	public ?Vector3 $pos1 = null;
-	/** @var Vector3|null */
 	public ?Vector3 $pos2 = null;
-	/** @var UuidInterface */
 	public UuidInterface $uuid;
-	/** @var UuidInterface */
 	public UuidInterface $sessionUUID;
-	/** @var Shape|null */
 	public ?Shape $shape = null;
 
 	private SubChunkIterator $iterator;
 
-	/**
-	 * Selection constructor.
-	 * @param UuidInterface $sessionUUID
-	 * @param World $world
-	 * @param ?int $minX
-	 * @param ?int $minY
-	 * @param ?int $minZ
-	 * @param ?int $maxX
-	 * @param ?int $maxY
-	 * @param ?int $maxZ
-	 * @param ?Shape $shape
-	 */
-	public function __construct(UuidInterface $sessionUUID, World $world, ?int $minX = null, ?int $minY = null, ?int $minZ = null, ?int $maxX = null, ?int $maxY = null, ?int $maxZ = null, ?Shape $shape = null)
-	{
+	public function __construct(UuidInterface $sessionUUID, World $world, ?Vector3 $minPos = null, ?Vector3 $maxPos = null, ?Shape $shape = null){
 		$this->sessionUUID = $sessionUUID;
 		$this->worldId = $world->getId();
-		if (isset($minX, $minY, $minZ)) {
-			$this->pos1 = (new Vector3($minX, $minY, $minZ))->floor();
-		}
-		if (isset($maxX, $maxY, $maxZ)) {
-			$this->pos2 = (new Vector3($maxX, $maxY, $maxZ))->floor();
-		}
-		if ($shape !== null) $this->shape = $shape;
+		if($minPos !== null) $minPos = $minPos->floor();
+		if($maxPos !== null) $maxPos = $maxPos->floor();
+		$this->pos1 = $minPos;
+		$this->pos2 = $maxPos;
+		$this->shape = $shape;
 		$this->setUUID(Uuid::uuid4());
 
-		try {
+		try{
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_CREATE))->call();
-		} catch (RuntimeException) {
+		}catch(RuntimeException $e){
+			Loader::getInstance()->getLogger()->logException($e);
 		}
+
+		var_dump($this);
 
 		$this->iterator = new SubChunkIterator(new AsyncWorld($this));
 	}
 
-	public function free(): void
-	{
+	public function free() : void{
 		$this->iterator->invalidate();
 		$manager = $this->iterator->getManager();
-		if ($manager instanceof AsyncWorld) $manager->cleanChunks();
+		if($manager instanceof AsyncWorld) $manager->cleanChunks();
 	}
 
 	/**
 	 * @return World
-	 * @throws Exception
+	 * @throws SelectionException|RuntimeException
 	 */
-	public function getWorld(): World
-	{
-		if (is_null($this->worldId)) {
+	public function getWorld() : World{
+		if(is_null($this->worldId)){
 			throw new SelectionException("World is not set!");
 		}
 		$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
-		if (is_null($world)) {
+		if(is_null($world)){
 			throw new SelectionException("World is not found!");
 		}
 		return $world;
@@ -108,22 +89,22 @@ class Selection implements Serializable, JsonSerializable
 			return;
 		}
 		$this->worldId = $world->getId();
-		try {
+		try{
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_WORLD))->call();
-		} catch (RuntimeException) {
+		}catch(RuntimeException $e){
+			Loader::getInstance()->getLogger()->logException($e);
 		}
 		$this->free();
 		$manager = $this->getIterator()->getManager();
-		if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
+		if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 	}
 
 	/**
 	 * @return Position
-	 * @throws Exception
+	 * @throws SelectionException|RuntimeException
 	 */
-	public function getPos1(): Position
-	{
-		if (is_null($this->pos1)) {
+	public function getPos1() : Position{
+		if(is_null($this->pos1)){
 			throw new SelectionException("Position 1 is not set!");
 		}
 		return Position::fromObject($this->pos1, $this->getWorld());
@@ -131,10 +112,10 @@ class Selection implements Serializable, JsonSerializable
 
 	/**
 	 * @param Position $position
+	 *
 	 * @throws AssumptionFailedError
 	 */
-	public function setPos1(Position $position): void
-	{
+	public function setPos1(Position $position) : void{
 		$this->pos1 = $position->asVector3()->floor();
 		if ($this->pos1->y >= World::Y_MAX) $this->pos1->y = World::Y_MAX;
 		if ($this->pos1->y < 0) $this->pos1->y = 0;
@@ -142,32 +123,36 @@ class Selection implements Serializable, JsonSerializable
 			$this->pos2 = null;
 		}
 		$this->setWorld($position->getWorld());
-		if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())//TODO test change
+		var_dump($this);
+		if(($this->shape === null || $this->shape instanceof Cuboid) && $this->isValid())
 			$this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-		try {
+		var_dump($this);
+		try{
 			$session = SessionHelper::getSessionByUUID($this->sessionUUID);
-			if ($session instanceof Session) {
+			if($session instanceof Session){
 				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos1.set', [$this->pos1->getX(), $this->pos1->getY(), $this->pos1->getZ()]));
-				try {
+				try{
 					(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS1))->call();
-				} catch (RuntimeException) {
+				}catch(RuntimeException $e){
+					Loader::getInstance()->getLogger()->logException($e);
 				}
 				$this->free();
 				$manager = $this->getIterator()->getManager();
-				if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
+				if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 			}
-		} catch (SessionException) {
+		}catch(SessionException){
 			//TODO log? kick?
+		}catch(SelectionException | RuntimeException $e){
+			Loader::getInstance()->getLogger()->logException($e);
 		}
 	}
 
 	/**
 	 * @return Position
-	 * @throws Exception
+	 * @throws SelectionException|RuntimeException
 	 */
-	public function getPos2(): Position
-	{
-		if (is_null($this->pos2)) {
+	public function getPos2() : Position{
+		if(is_null($this->pos2)){
 			throw new SelectionException("Position 2 is not set!");
 		}
 		return Position::fromObject($this->pos2, $this->getWorld());
@@ -175,10 +160,8 @@ class Selection implements Serializable, JsonSerializable
 
 	/**
 	 * @param Position $position
-	 * @throws AssumptionFailedError
 	 */
-	public function setPos2(Position $position): void
-	{
+	public function setPos2(Position $position) : void{
 		$this->pos2 = $position->asVector3()->floor();
 		if ($this->pos2->y >= World::Y_MAX) $this->pos2->y = World::Y_MAX;
 		if ($this->pos2->y < 0) $this->pos2->y = 0;
@@ -186,45 +169,48 @@ class Selection implements Serializable, JsonSerializable
 			$this->pos1 = null;
 		}
 		$this->setWorld($position->getWorld());
-		if (($this->shape instanceof Cuboid || $this->shape === null) && $this->isValid())
+		var_dump($this);
+		if(($this->shape === null || $this->shape instanceof Cuboid) && $this->isValid())
 			$this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-		try {
+		var_dump($this);
+		try{
 			$session = SessionHelper::getSessionByUUID($this->sessionUUID);
-			if ($session instanceof Session) {
+			if($session instanceof Session){
 				$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('selection.pos2.set', [$this->pos2->getX(), $this->pos2->getY(), $this->pos2->getZ()]));
-				try {
+				try{
 					(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_POS2))->call();
-				} catch (RuntimeException) {
+				}catch(RuntimeException $e){
+					Loader::getInstance()->getLogger()->logException($e);
 				}
 				$this->free();
 				$manager = $this->getIterator()->getManager();
-				if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
+				if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 			}
-		} catch (SessionException) {
-			//TODO log? kick?
+		}catch(SessionException | SelectionException | RuntimeException $e){//TODO log? kick?
+			Loader::getInstance()->getLogger()->logException($e);
 		}
 	}
 
 	/**
 	 * @return Shape
-	 * @throws Exception
+	 * @throws SelectionException
 	 */
-	public function getShape(): Shape
-	{
-		if (!$this->shape instanceof Shape) throw new SelectionException("Shape is not valid");
+	public function getShape() : Shape{
+		if(!$this->shape instanceof Shape) throw new SelectionException("Shape is not valid");
 		return $this->shape;
 	}
 
-	public function setShape(Shape $shape): void
-	{
+	public function setShape(Shape $shape) : void{
+		var_dump($shape);
 		$this->shape = $shape;
-		try {
-			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();
-		} catch (RuntimeException) {
-		}//might cause duplicated call
-		$this->free();
-		$manager = $this->getIterator()->getManager();
-		if ($manager instanceof AsyncWorld) $manager->copyChunks($this);
+		try{
+			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();//might cause duplicated call
+			$this->free();
+			$manager = $this->getIterator()->getManager();
+			if($manager instanceof AsyncWorld) $manager->copyChunks($this);
+		}catch(RuntimeException | SelectionException $e){
+			Loader::getInstance()->getLogger()->debug($e);
+		}
 	}
 
 	/**
@@ -235,46 +221,41 @@ class Selection implements Serializable, JsonSerializable
 	 * - The positions are not in the same world
 	 * @return bool
 	 */
-	public function isValid(): bool
-	{
-		try {
-			#$this->getShape();
+	public function isValid() : bool{
+		try{
+			var_dump("World: " . $this->getWorld()->getId() . " Pos1: " . $this->pos1 . " Pos2: " . $this->pos2 . " Shape: " . $this->shape?->serialize());
+			//$this->getShape();
 			$this->getWorld();
 			$this->getPos1();
 			$this->getPos2();
-		} catch (Exception) {
+		}catch(Exception $e){
+			Loader::getInstance()->getLogger()->debug($e);
 			return false;
 		}
 		return true;
 	}
 
-	public function getSizeX(): int
-	{
-		return (int)(abs($this->pos1->x - $this->pos2->x) + 1);
+	public function getSizeX() : int{
+		return (int) (abs($this->pos1->x - $this->pos2->x) + 1);
 	}
 
-	public function getSizeY(): int
-	{
-		return (int)(abs($this->pos1->y - $this->pos2->y) + 1);
+	public function getSizeY() : int{
+		return (int) (abs($this->pos1->y - $this->pos2->y) + 1);
 	}
 
-	public function getSizeZ(): int
-	{
-		return (int)(abs($this->pos1->z - $this->pos2->z) + 1);
+	public function getSizeZ() : int{
+		return (int) (abs($this->pos1->z - $this->pos2->z) + 1);
 	}
 
-	public function setUUID(UuidInterface $uuid): void
-	{
+	public function setUUID(UuidInterface $uuid) : void{
 		$this->uuid = $uuid;
 	}
 
-	public function getUUID(): UuidInterface
-	{
+	public function getUUID() : UuidInterface{
 		return $this->uuid;
 	}
 
-	public function getIterator(): SubChunkIterator
-	{
+	public function getIterator() : SubChunkIterator{
 		return $this->iterator;
 	}
 
@@ -284,8 +265,7 @@ class Selection implements Serializable, JsonSerializable
 	 * @return string the string representation of the object or null
 	 * @since 5.1.0
 	 */
-	public function serialize(): string
-	{
+	public function serialize() : string{
 		return serialize([
 			$this->worldId,
 			$this->pos1,
@@ -327,10 +307,9 @@ class Selection implements Serializable, JsonSerializable
 	 * which is a value of any type other than a resource.
 	 * @since 5.4.0
 	 */
-	public function jsonSerialize(): array
-	{
-		$arr = (array)$this;
-		if ($this->shape !== null)
+	public function jsonSerialize() : array{
+		$arr = (array) $this;
+		if($this->shape !== null)
 			$arr["shapeClass"] = get_class($this->shape);
 		return $arr;
 	}

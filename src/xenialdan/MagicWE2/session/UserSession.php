@@ -62,14 +62,14 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
 	}
 
-	/**
-	 * @throws ScoreFactoryException
-	 */
 	public function __destruct(){
 		Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
 		$this->bossBar->removeAllPlayers();
 		if(Loader::hasScoreboard() && $this->sidebar !== null){
-			ScoreFactory::removeObjective($this->getPlayer(), true);
+			try{
+				ScoreFactory::removeObjective($this->getPlayer(), true);
+			}catch(ScoreFactoryException){
+			}
 		}
 	}
 
