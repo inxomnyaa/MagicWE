@@ -39,6 +39,7 @@ use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
 use xenialdan\MagicWE2\commands\clipboard\Cut2Command;
 use xenialdan\MagicWE2\commands\clipboard\CutCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
+use xenialdan\MagicWE2\commands\clipboard\RotateCommand;
 use xenialdan\MagicWE2\commands\debug\GenerateCommandsMDCommand;
 use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
 use xenialdan\MagicWE2\commands\debug\TestAPICommand;
@@ -276,7 +277,7 @@ class Loader extends PluginBase
 			new ClearClipboardCommand($this, "/clearclipboard", "Clear your clipboard"),
 			//TODO re-add flip/rotate in libblockstate
 			#new FlipCommand($this, "/flip", "Flip the contents of the clipboard across the origin", ["/mirror"]),
-			#new RotateCommand($this, "/rotate", "Rotate the contents of the clipboard around the origin"),
+			new RotateCommand($this, "/rotate", "Rotate the contents of the clipboard around the origin"),
 			/* -- history -- */
 			new UndoCommand($this, "/undo", "Rolls back the last action"),
 			new RedoCommand($this, "/redo", "Applies the last undo action again"),
