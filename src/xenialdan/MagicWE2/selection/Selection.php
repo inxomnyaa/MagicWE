@@ -58,8 +58,6 @@ class Selection implements Serializable, JsonSerializable{
 			Loader::getInstance()->getLogger()->logException($e);
 		}
 
-		var_dump($this);
-
 		$this->iterator = new SubChunkIterator(new AsyncWorld($this));
 	}
 
@@ -123,10 +121,8 @@ class Selection implements Serializable, JsonSerializable{
 			$this->pos2 = null;
 		}
 		$this->setWorld($position->getWorld());
-		var_dump($this);
 		if(($this->shape === null || $this->shape instanceof Cuboid) && $this->isValid())
 			$this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-		var_dump($this);
 		try{
 			$session = SessionHelper::getSessionByUUID($this->sessionUUID);
 			if($session instanceof Session){
@@ -169,10 +165,8 @@ class Selection implements Serializable, JsonSerializable{
 			$this->pos1 = null;
 		}
 		$this->setWorld($position->getWorld());
-		var_dump($this);
 		if(($this->shape === null || $this->shape instanceof Cuboid) && $this->isValid())
 			$this->setShape(Cuboid::constructFromPositions($this->pos1, $this->pos2));
-		var_dump($this);
 		try{
 			$session = SessionHelper::getSessionByUUID($this->sessionUUID);
 			if($session instanceof Session){
