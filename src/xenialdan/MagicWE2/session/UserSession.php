@@ -21,6 +21,7 @@ use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\data\BrushCollection;
 use xenialdan\MagicWE2\session\data\Outline;
 use xenialdan\MagicWE2\session\data\PaletteCollection;
+use xenialdan\MagicWE2\tool\Debug;
 use function mkdir;
 
 class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
@@ -38,6 +39,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private AssetCollection $assets;
 	private PaletteCollection $palettes;
 	private ?Language $lang = null;
+	public ?Debug $debug = null;
 
 	public function __construct(Player $player)
 	{

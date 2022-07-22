@@ -53,7 +53,7 @@ class DebugCommand extends BaseCommand
 				->addEnchantment(new EnchantmentInstance(Loader::$ench))
 				->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug'))
 				->setLore([
-					TF::RESET . $lang->translateString('tool.debug.lore.1'),
+					TF::RESET . $lang->translateString('tool.debug.lore.1'),//TODO change lore strings
 					TF::RESET . $lang->translateString('tool.debug.lore.2'),
 					TF::RESET . $lang->translateString('tool.debug.lore.3')
 				]);
