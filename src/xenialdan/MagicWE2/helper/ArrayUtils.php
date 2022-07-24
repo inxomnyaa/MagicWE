@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\helper;
 
+use function current;
 use function reset;
 
 class ArrayUtils{
@@ -38,6 +39,7 @@ class ArrayUtils{
 
 	public static function setPointerToValue(array &$array, $value) : void{
 		reset($array);
-		while(current($array) !== $value) next($array);
+		#var_dump($array,current($array),$value);
+		while(current($array) !== $value && self::hasNext($array)) next($array);
 	}
 }

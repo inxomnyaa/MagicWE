@@ -205,9 +205,6 @@ class EventListener implements Listener{
 					$session = SessionHelper::getUserSession($event->getPlayer());
 					if(!$session instanceof UserSession) return;
 					$session->debug ??= Debug::fromItem($item);
-					var_dump(
-						$session->debug->states,
-					);
 					$session->debug->usePrimary($session, $event->getBlock());
 				}
 				break;
@@ -259,9 +256,10 @@ class EventListener implements Listener{
 					if($item instanceof Stick){
 						$event->cancel();
 						$session = SessionHelper::getUserSession($event->getPlayer());
+
 						if(!$session instanceof UserSession) return;
-						$debug = Debug::fromItem($item);//FIXME avoid reconstructing the object every time
-						$debug->useSecondary($session, $event->getBlock());
+						$session->debug ??= Debug::fromItem($item);
+						$session->debug->useSecondary($session, $event->getBlock());
 					}
 					break;
 				}

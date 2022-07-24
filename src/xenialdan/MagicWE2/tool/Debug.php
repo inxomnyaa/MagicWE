@@ -10,12 +10,15 @@ use pocketmine\item\Item;
 use pocketmine\item\Stick;
 use pocketmine\item\VanillaItems;
 use pocketmine\lang\Language;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\Tag;
+use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\TextFormat as TF;
 use TypeError;
 use xenialdan\libblockstate\BlockStatesParser;
+use xenialdan\libblockstate\exception\BlockQueryParsingFailedException;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\ArrayUtils;
 use xenialdan\MagicWE2\Loader;
@@ -99,13 +102,6 @@ class Debug extends WETool{
 		return null;
 	}
 
-	public function getCurrentValue(string $blockIdentifier) : mixed{
-		if(array_key_exists($blockIdentifier, $this->states)){
-			return current($this->states[$blockIdentifier]);
-		}
-		return null;
-	}
-
 	public function getName() : string{
 		return "Debug";//TODO Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug')
 	}
@@ -117,11 +113,45 @@ class Debug extends WETool{
 		$blockState = $blockStatesParser->getFromBlock($block);
 		$stringId = $blockState->state->getId();
 
-		$array = Loader::getInstance()->getPossibleBlockstates($stringId);
+		#var_dump($this->states, $stringId);
+		#var_dump(Loader::getInstance()->getPossibleBlockstates($stringId));
 
-		/** @var Tag $state */
-		$state = current($this->states[$stringId]);
-		var_dump($state->toString());
+		$current = $this->getCurrentState($stringId);
+		#var_dump($current);
+
+		if($current === null){
+			$session->sendMessage(TF::RED . "States uninitialized, left click the block first");
+			return;
+		}
+
+		//$possibleBlockstates = Loader::getInstance()->getPossibleBlockstates($stringId);
+		$blockStateTag = $blockState->state->getBlockState()->getCompoundTag("states")->getTag($current);
+		#var_dump(__LINE__, $blockStateTag);
+		$possibleBlockstates = $this->states[$stringId][$current];
+		#var_dump(__LINE__, $possibleBlockstates, current($possibleBlockstates));
+		ArrayUtils::setPointerToValue($possibleBlockstates, $blockStateTag->getValue());
+		#var_dump(__LINE__, $possibleBlockstates, current($possibleBlockstates));
+		//TODO add sneaking to reverse
+		$session->getPlayer()->isSneaking() ? ArrayUtils::regressWrap($possibleBlockstates) : ArrayUtils::advanceWrap($possibleBlockstates);
+		$next = current($possibleBlockstates);
+		#var_dump($next);
+		$newBS = clone $blockState->state->getBlockState();
+		match (true) {
+			$blockStateTag instanceof StringTag => $newBS->getCompoundTag("states")->setString($current, (string) $next),
+			$blockStateTag instanceof IntTag => $newBS->getCompoundTag("states")->setInt($current, (int) $next),
+			$blockStateTag instanceof ByteTag => $newBS->getCompoundTag("states")->setByte($current, (int) $next),
+			default => throw new UnexpectedTagTypeException("Unexpected tag type")
+		};
+		#var_dump($blockStateTag);
+		try{
+			$newBlock = $blockStatesParser->getFromCompound($newBS);
+		}catch(BlockQueryParsingFailedException $e){
+			$session->getPlayer()->sendMessage(TF::RED . "Error occurred whilst changing $current to " . $next);
+			Loader::getInstance()->getLogger()->logException($e);
+			return;
+		}
+		$block->getPosition()->getWorld()->setBlock($block->getPosition(), $newBlock->getBlock());
+		$session->getPlayer()->sendMessage(TF::GREEN . "State changed to " . $next);
 	}
 
 	public function usePrimary(UserSession $session, Block $block){
@@ -131,28 +161,28 @@ class Debug extends WETool{
 		$blockState = $blockStatesParser->getFromBlock($block);
 		$stringId = $blockState->state->getId();
 
-		//TODO add sneak
-		var_dump($this->getCurrentState($stringId));
-		var_dump($this->getCurrentValue($stringId));
-		var_dump(__LINE__, $this->states);
+		#var_dump($this->getCurrentState($stringId));
+		#var_dump(__LINE__, $this->states);
 		//$array = ($this->states[$stringId] ??= $this->stateToArray($blockState->state->getBlockState()->getCompoundTag("states")));
 		$this->states[$stringId] ??= $this->stateToArray($blockState->state->getBlockState()->getCompoundTag("states"));
-		$array = $this->states[$stringId];
-		var_dump(__LINE__, $this->states);
-		var_dump($this->getCurrentState($stringId));
-		var_dump($this->getCurrentValue($stringId));
-		var_dump(ArrayUtils::advanceWrap($array));
+		$array = &$this->states[$stringId];
+		#var_dump(__LINE__, $this->states);
+		#var_dump($this->getCurrentState($stringId));
+		//advance state
+		$session->getPlayer()->isSneaking() ? ArrayUtils::regressWrap($array) : ArrayUtils::advanceWrap($array);
+		#$session->getPlayer()->sendTip("Targeted blockstate: " . $this->getCurrentState($stringId));
+		$session->getPlayer()->sendActionBarMessage("Targeted blockstate: " . $this->getCurrentState($stringId));
 	}
 
 	private function stateToArray(CompoundTag $cstate) : array{
 		$array = [];
 		foreach($cstate->getValue() as $state => $value2){
 			$possibleBlockstates = Loader::getInstance()->getPossibleBlockstates($state);
-			var_dump(__LINE__, $state, $value2, $possibleBlockstates);
+			#var_dump(__LINE__, $state, $value2, $possibleBlockstates);
 			ArrayUtils::setPointerToValue($possibleBlockstates, $value2->getValue());
 			$array[$state] = $possibleBlockstates;
 		}
-		var_dump($array);
+		#var_dump($array);
 		return $array;
 	}
 
