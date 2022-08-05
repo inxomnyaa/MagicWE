@@ -28,7 +28,7 @@ projects:
         version: ^0.1.7
         branch: libblockstate
       - src: thebigsmilexd/libblockstate/libblockstate
-        version: ^0.0.1
+        version: ^0.1.0
         branch: master
       - src: Ifera/scorefactory/ScoreFactory
         version: ^3.1.0

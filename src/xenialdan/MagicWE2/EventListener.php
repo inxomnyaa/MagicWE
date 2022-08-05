@@ -260,7 +260,7 @@ class EventListener implements Listener{
 						if(!$session instanceof UserSession) return;
 						$session->debug ??= Debug::fromItem($item);
 						$session->debug->useSecondary($session, $event->getBlock());
-						var_dump($session->debug->toItem($session->getLanguage())->getNamedTag());
+						#var_dump($session->debug->toItem($session->getLanguage())->getNamedTag());
 					}
 					break;
 				}

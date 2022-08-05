@@ -8,10 +8,10 @@ use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
 use jojoe77777\FormAPI\FormAPI;
 use JsonException;
+use JsonSchema\Exception\ResourceNotFoundException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\EnchantmentIdMap;
-use pocketmine\entity\InvalidSkinException;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\ItemFlags;
 use pocketmine\lang\Language;
@@ -23,10 +23,6 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
-use wfcore\lib\exception\GeometryNotFoundException;
-use wfcore\lib\exception\GeometryParsingException;
-use wfcore\lib\exception\SplitIDException;
-use wfcore\lib\exception\TextureNotFoundException;
 use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\libstructure\PacketListener;
@@ -99,8 +95,6 @@ class Loader extends PluginBase{
 	/** @var string[] Donator names */
 	public array $donators = [];
 	public string $donatorData = "";
-	private static string $rotPath;
-	private static string $doorRotPath;
 	#BossBar
 	public DiverseBossBar $wailaBossBar;
 	public static ?string $scoreboardAPI;
@@ -125,35 +119,21 @@ class Loader extends PluginBase{
 		throw new ShapeRegistryException("Shape registry is not initialized");
 	}
 
-	public static function getRotFlipPath() : string{
-		return self::$rotPath;
-		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-	}
-
-	public static function getDoorRotFlipPath() : string{
-		return self::$doorRotPath;
-		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
-	}
-
 	public static function hasScoreboard() : bool{
 		return self::$scoreboardAPI !== null;
 	}
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws InvalidArgumentException
 	 * @throws JsonException
 	 * @throws PluginException
 	 * @throws RuntimeException
-	 * @throws InvalidSkinException
-	 * @throws GeometryNotFoundException
-	 * @throws GeometryParsingException
-	 * @throws SplitIDException
-	 * @throws TextureNotFoundException
+	 * @throws ResourceNotFoundException
 	 */
 	public function onLoad() : void{
 		self::$instance = $this;
 		self::$ench = new Enchantment("", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
+		/** @var EnchantmentIdMap $enchantmapinstance */
 		$enchantmapinstance = EnchantmentIdMap::getInstance();
 		$enchantmapinstance->register(self::FAKE_ENCH_ID, self::$ench);
 		self::$shapeRegistry = new ShapeRegistry();
@@ -162,12 +142,10 @@ class Loader extends PluginBase{
 		#$this->saveResource("rotation_flip_data.json", true);
 		$this->saveResource("blockstate_alias_map.json", true);
 
-		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		API::setRotationData(API::decodeJsonResource("rotation_flip_data.json"));
+		#$this->doorRotationData = API::decodeJsonResource("door_data.json");
 		/** @var BlockStatesParser $blockstateparserInstance */
 		$blockstateparserInstance = BlockStatesParser::getInstance();
-		#$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		#$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
 		if($fileGetContents === false){

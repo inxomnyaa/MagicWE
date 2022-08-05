@@ -12,6 +12,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -20,6 +21,9 @@ use pocketmine\utils\Utils;
 use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\libblockstate\BlockEntry;
+use xenialdan\libblockstate\BlockState;
+use xenialdan\libblockstate\BlockStatesParser;
+use xenialdan\libblockstate\exception\BlockQueryParsingFailedException;
 use xenialdan\libstructure\format\MCStructure;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
@@ -44,6 +48,7 @@ use xenialdan\MagicWE2\task\AsyncPasteAssetTask;
 use xenialdan\MagicWE2\task\AsyncPasteTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 use xenialdan\MagicWE2\tool\Brush;
+use function str_replace;
 
 class API
 {
@@ -82,6 +87,7 @@ class API
 	//TODO Split into separate Class (SchematicStorage?)
 	/** @var Clipboard[] */
 	private static array $schematics = [];//TODO
+	public static array $rotationData = [];
 
 	/**
 	 * @param Selection $selection
@@ -579,6 +585,7 @@ class API
 		if($rotation % 90 !== 0){
 			throw new InvalidArgumentException("Rotation must be divisible by 90");
 		}
+		$rotation += 180;//FIXME THIS IS A DUMB HACK BECAUSE ROTATIONS ARE FLIPPED
 		$rotation = self::positiveModulo($rotation, 360);
 		if($rotation === 0) return $structure;
 
@@ -592,6 +599,8 @@ class API
 		/** @var BlockEntry $entry */
 		foreach($structure->iterateEntries($x, $y, $z) as $entry){
 			//TODO set entry to rotated blockstate
+			$state = self::entryToState($entry);
+			$stateRotated = self::rotateBlockState($state, $rotation);
 
 			$newV3 = match ($rotation)//TODO figure out how to avoid new Vector3 objects
 			{
@@ -600,7 +609,7 @@ class API
 				RotateAction::ROTATE_270 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
 				default => new Vector3($x, $y, $z)
 			};
-			$newClipboard->addEntry($newV3->getFloorX(), $newV3->getFloorY(), $newV3->getFloorZ(), $entry);
+			$newClipboard->addEntry($newV3->getFloorX(), $newV3->getFloorY(), $newV3->getFloorZ(), new BlockEntry($stateRotated->getFullId()));
 			//TODO move origin of structure
 		}
 		return $newClipboard;
@@ -613,6 +622,45 @@ class API
 		fclose($resource);
 		if($array === null) throw new AssumptionFailedError("Invalid json file: $filename");
 		return $array;
+	}
+
+	public static function entryToState(BlockEntry $entry) : BlockState{
+		/** @var BlockStatesParser $parser */
+		$parser = BlockStatesParser::getInstance();
+		return $parser->getFullId($entry->fullId);
+	}
+
+	public static function stateToEntry(BlockState $state) : BlockEntry{
+		return new BlockEntry($state->getFullId());
+	}
+
+	/**
+	 * @throws InvalidArgumentException When rotation is invalid (not divisible by 90)
+	 * @throws UnexpectedTagTypeException
+	 * @throws BlockQueryParsingFailedException When no such blockstate could be found
+	 */
+	private static function rotateBlockState(BlockState $state, int $rotation) : BlockState{
+		$data = self::getRotationData($state, $rotation);
+		if(empty($data)) return $state;
+
+		#$newState = clone $state;//TODO check if needed
+		$newState = $state;
+		return $newState->replaceBlockStateValues($data);
+	}
+
+	public static function getRotationData(BlockState $blockState, int $rotation) : array{
+		if($rotation !== RotateAction::ROTATE_90 && $rotation !== RotateAction::ROTATE_180 && $rotation !== RotateAction::ROTATE_270) throw new InvalidArgumentException("Invalid rotation $rotation given");
+
+		$id = str_replace("minecraft:", "", $blockState->state->getId());
+		$meta = $blockState->state->getMeta();
+
+		if(!isset(API::$rotationData[$id . ":" . $meta])) return [];
+
+		return API::$rotationData[$id . ":" . $meta][(string) $rotation] ?? [];
+	}
+
+	public static function setRotationData(array $json){
+		self::$rotationData = $json;
 	}
 
 }

@@ -23,7 +23,6 @@ use xenialdan\MagicWE2\session\data\Outline;
 use xenialdan\MagicWE2\session\data\PaletteCollection;
 use xenialdan\MagicWE2\tool\Debug;
 use function mkdir;
-use function var_dump;
 
 class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
 {
@@ -284,7 +283,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			"language" => $this->getLanguage()->getLang(),
 		];
 		if($this->debug !== null) $return["debug"] = $this->debug->jsonSerialize();
-		var_dump($return);
+		#var_dump($return);
 		return $return;
 	}
 

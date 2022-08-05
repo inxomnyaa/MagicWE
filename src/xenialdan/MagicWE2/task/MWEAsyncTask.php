@@ -84,12 +84,15 @@ abstract class MWEAsyncTask extends AsyncTask
 	 * @param array<array{int, Position|null}> $hackedBlockData
 	 * @return Block[]
 	 */
-	public static function multipleDataToBlocks(array $hackedBlockData): array
-	{
+	public static function multipleDataToBlocks(array $hackedBlockData) : array{
 		$a = [];
-		foreach ($hackedBlockData as $datum) {
+		foreach($hackedBlockData as $datum){
 			$a[] = self::singleDataToBlock($datum);
 		}
 		return $a;
+	}
+
+	public function onError() : void{
+		if($this->isCrashed()) SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID))->sendMessage("An error occurred while executing this task: Task crashed. Check console for details.");
 	}
 }

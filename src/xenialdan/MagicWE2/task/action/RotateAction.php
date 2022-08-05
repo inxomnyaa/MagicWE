@@ -18,20 +18,18 @@ class RotateAction extends ClipboardAction
 	public const ROTATE_90 = 90;
 	public const ROTATE_180 = 180;
 	public const ROTATE_270 = 270;
-	/** @var bool */
 	public bool $addClipboard = true;
-	/** @var string */
 	public string $completionString = '{%name} succeed, took {%took}, rotated {%changed} blocks out of {%total}';
-	/** @var int */
 	private int $rotation;
-	/** @var bool */
 	public bool $aroundOrigin = true;
+	public array $rotationData = [];
 
 	public function __construct(int $rotation, bool $aroundOrigin = true)
 	{
 		if ($rotation !== self::ROTATE_90 && $rotation !== self::ROTATE_180 && $rotation !== self::ROTATE_270) throw new InvalidArgumentException("Invalid rotation $rotation given");
 		$this->rotation = $rotation;
 		$this->addClipboard = $aroundOrigin;
+		$this->rotationData = API::$rotationData;
 	}
 
 	public static function getName(): string
@@ -58,6 +56,9 @@ class RotateAction extends ClipboardAction
 //		/** @var BlockStatesParser $blockStatesParser */
 //		$blockStatesParser = BlockStatesParser::getInstance();
 
+		#var_dump(__CLASS__ . " ". __FUNCTION__ . " " . __LINE__ . " " . __FILE__, count($this->rotationData), API::$rotationData);
+		API::setRotationData($this->rotationData);
+		#var_dump(__CLASS__ . " ". __FUNCTION__ . " " . __LINE__ . " " . __FILE__, count($this->rotationData), API::$rotationData);
 		$clipboard = API::rotate($clipboard, $this->rotation);
 
 		yield new Progress($changed / $count, "$changed/$count");

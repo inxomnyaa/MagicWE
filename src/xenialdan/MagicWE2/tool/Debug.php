@@ -13,10 +13,7 @@ use pocketmine\item\Stick;
 use pocketmine\item\VanillaItems;
 use pocketmine\lang\Language;
 use pocketmine\nbt\NoSuchTagException;
-use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
@@ -30,7 +27,6 @@ use xenialdan\MagicWE2\session\UserSession;
 use function array_key_exists;
 use function current;
 use function key;
-use function var_dump;
 
 class Debug extends WETool implements JsonSerializable{
 	// tag:{DebugProperty:{"minecraft:jungle_leaves":"waterlogged","minecraft:waxed_cut_copper_stairs":"half","minecraft:stripped_jungle_log":"axis"}}
@@ -90,11 +86,11 @@ class Debug extends WETool implements JsonSerializable{
 		foreach($this->states as $blockIdentifier => $state){
 			$compound->setString($blockIdentifier, (string) key($state));//TODO
 		}
-		var_dump($compound);
+		#var_dump($compound);
 		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_DEBUG, CompoundTag::create());
 		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
 		$item->getNamedTag()->setTag(self::TAG_DEBUG_PROPERTY, $compound);
-		var_dump($item->getNamedTag());
+		#var_dump($item->getNamedTag());
 		return $item;
 	}
 
@@ -131,42 +127,32 @@ class Debug extends WETool implements JsonSerializable{
 		#var_dump($this->states, $stringId);
 		#var_dump(Loader::getInstance()->getPossibleBlockstates($stringId));
 
-		$current = $this->getCurrentState($stringId);
+		$stateName = $this->getCurrentState($stringId);
 		#var_dump($current);
 
-		if($current === null){
+		if($stateName === null){
 			$session->sendMessage(TF::RED . "States uninitialized, left click the block first");
 			return;
 		}
 
 		//$possibleBlockstates = Loader::getInstance()->getPossibleBlockstates($stringId);
-		$blockStateTag = $blockState->state->getBlockState()->getCompoundTag("states")->getTag($current);
+		$blockStateTag = $blockState->state->getBlockState()->getCompoundTag("states")->getTag($stateName);
 		#var_dump(__LINE__, $blockStateTag);
-		$possibleBlockstates = $this->states[$stringId][$current];
+		$possibleBlockstates = $this->states[$stringId][$stateName];
 		#var_dump(__LINE__, $possibleBlockstates, current($possibleBlockstates));
 		ArrayUtils::setPointerToValue($possibleBlockstates, $blockStateTag->getValue());
 		#var_dump(__LINE__, $possibleBlockstates, current($possibleBlockstates));
 		//TODO add sneaking to reverse
 		$session->getPlayer()->isSneaking() ? ArrayUtils::regressWrap($possibleBlockstates) : ArrayUtils::advanceWrap($possibleBlockstates);
-		$next = current($possibleBlockstates);
+		$newValue = current($possibleBlockstates);
 		#var_dump($next);
-		$newBS = clone $blockState->state->getBlockState();
-		match (true) {
-			$blockStateTag instanceof StringTag => $newBS->getCompoundTag("states")->setString($current, (string) $next),
-			$blockStateTag instanceof IntTag => $newBS->getCompoundTag("states")->setInt($current, (int) $next),
-			$blockStateTag instanceof ByteTag => $newBS->getCompoundTag("states")->setByte($current, (int) $next),
-			default => throw new UnexpectedTagTypeException("Unexpected tag type")
-		};
-		#var_dump($blockStateTag);
 		try{
-			$newBlock = $blockStatesParser->getFromCompound($newBS);
-		}catch(BlockQueryParsingFailedException $e){
-			$session->getPlayer()->sendMessage(TF::RED . "Error occurred whilst changing $current to " . $next);
-			Loader::getInstance()->getLogger()->logException($e);
-			return;
+			$newBlockState = $blockState->replaceBlockStateValue($stateName, $newValue);
+			$block->getPosition()->getWorld()->setBlock($block->getPosition(), $newBlockState->getBlock());
+			$session->getPlayer()->sendMessage(TF::GREEN . "State changed to " . $newValue);
+		}catch(UnexpectedTagTypeException | BlockQueryParsingFailedException $e){
+			$session->sendMessage(TF::RED . "Error occurred whilst changing $stateName to " . $newValue . ": " . $e->getMessage());
 		}
-		$block->getPosition()->getWorld()->setBlock($block->getPosition(), $newBlock->getBlock());
-		$session->getPlayer()->sendMessage(TF::GREEN . "State changed to " . $next);
 	}
 
 	public function usePrimary(UserSession $session, Block $block){
