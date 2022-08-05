@@ -7,6 +7,7 @@ namespace xenialdan\MagicWE2;
 use BlockHorizons\libschematic\Schematic;
 use Exception;
 use InvalidArgumentException;
+use JsonSchema\Exception\ResourceNotFoundException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\math\Vector3;
@@ -15,6 +16,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
+use pocketmine\utils\Utils;
 use pocketmine\world\Position;
 use RuntimeException;
 use xenialdan\libblockstate\BlockEntry;
@@ -75,6 +77,7 @@ class API
 	public const TAG_MAGIC_WE_BRUSH = "MagicWEBrush";
 	public const TAG_MAGIC_WE_ASSET = "MagicWEAsset";
 	public const TAG_MAGIC_WE_PALETTE = "MagicWEPalette";
+	public const TAG_MAGIC_WE_DEBUG = "MagicWEDebug";
 
 	//TODO Split into separate Class (SchematicStorage?)
 	/** @var Clipboard[] */
@@ -482,9 +485,9 @@ class API
 	 * @param CompoundTag $compoundTag
 	 * @return array
 	 */
-	public static function compoundToArray(CompoundTag $compoundTag): array{
+	public static function compoundToArray(CompoundTag $compoundTag) : array{//TODO add recursive
 		$a = [];
-		foreach ($compoundTag->getValue() as $key => $value) {
+		foreach($compoundTag->getValue() as $key => $value){
 			$a[$key] = $value;
 		}
 		return $a;
@@ -601,6 +604,15 @@ class API
 			//TODO move origin of structure
 		}
 		return $newClipboard;
+	}
+
+	public static function decodeJsonResource(string $filename) : array{
+		$resource = Loader::getInstance()->getResource($filename);
+		if($resource === null) throw new ResourceNotFoundException("Resource not found: $filename");
+		$array = json_decode(Utils::assumeNotFalse(stream_get_contents($resource), "Invalid json file: $filename"), true);
+		fclose($resource);
+		if($array === null) throw new AssumptionFailedError("Invalid json file: $filename");
+		return $array;
 	}
 
 }

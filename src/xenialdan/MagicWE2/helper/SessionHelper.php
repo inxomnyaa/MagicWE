@@ -9,6 +9,8 @@ use InvalidArgumentException;
 use JsonException;
 use pocketmine\entity\InvalidSkinException;
 use pocketmine\entity\Skin;
+use pocketmine\item\Item;
+use pocketmine\item\Stick;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
@@ -27,9 +29,11 @@ use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\tool\Brush;
 use xenialdan\MagicWE2\tool\BrushProperties;
+use xenialdan\MagicWE2\tool\Debug;
 use function array_filter;
 use function array_values;
 use function count;
+use function var_dump;
 
 class SessionHelper{
 	/** @var array<string,UserSession> */
@@ -197,6 +201,7 @@ class SessionHelper{
 		}
 		$session = new UserSession($player);
 		try{
+			//TODO use libmarshal to load data
 			$session->setUUID(UuidV4::fromString($data["uuid"]));
 			$session->setWandEnabled($data["wandEnabled"]);
 			$session->setDebugToolEnabled($data["debugToolEnabled"]);
@@ -241,6 +246,15 @@ class SessionHelper{
 				}
 			}
 			$session->setOutlineEnabled($data["outlineEnabled"]);
+			$debugData = $data["debug"] ?? null;
+			var_dump($debugData);
+			if(!is_null($debugData)){
+				$debugStick = Item::jsonDeserialize($debugData);
+				var_dump($debugStick);
+				if(!$debugStick instanceof Stick) Loader::getInstance()->getLogger()->info("Debug stick data could not be loaded, ignoring");
+				else $session->debug = Debug::fromItem($debugStick);
+				var_dump($session->debug->toItem($session->getLanguage())->getNamedTag());
+			}
 			//TODO clipboard
 		}catch(Exception $e){
 			Loader::getInstance()->getLogger()->logException($e);

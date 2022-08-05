@@ -9,15 +9,12 @@ use Error;
 use Exception;
 use InvalidArgumentException;
 use pocketmine\command\CommandSender;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\VanillaItems;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as TF;
-use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\exception\SessionException;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
+use xenialdan\MagicWE2\tool\Debug;
 
 class DebugCommand extends BaseCommand
 {
@@ -49,15 +46,7 @@ class DebugCommand extends BaseCommand
 		}
 		/** @var Player $sender */
 		try {
-			$item = VanillaItems::STICK()
-				->addEnchantment(new EnchantmentInstance(Loader::$ench))
-				->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug'))
-				->setLore([
-					TF::RESET . $lang->translateString('tool.debug.lore.1'),
-					TF::RESET . $lang->translateString('tool.debug.lore.2'),
-					TF::RESET . $lang->translateString('tool.debug.lore.3')
-				]);
-			$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
+			$item = ($session->debug ?? (new Debug()))->toItem($lang);
 			$sender->getInventory()->addItem($item);
 		} catch (Exception $error) {
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
