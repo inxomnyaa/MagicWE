@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace xenialdan\MagicWE2\tool;
 
+use InvalidArgumentException;
+use JsonSerializable;
 use pocketmine\block\Block;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\Item;
 use pocketmine\item\Stick;
 use pocketmine\item\VanillaItems;
 use pocketmine\lang\Language;
+use pocketmine\nbt\NoSuchTagException;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use TypeError;
 use xenialdan\libblockstate\BlockStatesParser;
@@ -25,16 +29,17 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 use function array_key_exists;
 use function current;
+use function key;
 use function var_dump;
 
-class Debug extends WETool{
+class Debug extends WETool implements JsonSerializable{
 	// tag:{DebugProperty:{"minecraft:jungle_leaves":"waterlogged","minecraft:waxed_cut_copper_stairs":"half","minecraft:stripped_jungle_log":"axis"}}
 
 
 	public const TAG_DEBUG_PROPERTY = "DebugProperty";
 
 	/**
-	 * @var string[][]
+	 * @var string[][][]
 	 * key: "minecraft:stripped_jungle_log"
 	 * key: "axis"
 	 * value: ["x","y","z"]
@@ -48,23 +53,23 @@ class Debug extends WETool{
 	 * @param Stick $item
 	 *
 	 * @return Debug
-	 * @throws UnexpectedTagTypeException
+	 * @throws UnexpectedTagTypeException|NoSuchTagException
 	 */
 	public static function fromItem(Stick $item) : self{
 		$debug = new self();
-		$compoundTag = $item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_DEBUG);
+		if($item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE) === null) throw new NoSuchTagException("Tag " . API::TAG_MAGIC_WE . " not found");
+		if($item->getNamedTag()->getCompoundTag(API::TAG_MAGIC_WE_DEBUG) === null) throw new NoSuchTagException("Tag " . API::TAG_MAGIC_WE_DEBUG . " not found");
+		$compoundTag = $item->getNamedTag()->getCompoundTag(self::TAG_DEBUG_PROPERTY);
 		if($compoundTag !== null){
-			var_dump(API::compoundToArray($compoundTag));
 			//blockIdentifier is the namespaced name of the block
 			//state is the most recently modified state of the block
 			foreach($compoundTag->getValue() as $blockIdentifier => $state){
 				$possibleBlockstates = Loader::getInstance()->getPossibleBlockstates($state->getValue());
-				if(array_key_exists($state->getValue(), $possibleBlockstates)){
-					$debug->states[$blockIdentifier][$state->getValue()] = $possibleBlockstates[$state->getValue()];//TODO
+				if(!empty($possibleBlockstates)){
+					$debug->states[$blockIdentifier][$state->getValue()] = $possibleBlockstates;//TODO
 				}
 			}
 		}
-		var_dump($debug->states);
 		return $debug;
 	}
 
@@ -76,15 +81,20 @@ class Debug extends WETool{
 			->addEnchantment(new EnchantmentInstance(Loader::$ench))
 			->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug'))
 			->setLore([
-				TF::RESET . $lang->translateString('tool.debug.lore.1'),//TODO change lore strings
+				TF::RESET . $lang->translateString('tool.debug.lore.1'),//TODO change lore strings in other languages than english
 				TF::RESET . $lang->translateString('tool.debug.lore.2'),
-				TF::RESET . $lang->translateString('tool.debug.lore.3')
+				TF::RESET . $lang->translateString('tool.debug.lore.3'),
+				TF::RESET . $lang->translateString('tool.debug.lore.4')
 			]);
 		$compound = CompoundTag::create();
 		foreach($this->states as $blockIdentifier => $state){
-			$compound->setString($blockIdentifier, (string) current($state));//TODO
+			$compound->setString($blockIdentifier, (string) key($state));//TODO
 		}
-		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_DEBUG, $compound);
+		var_dump($compound);
+		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_DEBUG, CompoundTag::create());
+		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE, CompoundTag::create());
+		$item->getNamedTag()->setTag(self::TAG_DEBUG_PROPERTY, $compound);
+		var_dump($item->getNamedTag());
 		return $item;
 	}
 
@@ -106,6 +116,11 @@ class Debug extends WETool{
 		return "Debug";//TODO Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $lang->translateString('tool.debug')
 	}
 
+	/**
+	 * @throws UnexpectedTagTypeException
+	 * @throws InvalidArgumentException
+	 * @throws AssumptionFailedError
+	 */
 	public function useSecondary(UserSession $session, Block $block){
 		//cycle values
 		/** @var BlockStatesParser $blockStatesParser */
@@ -164,7 +179,12 @@ class Debug extends WETool{
 		#var_dump($this->getCurrentState($stringId));
 		#var_dump(__LINE__, $this->states);
 		//$array = ($this->states[$stringId] ??= $this->stateToArray($blockState->state->getBlockState()->getCompoundTag("states")));
-		$this->states[$stringId] ??= $this->stateToArray($blockState->state->getBlockState()->getCompoundTag("states"));
+		$cstate = $blockState->state->getBlockState()->getCompoundTag("states");
+		if($cstate === null || $cstate->count() === 0){
+			$session->sendMessage(TF::RED . "Block has no states");
+			return;
+		}
+		$this->states[$stringId] ??= $this->stateToArray($cstate);
 		$array = &$this->states[$stringId];
 		#var_dump(__LINE__, $this->states);
 		#var_dump($this->getCurrentState($stringId));
@@ -187,4 +207,7 @@ class Debug extends WETool{
 	}
 
 	//TODO add rightClickAir and leftClickAir to Tool
+	public function jsonSerialize() : array{
+		return $this->toItem(Loader::getInstance()->getLanguage())->jsonSerialize();
+	}
 }
