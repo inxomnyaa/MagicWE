@@ -25,10 +25,10 @@ projects:
         version: ^4.3.4
         branch: "4.0"
       - src: thebigsmilexd/libstructure/libstructure
-        version: ^0.1.7
-        branch: libblockstate
+        version: ^0.2.0
+        branch: feature/filter-palette
       - src: thebigsmilexd/libblockstate/libblockstate
-        version: ^0.1.0
+        version: ^0.1.2
         branch: master
       - src: Ifera/scorefactory/ScoreFactory
         version: ^3.1.0

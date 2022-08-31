@@ -558,13 +558,15 @@ class API
 		/** @var Block $block */
 		foreach($structure->blocks() as $block){
 			//TODO set block to rotated blockstate
+			$state = self::entryToState(BlockEntry::fromBlock($block));
+			$stateRotated = self::rotateBlockState($state, $rotation);
 
 			$blocks[] = match ($rotation) {
 				//TODO check if the new positions are calculated correctly
-				RotateAction::ROTATE_90 => self::setComponents($block, $structure->getLength() - $block->getPosition()->getFloorZ() - 1, $block->getPosition()->getFloorY(), $block->getPosition()->getFloorX()),
-				RotateAction::ROTATE_180 => self::setComponents($block, $structure->getWidth() - $block->getPosition()->getFloorX() - 1, $block->getPosition()->getFloorY(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1),
-				RotateAction::ROTATE_270 => self::setComponents($block, $block->getPosition()->getFloorZ(), $block->getPosition()->getFloorY(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1),
-				default => $block
+				RotateAction::ROTATE_90 => self::setComponents($stateRotated->getBlock(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1, $block->getPosition()->getFloorY(), $block->getPosition()->getFloorX()),
+				RotateAction::ROTATE_180 => self::setComponents($stateRotated->getBlock(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1, $block->getPosition()->getFloorY(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1),
+				RotateAction::ROTATE_270 => self::setComponents($stateRotated->getBlock(), $block->getPosition()->getFloorZ(), $block->getPosition()->getFloorY(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1),
+				default => $stateRotated->getBlock()
 			};
 			//TODO move origin of structure
 		}

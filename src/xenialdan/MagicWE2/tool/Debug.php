@@ -147,7 +147,7 @@ class Debug extends WETool implements JsonSerializable{
 		$newValue = current($possibleBlockstates);
 		#var_dump($next);
 		try{
-			$newBlockState = $blockState->replaceBlockStateValue($stateName, $newValue);
+			$newBlockState = $blockState->replaceBlockStateValues([$stateName => $newValue]);
 			$block->getPosition()->getWorld()->setBlock($block->getPosition(), $newBlockState->getBlock());
 			$session->getPlayer()->sendMessage(TF::GREEN . "State changed to " . $newValue);
 		}catch(UnexpectedTagTypeException | BlockQueryParsingFailedException $e){
