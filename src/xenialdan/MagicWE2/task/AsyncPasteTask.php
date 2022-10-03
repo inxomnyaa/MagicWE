@@ -26,7 +26,6 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\session\UserSession;
 use function igbinary_serialize;
 use function igbinary_unserialize;
-use function var_dump;
 
 class AsyncPasteTask extends MWEAsyncTask
 {
@@ -50,20 +49,20 @@ class AsyncPasteTask extends MWEAsyncTask
 		var_dump("new paste", $clipboard->selection->getShape()->getPasteVector());
 		 */
 		$this->offset = $pasteVector->addVector($clipboard->position);
-		var_dump("paste", $clipboard->selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, "aabb", $clipboard->selection->getShape()->getAABB());
-		var_dump("new paste vec", $pasteVector);
-		var_dump("orig paste", $clipboard->selection->getShape()->getPasteVector());
-		var_dump("pasteV minus offset", $clipboard->selection->getShape()->getPasteVector()->subtractVector($this->offset));
-		var_dump("old minus new pos", $clipboard->selection->getShape()->getPasteVector()->subtractVector($pasteVector));
+//		var_dump("paste", $clipboard->selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, "aabb", $clipboard->selection->getShape()->getAABB());
+//		var_dump("new paste vec", $pasteVector);
+//		var_dump("orig paste", $clipboard->selection->getShape()->getPasteVector());
+//		var_dump("pasteV minus offset", $clipboard->selection->getShape()->getPasteVector()->subtractVector($this->offset));
+//		var_dump("old minus new pos", $clipboard->selection->getShape()->getPasteVector()->subtractVector($pasteVector));
 		$clipboard->selection->getShape()->setPasteVector($this->offset->add($clipboard->selection->getSizeX() / 2, $clipboard->selection->getSizeY() / 2, $clipboard->selection->getSizeZ() / 2));
-		var_dump("new paste", $clipboard->selection->getShape()->getPasteVector());
+//		var_dump("new paste", $clipboard->selection->getShape()->getPasteVector());
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->clipboard = igbinary_serialize($clipboard);
 		$this->manager = $clipboard->selection->getIterator()->getManager();
-		var_dump(__METHOD__ . __LINE__, count($this->manager->getChunks()));
+//		var_dump(__METHOD__ . __LINE__, count($this->manager->getChunks()));
 		foreach($this->manager->getChunks() as $hash => $chunk){
 			World::getXZ($hash, $x, $z);
-			var_dump(__METHOD__ . __LINE__, $hash, $x, $z);
+//			var_dump(__METHOD__ . __LINE__, $hash, $x, $z);
 		}
 	}
 
@@ -103,7 +102,7 @@ class AsyncPasteTask extends MWEAsyncTask
 	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
 	 */
 	private function execute(SingleClipboard $clipboard, ?int &$changed, AsyncWorld &$manager) : Generator{
-		var_dump("MANAGER CHUNK COUNT", count($manager->getChunks()));
+//		var_dump("MANAGER CHUNK COUNT", count($manager->getChunks()));
 		$blockCount = $clipboard->getTotalCount();
 		$x = $y = $z = null;
 		$lastprogress = 0;
@@ -127,7 +126,7 @@ class AsyncPasteTask extends MWEAsyncTask
 			#var_dump("old", $old, "new", $new);
 			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), (int) $x, (int) $y, (int) $z));
 
-			var_dump(__METHOD__ . __LINE__, World::chunkHash($x, $z), $x, $z);
+//			var_dump(__METHOD__ . __LINE__, World::chunkHash($x, $z), $x, $z);
 			if($manager->getChunk($x >> 4, $z >> 4) === null){
 				$manager->setChunk($x >> 4, $z >> 4, new Chunk([], BiomeArray::fill(BiomeIds::OCEAN), false));
 			}
@@ -175,7 +174,7 @@ class AsyncPasteTask extends MWEAsyncTask
 		foreach($resultChunks as $hash => $chunk){
 			World::getXZ($hash, $x, $z);
 			$world->setChunk($x, $z, $chunk);
-			var_dump("setChunk", $x, $z, $hash);
+//			var_dump("setChunk", $x, $z, $hash);
 		}
 		if(!is_null($session)){
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.paste.success', [$this->generateTookString(), $changed, $totalCount]));

@@ -587,14 +587,13 @@ class API
 		if($rotation % 90 !== 0){
 			throw new InvalidArgumentException("Rotation must be divisible by 90");
 		}
-		$rotation += 180;//FIXME THIS IS A DUMB HACK BECAUSE ROTATIONS ARE FLIPPED
 		$rotation = self::positiveModulo($rotation, 360);
 		if($rotation === 0) return $structure;
 
 		//width is x axis, length is z axis
 		$newClipboard = new SingleClipboard($structure->position);
 		$newClipboard->selection = $structure->selection;
-		$newClipboard->selection->free();//TODO check if this is necessary
+//		$newClipboard->selection->free();//TODO check if this is necessary
 		$newClipboard->selection->shape = $structure->selection->getShape()->rotate($rotation);
 
 		//$x = $y = $z = null;
@@ -606,9 +605,9 @@ class API
 
 			$newV3 = match ($rotation)//TODO figure out how to avoid new Vector3 objects
 			{
-				RotateAction::ROTATE_90 => new Vector3($z, $y, $structure->selection->getSizeX() - $x - 1),
+				RotateAction::ROTATE_90 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
 				RotateAction::ROTATE_180 => new Vector3($structure->selection->getSizeX() - $x - 1, $y, $structure->selection->getSizeZ() - $z - 1),//TODO is this flip instead of rotate?
-				RotateAction::ROTATE_270 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
+				RotateAction::ROTATE_270 => new Vector3($z, $y, $structure->selection->getSizeX() - $x - 1),
 				default => new Vector3($x, $y, $z)
 			};
 			$newClipboard->addEntry($newV3->getFloorX(), $newV3->getFloorY(), $newV3->getFloorZ(), new BlockEntry($stateRotated->getFullId()));
@@ -647,6 +646,7 @@ class API
 
 		#$newState = clone $state;//TODO check if needed
 		$newState = $state;
+
 		return $newState->replaceBlockStateValues($data);
 	}
 
