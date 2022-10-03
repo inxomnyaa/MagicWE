@@ -12,6 +12,7 @@ use Ramsey\Uuid\UuidInterface;
 use xenialdan\libblockstate\BlockEntry;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -25,6 +26,7 @@ class AsyncCopyTask extends MWEAsyncTask
 
 	private string $selection;
 	private Vector3 $offset;
+	private AsyncWorld $manager;
 
 	/**
 	 * AsyncCopyTask constructor.
@@ -39,6 +41,7 @@ class AsyncCopyTask extends MWEAsyncTask
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->selection = igbinary_serialize($selection);
 		$this->offset = $offset->asVector3()->floor();
+		$this->manager = $selection->getIterator()->getManager();
 	}
 
 	/**
@@ -59,7 +62,8 @@ class AsyncCopyTask extends MWEAsyncTask
 		$clipboard->selection = $selection;
 		#$clipboard->setCenter(unserialize($this->offset));
 		$totalCount = $selection->getShape()->getTotalCount();
-		$copied = $this->copyBlocks($selection, $clipboard);
+		$manager = $this->manager;
+		$copied = $this->copyBlocks($selection, $clipboard, $manager);
 		#$clipboard->setShape($selection->getShape());
 		#$clipboard->chunks = $manager->getChunks();
 		$this->setResult(compact("clipboard", "copied", "totalCount"));
@@ -71,17 +75,14 @@ class AsyncCopyTask extends MWEAsyncTask
 	 * @return int
 	 * @throws Exception
 	 */
-	private function copyBlocks(Selection $selection, SingleClipboard $clipboard): int
-	{
-		$iterator = $selection->getIterator();
-		$manager = $iterator->getManager();
+	private function copyBlocks(Selection $selection, SingleClipboard &$clipboard, AsyncWorld &$manager) : int{
 		$blockCount = $selection->getShape()->getTotalCount();
 		$i = 0;
 		$lastprogress = 0;
 		$this->publishProgress([0, "Running, copied $i blocks out of $blockCount"]);
 		$min = $selection->getShape()->getMinVec3();
 		/** @var Block $block */
-		foreach ($selection->getShape()->getBlocks($manager, BlockPalette::CREATE()) as $block) {
+		foreach($selection->getShape()->getBlocks($manager, BlockPalette::CREATE()) as $block){
 			#var_dump("copy chunk X: " . ($block->getX() >> 4) . " Y: " . ($block->getY() >> 4));
 			$newv3 = $block->getPosition()->subtractVector($min)->floor();
 			/** @noinspection PhpInternalEntityUsedInspection */

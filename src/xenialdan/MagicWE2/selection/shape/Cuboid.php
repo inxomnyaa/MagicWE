@@ -12,9 +12,10 @@ use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
+use function array_keys;
+use function var_dump;
 
-class Cuboid extends Shape
-{
+class Cuboid extends Shape{
 	public int $width = 5;
 	public int $height = 5;
 	public int $depth = 5;
@@ -62,7 +63,7 @@ class Cuboid extends Shape
 	/**
 	 * Returns the blocks by their actual position
 	 *
-	 * @param AsyncWorld   $manager The world or AsyncChunkManager
+	 * @param AsyncWorld   $manager The world or AsyncWorld
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 *
 	 * @return Block[]|Generator
@@ -71,6 +72,7 @@ class Cuboid extends Shape
 	 */
 	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks) : Generator
 	{
+		var_dump(array_keys($manager->getChunks()));
 		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
 			for ($y = (int)floor($this->getMinVec3()->y); $y <= floor($this->getMaxVec3()->y); $y++) {
 				for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
@@ -96,8 +98,10 @@ class Cuboid extends Shape
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
-	 * @param int $flags
+	 *
+	 * @param AsyncWorld $manager The world or AsyncWorld
+	 * @param int        $flags
+	 *
 	 * @return Generator
 	 */
 	public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator

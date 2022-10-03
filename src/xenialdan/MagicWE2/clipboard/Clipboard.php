@@ -6,11 +6,9 @@ namespace xenialdan\MagicWE2\clipboard;
 
 use Exception;
 use pocketmine\Server;
-use pocketmine\world\format\Chunk;
 use pocketmine\world\World;
 use Serializable;
 use xenialdan\MagicWE2\exception\SelectionException;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 
 abstract class Clipboard implements Serializable
 {
@@ -28,21 +26,6 @@ abstract class Clipboard implements Serializable
 
 	public ?int $worldId = null;
 	public string $customName = "";
-
-	/**
-	 * Creates a chunk manager used for async editing
-	 * @param Chunk[] $chunks
-	 * @return AsyncChunkManager
-	 */
-	public static function getChunkManager(array $chunks): AsyncChunkManager
-	{
-		$manager = new AsyncChunkManager(World::Y_MIN, World::Y_MAX);
-		foreach ($chunks as $hash => $chunk) {
-			World::getXZ($hash, $x, $z);
-			$manager->setChunk($x, $z, $chunk);
-		}
-		return $manager;
-	}
 
 	/**
 	 * @return World

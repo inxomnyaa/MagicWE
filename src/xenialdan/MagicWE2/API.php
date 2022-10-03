@@ -199,18 +199,18 @@ class API
 			}
 			#$c = $clipboard->getCenter();
 			#$clipboard->setCenter($target->asVector3());//TODO check
-			if ($session instanceof UserSession) {
+			if($session instanceof UserSession){
 				$player = $session->getPlayer();
 				/** @var Player $player */
 				$session->getBossBar()->showTo([$player]);
 			}
 //			$start = clone $target->asVector3()->floor()->addVector($clipboard->position)->floor();//start pos of paste//TODO if using rotate, this fails
 //			$end = $start->addVector($clipboard->selection->getShape()->getMaxVec3()->subtractVector($clipboard->selection->getShape()->getMinVec3()));//add size
-			$shape = $clipboard->selection->getShape();
-			$shape->offset($shape->getPasteVector()->subtractVector($target->asVector3()));
-			$shape->setPasteVector($target->asVector3()->floor());//needed
-			$clipboard->selection->setShape($shape);//TODO probably need to update selection
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard));
+//			$shape = $clipboard->selection->getShape();
+//			$shape->offset($shape->getPasteVector()->subtractVector($target->asVector3()));
+//			$shape->setPasteVector($target->asVector3()->floor());//needed
+//			$clipboard->selection->setShape($shape);//TODO probably need to update selection
+			Server::getInstance()->getAsyncPool()->submitTask(new AsyncPasteTask($session->getUUID(), $clipboard, $target->floor()));
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);

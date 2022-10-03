@@ -42,7 +42,7 @@ class CountAction extends TaskAction
 	 */
 	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
 	{
-		$manager = $selection->getIterator()->getManager();
+		$manager = $selection->getIterator(true)->getManager();
 		$changed = 0;
 		#$oldBlocks = [];
 		$count = $selection->getShape()->getTotalCount();

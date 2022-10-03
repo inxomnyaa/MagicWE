@@ -57,8 +57,6 @@ class Selection implements Serializable, JsonSerializable{
 		}catch(RuntimeException $e){
 			Loader::getInstance()->getLogger()->logException($e);
 		}
-
-		$this->iterator = new SubChunkIterator(new AsyncWorld($this));
 	}
 
 	public function free() : void{
@@ -92,9 +90,9 @@ class Selection implements Serializable, JsonSerializable{
 		}catch(RuntimeException $e){
 			Loader::getInstance()->getLogger()->logException($e);
 		}
-		$this->free();
-		$manager = $this->getIterator()->getManager();
-		if($manager instanceof AsyncWorld) $manager->copyChunks($this);
+//		$this->free();
+//		$manager = $this->getIterator()->getManager();
+//		if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 	}
 
 	/**
@@ -132,9 +130,9 @@ class Selection implements Serializable, JsonSerializable{
 				}catch(RuntimeException $e){
 					Loader::getInstance()->getLogger()->logException($e);
 				}
-				$this->free();
-				$manager = $this->getIterator()->getManager();
-				if($manager instanceof AsyncWorld) $manager->copyChunks($this);
+//				$this->free();
+//				$manager = $this->getIterator()->getManager();
+//				if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 			}
 		}catch(SessionException){
 			//TODO log? kick?
@@ -176,9 +174,9 @@ class Selection implements Serializable, JsonSerializable{
 				}catch(RuntimeException $e){
 					Loader::getInstance()->getLogger()->logException($e);
 				}
-				$this->free();
-				$manager = $this->getIterator()->getManager();
-				if($manager instanceof AsyncWorld) $manager->copyChunks($this);
+//				$this->free();
+//				$manager = $this->getIterator()->getManager();
+//				if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 			}
 		}catch(SessionException | SelectionException | RuntimeException $e){//TODO log? kick?
 			Loader::getInstance()->getLogger()->logException($e);
@@ -199,9 +197,9 @@ class Selection implements Serializable, JsonSerializable{
 		$this->shape = $shape;
 		try{
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();//might cause duplicated call
-			$this->free();
-			$manager = $this->getIterator()->getManager();
-			if($manager instanceof AsyncWorld) $manager->copyChunks($this);
+//			$this->free();
+//			$manager = $this->getIterator()->getManager();
+//			if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 		}catch(RuntimeException | SelectionException $e){
 			Loader::getInstance()->getLogger()->debug($e);
 		}
@@ -249,8 +247,10 @@ class Selection implements Serializable, JsonSerializable{
 		return $this->uuid;
 	}
 
-	public function getIterator() : SubChunkIterator{
-		return $this->iterator;
+	public function getIterator(bool $copyChunks = true) : SubChunkIterator{
+		$manager = new AsyncWorld($this);
+		if($copyChunks) $manager->copyChunks($this);
+		return new SubChunkIterator($manager);
 	}
 
 	/**
@@ -267,7 +267,7 @@ class Selection implements Serializable, JsonSerializable{
 			$this->uuid,
 			$this->sessionUUID,
 			$this->shape,
-			$this->iterator,
+//			$this->iterator,
 		]);
 	}
 
@@ -290,7 +290,7 @@ class Selection implements Serializable, JsonSerializable{
 			$this->uuid,
 			$this->sessionUUID,
 			$this->shape,
-			$this->iterator
+//			$this->iterator
 		] = unserialize($data/*, ['allowed_classes' => [__CLASS__, Vector3::class,UuidInterface::class,Shape::class]]*/);//TODO test pm4
 	}
 

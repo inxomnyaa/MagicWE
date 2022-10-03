@@ -8,10 +8,8 @@ use pocketmine\block\Block;
 use pocketmine\math\Facing;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
-use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
-use xenialdan\MagicWE2\helper\AsyncChunkManager;
 use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 
@@ -35,8 +33,10 @@ class Flood extends WETool
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 *
+	 * @param AsyncWorld   $manager The world or AsyncWorld
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
+	 *
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
@@ -54,7 +54,7 @@ class Flood extends WETool
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 * @param AsyncWorld $manager The world or AsyncWorld
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
@@ -112,12 +112,11 @@ class Flood extends WETool
 	}
 
 	/**
-	 * @param World|AsyncChunkManager $chunkManager
+	 * @param World|AsyncWorld $chunkManager
 	 * @return array
 	 * @throws InvalidArgumentException
 	 */
-	public function getTouchedChunks(AsyncChunkManager|World $chunkManager): array
-	{
+	public function getTouchedChunks(AsyncWorld|World $chunkManager) : array{
 		$this->validateChunkManager($chunkManager);
 		$maxRadius = sqrt($this->limit / M_PI);
 		$v2center = new Vector2($this->getCenter()->x, $this->getCenter()->z);
@@ -153,30 +152,13 @@ class Flood extends WETool
 	 * @param mixed $manager
 	 * @throws InvalidArgumentException
 	 */
-	public function validateChunkManager(mixed $manager): void
-	{
-		if (!$manager instanceof World && !$manager instanceof AsyncChunkManager) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncChunkManager");
+	public function validateChunkManager(mixed $manager): void{
+		if(!$manager instanceof World && !$manager instanceof AsyncWorld) throw new InvalidArgumentException(get_class($manager) . " is not an instance of World or AsyncWorld");
 	}
 
 	private function getCenter(): Vector3
 	{
 		//UGLY HACK TO IGNORE ERRORS FOR NOW
 		return new Vector3(0, 0, 0);
-	}
-
-	/**
-	 * Creates a chunk manager used for async editing
-	 * @param Chunk[] $chunks
-	 * @phpstan-param array<int, Chunk> $chunks
-	 * @return AsyncChunkManager
-	 */
-	public static function getChunkManager(array $chunks): AsyncChunkManager
-	{
-		$manager = new AsyncChunkManager(World::Y_MIN, World::Y_MAX);//TODO replace AsyncChunkManager with AsyncWorld
-		foreach($chunks as $hash => $chunk){
-			World::getXZ($hash, $x, $z);
-			$manager->setChunk($x, $z, $chunk);
-		}
-		return $manager;
 	}
 }

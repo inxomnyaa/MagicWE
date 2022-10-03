@@ -59,7 +59,7 @@ class Pyramid extends Shape{
 	/**
 	 * Returns the blocks by their actual position
 	 *
-	 * @param AsyncWorld   $manager The world or AsyncChunkManager
+	 * @param AsyncWorld   $manager The world or AsyncWorld
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
 	 *
 	 * @return Block[]|Generator
@@ -106,7 +106,7 @@ class Pyramid extends Shape{
 	/**
 	 * Returns a flat layer of all included x z positions in selection
 	 *
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 * @param AsyncWorld $manager The world or AsyncWorld
 	 * @param int        $flags
 	 *
 	 * @return Generator
