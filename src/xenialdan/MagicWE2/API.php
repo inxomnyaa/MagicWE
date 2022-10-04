@@ -11,6 +11,7 @@ use JsonSchema\Exception\ResourceNotFoundException;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\NoSuchTagException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
 use pocketmine\player\Player;
@@ -30,6 +31,7 @@ use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
 use xenialdan\MagicWE2\exception\CalculationException;
 use xenialdan\MagicWE2\exception\LimitExceededException;
+use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
@@ -529,23 +531,24 @@ class API
 	}
 
 	/**
-	 * @throws InvalidArgumentException
+	 * @throws InvalidArgumentException|SelectionException
 	 */
-	public static function rotate(Schematic|MCStructure|SingleClipboard $structure, int $rotation) : Schematic|MCStructure|SingleClipboard{
+	public static function rotate(Schematic|MCStructure|SingleClipboard $structure, int $rotation, array &$errors = []) : Schematic|MCStructure|SingleClipboard{
 		$rotation = self::positiveModulo($rotation, 360);
 		if($rotation % 90 !== 0){
 			throw new InvalidArgumentException("Rotation must be divisible by 90");
 		}
-		if($structure instanceof Schematic) return self::rotateSchematic($structure, $rotation);
-		elseif($structure instanceof MCStructure) return self::rotateStructure($structure, $rotation);//TODO add support for creating new structures to libstructures
-		elseif($structure instanceof SingleClipboard) return self::rotateClipboard($structure, $rotation);
+		$errors = [];
+		if($structure instanceof Schematic) return self::rotateSchematic($structure, $rotation, $errors);
+		elseif($structure instanceof MCStructure) return self::rotateStructure($structure, $rotation, $errors);//TODO add support for creating new structures to libstructures
+		elseif($structure instanceof SingleClipboard) return self::rotateClipboard($structure, $rotation, $errors);
 		throw new InvalidArgumentException("Invalid structure");
 	}
 
 	/**
 	 * @throws InvalidArgumentException
 	 */
-	private static function rotateSchematic(Schematic $structure, int $rotation) : Schematic{
+	private static function rotateSchematic(Schematic $structure, int $rotation, array &$errors = []) : Schematic{
 		if($rotation % 90 !== 0){
 			throw new InvalidArgumentException("Rotation must be divisible by 90");
 		}
@@ -559,31 +562,37 @@ class API
 		foreach($structure->blocks() as $block){
 			//TODO set block to rotated blockstate
 			$state = self::entryToState(BlockEntry::fromBlock($block));
-			$stateRotated = self::rotateBlockState($state, $rotation);
-
-			$blocks[] = match ($rotation) {
-				//TODO check if the new positions are calculated correctly
-				RotateAction::ROTATE_90 => self::setComponents($stateRotated->getBlock(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1, $block->getPosition()->getFloorY(), $block->getPosition()->getFloorX()),
-				RotateAction::ROTATE_180 => self::setComponents($stateRotated->getBlock(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1, $block->getPosition()->getFloorY(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1),
-				RotateAction::ROTATE_270 => self::setComponents($stateRotated->getBlock(), $block->getPosition()->getFloorZ(), $block->getPosition()->getFloorY(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1),
-				default => $stateRotated->getBlock()
-			};
-			//TODO move origin of structure
+			try{
+				$stateRotated = self::rotateBlockState($state, $rotation);
+				$blocks[] = match ($rotation) {
+					//TODO check if the new positions are calculated correctly
+					RotateAction::ROTATE_90 => self::setComponents($stateRotated->getBlock(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1, $block->getPosition()->getFloorY(), $block->getPosition()->getFloorX()),
+					RotateAction::ROTATE_180 => self::setComponents($stateRotated->getBlock(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1, $block->getPosition()->getFloorY(), $structure->getLength() - $block->getPosition()->getFloorZ() - 1),
+					RotateAction::ROTATE_270 => self::setComponents($stateRotated->getBlock(), $block->getPosition()->getFloorZ(), $block->getPosition()->getFloorY(), $structure->getWidth() - $block->getPosition()->getFloorX() - 1),
+					default => $stateRotated->getBlock()
+				};
+			}catch(BlockQueryParsingFailedException | NoSuchTagException | UnexpectedTagTypeException $e){
+				$errors[] = $e->getMessage();//TODO implement error printing, for now silently continue
+				continue;
+			}
 		}
+		//TODO move origin of structure
 		$newSchematic = new Schematic();
 		$newSchematic->setBlockArray($blocks);
 		return $newSchematic;
 	}
 
-	private static function rotateStructure(MCStructure $structure, int $rotation) : MCStructure{
+	private static function rotateStructure(MCStructure $structure, int $rotation, array &$errors = []) : MCStructure{
 		//TODO this is not yet implemented due to lack of support for creating new MCStructures in libstructure
 		return $structure;
 	}
 
 	/**
-	 * @throws InvalidArgumentException
+	 * @param array $errors Exceptions thrown whilst rotating the blockstates
+	 *
+	 * @throws InvalidArgumentException|SelectionException
 	 */
-	private static function rotateClipboard(SingleClipboard $structure, int $rotation) : SingleClipboard{
+	private static function rotateClipboard(SingleClipboard $structure, int $rotation, array &$errors = []) : SingleClipboard{
 		if($rotation % 90 !== 0){
 			throw new InvalidArgumentException("Rotation must be divisible by 90");
 		}
@@ -601,17 +610,22 @@ class API
 		foreach($structure->iterateEntries($x, $y, $z) as $entry){
 			//TODO set entry to rotated blockstate
 			$state = self::entryToState($entry);
-			$stateRotated = self::rotateBlockState($state, $rotation);
+			try{
+				$stateRotated = self::rotateBlockState($state, $rotation);
 
-			$newV3 = match ($rotation)//TODO figure out how to avoid new Vector3 objects
-			{
-				RotateAction::ROTATE_90 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
-				RotateAction::ROTATE_180 => new Vector3($structure->selection->getSizeX() - $x - 1, $y, $structure->selection->getSizeZ() - $z - 1),//TODO is this flip instead of rotate?
-				RotateAction::ROTATE_270 => new Vector3($z, $y, $structure->selection->getSizeX() - $x - 1),
-				default => new Vector3($x, $y, $z)
-			};
-			$newClipboard->addEntry($newV3->getFloorX(), $newV3->getFloorY(), $newV3->getFloorZ(), new BlockEntry($stateRotated->getFullId()));
-			//TODO move origin of structure
+				$newV3 = match ($rotation)//TODO figure out how to avoid new Vector3 objects
+				{
+					RotateAction::ROTATE_90 => new Vector3($structure->selection->getSizeZ() - $z - 1, $y, $x),
+					RotateAction::ROTATE_180 => new Vector3($structure->selection->getSizeX() - $x - 1, $y, $structure->selection->getSizeZ() - $z - 1),//TODO is this flip instead of rotate?
+					RotateAction::ROTATE_270 => new Vector3($z, $y, $structure->selection->getSizeX() - $x - 1),
+					default => new Vector3($x, $y, $z)
+				};
+				//TODO move origin of structure
+				$newClipboard->addEntry($newV3->getFloorX(), $newV3->getFloorY(), $newV3->getFloorZ(), new BlockEntry($stateRotated->getFullId()));
+			}catch(BlockQueryParsingFailedException | NoSuchTagException | UnexpectedTagTypeException $e){
+				$errors[] = $e->getMessage();//TODO implement error printing, for now silently continue
+				continue;
+			}
 		}
 		return $newClipboard;
 	}
@@ -637,7 +651,7 @@ class API
 
 	/**
 	 * @throws InvalidArgumentException When rotation is invalid (not divisible by 90)
-	 * @throws UnexpectedTagTypeException
+	 * @throws UnexpectedTagTypeException|NoSuchTagException
 	 * @throws BlockQueryParsingFailedException When no such blockstate could be found
 	 */
 	private static function rotateBlockState(BlockState $state, int $rotation) : BlockState{
@@ -650,6 +664,7 @@ class API
 		return $newState->replaceBlockStateValues($data);
 	}
 
+	/** @throws InvalidArgumentException */
 	public static function getRotationData(BlockState $blockState, int $rotation) : array{
 		if($rotation !== RotateAction::ROTATE_90 && $rotation !== RotateAction::ROTATE_180 && $rotation !== RotateAction::ROTATE_270) throw new InvalidArgumentException("Invalid rotation $rotation given");
 

@@ -19,13 +19,8 @@ class AsyncWorld extends SimpleChunkManager implements Serializable{
 //	/** @var CompoundTag[] *///TODO maybe CacheableNbt
 //	protected array $tiles = [];
 
-	/**
-	 * @throws SelectionException
-	 * @throws RuntimeException
-	 */
-	public function __construct(Selection $selection){
+	public function __construct(){
 		parent::__construct(World::Y_MIN, World::Y_MAX);
-//		$this->copyChunks($selection);
 	}
 
 	/**
@@ -36,6 +31,7 @@ class AsyncWorld extends SimpleChunkManager implements Serializable{
 	}
 
 	/**
+	 * May not be called from async task
 	 * @throws SelectionException|RuntimeException
 	 */
 	public function copyChunks(Selection $selection) : void{
@@ -45,14 +41,14 @@ class AsyncWorld extends SimpleChunkManager implements Serializable{
 		$shape = $selection->getShape();
 		$aabb = $shape->getAABB();
 		$world = $selection->getWorld();
-		$maxX = $aabb->maxX >> 4;
-		$minX = $aabb->minX >> 4;
-		$maxZ = $aabb->maxZ >> 4;
-		$minZ = $aabb->minZ >> 4;
-		for ($x = $minX; $x <= $maxX; $x++) {
-			for ($z = $minZ; $z <= $maxZ; $z++) {
+		$maxX = $aabb->maxX >> Chunk::COORD_BIT_SIZE;
+		$minX = $aabb->minX >> Chunk::COORD_BIT_SIZE;
+		$maxZ = $aabb->maxZ >> Chunk::COORD_BIT_SIZE;
+		$minZ = $aabb->minZ >> Chunk::COORD_BIT_SIZE;
+		for($x = $minX; $x <= $maxX; $x++){
+			for($z = $minZ; $z <= $maxZ; $z++){
 				$chunk = $world->getChunk($x, $z);
-				if ($chunk === null) {
+				if($chunk === null){
 					continue;
 				}
 				$this->setChunk($x, $z, $chunk);

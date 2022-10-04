@@ -47,19 +47,14 @@ class RotateAction extends ClipboardAction
 	 * @throws Exception
 	 */
 	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []) : Generator{
-		//TODO modify position. For now, just flip the blocks around their own axis
+		//TODO modify clipboard position / add relative rotation. For now, just rotate the blocks around their center
 		$changed = 0;
-		#$oldBlocks = [];
 		$count = $clipboard->getTotalCount();
 		yield new Progress(0, "");
 		BlockFactory::getInstance();
-//		/** @var BlockStatesParser $blockStatesParser */
-//		$blockStatesParser = BlockStatesParser::getInstance();
-
-		#var_dump(__CLASS__ . " ". __FUNCTION__ . " " . __LINE__ . " " . __FILE__, count($this->rotationData), API::$rotationData);
 		API::setRotationData($this->rotationData);
-		#var_dump(__CLASS__ . " ". __FUNCTION__ . " " . __LINE__ . " " . __FILE__, count($this->rotationData), API::$rotationData);
-		$clipboard = API::rotate($clipboard, $this->rotation);
+		$errors = [];
+		$clipboard = API::rotate($clipboard, $this->rotation, $errors);
 
 		yield new Progress($changed / $count, "$changed/$count");
 	}

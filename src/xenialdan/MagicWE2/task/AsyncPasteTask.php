@@ -41,29 +41,12 @@ class AsyncPasteTask extends MWEAsyncTask
 	 */
 	public function __construct(UuidInterface $sessionUUID, SingleClipboard $clipboard, Vector3 $pasteVector){
 		$this->start = microtime(true);
-		/*
-		 backup
 		$this->offset = $pasteVector->addVector($clipboard->position);
-		var_dump("paste", $clipboard->selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset);
-		$clipboard->selection->getShape()->setPasteVector($clipboard->selection->getShape()->getPasteVector()->addVector($clipboard->position));
-		var_dump("new paste", $clipboard->selection->getShape()->getPasteVector());
-		 */
-		$this->offset = $pasteVector->addVector($clipboard->position);
-//		var_dump("paste", $clipboard->selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, "aabb", $clipboard->selection->getShape()->getAABB());
-//		var_dump("new paste vec", $pasteVector);
-//		var_dump("orig paste", $clipboard->selection->getShape()->getPasteVector());
-//		var_dump("pasteV minus offset", $clipboard->selection->getShape()->getPasteVector()->subtractVector($this->offset));
-//		var_dump("old minus new pos", $clipboard->selection->getShape()->getPasteVector()->subtractVector($pasteVector));
+		//FIXME Sometimes not all "paste chunks" are set for some shapes or sizes. Figure out why. Maybe ceil/floor?
 		$clipboard->selection->getShape()->setPasteVector($this->offset->add($clipboard->selection->getSizeX() / 2, $clipboard->selection->getSizeY() / 2, $clipboard->selection->getSizeZ() / 2));
-//		var_dump("new paste", $clipboard->selection->getShape()->getPasteVector());
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->clipboard = igbinary_serialize($clipboard);
 		$this->manager = $clipboard->selection->getIterator()->getManager();
-//		var_dump(__METHOD__ . __LINE__, count($this->manager->getChunks()));
-		foreach($this->manager->getChunks() as $hash => $chunk){
-			World::getXZ($hash, $x, $z);
-//			var_dump(__METHOD__ . __LINE__, $hash, $x, $z);
-		}
 	}
 
 	/**
@@ -76,13 +59,8 @@ class AsyncPasteTask extends MWEAsyncTask
 	{
 		$this->publishProgress([0, "Start"]);
 
-//		$touchedChunks = array_map(static function ($chunk) {//todo add hash as key
-//			return FastChunkSerializer::deserializeTerrain($chunk);
-//		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
-//		unset($touchedChunks);
-
 		/** @var SingleClipboard $clipboard */
-		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [SingleClipboard::class]]*/);//TODO test pm4
+		$clipboard = igbinary_unserialize($this->clipboard);
 
 		$manager = $this->manager;
 		$oldBlocks = iterator_to_array($this->execute($clipboard, $changed, $manager));
@@ -96,48 +74,37 @@ class AsyncPasteTask extends MWEAsyncTask
 
 	/**
 	 * @param SingleClipboard $clipboard
-	 * @param null|int $changed
+	 * @param null|int        $changed
+	 * @param AsyncWorld      $manager
+	 *
 	 * @return Generator
-	 * @throws InvalidArgumentException
 	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
+	 * @throws InvalidArgumentException
 	 */
 	private function execute(SingleClipboard $clipboard, ?int &$changed, AsyncWorld &$manager) : Generator{
-//		var_dump("MANAGER CHUNK COUNT", count($manager->getChunks()));
 		$blockCount = $clipboard->getTotalCount();
 		$x = $y = $z = null;
 		$lastprogress = 0;
-		$i = 0;
 		$changed = 0;
 		$this->publishProgress([0, "Running, changed $changed blocks out of $blockCount"]);
 		/** @var BlockEntry $entry */
 		foreach($clipboard->iterateEntries($x, $y, $z) as $entry){
-			#var_dump("at cb xyz $x $y $z: $entry");
 			$x += $this->offset->getFloorX();
 			$y += $this->offset->getFloorY();
 			$z += $this->offset->getFloorZ();
-			#var_dump("add offset xyz $x $y $z");
 			/*if (API::hasFlag($this->flags, API::FLAG_POSITION_RELATIVE)){
 				$rel = $block->subtract($selection->shape->getPasteVector());
 				$block = API::setComponents($block,$rel->x,$rel->y,$rel->z);//TODO COPY TO ALL TASKS
 			}*/
 			$new = $entry->toBlock();
-			#$new->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
-			#$old->position(($pos = Position::fromObject(new Vector3($x, $y, $z)))->getWorld(), $pos->getX(), $pos->getY(), $pos->getZ());
-			#var_dump("old", $old, "new", $new);
 			yield self::singleBlockToData(API::setComponents($manager->getBlockAt($x, $y, $z), (int) $x, (int) $y, (int) $z));
 
-//			var_dump(__METHOD__ . __LINE__, World::chunkHash($x, $z), $x, $z);
 			if($manager->getChunk($x >> 4, $z >> 4) === null){
 				$manager->setChunk($x >> 4, $z >> 4, new Chunk([], BiomeArray::fill(BiomeIds::OCEAN), false));
 			}
-//			var_dump("ToPlace", $entry->toBlock());
-//			var_dump("Before setBlockAt", API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z));
 			$manager->setBlockAt($x, $y, $z, $new);
-//			var_dump("After setBlockAt", API::setComponents($manager->getBlockAt($x, $y, $z), (int)$x, (int)$y, (int)$z));
 			$changed++;
-			///
-			$i++;
-			$progress = floor($i / $blockCount * 100);
+			$progress = floor($changed / $blockCount * 100);
 			if($lastprogress < $progress){//this prevents spamming packets
 				$this->publishProgress([$progress, "Running, changed $changed blocks out of $blockCount"]);
 				$lastprogress = $progress;
@@ -162,19 +129,18 @@ class AsyncPasteTask extends MWEAsyncTask
 		$resultChunks = $result["resultChunks"];
 //		$undoChunks = array_map(static function ($chunk) {
 //			return FastChunkSerializer::deserializeTerrain($chunk);
-//		}, igbinary_unserialize($this->touchedChunks/*, ['allowed_classes' => false]*/));//TODO test pm4
+//		}, igbinary_unserialize($this->touchedChunks));
 		$oldBlocks = $result["oldBlocks"];//already data array
 		$changed = $result["changed"];
 		/** @var SingleClipboard $clipboard */
-		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$clipboard = igbinary_unserialize($this->clipboard);
 		$selection = $clipboard->selection;
-		$undoChunks = $selection->getIterator()->getManager()->getChunks();//?
+		$undoChunks = $selection->getIterator()->getManager()->getChunks();//Should be unmodified
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach($resultChunks as $hash => $chunk){
 			World::getXZ($hash, $x, $z);
 			$world->setChunk($x, $z, $chunk);
-//			var_dump("setChunk", $x, $z, $hash);
 		}
 		if(!is_null($session)){
 			$session->sendMessage(TF::GREEN . $session->getLanguage()->translateString('task.paste.success', [$this->generateTookString(), $changed, $totalCount]));

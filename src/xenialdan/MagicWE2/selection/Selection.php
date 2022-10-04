@@ -26,7 +26,6 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\shape\Cuboid;
 use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\Session;
-use function var_dump;
 
 /**
  * Class Selection
@@ -193,7 +192,7 @@ class Selection implements Serializable, JsonSerializable{
 	}
 
 	public function setShape(Shape $shape) : void{
-		var_dump($shape);
+//		var_dump($shape);
 		$this->shape = $shape;
 		try{
 			(new MWESelectionChangeEvent($this, MWESelectionChangeEvent::TYPE_SHAPE))->call();//might cause duplicated call
@@ -215,7 +214,7 @@ class Selection implements Serializable, JsonSerializable{
 	 */
 	public function isValid() : bool{
 		try{
-			var_dump("World: " . $this->getWorld()->getId() . " Pos1: " . $this->pos1 . " Pos2: " . $this->pos2 . " Shape: " . $this->shape?->serialize());
+//			var_dump("World: " . $this->getWorld()->getId() . " Pos1: " . $this->pos1 . " Pos2: " . $this->pos2 . " Shape: " . $this->shape?->serialize());
 			//$this->getShape();
 			$this->getWorld();
 			$this->getPos1();
@@ -248,7 +247,7 @@ class Selection implements Serializable, JsonSerializable{
 	}
 
 	public function getIterator(bool $copyChunks = true) : SubChunkIterator{
-		$manager = new AsyncWorld($this);
+		$manager = new AsyncWorld();
 		if($copyChunks) $manager->copyChunks($this);
 		return new SubChunkIterator($manager);
 	}
