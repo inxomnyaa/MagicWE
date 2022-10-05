@@ -48,18 +48,20 @@ class CutAction extends TaskAction
 		foreach($selection->getShape()->getBlocks($manager, $blockFilter) as $block){//TODO Merged iterator
 			/** @var Block $new */
 			$new = $newBlocks->blocks()->current();//TODO Merged iterator
-			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
+			/** @noinspection PhpInternalEntityUsedInspection */
+			if($new->getFullId() === $block->getFullId()) continue;//skip same blocks
 			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->x, $block->y, $block->z);
-			$newv3 = $block->getPosition()->subtractVector($min)->floor();//TODO check if only used for clipboard
+			#$newv3 = $block->getPosition()->subtractVector($min)->floor();//TODO check if only used for clipboard
+			$newv3 = $block->getPosition()->asVector3();
 			$oldBlocksSingleClipboard->addEntry($newv3->getFloorX(), $newv3->getFloorY(), $newv3->getFloorZ(), BlockEntry::fromBlock($block));
 			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $new);
 			/** @noinspection PhpInternalEntityUsedInspection */
-			if ($manager->getBlockFullIdAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()) !== $block->getFullId()) {
+			if($manager->getBlockFullIdAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()) !== $block->getFullId()){
 				$changed++;
 			}
 			$i++;
 			$progress = new Progress($i / $count, "Changed $changed blocks out of $count");
-			if (floor($progress->progress * 100) > floor($lastProgress->progress * 100)) {
+			if(floor($progress->progress * 100) > floor($lastProgress->progress * 100)){
 				yield $progress;
 				$lastProgress = $progress;
 			}

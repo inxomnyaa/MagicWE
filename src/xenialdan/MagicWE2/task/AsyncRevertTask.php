@@ -46,6 +46,10 @@ class AsyncRevertTask extends MWEAsyncTask{
 		$this->clipboard = igbinary_serialize($clipboard);
 		$this->type = $type;
 		$this->manager = AsyncWorld::fromRevertClipboard($clipboard);
+		foreach($clipboard->chunks as $hash => $chunk){
+			World::getXZ($hash, $x, $z);
+			var_dump("Chunk $hash at $x, $z");
+		}
 	}
 
 	/**

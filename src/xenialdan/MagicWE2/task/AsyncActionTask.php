@@ -131,11 +131,12 @@ class AsyncActionTask extends MWEAsyncTask
 		$changed = $result["changed"];
 		/** @var Selection $selection */
 		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
-		$undoChunks = $selection->getIterator()->getManager()->getChunks();
+		$undoChunks = [];
 		$totalCount = $selection->getShape()->getTotalCount();
 		$world = $selection->getWorld();
 		foreach ($resultChunks as $hash => $chunk) {
 			World::getXZ($hash, $x, $z);
+			$undoChunks[$hash] = $world->getChunk($x, $z);
 			$world->setChunk($x, $z, $chunk);
 		}
 		if (!is_null($session)) {
