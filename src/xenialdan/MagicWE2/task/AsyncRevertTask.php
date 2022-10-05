@@ -5,6 +5,7 @@ namespace xenialdan\MagicWE2\task;
 use Exception;
 use Generator;
 use InvalidArgumentException;
+use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\world\Position;
@@ -21,7 +22,6 @@ use function count;
 use function igbinary_serialize;
 use function igbinary_unserialize;
 use function iterator_to_array;
-use function var_dump;
 
 class AsyncRevertTask extends MWEAsyncTask{
 
@@ -35,20 +35,23 @@ class AsyncRevertTask extends MWEAsyncTask{
 
 	/**
 	 * AsyncRevertTask constructor.
-	 * @param UuidInterface $sessionUUID
+	 *
+	 * @param UuidInterface   $sessionUUID
 	 * @param RevertClipboard $clipboard
-	 * @param int $type The type of clipboard pasting.
+	 * @param int             $type The type of clipboard pasting.
 	 */
-	public function __construct(UuidInterface $sessionUUID, RevertClipboard $clipboard, int $type = self::TYPE_UNDO)
-	{
+	public function __construct(UuidInterface $sessionUUID, RevertClipboard $clipboard, int $type = self::TYPE_UNDO){
 		$this->sessionUUID = $sessionUUID->toString();
 		$this->start = microtime(true);
 		$this->clipboard = igbinary_serialize($clipboard);
 		$this->type = $type;
 		$this->manager = AsyncWorld::fromRevertClipboard($clipboard);
+		$world = Server::getInstance()->getWorldManager()->getWorld($clipboard->worldId);
 		foreach($clipboard->chunks as $hash => $chunk){
 			World::getXZ($hash, $x, $z);
-			var_dump("Chunk $hash at $x, $z");
+			if($type === self::TYPE_REDO){
+				$this->manager->setChunk($x, $z, $world->getChunk($x, $z));
+			}
 		}
 	}
 
@@ -58,23 +61,20 @@ class AsyncRevertTask extends MWEAsyncTask{
 	 * @return void
 	 * @throws Exception
 	 */
-	public function onRun(): void{
+	public function onRun() : void{
 		$this->publishProgress([0, "Start"]);
 		/** @var RevertClipboard $clipboard */
 		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
 
 		$manager = $this->manager;
-//		$oldBlocks = [];
-//		if ($this->type === self::TYPE_UNDO)
-//			$oldBlocks = iterator_to_array($this->undoChunks($manager, $clipboard));
-//		if ($this->type === self::TYPE_REDO)
-//			$oldBlocks = iterator_to_array($this->redoChunks($manager, $clipboard));
+		$oldBlocks = [];
 		if($this->type === self::TYPE_UNDO)
-			iterator_to_array($this->undoChunks($manager, $clipboard));
-		if($this->type === self::TYPE_REDO)
-			iterator_to_array($this->redoChunks($manager, $clipboard));
+			$oldBlocks = iterator_to_array($this->undoChunks($manager, $clipboard));
+		if($this->type === self::TYPE_REDO){
+			$oldBlocks = iterator_to_array($this->redoChunks($manager, $clipboard));
+		}
 		$chunks = $manager->getChunks();
-		$this->setResult($chunks);
+		$this->setResult([$chunks, $oldBlocks]);
 	}
 
 	/**
@@ -91,10 +91,9 @@ class AsyncRevertTask extends MWEAsyncTask{
 		$this->publishProgress([0, "Reverted $changed blocks out of $count"]);
 		//$block is "data" array
 		foreach($clipboard->blocksAfter as $block){
-			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			var_dump("HAD " . $manager->getBlockAt($block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z)->getId());
-			var_dump("SET " . $block);
+			$original = $manager->getBlockAt($block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z);
+			yield self::singleBlockToData($original, $block->getPosition());
 			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Reverted $changed blocks out of $count"]);
@@ -104,6 +103,7 @@ class AsyncRevertTask extends MWEAsyncTask{
 	/**
 	 * @param AsyncWorld      $manager
 	 * @param RevertClipboard $clipboard
+	 *
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 * @phpstan-return Generator<int, array{int, Position|null}, void, void>
@@ -114,10 +114,9 @@ class AsyncRevertTask extends MWEAsyncTask{
 		$this->publishProgress([0, "Redone $changed blocks out of $count"]);
 		//$block is "data" array
 		foreach($clipboard->blocksAfter as $block){
-			yield $block;
 			$block = self::singleDataToBlock($block);//turn data into real block
-			var_dump("HAD " . $manager->getBlockAt($block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z)->getId());
-			var_dump("SET " . $block);
+			$original = $manager->getBlockAt($block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z);
+			yield self::singleBlockToData($original, $block->getPosition());
 			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
 			$this->publishProgress([$changed / $count, "Redone $changed blocks out of $count"]);
@@ -127,8 +126,7 @@ class AsyncRevertTask extends MWEAsyncTask{
 	/**
 	 * @throws AssumptionFailedError
 	 */
-	public function onCompletion(): void
-	{
+	public function onCompletion() : void{
 		try{
 			$session = SessionHelper::getSessionByUUID(Uuid::fromString($this->sessionUUID));
 			if($session instanceof UserSession) $session->getBossBar()->hideFromAll();
@@ -136,12 +134,12 @@ class AsyncRevertTask extends MWEAsyncTask{
 			Loader::getInstance()->getLogger()->logException($e);
 			$session = null;
 		}
-		$result = $this->getResult();
+		[$chunks, $oldBlocks] = $this->getResult();
 		/** @var RevertClipboard $clipboard */
 		$clipboard = igbinary_unserialize($this->clipboard/*, ['allowed_classes' => [RevertClipboard::class]]*/);//TODO test pm4
-		$clipboard->chunks = $result;
+		$clipboard->chunks = $chunks;
 		$totalCount = $changed = count($clipboard->blocksAfter);
-//		$clipboard->blocksAfter = $result["oldBlocks"];//already is a array of data //commented out because we don't modify the array anymore
+		$clipboard->blocksAfter = $oldBlocks;//already is a array of data
 		$world = $clipboard->getWorld();
 		foreach($clipboard->chunks as $hash => $chunk){
 			World::getXZ($hash, $x, $z);
