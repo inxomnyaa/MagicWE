@@ -62,7 +62,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 		/** @var Selection $selection */
 		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
-		$manager = $selection->getIterator()->getManager();
+		$manager = $this->manager;
 
 		$oldBlocks = iterator_to_array($this->execute($manager, $selection, $this->searchBlocks, $this->replaceBlocks, $changed));
 
