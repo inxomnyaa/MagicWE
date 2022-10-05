@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use pocketmine\block\Block;
 use xenialdan\libblockstate\BlockEntry;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -26,28 +27,21 @@ class SetBlockAction extends TaskAction
 	}
 
 	/**
-	 * @param string $sessionUUID
-	 * @param Selection $selection
-	 * @param null|int $changed
-	 * @param BlockPalette $newBlocks
-	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator
+	 *
 	 * @throws InvalidArgumentException
 	 */
-	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
-	{
-		$manager = $selection->getIterator()->getManager();
+	public function execute(string $sessionUUID, Selection $selection, AsyncWorld &$manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []) : Generator{
 		$changed = 0;
 		$i = 0;
 		#$oldBlocks = [];
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
-		foreach ($selection->getShape()->getBlocks($manager, $blockFilter) as $block) {//TODO merge iterator
+		foreach($selection->getShape()->getBlocks($manager, $blockFilter) as $block){//TODO merge iterator
 			/** @var Block $new */
 			$new = $newBlocks->blocks()->current();//TODO merge iterator
-			if ($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
+			if($new->getId() === $block->getId() && $new->getMeta() === $block->getMeta()) continue;//skip same blocks
 			#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->x, $block->y, $block->z);
 			$oldBlocksSingleClipboard->addEntry($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), BlockEntry::fromBlock($block));
 			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $new);

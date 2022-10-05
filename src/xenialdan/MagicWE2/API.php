@@ -39,12 +39,12 @@ use xenialdan\MagicWE2\selection\shape\Shape;
 use xenialdan\MagicWE2\session\data\Asset;
 use xenialdan\MagicWE2\session\Session;
 use xenialdan\MagicWE2\session\UserSession;
+use xenialdan\MagicWE2\task\action\CountAction;
 use xenialdan\MagicWE2\task\action\RotateAction;
 use xenialdan\MagicWE2\task\action\SetBiomeAction;
 use xenialdan\MagicWE2\task\action\TaskAction;
 use xenialdan\MagicWE2\task\AsyncActionTask;
 use xenialdan\MagicWE2\task\AsyncCopyTask;
-use xenialdan\MagicWE2\task\AsyncCountTask;
 use xenialdan\MagicWE2\task\AsyncFillTask;
 use xenialdan\MagicWE2\task\AsyncPasteAssetTask;
 use xenialdan\MagicWE2\task\AsyncPasteTask;
@@ -229,12 +229,20 @@ class API
 	 * @return bool
 	 */
 	public static function countAsync(Selection $selection, Session $session, BlockPalette $filterBlocks, int $flags = self::FLAG_BASE): bool{
-		try {
+		try{
 			$limit = Loader::getInstance()->getConfig()->get("limit", -1);
-			if ($limit !== -1 && $selection->getShape()->getTotalCount() > $limit) {
+			if($limit !== -1 && $selection->getShape()->getTotalCount() > $limit){
 				throw new LimitExceededException("You are trying to count too many blocks at once. Reduce the selection or raise the limit");
 			}
-			Server::getInstance()->getAsyncPool()->submitTask(new AsyncCountTask($session->getUUID(), $selection, $filterBlocks));
+			Server::getInstance()->getAsyncPool()->submitTask(
+				new AsyncActionTask(
+					$session->getUUID(),
+					$selection,
+					new CountAction(),
+					BlockPalette::CREATE(),
+					$filterBlocks
+				)
+			);
 		} catch (Exception $e) {
 			$session->sendMessage($e->getMessage());
 			Loader::getInstance()->getLogger()->logException($e);

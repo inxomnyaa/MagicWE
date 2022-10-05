@@ -10,6 +10,7 @@ use pocketmine\world\SimpleChunkManager;
 use pocketmine\world\World;
 use RuntimeException;
 use Serializable;
+use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SelectionException;
 use xenialdan\MagicWE2\selection\Selection;
 use function igbinary_serialize;
@@ -21,6 +22,15 @@ class AsyncWorld extends SimpleChunkManager implements Serializable{
 
 	public function __construct(){
 		parent::__construct(World::Y_MIN, World::Y_MAX);
+	}
+
+	public static function fromRevertClipboard(RevertClipboard $clipboard) : self{
+		$world = new self();
+		foreach($clipboard->chunks as $hash => $chunk){
+			World::getXZ($hash, $x, $z);
+			$world->setChunk($x, $z, $clipboard->getWorld()->getChunk($x, $z));
+		}
+		return $world;
 	}
 
 	/**

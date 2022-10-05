@@ -31,7 +31,6 @@ class AsyncPasteTask extends MWEAsyncTask
 {
 	private string $clipboard;
 	private Vector3 $offset;
-	private AsyncWorld $manager;
 
 	/**
 	 * AsyncPasteTask constructor.

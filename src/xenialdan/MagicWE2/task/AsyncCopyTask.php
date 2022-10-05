@@ -26,7 +26,6 @@ class AsyncCopyTask extends MWEAsyncTask
 
 	private string $selection;
 	private Vector3 $offset;
-	private AsyncWorld $manager;
 
 	/**
 	 * AsyncCopyTask constructor.

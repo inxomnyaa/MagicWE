@@ -8,6 +8,7 @@ use pocketmine\scheduler\AsyncTask;
 use pocketmine\world\Position;
 use Ramsey\Uuid\Uuid;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\session\UserSession;
@@ -16,6 +17,7 @@ abstract class MWEAsyncTask extends AsyncTask
 {
 	public string $sessionUUID;
 	public float $start;
+	public AsyncWorld $manager;
 
 	public function onProgressUpdate($progress): void
 	{

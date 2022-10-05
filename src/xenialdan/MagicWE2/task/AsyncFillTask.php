@@ -32,7 +32,6 @@ class AsyncFillTask extends MWEAsyncTask
 	private string $selection;
 	//private string $newBlocks;
 	private BlockPalette $newBlocks;
-	private AsyncWorld $manager;
 
 	/**
 	 * AsyncFillTask constructor.

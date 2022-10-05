@@ -53,7 +53,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		$this->target = $target;
 		#var_dump("paste", $selection->getShape()->getPasteVector(), "cb position", $clipboard->position, "offset", $this->offset, $clipboard);
 		$this->sessionUUID = $sessionUUID->toString();
-
+		$this->manager = $selection->getIterator()->getManager();
 		$this->selection = igbinary_serialize($selection);
 		$this->asset = igbinary_serialize($asset);
 	}

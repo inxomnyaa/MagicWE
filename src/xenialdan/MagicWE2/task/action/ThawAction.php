@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use pocketmine\block\VanillaBlocks;
 use xenialdan\libblockstate\BlockEntry;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -26,19 +27,12 @@ class ThawAction extends TaskAction
 	}
 
 	/**
-	 * @param string $sessionUUID
-	 * @param Selection $selection
-	 * @param null|int $changed
-	 * @param BlockPalette $newBlocks
-	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator
+	 *
 	 * @throws InvalidArgumentException
 	 */
-	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
-	{
-		$manager = $selection->getIterator()->getManager();
+	public function execute(string $sessionUUID, Selection $selection, AsyncWorld &$manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []) : Generator{
 		$changed = 0;
 		$i = 0;
 		#$oldBlocks = [];
@@ -47,7 +41,7 @@ class ThawAction extends TaskAction
 
 		$blockFilterA = [VanillaBlocks::SNOW_LAYER(), VanillaBlocks::SNOW(), VanillaBlocks::ICE()];
 		$newBlocksA = [VanillaBlocks::AIR(), VanillaBlocks::AIR(), VanillaBlocks::WATER()];
-		foreach ($blockFilterA as $ib => $blockF) {
+		foreach($blockFilterA as $ib => $blockF){
 			foreach ($selection->getShape()->getBlocks($manager, BlockPalette::CREATE()) as $block) {//TODO merged generator iterating blocks and newblocks
 				$new = clone $newBlocksA[$ib];
 				#$oldBlocks[] = API::setComponents($manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ()),$block->x, $block->y, $block->z);

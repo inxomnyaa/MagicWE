@@ -56,6 +56,7 @@ class AsyncActionTask extends MWEAsyncTask
 		$this->action = $action;
 		$this->newBlocks = $newBlocks;
 		$this->blockFilter = $blockFilter;
+		$this->manager = $selection->getIterator()->getManager();
 
 		try {
 			$session = SessionHelper::getSessionByUUID($sessionUUID);
@@ -76,12 +77,12 @@ class AsyncActionTask extends MWEAsyncTask
 	 * @return void
 	 * @throws Exception
 	 */
-	public function onRun(): void
-	{
+	public function onRun(): void{
 		$this->publishProgress(new Progress(0, "Preparing {$this->action::getName()}"));
 
 		/** @var Selection $selection */
-		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
+		$selection = igbinary_unserialize($this->selection);
+		$manager = $this->manager;
 
 		$oldBlocks = new SingleClipboard($this->action->clipboardVector ?? new Vector3(0, 0, 0));//TODO Test if null V3 is ok //TODO test if the vector works
 		$oldBlocks->selection = $selection;//TODO test. Needed to add this so that //paste works after //cut2
@@ -89,11 +90,10 @@ class AsyncActionTask extends MWEAsyncTask
 		$messages = [];
 		//$error = false;
 		/** @var Progress $progress */
-		foreach ($this->action->execute($this->sessionUUID, $selection, $changed, $this->newBlocks, $this->blockFilter, $oldBlocks, $messages) as $progress) {
+		foreach($this->action->execute($this->sessionUUID, $selection, $manager, $changed, $this->newBlocks, $this->blockFilter, $oldBlocks, $messages) as $progress){
 			$this->publishProgress($progress);
 		}
 
-		$manager = $selection->getIterator()->getManager();
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
 			return $chunk->isTerrainDirty();
