@@ -200,7 +200,7 @@ class Selection implements Serializable, JsonSerializable{
 //			$manager = $this->getIterator()->getManager();
 //			if($manager instanceof AsyncWorld) $manager->copyChunks($this);
 		}catch(RuntimeException | SelectionException $e){
-			Loader::getInstance()->getLogger()->debug($e);
+			Loader::getInstance()->getLogger()->debug($e->getMessage());
 		}
 	}
 
@@ -220,7 +220,7 @@ class Selection implements Serializable, JsonSerializable{
 			$this->getPos1();
 			$this->getPos2();
 		}catch(Exception $e){
-			Loader::getInstance()->getLogger()->debug($e);
+			Loader::getInstance()->getLogger()->debug($e->getMessage());
 			return false;
 		}
 		return true;

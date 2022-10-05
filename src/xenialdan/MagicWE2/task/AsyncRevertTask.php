@@ -92,7 +92,7 @@ class AsyncRevertTask extends MWEAsyncTask{
 		//$block is "data" array
 		foreach($clipboard->blocksAfter as $block){
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$original = $manager->getBlockAt($block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z);
+			$original = $manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ());
 			yield self::singleBlockToData($original, $block->getPosition());
 			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;
@@ -115,7 +115,7 @@ class AsyncRevertTask extends MWEAsyncTask{
 		//$block is "data" array
 		foreach($clipboard->blocksAfter as $block){
 			$block = self::singleDataToBlock($block);//turn data into real block
-			$original = $manager->getBlockAt($block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z);
+			$original = $manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ());
 			yield self::singleBlockToData($original, $block->getPosition());
 			$manager->setBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ(), $block);
 			$changed++;

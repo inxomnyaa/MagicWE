@@ -16,7 +16,6 @@ use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
-use function is_null;
 
 class HPos2Command extends BaseCommand{
 
@@ -52,9 +51,6 @@ class HPos2Command extends BaseCommand{
 			}
 			if(($selection = $session->getLatestSelection()) === null){
 				$session->addSelection(($selection = new Selection($session->getUUID(), $sender->getWorld()))); // TODO check if the selection inside of the session updates
-			}
-			if(is_null($selection)){
-				throw new Error("No selection created - Check the console for errors");
 			}
 			$target = $sender->getTargetBlock(Loader::getInstance()->getToolDistance());
 			if($target === null){

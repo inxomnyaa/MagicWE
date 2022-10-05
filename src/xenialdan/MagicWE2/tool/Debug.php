@@ -96,7 +96,7 @@ class Debug extends WETool implements JsonSerializable{
 
 	public function getCurrentState(string $blockIdentifier) : ?string{
 		if(array_key_exists($blockIdentifier, $this->states)){
-			return key($this->states[$blockIdentifier]);
+			return (string) ($this->states[$blockIdentifier]);
 		}
 		return null;
 	}
@@ -117,7 +117,7 @@ class Debug extends WETool implements JsonSerializable{
 	 * @throws InvalidArgumentException
 	 * @throws AssumptionFailedError
 	 */
-	public function useSecondary(UserSession $session, Block $block){
+	public function useSecondary(UserSession $session, Block $block) : void{
 		//cycle values
 		/** @var BlockStatesParser $blockStatesParser */
 		$blockStatesParser = BlockStatesParser::getInstance();
@@ -155,7 +155,7 @@ class Debug extends WETool implements JsonSerializable{
 		}
 	}
 
-	public function usePrimary(UserSession $session, Block $block){
+	public function usePrimary(UserSession $session, Block $block) : void{
 		//cycle states
 		/** @var BlockStatesParser $blockStatesParser */
 		$blockStatesParser = BlockStatesParser::getInstance();

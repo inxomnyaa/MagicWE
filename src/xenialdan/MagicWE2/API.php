@@ -684,7 +684,7 @@ class API
 		return API::$rotationData[$id . ":" . $meta][(string) $rotation] ?? [];
 	}
 
-	public static function setRotationData(array $json){
+	public static function setRotationData(array $json) : void{
 		self::$rotationData = $json;
 	}
 

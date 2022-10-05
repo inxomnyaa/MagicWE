@@ -9,7 +9,7 @@ use function reset;
 
 class ArrayUtils{
 
-	public static function advanceWrap(&$array) : array{
+	public static function advanceWrap(array &$array) : array{
 		$result = [key($array), current($array)];
 		if(!self::hasNext($array)){
 			reset($array);
@@ -19,7 +19,7 @@ class ArrayUtils{
 		return $result;
 	}
 
-	public static function regressWrap(&$array) : array{
+	public static function regressWrap(array &$array) : array{
 		$return = [key($array), current($array)];
 		if(!self::hasPrev($array)){
 			end($array);
@@ -37,7 +37,7 @@ class ArrayUtils{
 		return prev($array) !== false || key($array) !== null;
 	}
 
-	public static function setPointerToValue(array &$array, $value) : void{
+	public static function setPointerToValue(array &$array, mixed $value) : void{
 		reset($array);
 		#var_dump($array,current($array),$value);
 		while(current($array) !== $value && self::hasNext($array)) next($array);

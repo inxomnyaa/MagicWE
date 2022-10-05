@@ -56,9 +56,6 @@ class ChunkCommand extends BaseCommand{
 			if(($selection = $session->getLatestSelection()) === null){
 				$session->addSelection(($selection = new Selection($session->getUUID(), $sender->getWorld()))); // TODO check if the selection inside of the session updates
 			}
-			if(is_null($selection)){
-				throw new Error("No selection created - Check the console for errors");
-			}
 			$chunk = $sender->getWorld()->getOrLoadChunkAtPosition($sender->getPosition());
 			if(is_null($chunk)){
 				throw new Error("Could not find a chunk at your position");

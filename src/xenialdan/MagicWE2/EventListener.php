@@ -188,9 +188,6 @@ class EventListener implements Listener{
 				if(($selection = $session->getLatestSelection()) === null){
 					$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
 				}
-				if(is_null($selection)){
-					throw new Error("No selection created - Check the console for errors");
-				}
 				$selection->setPos1($event->getBlock()->getPosition());
 				break;
 			}
@@ -240,9 +237,6 @@ class EventListener implements Listener{
 					}
 					if(($selection = $session->getLatestSelection()) === null){
 						$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
-					}
-					if(is_null($selection)){
-						throw new Error("No selection created - Check the console for errors");
 					}
 					$selection->setPos2($event->getBlock()->getPosition());
 					break;
@@ -320,9 +314,6 @@ class EventListener implements Listener{
 					}
 					if(($selection = $session->getLatestSelection()) === null){
 						$session->addSelection(($selection = new Selection($session->getUUID(), $event->getBlock()->getPosition()->getWorld()))); // TODO check if the selection inside of the session updates
-					}
-					if(is_null($selection)){
-						throw new Error("No selection created - Check the console for errors");
 					}
 					$selection->setPos1($event->getBlock()->getPosition());
 					break;
