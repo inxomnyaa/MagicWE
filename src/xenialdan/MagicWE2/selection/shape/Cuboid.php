@@ -3,6 +3,7 @@
 namespace xenialdan\MagicWE2\selection\shape;
 
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -11,14 +12,12 @@ use pocketmine\world\World;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
+use function array_keys;
+use function var_dump;
 
-class Cuboid extends Shape
-{
-	/** @var int */
+class Cuboid extends Shape{
 	public int $width = 5;
-	/** @var int */
 	public int $height = 5;
-	/** @var int */
 	public int $depth = 5;
 
 	/**
@@ -36,31 +35,44 @@ class Cuboid extends Shape
 		$this->depth = $depth;
 	}
 
-	public static function constructFromPositions(Vector3 $pos1, Vector3 $pos2): self
-	{
-		$width = (int)abs($pos1->getX() - $pos2->getX()) + 1;
-		$height = (int)abs($pos1->getY() - $pos2->getY()) + 1;
-		$depth = (int)abs($pos1->getZ() - $pos2->getZ()) + 1;
+	public static function constructFromPositions(Vector3 $p1, Vector3 $p2) : self{
+		$pos1 = Vector3::minComponents($p1, $p2);
+		$pos2 = Vector3::maxComponents($p1, $p2);
+		$width = (int) abs($pos1->getX() - $pos2->getX()) + 1;
+		$height = (int) abs($pos1->getY() - $pos2->getY()) + 1;
+		$depth = (int) abs($pos1->getZ() - $pos2->getZ()) + 1;
 		return new Cuboid((new Vector3(($pos1->x + $pos2->x) / 2, min($pos1->y, $pos2->y), ($pos1->z + $pos2->z) / 2)), $width, $height, $depth);
 	}
 
-	public function offset(Vector3 $offset): Shape
-	{
+	public function offset(Vector3 $offset) : Shape{
 		$shape = clone $this;
-		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		$shape->setPasteVector($this->pasteVector->addVector($offset));
 		return $shape;
+	}
+
+	public function rotate(int $rotation) : self{
+		if($rotation % 90 !== 0){
+			throw new InvalidArgumentException("Rotation must be divisible by 90");
+		}
+		return match ($rotation % 180 === 0) {
+			true => clone $this,
+			false => new self($this->pasteVector, $this->depth, $this->height, $this->width)
+		};
 	}
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 *
+	 * @param AsyncWorld   $manager The world or AsyncWorld
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
+	 *
 	 * @return Block[]|Generator
 	 * @phpstan-return Generator<int, Block, void, void>
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks): Generator
+	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks) : Generator
 	{
+		var_dump(array_keys($manager->getChunks()));
 		for ($x = (int)floor($this->getMinVec3()->x); $x <= floor($this->getMaxVec3()->x); $x++) {
 			for ($y = (int)floor($this->getMinVec3()->y); $y <= floor($this->getMaxVec3()->y); $y++) {
 				for ($z = (int)floor($this->getMinVec3()->z); $z <= floor($this->getMaxVec3()->z); $z++) {
@@ -69,13 +81,13 @@ class Cuboid extends Shape
 //					if (API::hasFlag($flags, API::FLAG_KEEP_BLOCKS) && $block->getId() !== BlockLegacyIds::AIR) continue;
 //					if (API::hasFlag($flags, API::FLAG_KEEP_AIR) && $block->getId() === BlockLegacyIds::AIR) continue;
 
-					if ($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < 0) continue;//TODO check for removal because relative might be at other y
+					if($block->getPosition()->y >= World::Y_MAX || $block->getPosition()->y < World::Y_MIN) continue;//TODO check if this should be 255 or World::Y_MAX //TODO check for removal because relative might be at other y
 //					if (API::hasFlag($flags, API::FLAG_HOLLOW) && ($block->getPosition()->x > $this->getMinVec3()->getX() && $block->getPosition()->x < $this->getMaxVec3()->getX()) && ($block->getPosition()->y > $this->getMinVec3()->getY() && $block->getPosition()->y < $this->getMaxVec3()->getY()) && ($block->getPosition()->z > $this->getMinVec3()->getZ() && $block->getPosition()->z < $this->getMaxVec3()->getZ())) continue;
-					if ($filterblocks->empty()) yield $block;
-					else {
-						foreach ($filterblocks->palette() as $filterblock) {
+					if($filterblocks->empty()) yield $block;
+					else{
+						foreach($filterblocks->palette() as $filterblock){
 //							if (($block->getId() === $filterblock->getId()) && ((API::hasFlag($flags, API::FLAG_VARIANT) && $block->getIdInfo()->getVariant() === $filterblock->getIdInfo()->getVariant()) || (!API::hasFlag($flags, API::FLAG_VARIANT) && ($block->getMeta() === $filterblock->getMeta() || API::hasFlag($flags, API::FLAG_KEEP_META)))))
-							if ($block->getFullId() === $filterblock->getFullId())
+							if($block->getFullId() === $filterblock->getFullId())
 								yield $block;
 						}
 					}
@@ -86,8 +98,10 @@ class Cuboid extends Shape
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
-	 * @param int $flags
+	 *
+	 * @param AsyncWorld $manager The world or AsyncWorld
+	 * @param int        $flags
+	 *
 	 * @return Generator
 	 */
 	public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator
@@ -111,9 +125,6 @@ class Cuboid extends Shape
 		);
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getTotalCount(): int
 	{
 		return $this->width * $this->height * $this->depth;

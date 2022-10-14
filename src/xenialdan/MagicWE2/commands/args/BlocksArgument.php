@@ -34,19 +34,21 @@ class BlocksArgument extends BaseArgument{
 	}
 
 	/**
-	 * @param string $argument
+	 * @param string        $argument
 	 * @param CommandSender $sender
 	 *
 	 * @return BlockPalette
 	 * @throws SessionException
 	 */
-	public function parse(string $argument, CommandSender $sender): BlockPalette
-	{
-		try {
+	public function parse(string $argument, CommandSender $sender) : BlockPalette{
+		try{
 			return BlockPalette::fromString($argument);
-		} catch (BlockQueryAlreadyParsedException | InvalidArgumentExceptionAlias $error) {
-			if ($sender instanceof Player)
-				SessionHelper::getUserSession($sender)->sendMessage('error.command-error');
+		}catch(BlockQueryAlreadyParsedException | InvalidArgumentExceptionAlias $error){
+			if($sender instanceof Player){
+				SessionHelper::getUserSession($sender)?->sendMessage('error.command-error');
+			}else{
+				$sender->sendMessage(Loader::getInstance()->getLanguage()->translateString('error.command-error'));
+			}
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
 		}
 		return BlockPalette::CREATE();

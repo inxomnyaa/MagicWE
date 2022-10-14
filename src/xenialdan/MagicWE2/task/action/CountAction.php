@@ -9,6 +9,7 @@ use Generator;
 use pocketmine\block\BlockFactory;
 use pocketmine\utils\TextFormat as TF;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\Progress;
 use xenialdan\MagicWE2\selection\Selection;
@@ -30,26 +31,19 @@ class CountAction extends TaskAction
 	}
 
 	/**
-	 * @param string $sessionUUID
-	 * @param Selection $selection
-	 * @param null|int $changed
-	 * @param BlockPalette $newBlocks
-	 * @param BlockPalette $blockFilter
 	 * @param SingleClipboard $oldBlocksSingleClipboard blocks before the change
 	 * @param string[] $messages
-	 * @return Generator
+	 *
 	 * @throws Exception
 	 */
-	public function execute(string $sessionUUID, Selection $selection, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []): Generator
-	{
-		$manager = $selection->getIterator()->getManager();
+	public function execute(string $sessionUUID, Selection $selection, AsyncWorld &$manager, ?int &$changed, BlockPalette $newBlocks, BlockPalette $blockFilter, SingleClipboard $oldBlocksSingleClipboard, array &$messages = []) : Generator{
 		$changed = 0;
 		#$oldBlocks = [];
 		$count = $selection->getShape()->getTotalCount();
 		$lastProgress = new Progress(0, "");
 		$counts = [];
 		BlockFactory::getInstance();
-		foreach ($selection->getShape()->getBlocks($manager, $newBlocks) as $block) {
+		foreach($selection->getShape()->getBlocks($manager, $newBlocks) as $block){
 			$block1 = $manager->getBlockAt($block->getPosition()->getFloorX(), $block->getPosition()->getFloorY(), $block->getPosition()->getFloorZ());
 			$tostring = $block1->getName() . " " . $block1->getId() . ":" . $block1->getMeta();
 			if (!array_key_exists($tostring, $counts)) $counts[$tostring] = 0;

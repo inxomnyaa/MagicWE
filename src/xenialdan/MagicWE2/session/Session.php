@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use pocketmine\lang\Language;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\world\World;
 use Ramsey\Uuid\UuidInterface;
 use RuntimeException;
 use SplDoublyLinkedList;
@@ -56,15 +55,10 @@ abstract class Session
 		$this->uuid = $uuid;
 	}
 
-	/**
-	 * @param Selection $selection
-	 * @return null|Selection
-	 */
-	public function &addSelection(Selection $selection): ?Selection
+	public function addSelection(Selection $selection) : void//TODO why do i return the same thing?
 	{
 		$this->selections[$selection->getUUID()->toString()] = $selection;
 		$this->setLatestSelectionUUID($selection->getUUID());
-		return $this->getLatestSelection();
 	}
 
 	/**
@@ -224,17 +218,17 @@ abstract class Session
 	 */
 	public function undo(): void
 	{
-		if ($this->undoHistory->count() === 0) {
+		if($this->undoHistory->count() === 0){
 			$this->sendMessage(TF::RED . $this->getLanguage()->translateString('session.undo.none'));
 			return;
 		}
 		/** @var RevertClipboard $revertClipboard */
 		$revertClipboard = $this->undoHistory->pop();
-		$world = $revertClipboard->getWorld();
-		foreach ($revertClipboard->chunks as $hash => $chunk) {
-			World::getXZ($hash, $x, $z);
-			$revertClipboard->chunks[$hash] = $world->getChunk($x, $z);
-		}
+//		$world = $revertClipboard->getWorld();
+//		foreach ($revertClipboard->chunks as $hash => $chunk) {
+//			World::getXZ($hash, $x, $z);
+//			$revertClipboard->chunks[$hash] = $world->getChunk($x, $z);
+//		}
 		Server::getInstance()->getAsyncPool()->submitTask(new AsyncRevertTask($this->getUUID(), $revertClipboard, AsyncRevertTask::TYPE_UNDO));
 		$this->sendMessage(TF::GREEN . $this->getLanguage()->translateString('session.undo.left', [count($this->undoHistory)]));
 	}

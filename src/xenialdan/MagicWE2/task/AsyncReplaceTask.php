@@ -16,6 +16,7 @@ use Ramsey\Uuid\UuidInterface;
 use xenialdan\MagicWE2\API;
 use xenialdan\MagicWE2\clipboard\RevertClipboard;
 use xenialdan\MagicWE2\exception\SessionException;
+use xenialdan\MagicWE2\helper\AsyncWorld;
 use xenialdan\MagicWE2\helper\BlockPalette;
 use xenialdan\MagicWE2\helper\SessionHelper;
 use xenialdan\MagicWE2\Loader;
@@ -42,6 +43,7 @@ class AsyncReplaceTask extends MWEAsyncTask
 	{
 		$this->start = microtime(true);
 		$this->sessionUUID = $sessionUUID->toString();
+		$this->manager = $selection->getIterator()->getManager();
 		$this->selection = igbinary_serialize($selection);
 		$this->searchBlocks = $searchBlocks;
 		$this->replaceBlocks = $replaceBlocks;
@@ -60,9 +62,9 @@ class AsyncReplaceTask extends MWEAsyncTask
 		/** @var Selection $selection */
 		$selection = igbinary_unserialize($this->selection/*, ['allowed_classes' => [Selection::class]]*/);//TODO test pm4
 
-		$manager = $selection->getIterator()->getManager();
+		$manager = $this->manager;
 
-		$oldBlocks = iterator_to_array($this->execute($selection, $this->searchBlocks, $this->replaceBlocks, $changed));
+		$oldBlocks = iterator_to_array($this->execute($manager, $selection, $this->searchBlocks, $this->replaceBlocks, $changed));
 
 		$resultChunks = $manager->getChunks();
 		$resultChunks = array_filter($resultChunks, static function (Chunk $chunk) {
@@ -72,16 +74,16 @@ class AsyncReplaceTask extends MWEAsyncTask
 	}
 
 	/**
-	 * @param Selection $selection
+	 * @param AsyncWorld   $manager
+	 * @param Selection    $selection
 	 * @param BlockPalette $searchBlocks
 	 * @param BlockPalette $replaceBlocks
-	 * @param null|int $changed
+	 * @param null|int     $changed
+	 *
 	 * @return Generator
 	 * @throws InvalidArgumentException
 	 */
-	private function execute(Selection $selection, BlockPalette $searchBlocks, BlockPalette $replaceBlocks, ?int &$changed): Generator
-	{
-		$manager = $selection->getIterator()->getManager();
+	private function execute(AsyncWorld &$manager, Selection $selection, BlockPalette $searchBlocks, BlockPalette $replaceBlocks, ?int &$changed) : Generator{
 		$blockCount = $selection->getShape()->getTotalCount();
 		$lastchunkx = $lastchunkz = null;
 		$lastprogress = 0;

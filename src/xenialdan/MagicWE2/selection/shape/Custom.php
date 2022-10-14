@@ -3,6 +3,7 @@
 namespace xenialdan\MagicWE2\selection\shape;
 
 use Generator;
+use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector2;
@@ -28,25 +29,30 @@ class Custom extends Shape
 		$this->positions = $positions;
 	}
 
-	public function offset(Vector3 $offset): Shape
-	{
+	public function offset(Vector3 $offset) : Shape{
 		$shape = clone $this;
 		$pos = $this->positions;
 		$this->positions = [];
-		foreach ($pos as $vector3)$this->positions[]=$vector3->addVector($offset);
-		$shape->setPasteVector($this->getPasteVector()->addVector($offset));
+		foreach($pos as $vector3) $this->positions[] = $vector3->addVector($offset);
+		$shape->setPasteVector($this->pasteVector->addVector($offset));
 		return $shape;
+	}
+
+	public function rotate(int $rotation) : self{
+		throw new InvalidArgumentException("Rotation is not supported");
 	}
 
 	/**
 	 * Returns the blocks by their actual position
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
+	 *
+	 * @param AsyncWorld   $manager The world or AsyncWorld
 	 * @param BlockPalette $filterblocks If not empty, applying a filter on the block list
+	 *
 	 * @return Block[]|Generator
 	 * @phpstan-return Generator<int, Block, void, void>
 	 * @noinspection PhpDocSignatureInspection
 	 */
-	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks): Generator
+	public function getBlocks(AsyncWorld $manager, BlockPalette $filterblocks) : Generator
 	{
 		foreach ($this->positions as $position) {
 			//TODO filterblocks
@@ -56,8 +62,10 @@ class Custom extends Shape
 
 	/**
 	 * Returns a flat layer of all included x z positions in selection
-	 * @param AsyncWorld $manager The world or AsyncChunkManager
-	 * @param int $flags
+	 *
+	 * @param AsyncWorld $manager The world or AsyncWorld
+	 * @param int        $flags
+	 *
 	 * @return Generator
 	 */
 	public function getLayer(AsyncWorld $manager, int $flags = API::FLAG_BASE): Generator

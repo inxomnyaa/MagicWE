@@ -28,7 +28,7 @@ abstract class ClipboardAction
 	 * @param string[] $messages
 	 * @return Generator
 	 */
-	abstract public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard $clipboard, array &$messages = []): Generator;
+	abstract public function execute(string $sessionUUID, Selection $selection, ?int &$changed, SingleClipboard &$clipboard, array &$messages = []) : Generator;
 
 	abstract public static function getName(): string;
 

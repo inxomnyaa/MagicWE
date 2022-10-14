@@ -49,6 +49,7 @@ class Brush extends WETool
 {
 	public const TAG_BRUSH_ID = "id";
 	public const TAG_BRUSH_PROPERTIES = "properties";
+	public const TAG_BRUSH_VERSION = "version";
 
 	/** @var BrushProperties */
 	public BrushProperties $properties;
@@ -85,9 +86,9 @@ class Brush extends WETool
 		if (!is_string($properties)) throw new InvalidArgumentException("Brush properties could not be decoded");
 		$item->getNamedTag()->setTag(API::TAG_MAGIC_WE_BRUSH,
 			CompoundTag::create()
-				->setString("id", $uuid)
-				->setInt("version", $this->properties->version)
-				->setString("properties", $properties)
+				->setString(self::TAG_BRUSH_ID, $uuid)
+				->setInt(self::TAG_BRUSH_VERSION, $this->properties->version)
+				->setString(self::TAG_BRUSH_PROPERTIES, $properties)
 		);
 		$item->setCustomName(Loader::PREFIX . TF::BOLD . TF::LIGHT_PURPLE . $this->getName());
 		$item->setLore($this->properties->generateLore());

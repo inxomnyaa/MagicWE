@@ -21,6 +21,7 @@ use xenialdan\MagicWE2\session\data\AssetCollection;
 use xenialdan\MagicWE2\session\data\BrushCollection;
 use xenialdan\MagicWE2\session\data\Outline;
 use xenialdan\MagicWE2\session\data\PaletteCollection;
+use xenialdan\MagicWE2\tool\Debug;
 use function mkdir;
 
 class UserSession extends Session implements JsonSerializable //TODO use JsonMapper
@@ -38,6 +39,7 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 	private AssetCollection $assets;
 	private PaletteCollection $palettes;
 	private ?Language $lang = null;
+	public ?Debug $debug = null;
 
 	public function __construct(Player $player)
 	{
@@ -62,14 +64,14 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		Loader::getInstance()->getLogger()->debug("Created new session for player {$player->getName()}");
 	}
 
-	/**
-	 * @throws ScoreFactoryException
-	 */
 	public function __destruct(){
 		Loader::getInstance()->getLogger()->debug("Destructing session {$this->getUUID()} for user " . $this->getPlayer()->getName());
 		$this->bossBar->removeAllPlayers();
 		if(Loader::hasScoreboard() && $this->sidebar !== null){
-			ScoreFactory::removeObjective($this->getPlayer(), true);
+			try{
+				ScoreFactory::removeObjective($this->getPlayer(), true);
+			}catch(ScoreFactoryException){
+			}
 		}
 	}
 
@@ -238,11 +240,12 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 
 	public function __toString()
 	{
+		//TODO translations
 		return __CLASS__ .
 			" UUID: " . $this->getUUID()->__toString() .
 			" Player: " . $this->getPlayer()->getName() .
 			" Wand tool enabled: " . ($this->isWandEnabled() ? "enabled" : "disabled") .
-			" Debug tool enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
+			" Debug stick enabled: " . ($this->isDebugToolEnabled() ? "enabled" : "disabled") .
 			" WAILA enabled: " . ($this->isWailaEnabled() ? "enabled" : "disabled") .
 			" Sidebar enabled: " . ($this->sidebarEnabled ? "enabled" : "disabled") .
 			" Outline enabled: " . ($this->outlineEnabled ? "enabled" : "disabled") .
@@ -263,9 +266,10 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 		$this->player->sendMessage(Loader::PREFIX . $message);
 	}
 
+	//TODO use libmarshal to serialize this
 	public function jsonSerialize(): array
 	{
-		return [
+		$return = [
 			"uuid" => $this->getUUID()->toString(),
 			"wandEnabled" => $this->wandEnabled,
 			"debugToolEnabled" => $this->debugToolEnabled,
@@ -276,10 +280,14 @@ class UserSession extends Session implements JsonSerializable //TODO use JsonMap
 			//todo assets, palettes
 			"latestSelection" => $this->getLatestSelection(),
 			"currentClipboard" => $this->getCurrentClipboard(),
-			"language" => $this->getLanguage()->getLang()
+			"language" => $this->getLanguage()->getLang(),
 		];
+		if($this->debug !== null) $return["debug"] = $this->debug->jsonSerialize();
+		#var_dump($return);
+		return $return;
 	}
 
+	//TODO use libmarshal to serialize this
 	public function save(): void
 	{
 		@mkdir(Loader::getInstance()->getDataFolder() . "sessions", 0777, true);

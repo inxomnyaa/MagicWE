@@ -67,7 +67,7 @@ class HelpCommand extends BaseCommand
 					}
 					$message .= TF::RESET . TF::LIGHT_PURPLE . " [" . implode(",", $aliases) . "]";
 				}
-				$message .= TF::RESET . TF::WHITE . " " . ($command->getDescription() instanceof Translatable ? $lang->translate($command->getDescription()) : $command->getDescription()) . TF::EOL . " » " . ($command->getDescription() instanceof Translatable ? $lang->translate($command->getDescription()) : $command->getDescription());
+				$message .= TF::RESET . TF::WHITE . " " . ($command->getDescription() instanceof Translatable ? $lang->translate($command->getDescription()) : $command->getDescription()) . TF::EOL . " - " . ($command->getUsage() instanceof Translatable ? $lang->translate($command->getUsage()) : $command->getUsage());
 				$sender->sendMessage($message);
 			}
 		} catch (Exception $error) {

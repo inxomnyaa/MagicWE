@@ -8,10 +8,10 @@ use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
 use jojoe77777\FormAPI\FormAPI;
 use JsonException;
+use JsonSchema\Exception\ResourceNotFoundException;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\block\Block;
 use pocketmine\data\bedrock\EnchantmentIdMap;
-use pocketmine\entity\InvalidSkinException;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\ItemFlags;
 use pocketmine\lang\Language;
@@ -23,10 +23,6 @@ use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat as TF;
 use RuntimeException;
-use wfcore\lib\exception\GeometryNotFoundException;
-use wfcore\lib\exception\GeometryParsingException;
-use wfcore\lib\exception\SplitIDException;
-use wfcore\lib\exception\TextureNotFoundException;
 use xenialdan\apibossbar\DiverseBossBar;
 use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\libstructure\PacketListener;
@@ -39,6 +35,7 @@ use xenialdan\MagicWE2\commands\clipboard\CopyCommand;
 use xenialdan\MagicWE2\commands\clipboard\Cut2Command;
 use xenialdan\MagicWE2\commands\clipboard\CutCommand;
 use xenialdan\MagicWE2\commands\clipboard\PasteCommand;
+use xenialdan\MagicWE2\commands\clipboard\RotateCommand;
 use xenialdan\MagicWE2\commands\debug\GenerateCommandsMDCommand;
 use xenialdan\MagicWE2\commands\debug\PlaceAllBlockstatesCommand;
 use xenialdan\MagicWE2\commands\debug\TestAPICommand;
@@ -83,45 +80,32 @@ use xenialdan\MagicWE2\session\PluginSession;
 use xenialdan\MagicWE2\session\UserSession;
 use xenialdan\MagicWE2\task\action\ActionRegistry;
 
-class Loader extends PluginBase
-{
+class Loader extends PluginBase{
 	public const FAKE_ENCH_ID = 201;
 	public const PREFIX = TF::RESET . TF::BOLD . TF::GOLD . "[MagicWE2]" . TF::RESET . " ";
 	public const PREFIX_ASSETS = TF::RESET . TF::BOLD . TF::GOLD . "[Asset]" . TF::RESET . " ";
 	public const PREFIX_BRUSH = TF::RESET . TF::BOLD . TF::GOLD . "[Brush]" . TF::RESET . " ";
 	public const PREFIX_PALETTE = TF::RESET . TF::BOLD . TF::GOLD . "[Palette]" . TF::RESET . " ";
 	public const PREFIX_FORM = TF::RESET . TF::BOLD . TF::DARK_PURPLE . "[MWE2]" . TF::RESET . " ";
-	/** @var Loader|null */
 	private static ?Loader $instance;
-	/** @var null|ShapeRegistry */
 	public static ?ShapeRegistry $shapeRegistry;
-	/** @var null|ActionRegistry */
 	public static ?ActionRegistry $actionRegistry;
-	/** @var Enchantment */
 	public static Enchantment $ench;
-	/** @var Language */
 	private Language $baseLang;
 	/** @var string[] Donator names */
 	public array $donators = [];
-	/** @var string */
 	public string $donatorData = "";
-	/** @var string */
-	private static string $rotPath;
-	/** @var string */
-	private static string $doorRotPath;
-	/** @var DiverseBossBar */#BossBar
+	#BossBar
 	public DiverseBossBar $wailaBossBar;
-	/** @var null|string */
 	public static ?string $scoreboardAPI;
-	/** @var AssetCollection */
 	public static AssetCollection $assetCollection;
+	private array $possibleBlockstates = [];
 
 	/**
 	 * Returns an instance of the plugin
 	 * @return Loader
 	 */
-	public static function getInstance(): Loader
-	{
+	public static function getInstance() : Loader{
 		return self::$instance;
 	}
 
@@ -130,48 +114,26 @@ class Loader extends PluginBase
 	 * @return ShapeRegistry
 	 * @throws ShapeRegistryException
 	 */
-	public static function getShapeRegistry(): ShapeRegistry
-	{
-		if (self::$shapeRegistry) return self::$shapeRegistry;
+	public static function getShapeRegistry() : ShapeRegistry{
+		if(self::$shapeRegistry) return self::$shapeRegistry;
 		throw new ShapeRegistryException("Shape registry is not initialized");
 	}
 
-	public static function getRotFlipPath(): string
-	{
-		return self::$rotPath;
-		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-	}
-
-	public static function getDoorRotFlipPath(): string
-	{
-		return self::$doorRotPath;
-		#return self::getInstance()->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
-	}
-
-	/**
-	 * @return bool
-	 */
-	public static function hasScoreboard(): bool
-	{
+	public static function hasScoreboard() : bool{
 		return self::$scoreboardAPI !== null;
 	}
 
 	/**
 	 * @throws AssumptionFailedError
-	 * @throws InvalidArgumentException
 	 * @throws JsonException
 	 * @throws PluginException
 	 * @throws RuntimeException
-	 * @throws InvalidSkinException
-	 * @throws GeometryNotFoundException
-	 * @throws GeometryParsingException
-	 * @throws SplitIDException
-	 * @throws TextureNotFoundException
+	 * @throws ResourceNotFoundException
 	 */
-	public function onLoad(): void
-	{
+	public function onLoad() : void{
 		self::$instance = $this;
 		self::$ench = new Enchantment("", 0, ItemFlags::AXE, ItemFlags::NONE, 1);
+		/** @var EnchantmentIdMap $enchantmapinstance */
 		$enchantmapinstance = EnchantmentIdMap::getInstance();
 		$enchantmapinstance->register(self::FAKE_ENCH_ID, self::$ench);
 		self::$shapeRegistry = new ShapeRegistry();
@@ -180,20 +142,20 @@ class Loader extends PluginBase
 		#$this->saveResource("rotation_flip_data.json", true);
 		$this->saveResource("blockstate_alias_map.json", true);
 
-		self::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		self::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
+		API::setRotationData(API::decodeJsonResource("rotation_flip_data.json"));
+		#$this->doorRotationData = API::decodeJsonResource("door_data.json");
 		/** @var BlockStatesParser $blockstateparserInstance */
 		$blockstateparserInstance = BlockStatesParser::getInstance();
-		#$blockstateparserInstance::$rotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "rotation_flip_data.json";
-		#$blockstateparserInstance::$doorRotPath = $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "door_data.json";
 
 		$fileGetContents = file_get_contents($this->getDataFolder() . "blockstate_alias_map.json");
-		if ($fileGetContents === false) {
+		if($fileGetContents === false){
 			throw new PluginException("blockstate_alias_map.json could not be loaded! Blockstate support has been disabled!");
 		}
 
 		$blockstateparserInstance->setAliasMap(json_decode($fileGetContents, true, 512, JSON_THROW_ON_ERROR));
-		if ($this->getConfig()->get("developer-extended-debug", false)) $blockstateparserInstance->runTest();
+		$this->possibleBlockstates = API::decodeJsonResource("possible_blockstates.json");
+
+		if($this->getConfig()->get("developer-extended-debug", false)) $blockstateparserInstance->runTest();
 
 		self::$assetCollection = new AssetCollection(new PluginSession($this));
 	}
@@ -203,9 +165,8 @@ class Loader extends PluginBase
 	 * @return ActionRegistry
 	 * @throws ActionRegistryException
 	 */
-	public static function getActionRegistry(): ActionRegistry
-	{
-		if (self::$actionRegistry) return self::$actionRegistry;
+	public static function getActionRegistry() : ActionRegistry{
+		if(self::$actionRegistry) return self::$actionRegistry;
 		throw new ActionRegistryException("Action registry is not initialized");
 	}
 
@@ -215,13 +176,12 @@ class Loader extends PluginBase
 	 * @throws LanguageNotFoundException
 	 * @throws RuntimeException
 	 */
-	public function onEnable(): void
-	{
+	public function onEnable() : void{
 		$lang = $this->getConfig()->get("language", Language::FALLBACK_LANGUAGE);
-		$this->baseLang = new Language((string)$lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
+		$this->baseLang = new Language((string) $lang, $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR);
 		$registerDeveloperCommands = $this->getConfig()->get("developer-commands", false);
-		if (!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
-		if (!PacketListener::isRegistered()) PacketListener::register($this);
+		if(!InvMenuHandler::isRegistered()) InvMenuHandler::register($this);
+		if(!PacketListener::isRegistered()) PacketListener::register($this);
 		//PacketListener::register($this);//TODO currently this just doubles the debug spam
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 		$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
@@ -276,7 +236,7 @@ class Loader extends PluginBase
 			new ClearClipboardCommand($this, "/clearclipboard", "Clear your clipboard"),
 			//TODO re-add flip/rotate in libblockstate
 			#new FlipCommand($this, "/flip", "Flip the contents of the clipboard across the origin", ["/mirror"]),
-			#new RotateCommand($this, "/rotate", "Rotate the contents of the clipboard around the origin"),
+			new RotateCommand($this, "/rotate", "Rotate the contents of the clipboard around the origin"),
 			/* -- history -- */
 			new UndoCommand($this, "/undo", "Rolls back the last action"),
 			new RedoCommand($this, "/redo", "Applies the last undo action again"),
@@ -318,13 +278,13 @@ class Loader extends PluginBase
 			new ToggleSidebarCommand($this, "/togglesidebar", "Toggle the sidebar", ["/sidebar"]),
 			new ToggleOutlineCommand($this, "/toggleoutline", "Toggle the selection outline", ["/outline", "/showbounds"]),
 		]);
-		if ($registerDeveloperCommands) $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
+		if($registerDeveloperCommands) $this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 			/* -- developer commands -- */
 			new PlaceAllBlockstatesCommand($this, "/placeallblockstates", "Place all blockstates similar to Java debug worlds"),
 			new TestAPICommand($this, "/testapi", "Internal command for testing API methods"),
 			new GenerateCommandsMDCommand($this, "/generatecommandsmd", "Generates the commands.md file"),
 		]);
-		if (class_exists(FormAPI::class)) {
+		if(class_exists(FormAPI::class)){
 			$this->getLogger()->notice("FormAPI found, can use ui-based commands");
 			$this->getServer()->getCommandMap()->registerAll("MagicWE2", [
 				/* -- assets -- */
@@ -336,13 +296,13 @@ class Loader extends PluginBase
 				/* -- tool -- */
 				new FloodCommand($this, "/flood", "Opens the flood fill tool menu", ["/floodfill"]),
 			]);
-		} else {
+		}else{
 			$this->getLogger()->notice(TF::RED . "FormAPI NOT found, can NOT use ui-based commands");
 		}
-		if (class_exists(ScoreFactory::class)) {
+		if(class_exists(ScoreFactory::class)){
 			$this->getLogger()->notice("Scoreboard API found, can use scoreboards");
 			self::$scoreboardAPI = ScoreFactory::class;
-		} else {
+		}else{
 			$this->getLogger()->notice(TF::RED . "Scoreboard API NOT found, can NOT use scoreboards");
 		}
 
@@ -350,38 +310,37 @@ class Loader extends PluginBase
 		$this->wailaBossBar = (new DiverseBossBar())->setPercentage(1.0)/*->setColor(BarColor::RED)*/
 		;
 		//WAILA updater
-		$this->getScheduler()->scheduleDelayedRepeatingTask(new ClosureTask(function (): void {
+		$this->getScheduler()->scheduleDelayedRepeatingTask(new ClosureTask(function() : void{
 			/** @var BlockStatesParser $blockStatesParser */
 			$blockStatesParser = BlockStatesParser::getInstance();
 			$players = Loader::getInstance()->wailaBossBar->getPlayers();
-			foreach ($players as $player) {
-				if (!$player->isOnline() || !SessionHelper::hasSession($player) || (($session = SessionHelper::getUserSession($player)) instanceof UserSession && !$session->isWailaEnabled())) {
+			foreach($players as $player){
+				if(!$player->isOnline() || !SessionHelper::hasSession($player) || (($session = SessionHelper::getUserSession($player)) instanceof UserSession && !$session->isWailaEnabled())){
 					Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 					continue;
 				}
-				if (($block = $player->getTargetBlock(10)) instanceof Block && $block->getId() !== 0) {
+				if(($block = $player->getTargetBlock(10)) instanceof Block && $block->getId() !== 0){
 					$stateEntry = $blockStatesParser->get($block->getId(), $block->getMeta());
-					$title = (string)$block;
+					$title = (string) $block;
 					$sub = implode("," . TF::EOL, explode(",", $blockStatesParser->prettyPrintStates($stateEntry, false)));
 					$distancePercentage = round(floor($block->getPosition()->distance($player->getEyePos())) / 10, 1);
 					Loader::getInstance()->wailaBossBar->showTo([$player]);
 					Loader::getInstance()->wailaBossBar->setTitleFor([$player], $title)->setSubTitleFor([$player], $sub)->setPercentage($distancePercentage);
-				} else
+				}else
 					Loader::getInstance()->wailaBossBar->hideFrom([$player]);
 			}
 		}), 60, 1);
 	}
 
-	public function onDisable(): void
-	{
-		try {
-			foreach (SessionHelper::getPluginSessions() as $session) {
+	public function onDisable() : void{
+		try{
+			foreach(SessionHelper::getPluginSessions() as $session){
 				SessionHelper::destroySession($session, false);
 			}
-			foreach (SessionHelper::getUserSessions() as $session) {
+			foreach(SessionHelper::getUserSessions() as $session){
 				SessionHelper::destroySession($session);
 			}
-		} catch (JsonException $e) {
+		}catch(JsonException $e){
 			$this->getLogger()->logException($e);
 		}
 	}
@@ -390,27 +349,23 @@ class Loader extends PluginBase
 	 * @return Language
 	 * @api
 	 */
-	public function getLanguage(): Language
-	{
+	public function getLanguage() : Language{
 		return $this->baseLang;
 	}
 
-	public function getToolDistance(): int
-	{
-		return (int)$this->getConfig()->get("tool-range", 100);
+	public function getToolDistance() : int{
+		return (int) $this->getConfig()->get("tool-range", 100);
 	}
 
-	public function getEditLimit(): int
-	{
-		return (int)$this->getConfig()->get("limit", -1);
+	public function getEditLimit() : int{
+		return (int) $this->getConfig()->get("limit", -1);
 	}
 
 	/**
 	 * @return array
 	 * @throws RuntimeException
 	 */
-	public static function getInfo(): array
-	{
+	public static function getInfo() : array{
 		return [
 			"| " . TF::GREEN . self::getInstance()->getFullName() . TF::RESET . " | Information |",
 			"| --- | --- |",
@@ -433,8 +388,7 @@ class Loader extends PluginBase
 	 *
 	 * @return string
 	 */
-	public function getLanguageFolder(): string
-	{
+	public function getLanguageFolder() : string{
 		return $this->getFile() . "resources" . DIRECTORY_SEPARATOR . "lang" . DIRECTORY_SEPARATOR;
 	}
 
@@ -444,8 +398,12 @@ class Loader extends PluginBase
 	 * @phpstan-return array<string, string> code=>name
 	 * @throws LanguageNotFoundException
 	 */
-	public function getLanguageList(): array
-	{
+	public function getLanguageList() : array{
 		return Language::getLanguageList($this->getLanguageFolder());
+	}
+
+	//TODO move to API?
+	public function getPossibleBlockstates(string $state) : array{
+		return $this->possibleBlockstates[$state] ?? [];
 	}
 }

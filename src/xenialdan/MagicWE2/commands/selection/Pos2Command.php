@@ -17,15 +17,13 @@ use xenialdan\MagicWE2\Loader;
 use xenialdan\MagicWE2\selection\Selection;
 use xenialdan\MagicWE2\session\UserSession;
 
-class Pos2Command extends BaseCommand
-{
+class Pos2Command extends BaseCommand{
 
 	/**
 	 * This is where all the arguments, permissions, sub-commands, etc would be registered
 	 * @throws InvalidArgumentException
 	 */
-	protected function prepare(): void
-	{
+	protected function prepare() : void{
 		$this->setPermission("we.command.selection.pos");
 	}
 
@@ -46,17 +44,17 @@ class Pos2Command extends BaseCommand
 			return;
 		}
 		/** @var Player $sender */
-		try {
+		try{
 			$session = SessionHelper::getUserSession($sender);
-			if (!$session instanceof UserSession) {
+			if(!$session instanceof UserSession){
 				throw new SessionException($lang->translateString('error.nosession', [Loader::getInstance()->getName()]));
 			}
-			$selection = $session->getLatestSelection() ?? $session->addSelection(new Selection($session->getUUID(), $sender->getWorld())); // TODO check if the selection inside of the session updates
-			if (is_null($selection)) {
-				throw new Error("No selection created - Check the console for errors");
+			if(($selection = $session->getLatestSelection()) === null){
+				$session->addSelection(($selection = new Selection($session->getUUID(), $sender->getWorld()))); // TODO check if the selection inside of the session updates
 			}
 			$selection->setPos2($sender->getPosition());
 		} catch (Exception $error) {
+			Loader::getInstance()->getLogger()->logException($error);
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $lang->translateString('error.command-error'));
 			$sender->sendMessage(Loader::PREFIX . TF::RED . $error->getMessage());
 			$sender->sendMessage($this->getUsage());

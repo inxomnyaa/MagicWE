@@ -34,33 +34,21 @@ class MWESelectionChangeEvent extends MWEEvent
 		}
 	}
 
-	/**
-	 * @return Selection
-	 */
 	public function getSelection(): Selection
 	{
 		return $this->selection;
 	}
 
-	/**
-	 * @param Selection $selection
-	 */
 	public function setSelection(Selection $selection): void
 	{
 		$this->selection = $selection;
 	}
 
-	/**
-	 * @return null|Session
-	 */
 	public function getSession(): ?Session
 	{
 		return $this->session;
 	}
 
-	/**
-	 * @return null|Player
-	 */
 	public function getPlayer(): ?Player
 	{
 		if (($session = $this->getSession()) instanceof UserSession)
@@ -69,9 +57,6 @@ class MWESelectionChangeEvent extends MWEEvent
 		return null;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getType(): int
 	{
 		return $this->type;

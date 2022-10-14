@@ -66,9 +66,10 @@ class RotateCommand extends BaseCommand
 				throw new SessionException($lang->translateString('error.noclipboard'));
 			}
 			$action = new RotateAction($angle/*, $aroundOrigin*/);//TODO reenable origin support if error fixed: does not rotate. Let's see if PHPStan find it for me!
+			#$action->rotationData = API::$rotationData;
 			#$offset = $selection->getShape()->getMinVec3()->subtract($session->getPlayer()->asVector3()->floor())->floor();
 			#$action->setClipboardVector($offset);
-			var_dump($action);
+			#var_dump($action);
 			Server::getInstance()->getAsyncPool()->submitTask(
 				new AsyncClipboardActionTask(
 					$session->getUUID(),

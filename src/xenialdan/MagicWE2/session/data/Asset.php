@@ -66,8 +66,8 @@ class Asset implements JsonSerializable
 
 	public function getSize(): Vector3
 	{
-		if ($this->structure instanceof Schematic) return new Vector3($this->structure->getWidth(), $this->structure->getHeight(), $this->structure->getLength());
-		if ($this->structure instanceof MCStructure) return $this->structure->getSize();
+		if($this->structure instanceof Schematic) return new Vector3($this->structure->getWidth(), $this->structure->getHeight(), $this->structure->getLength());
+		if($this->structure instanceof MCStructure) return new Vector3($this->structure->getSize()->getX(), $this->structure->getSize()->getY(), $this->structure->getSize()->getZ());
 		else return new Vector3($this->structure->selection->getSizeX(), $this->structure->selection->getSizeY(), $this->structure->selection->getSizeZ());
 		//throw new Exception("Unknown structure type");
 	}
@@ -81,8 +81,8 @@ class Asset implements JsonSerializable
 
 	public function getOrigin(): Vector3
 	{
-		if ($this->structure instanceof Schematic) return new Vector3(0, 0, 0);
-		if ($this->structure instanceof MCStructure) return $this->structure->getStructureWorldOrigin();
+		if($this->structure instanceof Schematic) return new Vector3(0, 0, 0);
+		if($this->structure instanceof MCStructure) return new Vector3($this->structure->getStructureWorldOrigin()->getX(), $this->structure->getStructureWorldOrigin()->getY(), $this->structure->getStructureWorldOrigin()->getZ());
 		else return $this->structure->position;
 		//throw new Exception("Unknown structure type");
 	}
