@@ -14,6 +14,7 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\NoSuchTagException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\UnexpectedTagTypeException;
+use pocketmine\network\mcpe\protocol\types\BlockPosition;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
@@ -26,6 +27,7 @@ use xenialdan\libblockstate\BlockState;
 use xenialdan\libblockstate\BlockStatesParser;
 use xenialdan\libblockstate\exception\BlockQueryParsingFailedException;
 use xenialdan\libstructure\format\MCStructure;
+use xenialdan\libstructure\format\MCStructureData;
 use xenialdan\MagicWE2\clipboard\Clipboard;
 use xenialdan\MagicWE2\clipboard\SingleClipboard;
 use xenialdan\MagicWE2\exception\BlockQueryAlreadyParsedException;
@@ -50,7 +52,9 @@ use xenialdan\MagicWE2\task\AsyncPasteAssetTask;
 use xenialdan\MagicWE2\task\AsyncPasteTask;
 use xenialdan\MagicWE2\task\AsyncReplaceTask;
 use xenialdan\MagicWE2\tool\Brush;
+use function array_keys;
 use function str_replace;
+use function var_dump;
 
 class API
 {
@@ -591,8 +595,47 @@ class API
 	}
 
 	private static function rotateStructure(MCStructure $structure, int $rotation, array &$errors = []) : MCStructure{
-		//TODO this is not yet implemented due to lack of support for creating new MCStructures in libstructure
-		return $structure;
+		if($rotation % 90 !== 0){
+			throw new InvalidArgumentException("Rotation must be divisible by 90");
+		}
+		$rotation = self::positiveModulo($rotation, 360);
+		if($rotation === 0) return $structure;
+
+		$shape = new Cuboid(Vector3::zero(), $structure->getSize()->getX(), $structure->getSize()->getY(), $structure->getSize()->getZ());
+		$shape = $shape->rotate($rotation);
+		var_dump("TILES BEFORE ROTATE", array_keys($structure->getBlockEntitiesRaw()));
+		$new = new MCStructure(MCStructureData::fromStructure($structure), new BlockPosition($shape->width, $shape->height, $shape->depth), $structure->origin);
+		var_dump("TILES AFTER ROTATE", array_keys($new->getBlockEntitiesRaw()));
+
+
+		//$x = $y = $z = null;
+		foreach($structure->blocks() as $entry){
+			if($entry === null) continue;
+			//TODO set block to rotated blockstate
+			$state = BlockStatesParser::getInstance()->getFromBlock($entry);
+			try{
+				$stateRotated = self::rotateBlockState($state, $rotation);
+				[$x, $y, $z] = [$entry->getPosition()->getX(), $entry->getPosition()->getY(), $entry->getPosition()->getZ()];
+
+				$newV3 = match ($rotation)//TODO figure out how to avoid new Vector3 objects
+				{
+					RotateAction::ROTATE_90 => new Vector3($structure->getSize()->getZ() - $z - 1, $y, $x),
+					RotateAction::ROTATE_180 => new Vector3($structure->getSize()->getX() - $x - 1, $y, $structure->getSize()->getZ() - $z - 1),//TODO is this flip instead of rotate?
+					RotateAction::ROTATE_270 => new Vector3($z, $y, $structure->getSize()->getX() - $x - 1),
+					default => new Vector3($x, $y, $z)
+				};
+				//TODO move origin of structure
+				if(($tile = $structure->translateBlockEntity($entry->getPosition(), new Vector3($structure->origin->getX(), $structure->origin->getY(), $structure->origin->getZ())) !== null)){
+					var_dump($tile);
+				}
+				$new->set($newV3->getX(), $newV3->getY(), $newV3->getZ(), $stateRotated);
+			}catch(BlockQueryParsingFailedException | NoSuchTagException | UnexpectedTagTypeException $e){
+				$errors[] = $e->getMessage();//TODO implement error printing, for now silently continue
+				continue;
+			}
+		}
+		$new->check();
+		return $new->parse();
 	}
 
 	/**

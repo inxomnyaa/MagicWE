@@ -110,6 +110,7 @@ class AsyncPasteAssetTask extends MWEAsyncTask
 		if ($structure instanceof MCStructure) {
 			/** @var Block $block */
 			foreach ($structure->blocks() as $block) {// [0,0,0 -> sizex,sizey,sizez]
+				if($block === null) continue;
 				#var_dump($block->getPosition()->asVector3(), $this->pasteVector, $this->selection);
 				$pos = $block->getPosition()->addVector($this->target)->subtract($asset->getSize()->getX() / 2, 0, $asset->getSize()->getZ() / 2);
 				[$block->getPosition()->x, $block->getPosition()->y, $block->getPosition()->z] = [$x, $y, $z] = [$pos->getX(), $pos->getY(), $pos->getZ()];
