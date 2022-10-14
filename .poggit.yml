@@ -33,4 +33,7 @@ projects:
       - src: Ifera/scorefactory/ScoreFactory
         version: ^3.1.0
         branch: master
+      - src: sylvrs/libMarshal/libMarshal
+        version: ^1.4.3
+        branch: feature/virion
 ...
