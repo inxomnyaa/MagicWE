@@ -1,6 +1,6 @@
---- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/thebigsmileXD/MagicWE2
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/inxomnyaa/MagicWE
 projects:
-  MagicWE2:
+  MagicWE:
     path: ""
     icon: "resources/magicwe_icon_square_small.png"
     excludeFiles:
